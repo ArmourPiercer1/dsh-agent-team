@@ -637,3 +637,36 @@ disposition, and a change this round must not smuggle in.
 (89/89, with the census population 22/22 twice and the 184-test next-host step green), and
 `ci-census`/`ci-required` as a whole remain **UNPROVEN** because of the `ute-vnext-a1`
 ripgrep/OS-realm red above, which this round neither caused nor is licensed to repair.
+
+---
+
+## Addendum (round 82, 2026-11-23) — the residual `ute-vnext-a1` red is now a measured ENV-LIMITED, not an open red
+
+The §4.6 verdict above stands as the round-81 record: at `003c407ff` the leg was red for five arms and
+this round neither caused nor repaired it. Round 82 repaired it by measuring the precondition instead of
+assuming it. The five arms (`OS-2`, `OS-3`, `ADM-66`, `SLICE-28`, cascade `ADM-70`) are ONE environment
+absence: the confined process lane's `network: deny` profile is admitted only on the product's own
+`--net-leg` proof of an unprivileged `CLONE_NEWUSER|CLONE_NEWNET` per child, and the hosted runner does
+not confirm it. The confined subprocess face `grep` runs through carries the same profile, so the
+"ripgrep provider failure" was the provider's fail-closed refusal, not a ripgrep regression.
+
+The leg now asks that probe first (`tests/world-factory/lib/a5sf-env-capability.mjs`, reusing
+`runNetworkLeg`, no second probe) and prints `A5SF-CAPABILITY network-deny=present|absent …`. Each arm
+then takes the truthful branch:
+
+- `OS-2`/`OS-3` → assert the provider's `IO_POLICY_UNSUPPORTED` refusal before any plan exists
+  (`FAIL-CLOSED-CONTROL`);
+- `ADM-66`/`SLICE-28` → assert the admission fact + refused spawn + settlement `FAILED` and keep the
+  lane-refusal controls (`ENV-BLOCK`);
+- `ADM-70` → assert the runnable-rung and durable-admission order, but do NOT claim the 4-rung
+  positive ladder (`ENV-BLOCK`).
+
+All five report `UTE-VNEXT-A1-ENV-LIMITED …`, skip only after their assertions, and increment no
+proven counter. `dispatch-tests` aggregates them into
+`DSH-TEST-DISPATCH-ENV-LIMITED count=5 proven=0 env_blocks=3 fail_closed_controls=2`. The leg's hosted
+summary is 206 tests / 199 pass / 7 skipped (2 product-contract skips + 5 env-limited), exit 0; this
+host, where the capability is present, remains 206 / 204 pass / 2 skipped / 0 env-limited with the real
+kernel controls GREEN. **`ci-census`/`ci-required` are therefore no longer red on this lane**; the five
+guarantees remain UNPROVEN on an incapable runner and are recorded as ENV-LIMITED in
+`CAPABILITY-MATRIX-C.md`, not promoted. The exact hosted probe line and per-arm output are committed in
+`ENV-LIMITED-CAPABILITY-20261123.md`.

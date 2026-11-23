@@ -181,7 +181,7 @@ Status vocabulary — these are not interchangeable:
 | **C12** | tool admission (guard, builtin deny, selector) | **preserve** (KEEP module) | MECHANISM + DEV-LIVE. `ADM-1…ADM-45` (lanes, deny precedence, unbound refusal, `ADMISSION_TOOL_UNBOUND`), `ADM-29/30` (tool restriction answers before the ceiling and only narrows), `ADM-31` (closed list matches `createTeamTools` both ways), `ADM-35` (a governed member refuses to run unrecorded), `ADM-44` (`MEMBER_CENTRE_UNWIRED`). Live: `d:centre-facts` PROVEN — 2 `fs.read` admissions (`allow` + `DENY/LANE_DENY`) and 2 execution facts, read back from disk | `packages/runtime/test/vnext-admission.test.mjs`; `D-BOOT-FEASIBILITY.md:369-395` | a real model choosing tools adversarially (the mock is scripted), and a policy compiled at runtime rather than passed as an input (`CAPABILITY-MATRIX-C.md:66-67`) |
 | **C13** | confined I/O faces (fs/web/subprocess/terminals/userQuestions) | **replace** with provider lanes | MECHANISM + DEV-LIVE for **fs, web and subprocess**; **process family ADMITTED ON A DECLARATION, live persistent shell PROVEN (round 76)**. fs: `d:guard-facts` **PROVEN** (2 `allow` facts, methods `stat`/`readText`, `memberIdentity=inst-0pe2z220bhfb`), `SLICE-1…SLICE-36`, and `d2:multi-member-concurrency` live. web: `SLICE-31/32` (transport reached / never reached), `ADM-67/74`. subprocess: keys on `toolBindings[].authorization` + `execution.executionBoundary` (`admission.ts:409-452`, `ADM-125`…`ADM-131`); round 76 additionally mounts the HOST's `dsh-tool-bash-persistent` (`backendType: a5sf-governed-shell`) beside the one-shot baseline and declares the binding, so the live D3 judge is **PROVEN** in two agreeing boots — the second turn reuses the same shell, and the out-of-lane write is refused by the OS profile (§6.3). PTC: `ADMISSION_PTC_UNAVAILABLE` (`admission.ts:405-407`) **ROUND 77: the rc.5 FS confinement gap (`patchText`/`deleteFile`/`moveFile`) is CLOSED — SLICE-35 GREEN on rc.5 and rc.2, `ADM-135`…`ADM-140`; still in-process (§6.15).** | `D-BOOT-FEASIBILITY.md:349-414`; `packages/runtime/test/vnext-fs-slice.test.mjs`; `packages/runtime/test/vnext-b-probe-ladder.test.mjs` | a live `web_fetch` at a boot, and `userQuestions`/terminals beyond the PTY-owner refusal (`SLICE-33`) — the persistent (`a5sf-governed-shell`) live shell at a boot is no longer on this list (round 76 PROVEN); what remains unproven for it is a GATED (non-DEV-LIVE) status and a real-model interleaving |
 | **C14** | **old governed-family execution implementations**: each family's own tool body, its duplicated policy computation, and the historical per-family semantic-equivalence requirement … | **dropped** — the host rows own execution now, and the equivalence criterion is retired with the bodies; the differences that mattered were defects of the deleted body (`SD-SEARCH-1`) | **DROPPED-AS-RULED**, and closure holds: `deleted=148 prodRefs=0 distResiduals=0 dupNames=0` (fresh run, §1.1); no legacy Plane/Family Body/Kernel/PA Bridge is wrapped as an internal component and there is no legacy fallback (`PR-BODY-draft.md` §"What this branch is") | `ute-cut-closure` line in §1.1; `CUT-BOUNDARY-ADDITIONS.md`; `docs/plans/memo/ute-p0-20261121/03-RETIRE-KEEP.md` | nothing — a drop is complete when the closure gate is green and the ruling is named, which it is (`06-CAPABILITY-CONTRACT.md:90`) |
-| **C14b** *(the contract's split row, not a 19th criterion)* | **the safety invariants those families enforced**: path read/write upper bounds, network allow/deny, Control authority, Stop | **preserved** — never implied by C14's drop | **MECHANISM + DEV-LIVE, now with a per-invariant positive+negative pair (round 67).** §2.3 maps every dropped implementation to a surviving owner with `file:line`; `ADM-110` (path bounds: centre authored lane + provider resolved path, `..` and symlink), `ADM-111` (network: allow/unset/deny + tool-level narrowing), `ADM-112` (Control authority: the REAL durable `ControlService` asks, denies and one-shot spends), `ADM-113` (Stop: REFUSED/not-started, never UNKNOWN, durable across a fresh reader), `ADM-114` (process: fail-closed `ADMISSION_EXECUTION_UNAUTHORIZED`, never an unconfined shell), `ADM-115` (dropped names are unbound; preserved host faces keep `host.service`). The P1–P5 proofs (§3) and the OS controls still stand: `OS-1` Landlock ABI 7, `OS-2` **negative**, `OS-3` **positive**, `SLICE-4` (without the realm mount the outside read **succeeds**, so the confinement arms are falsifiable). **No invariant is enforced only by a deleted component** — checked, not assumed: the five `confined-*` shadows were mounted by the realm row itself (`a5sf-realm-row.mjs` at A0), so a realm-less member was never confined by them; the residual is the *ungoverned* (never-asked) row, which this row does not claim to govern (§2.3) | §2.3; §3; `packages/runtime/test/vnext-admission.test.mjs` (`ADM-110`…`ADM-115`); `packages/runtime/test/vnext-os-probe.test.mjs`; `packages/runtime/test/vnext-fs-slice.test.mjs` | a live OS-boundary measurement at a boot (today the OS probe runs in the node leg on the CI host); network containment under a real model; and a product entry that drives each invariant (not only the in-process centre) |
+| **C14b** *(the contract's split row, not a 19th criterion)* | **the safety invariants those families enforced**: path read/write upper bounds, network allow/deny, Control authority, Stop | **preserved** — never implied by C14's drop | **MECHANISM + DEV-LIVE, now with a per-invariant positive+negative pair (round 67).** §2.3 maps every dropped implementation to a surviving owner with `file:line`; `ADM-110` (path bounds: centre authored lane + provider resolved path, `..` and symlink), `ADM-111` (network: allow/unset/deny + tool-level narrowing), `ADM-112` (Control authority: the REAL durable `ControlService` asks, denies and one-shot spends), `ADM-113` (Stop: REFUSED/not-started, never UNKNOWN, durable across a fresh reader), `ADM-114` (process: fail-closed `ADMISSION_EXECUTION_UNAUTHORIZED`, never an unconfined shell), `ADM-115` (dropped names are unbound; preserved host faces keep `host.service`). The P1–P5 proofs (§3) and the OS controls still stand: `OS-1` Landlock ABI 7, `OS-2` **negative**, `OS-3` **positive** on a host that proves the network-deny profile (this one), and `SLICE-4` (without the realm mount the outside read **succeeds**, so the confinement arms are falsifiable). On a runner that cannot prove that profile, `OS-2`/`OS-3` are ENV-LIMITED fail-closed controls and the kernel claims are NOT made — see §3.1 and `ENV-LIMITED-CAPABILITY-20261123.md`. **No invariant is enforced only by a deleted component** — checked, not assumed: the five `confined-*` shadows were mounted by the realm row itself (`a5sf-realm-row.mjs` at A0), so a realm-less member was never confined by them; the residual is the *ungoverned* (never-asked) row, which this row does not claim to govern (§2.3) | §2.3; §3; `packages/runtime/test/vnext-admission.test.mjs` (`ADM-110`…`ADM-115`); `packages/runtime/test/vnext-os-probe.test.mjs`; `packages/runtime/test/vnext-fs-slice.test.mjs` | a live OS-boundary measurement at a boot (today the OS probe runs in the node leg on the CI host); network containment under a real model; and a product entry that drives each invariant (not only the in-process centre) |
 | **C15** | `team_skill` | **preserve, re-homed** — Team skill provider into a host-shaped row | MECHANISM + **recorded LIMIT**. Bound on `host.service` (`ADM-32`); `skill` is in `HOST_CAPABILITY_TOOL_NAMES` (`admission.ts:114-122`); the governed preset mounts `a5sf-skill-provider` (`scripts/dist-placements/190-a5sf-pd29-service-seam.json:5-6` places the module; the governed realm row mounts it at `packages/runtime/src/plugin/live/a5sf-realm-row.mjs:989`). **Limit, not a confinement claim:** a skill file read by the host skill service is OUTSIDE the member's fs ceiling (`CAPABILITY-MATRIX-C.md:76-87`) | `packages/runtime/test/vnext-admission.test.mjs`; `CAPABILITY-MATRIX-C.md:29,76-87` | a D judge that has a governed Member invoke `team_skill` on a booted host and asserts the row is reachable — with the limit stated in the same evidence, not only here |
 | **C16** | `subagent_fork` | **preserve, re-homed** — row over `subagent-fork-in-process` | MECHANISM. Bound as host capabilities (`subagent`, `send_message`, `interrupt_agent`, `admission.ts:114-122`, `ADM-32`); the **child's own** binding governs the child's tools (so the parent's ceiling is not a claim about the child) | `packages/runtime/test/vnext-admission.test.mjs`; `CAPABILITY-MATRIX-C.md:30` | a live fork at a boot, and an assertion that the child's own centre judges the child's calls — neither is measured in the D legs |
 | **C17** | **Team's own `exit_plan_mode` tool** — not DSH plan mode, and not the goal tools | **dropped by owner ruling** — the host has only a `claude-code-mods` name mapping, and re-creating a plan-mode state machine is out of scope. `get_goal`/`create_goal`/`update_goal` are untouched | **DROPPED-AS-RULED**, provable by **absence**: zero `exit_plan_mode` references under `packages/runtime/src` and `packages/tools/src`, and it is in neither closed table (`admission.ts:32-41`, `:57-73`, `:114-122`). The goal tools **are** present on `host.service` | `grep -rn exit_plan_mode packages/runtime/src packages/tools/src` → no matches; `admission.ts:114-122` | nothing — the ruling is named and the absence is checkable |
@@ -263,23 +263,69 @@ respectively, each reddening exactly its own arm). P3's mutation is the **missin
 acceptance: P1–P5 are properties of the **binding and settlement**, which is what the contract says they
 are (`04-SEAMS.md:69-73`).
 
-### 3.1 OS negative controls (fresh, this HEAD)
+### 3.1 OS negative controls (fresh, this HEAD) — PROVEN where the capability exists, ENV-LIMITED where it does not
 
 Measured inside `ute-vnext-a1` (file `packages/runtime/test/vnext-os-probe.test.mjs`; leg definition
-`dev/ci/eb3-ci-manifest.json` → `layers[4].legs[11]`, which sets `A5SF_REQUIRE_PINNED_HOST=1` and states
-that "an OS enforcement claim is either measured with both controls or the leg is red"):
+`dev/ci/eb3-ci-manifest.json` → `layers[4].legs[11]`, which sets `A5SF_REQUIRE_PINNED_HOST=1`).
+
+**The precondition is measured, not assumed.** `OS-2`/`OS-3` request `networkProfile: 'deny'`, and the
+product admits that request only when its own `runNetworkLeg` (the launcher's real `--net-leg`: a control
+child reaching a loopback listener, a deny child landing in a DISTINCT network namespace and failing
+tcp/udp with a kernel errno while the listener counters do not move) confirms it. The same proof gates
+the confined subprocess face that `grep` runs through, so OS-2/3, `ADM-66`, `SLICE-28` and the `ADM-70`
+grep rung all ride ONE capability. The leg asks that probe first (`tests/world-factory/lib/a5sf-env-capability.mjs`)
+and prints its answer:
+
+```
+A5SF-CAPABILITY network-deny=present level=enforced code=NET_DENY_ENFORCED ... forced=false
+  detail="runNetworkLeg verdict=NET-DENY-CONFIRMED mechanism=netns netns=…/(host …)"
+```
+
+**This host (capability present ⇒ real enforcement):**
 
 ```
 OS-1 measured landlock abiVersion=7
-✔ OS-1 — the host answers the Landlock ABI the provider requires (32.884218ms)
+✔ OS-1 — the host answers the Landlock ABI the provider requires
 ✔ OS-2 — NEGATIVE CONTROL: a confined payload CANNOT read outside its allow set (3214.834264ms)
 ✔ OS-3 — POSITIVE CONTROL: the same payload CAN read inside its allow set (3194.526655ms)
+ℹ tests 206  ℹ pass 204  ℹ fail 0  ℹ skipped 2
 ```
 
 The pair is load-bearing: a positive-only run would prove nothing about the boundary, and a
 negative-only run would not distinguish "denied" from "broken". Both controls ran in this session's
-`dispatch-tests --run --leg ute-vnext-a1` (§4). The OS probe needs `python3` and a Landlock-capable
-kernel; both were present.
+`dispatch-tests --run --leg ute-vnext-a1`.
+
+**The hosted `ci-census` runner (capability ABSENT).** The runner's `--net-leg` does not confirm a
+network namespace (see `ENV-LIMITED-CAPABILITY-20261123.md` for the hosted probe line), so
+`network-destination` is `unsupported` and the provider refuses every `network: deny` spawn BEFORE any
+process exists (`IO_POLICY_UNSUPPORTED` / `NETWORK_UNCONFINED_REALM`). The five affected arms take the
+truthful branch, assert the product's FAIL-CLOSED behaviour, and are reported ENV-LIMITED — never
+counted as proven, never silently skipped:
+
+| arm | disposition on an incapable runner | what IS asserted there | what is NOT proven there |
+| --- | --- | --- | --- |
+| `OS-2` | FAIL-CLOSED-CONTROL | `prepare()` refuses with `IO_POLICY_UNSUPPORTED`, names the unoffered `deny` profile and why an ABI number is not a network guarantee; no plan and no output dir exist | the kernel denial of the out-of-allow-set read |
+| `OS-3` | FAIL-CLOSED-CONTROL | the positive payload is refused the same way before any plan exists | the in-allow-set read |
+| `ADM-66` | ENV-BLOCK | admission fact `allow`/`fs.read` at the judged locator; execution `failed`; settlement `FAILED`; ZERO provider spawns; no fabricated match | the confined `grep` body/`Found 1 match` |
+| `SLICE-28` | ENV-BLOCK | the same refused-spawn facts, PLUS the lane negative control (`LANE_DENY` before the body, `admission-refusal`) | the in-ceiling search |
+| `ADM-70` | ENV-BLOCK | the runnable-rung order and the DURABLE admission order (grep included, as admitted) | the complete 4-rung positive ladder |
+
+The arm count is small, named and stable: **five** env-limited arms, one code
+(`NETWORK_DENY_UNPROVEN`), printed per arm as `UTE-VNEXT-A1-ENV-LIMITED …` and aggregated by the
+dispatcher as `DSH-TEST-DISPATCH-ENV-LIMITED count=5 proven=0 env_blocks=3 fail_closed_controls=2`.
+Each such arm calls `t.skip` only AFTER its assertions, so a regression in the fail-closed behaviour
+turns the arm RED (a skip is not a shield). **An environment absence is not a PASS**: on the hosted
+runner the five guarantees above are explicitly UNPROVEN, they increment no proven counter, and
+`CAPABILITY-MATRIX-C.md` shows those cells as ENV-LIMITED rather than PROVEN. The OS probe needs
+`python3` and a Landlock-capable kernel; on a host lacking THOSE, `OS-1`/the provider probe fail
+loudly (a red leg), not as a skip.
+
+**Product gap or runner limit?** Runner limit. The product's launcher already creates the namespace it
+needs (`CLONE_NEWUSER|CLONE_NEWNET`, unprivileged) and the provider offers `deny` exactly when the
+probe measures it; there is no realm-provisioning switch that could be flipped in product code to make
+an incapable kernel capable. The failure mode is disclosed, not patched around. A future runner that
+permits unprivileged user+net namespaces gets the real controls automatically: the same leg, with no
+code change, reports `network-deny=present` and the five arms run as on this host.
 
 ### 3.2 All live judges, actual verdicts (do not read the list as all-green)
 

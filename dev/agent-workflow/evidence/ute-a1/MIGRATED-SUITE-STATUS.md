@@ -607,17 +607,26 @@ centre at all.
 | --- | --- | --- | --- |
 | 1 | `read` | **PROVEN** (ADM-64): admitted, `alpha beta` arrives, the instrumented member provider's read counters move, fact `allow`/`fs.read`, execution `completed`, settlement `COMPLETED` (`quiesced`/`completed`) | **PROVEN** (ADM-71): out-of-lane path ⇒ `LANE_DENY` before the body, zero provider calls (counters byte-identical), the secret never appears, execution `admission-refusal`, settlement `REFUSED`/`not-started`/`none-confirmed` |
 | 2 | `write` | **PROVEN** (ADM-65): admitted, bytes land on disk, `writeText ≥ 1`, fact `allow`/`fs.write`, settlement `COMPLETED` | **PROVEN** (ADM-72): out-of-lane path ⇒ `LANE_DENY`, the file is NOT created, zero provider calls, settlement `REFUSED`/`not-started` |
-| 3 | `grep` | **PROVEN** (ADM-66): admitted, `Found 1 match`, the confined subprocess face is actually used, fact names the judged locator, settlement `COMPLETED` | **PROVEN** (ADM-73): out-of-lane path ⇒ `LANE_DENY`, **zero confined-subprocess spawns**, the secret never appears, settlement `REFUSED`/`not-started` |
+| 3 | `grep` | **PROVEN** (ADM-66): admitted, `Found 1 match`, the confined subprocess face is actually used, fact names the judged locator, settlement `COMPLETED` — on a host that proves the confined face's `network: deny` profile. **HOSTED (no such proof, round 82): ENV-BLOCK** (`NETWORK_DENY_UNPROVEN`): the spawn is refused before any process; admission `allow`/execution `failed`/settlement `FAILED`/zero spawns are asserted, the search is NOT claimed | **PROVEN** (ADM-73): out-of-lane path ⇒ `LANE_DENY`, **zero confined-subprocess spawns**, the secret never appears, settlement `REFUSED`/`not-started` (this half is capability-independent and runs on BOTH kinds of host) |
 | 4 | `web_fetch` | **PROVEN** (ADM-67): admitted, the loopback fixture body arrives (`HTTP 200`), exactly ONE transport call, fact `allow`/`net.fetch`, settlement `COMPLETED` | **PROVEN** (ADM-74): denied network axis ⇒ `NETWORK_DENY` before the body, **zero transport calls**, no body bytes, settlement `REFUSED`/`not-started` |
 | 5 | persistent `bash` | **BLOCKED — NOT RUN, never a pass** (ADM-68, `t.skip` + a machine-readable line): the compiled answer carries no process lane, so the centre can only answer `ADMISSION_AXIS_UNSUPPORTED`. Reason: the v4 member ceiling's frozen `io` field set is `{read, write, network}` (`blueprint-v4.ts`) and `bindingFromCompiledMember` projects only what the compiler produced — `CONTRACT-CHANGE-REQUEST-process-lane.md`, which names B's rung-6 positive control as blocked. Minting a lane in the test, or deriving one from the write lane, would be the SECOND decision authority this cut refuses | **PROVEN** (ADM-75): refused with `ADMISSION_AXIS_UNSUPPORTED` (the reason names the missing subprocess lane), zero subprocess spawns, **zero sandbox `confine` calls**, execution `admission-refusal`, settlement `REFUSED`/`not-started` |
 | 6 | `run_code` | **BLOCKED — NOT RUN, never a pass** (ADM-69, same compiled process lane; `run_code` is `process.exec` and shares it). The transport itself IS present: the member resolves the registry's reserved `run_code` object | **PROVEN** (ADM-76): `ADMISSION_AXIS_UNSUPPORTED`, zero subprocess spawns, zero sandbox `confine` calls, settlement `REFUSED`/`not-started` |
 
-**ENV_BLOCK: none.** No probe was environment-blocked on this host. The two blocked rungs are blocked by
-the product CONTRACT (a missing declaration source), not by a missing capability, and they are reported
-as such in the suite's own stdout (`VNEXT-B-LADDER-BLOCKED rung=5|6 … verdict=NOT_RUN`) and in the
-`t.skip` reason. The leg already requires the pinned host (`A5SF_REQUIRE_PINNED_HOST=1`, absence = red)
-and a Landlock-capable `python3` (that is `vnext-os-probe`'s existing precondition, which `grep`'s
-positive rides); `web_fetch` needs nothing but a loopback bind.
+**ENV_BLOCK on THIS host (round 7x, when this section was written): none** — no probe was environment-blocked
+here. The two blocked rungs are blocked by the product CONTRACT (a missing declaration source), not by a
+missing capability, and they are reported as such in the suite's own stdout (`VNEXT-B-LADDER-BLOCKED
+rung=5|6 … verdict=NOT_RUN`) and in the `t.skip` reason.
+
+**ENV_BLOCK on the HOSTED runner (round 82): five named arms, one code.** `OS-2`, `OS-3`, `ADM-66`,
+`SLICE-28` and cascade `ADM-70` ride the confined process lane's `network: deny` profile, which the
+provider admits only on its own `--net-leg` proof of an unprivileged network namespace. The hosted
+runner does not confirm that proof, so the product refuses the spawn before any process. `OS-2`/`OS-3`
+assert that refusal as `FAIL-CLOSED-CONTROL`; the grep arms assert the admission fact + refused spawn
++ settlement `FAILED` and keep their lane controls as `ENV-BLOCK`. All five print
+`UTE-VNEXT-A1-ENV-LIMITED … code=NETWORK_DENY_UNPROVEN`, skip only after their assertions, and increment
+no proven counter. On THIS host the capability is present (probe `NET-DENY-CONFIRMED`), so the same five
+arms run their real controls. Exact probe line and per-arm output:
+`ENV-LIMITED-CAPABILITY-20261123.md`; matrix cells: `CAPABILITY-MATRIX-C.md` round-82 section.
 
 ### ORDER and IDENTITY, not presence
 
@@ -672,9 +681,12 @@ or retry was added.
    member resolving the registry's own transport object is the strongest available statement; "a Team
    module cannot shadow the name" is the registry's rule and was not re-driven here.
 4. **`grep`'s positive runs a real confined subprocess** (the product provider + the Landlock
-   pre-launcher), so on a host without `python3`/Landlock the positive would fail rather than refuse.
-   That precondition is the leg's existing one (`vnext-os-probe`), not a new one, but it is a
-   precondition: on such a host this arm is RED, not ENV_BLOCK.
+   pre-launcher). Its precondition is now MEASURED rather than assumed: the leg's capability probe asks
+   the product's own `runNetworkLeg` whether the confined face can prove `network: deny`. On a host
+   without `python3`/Landlock the probe/provider itself fails and the arm is RED (no skip). On a host
+   that HAS Landlock but cannot prove a network namespace (the hosted runner), the arm is
+   **ENV-LIMITED** (`ENV-BLOCK`, `NETWORK_DENY_UNPROVEN`), the fail-closed refusal is asserted, and the
+   search is NOT counted as proven — round 82. It is never silently skipped and never a pass.
 5. **No mutation run this round.** The negative controls are falsifiable by construction (the centre's
    decision is read from the durable fact and the providers are counted), but the previous rounds'
    mutation sweep was not repeated for this file.
@@ -2630,3 +2642,33 @@ term are unchanged, and each unit keeps one real post-cut `NC-MEMBER <member>` c
 and the agentctl lane's test 7 grades that refusal against the committed transcript.
 
 Full arm-level table (arm → subject → citation → action → successor): `ROUND80-CI-CLOSURE.md` §4.
+
+
+---
+
+## Round 82 (2026-11-23) — the `ute-vnext-a1` leg: one capability probe, five named ENV-LIMITED arms, zero false gates
+
+The hosted red was not five defects. `OS-2`, `OS-3`, `ADM-66`, `SLICE-28` and `ADM-70` all ride ONE
+capability: the confined process lane's `network: deny` profile, admitted only on the product's own
+`--net-leg` proof (unprivileged `CLONE_NEWUSER|CLONE_NEWNET` per child, distinct namespace inodes,
+kernel errnos on tcp/udp, listener counters unchanged). The GitHub-hosted runner does not confirm it;
+this worktree does. The leg now asks that probe once per process (reusing `runNetworkLeg`; no second
+probe), prints `A5SF-CAPABILITY network-deny=present|absent …`, and each affected arm takes the
+truthful branch:
+
+| arm | capability present (this host) | capability absent (hosted) | code |
+| --- | --- | --- | --- |
+| `OS-2` | kernel denies the out-of-allow read (GREEN) | FAIL-CLOSED-CONTROL: `IO_POLICY_UNSUPPORTED`, no plan, no payload | `NETWORK_DENY_UNPROVEN` |
+| `OS-3` | same payload reads inside the allow set (GREEN) | FAIL-CLOSED-CONTROL: the positive payload is refused before any plan | `NETWORK_DENY_UNPROVEN` |
+| `ADM-66` | `Found 1 match`, settlement `COMPLETED` (GREEN) | ENV-BLOCK: admission `allow`, execution `failed`, settlement `FAILED`, zero spawns, no fabricated match | `NETWORK_DENY_UNPROVEN` |
+| `SLICE-28` | in-ceiling search GREEN + lane negative GREEN | ENV-BLOCK for the search; the lane negative control is still GREEN and asserted | `NETWORK_DENY_UNPROVEN` |
+| `ADM-70` | 4-rung positive ladder order GREEN | ENV-BLOCK: runnable-rung + durable admission order asserted; the 4-rung positive ladder not claimed | `NETWORK_DENY_UNPROVEN` |
+
+`t.skip` is called only AFTER the assertions, so a regression in the fail-closed path still turns the
+arm RED. The dispatcher aggregates the records into
+`DSH-TEST-DISPATCH-ENV-LIMITED count=5 proven=0 env_blocks=3 fail_closed_controls=2`. The count is
+small, named and stable; none of the five is counted as proven on an incapable runner, and the vitest
+population stays 238. `A5SF_FORCE_NETWORK_DENY_ABSENT=1` is the documented PROBE override that forces
+the absent path on this capable machine (it replaces only the net VERDICT at the provider's
+`deps.probeFacts` seam; the ABI and the three enforcement legs stay real). It is not an environment
+fake and it is disclosed in every printed line.

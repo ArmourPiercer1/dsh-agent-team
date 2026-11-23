@@ -1,0 +1,147 @@
+{
+  "schema": "ute-env-limited/1",
+  "round": 82,
+  "date": "2026-11-23",
+  "branch": "vnext/a1-cut",
+  "head": "fd5fb9e6231af5cda7d4761dc544c7a249ed6de5",
+  "leg": "ute-vnext-a1",
+  "leg_declaration": "dev/ci/eb3-ci-manifest.json (ci-census / ute-vnext-a1)",
+  "suites": 7,
+  "tests": 206,
+  "capability": {
+    "name": "network-deny",
+    "gate": "runNetworkLeg verdict=NET-DENY-CONFIRMED (distinct netns inode + kernel ERRNO on tcp and udp + listener counters unchanged)",
+    "code_absent": "NETWORK_DENY_UNPROVEN",
+    "code_present": "NET_DENY_ENFORCED"
+  },
+  "local": {
+    "host": "Linux DESKTOP-D 6.18.33.2-microsoft-standard-WSL2 x86_64",
+    "network_deny": "present",
+    "verdict": "NET-DENY-CONFIRMED",
+    "netns": "4026532298/(host 4026531833)",
+    "forced": false,
+    "tests": 206,
+    "pass": 204,
+    "fail": 0,
+    "skipped": 2,
+    "env_limited": 0,
+    "leg_exit": 0
+  },
+  "hosted": {
+    "run_id": 45087501430,
+    "job_id": 137415027784,
+    "job": "ci-census / census-runtime",
+    "image": "ubuntu-26.04 (ubuntu26/20261116.202)",
+    "network_deny": "absent",
+    "verdict": "NO-ENFORCEMENT",
+    "exact_failure": "writing /proc/self/uid_map refused",
+    "detail": "runNetworkLeg verdict=NO-ENFORCEMENT; DENY child moved to a distinct net namespace: expected DISTINCT, got writing /proc/self/uid_map refused | DENY tcp refused by the kernel: expected ERRNO, got connected | DENY udp refused by the kernel: expected ERRNO, got delivered; deny reason: writing /proc/self/uid_map refused",
+    "forced": false,
+    "tests": 206,
+    "pass": 199,
+    "fail": 0,
+    "skipped": 7,
+    "skipped_declared_contract": 2,
+    "env_limited": 5,
+    "leg_exit": 0,
+    "layer_verdict": "EB3-LAYER layer=ci-census verdict=PASS status=success"
+  },
+  "arms": [
+    {
+      "arm": "OS-2",
+      "disposition": "FAIL-CLOSED-CONTROL",
+      "code": "NETWORK_DENY_UNPROVEN",
+      "local": "proven (kernel denial of out-of-allow-set read)",
+      "hosted_assertions": [
+        "plan.ok === false",
+        "error.code === IO_POLICY_UNSUPPORTED",
+        "message names network profile 'deny' is not offered and why an ABI number is not a network guarantee",
+        "no scratch/plans",
+        "no scratch/out"
+      ],
+      "hosted_unproven": "kernel denial of the out-of-allow-set read"
+    },
+    {
+      "arm": "OS-3",
+      "disposition": "FAIL-CLOSED-CONTROL",
+      "code": "NETWORK_DENY_UNPROVEN",
+      "local": "proven (in-allow-set read succeeds)",
+      "hosted_assertions": [
+        "same refused prepare() on the positive payload",
+        "no plan",
+        "no output"
+      ],
+      "hosted_unproven": "in-allow-set read"
+    },
+    {
+      "arm": "ADM-66",
+      "disposition": "ENV-BLOCK",
+      "code": "NETWORK_DENY_UNPROVEN",
+      "local": "proven (Found 1 match, settlement COMPLETED, spawn count moves)",
+      "hosted_assertions": [
+        "one admission fact: decision allow, axis fs.read, judged locator",
+        "one execution fact: outcome failed",
+        "settlement FAILED",
+        "spawnCalls() unchanged (no process)",
+        "no fabricated match"
+      ],
+      "hosted_unproven": "confined grep body / Found 1 match"
+    },
+    {
+      "arm": "SLICE-28",
+      "disposition": "ENV-BLOCK",
+      "code": "NETWORK_DENY_UNPROVEN",
+      "local": "proven (in-ceiling search + out-of-ceiling lane refusal)",
+      "hosted_assertions": [
+        "refused-spawn facts (admission allow/fs.read, execution failed, no Found 1 match)",
+        "out-of-ceiling negative control still runs: lane message outside the binding's fs.read lane, 2 executions, second admission-refusal"
+      ],
+      "hosted_unproven": "in-ceiling search"
+    },
+    {
+      "arm": "ADM-70",
+      "disposition": "ENV-BLOCK",
+      "code": "NETWORK_DENY_UNPROVEN",
+      "local": "proven (4-rung positive ladder order)",
+      "hosted_assertions": [
+        "positiveLog === ['read','write','web_fetch']",
+        "durable admission order ['read','write','grep','web_fetch']",
+        "axes ['fs.read','fs.write','fs.read','net.fetch']"
+      ],
+      "hosted_unproven": "complete 4-rung positive ladder order"
+    }
+  ],
+  "aggregate": "DSH-TEST-DISPATCH-ENV-LIMITED mode=run leg=ute-vnext-a1 count=5 proven=0 env_blocks=3 fail_closed_controls=2 arms=ADM-66:ENV-BLOCK:NETWORK_DENY_UNPROVEN,ADM-70:ENV-BLOCK:NETWORK_DENY_UNPROVEN,SLICE-28:ENV-BLOCK:NETWORK_DENY_UNPROVEN,OS-2:FAIL-CLOSED-CONTROL:NETWORK_DENY_UNPROVEN,OS-3:FAIL-CLOSED-CONTROL:NETWORK_DENY_UNPROVEN",
+  "forced_absence_override": {
+    "env": "A5SF_FORCE_NETWORK_DENY_ABSENT=1",
+    "seam": "provider deps.probeFacts (net verdict only)",
+    "scope": "replaces the net-deny PROBE ANSWER; ABI probe and three enforcement legs stay real; reported forced=true in every line",
+    "local_run": {
+      "tests": 206,
+      "pass": 199,
+      "fail": 0,
+      "skipped": 7,
+      "env_limited": 5,
+      "leg_exit": 0
+    }
+  },
+  "diagnosis": {
+    "classification": "runner limitation (environment), not a product provisioning gap",
+    "why": "the launcher already performs CLONE_NEWUSER|CLONE_NEWNET + uid/gid maps; the hosted kernel/container refuses the uid_map write, so no namespace can be proven; the provider correctly refuses network=deny rather than running unconfined",
+    "product_change_needed": "none; a runner that permits the uid_map write gets the real controls with no code change"
+  },
+  "gates": {
+    "dispatch_local_present": "tests=206 pass=204 fail=0 skipped=2 exit=0",
+    "dispatch_local_forced_absent": "tests=206 pass=199 fail=0 skipped=7 exit=0",
+    "dispatch_hosted": "tests=206 pass=199 fail=0 skipped=7 exit=0",
+    "test_catalog": "tests=785 uncollected=38 excluded=14 refused=0 findings=0",
+    "ute_cut_closure": "pass deleted=148 references=3 prodRefs=0 findings=0",
+    "ute_p0_assets": "pass modules=37 files=180 lines=69512 findings=0",
+    "docs_sync": "docs=193 notes=4 plans=152 contracts=20 findings=0 blocking=0",
+    "place_dist_glue": "done (29 placements, byte-identical)",
+    "eb3_ci_required": "pass workflows=10 findings=0",
+    "vitest_bound_leg": "EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0",
+    "ci_pr_gate": "pending final HEAD",
+    "pr_settlement_gate": "pending final HEAD"
+  }
+}

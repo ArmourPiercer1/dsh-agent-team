@@ -10892,3 +10892,39 @@ the real order. The other five (structural pins reading the deleted glue, the hi
 host-dependent inject key set, the retired appended shell shadow, and PA15 stale since round 75) are
 disposed per subject in `ROUND80-CI-CLOSURE.md` §2.1. The layer then ran end to end locally, step by
 step, in the workflow's own order.
+
+## Round 82 (2026-11-23) — `ute-vnext-a1`: one measured capability, five named ENV-LIMITED arms, hosted green
+
+**The hosted red was one absence, not five defects.** `OS-2`, `OS-3`, `ADM-66`, `SLICE-28` and cascade
+`ADM-70` all ride the confined process lane's `network: deny` profile, which the product admits only on
+its own `--net-leg` proof of an unprivileged `CLONE_NEWUSER|CLONE_NEWNET` per child. The hosted runner
+refuses that proof at `writing /proc/self/uid_map refused` (the deny child never leaves the host
+network: tcp connects, udp delivers), so the provider correctly refuses every `network=deny` spawn. The
+confined subprocess face that `grep` runs through carries the same profile, which is why the reported
+"ripgrep provider failure" was a fail-closed refusal, not a ripgrep regression.
+
+**Measured, then decided per arm.** `tests/world-factory/lib/a5sf-env-capability.mjs` reuses the
+product's own probe (`runNetworkLeg`, ABI, preflight, enforcement legs) once per process and prints
+`A5SF-CAPABILITY network-deny=present|absent …`. `OS-2`/`OS-3` assert the provider's typed
+`IO_POLICY_UNSUPPORTED` refusal (no plan, no payload) and report `FAIL-CLOSED-CONTROL`; `ADM-66`/
+`SLICE-28` assert the admission fact + refused spawn + settlement `FAILED` + zero spawns and keep their
+lane-refusal controls; `ADM-70` asserts the runnable-rung and durable-admission order but does not claim
+the 4-rung positive ladder. All five print `UTE-VNEXT-A1-ENV-LIMITED … code=NETWORK_DENY_UNPROVEN`,
+`t.skip` only AFTER their assertions, and increment no proven counter. Dispatcher aggregate:
+`DSH-TEST-DISPATCH-ENV-LIMITED count=5 proven=0 env_blocks=3 fail_closed_controls=2`.
+
+**Both directions verified.** On this host (`NET-DENY-CONFIRMED`, real kernel controls) the leg is
+206 tests / 204 pass / 2 declared skips / 0 env-limited. With the documented probe override
+`A5SF_FORCE_NETWORK_DENY_ABSENT=1` (only the net VERDICT at `deps.probeFacts`; ABI + enforcement legs
+stay real; `forced=true` on every line) the whole leg is 206 / 199 / 7 / 5 env-limited. On the hosted
+`ci-census` runner (`fd5fb9e62`, run 45087501430, job 137415027784, ubuntu-26.04) the leg is
+206 / 199 / 7 with the same five records, and `EB3-LAYER layer=ci-census verdict=PASS`; the job's
+census plan is 22/22 and `ci-required` is green. Exact probe lines, per-arm assertions and the runner
+diagnosis: `dev/agent-workflow/evidence/ute-a1/ENV-LIMITED-CAPABILITY-20261123.md` (+ JSON).
+
+**Product gap or runner limit?** Runner limit. The launcher already performs the only mechanism that can
+enforce the profile; no product switch can make a kernel/container that refuses the uid_map write
+enforce a namespace, and patching around it would be absence-as-pass. A capable runner gets the real
+controls automatically, no code change. The five guarantees are UNPROVEN on an incapable runner and are
+recorded as ENV-LIMITED (never PROVEN) in `CAPABILITY-MATRIX-C.md`; `D-ACCEPTANCE-REPORT.md` §3.1,
+`MIGRATED-SUITE-STATUS.md` and `ROUND80-CI-CLOSURE.md` carry the same qualification.

@@ -4,6 +4,10 @@ Statuses used, and they are not interchangeable:
 
 - **MECHANISM** — the centre-side guarantee is implemented and has passing in-process arms.
 - **PRODUCT-PROVEN** — the above AND a real product assembly exercised it end to end.
+- **ENV-LIMITED** — the cell's guarantee is implemented and is PROVEN on a host that offers the
+  physical capability, but the measured runner does NOT offer it, so on that runner the cell is
+  unproven and the only admissible evidence is the product's fail-closed refusal (round 82; see the
+  round-82 section at the end of this file). ENV-LIMITED is never counted as PROVEN.
 - **UNPROVEN** — nothing here should be reported as working.
 
 This worktree **does** boot the product at this HEAD (measured rounds 58–60, `D-BOOT-FEASIBILITY.md` §2/§11/
@@ -600,3 +604,35 @@ not intercepted or replaced and no tool event is fabricated.
 Row statuses are unchanged: this is MECHANISM + lane evidence on two hosts, still not
 PRODUCT-PROVEN, and the production `tools.execute` call site (the host agent loop's) is not wired —
 see `RC5-MIGRATION.md` §7.5.
+
+
+---
+
+## ROUND 82 (2026-11-23) — the ENV-LIMITED cell: network-deny is a HOST capability, not a product switch
+
+The hosted `ci-census` red (`OS-2`, `OS-3`, `ADM-66`, `SLICE-28`, cascade `ADM-70`) is ONE measured
+environment absence, not five product defects: the confined process lane's `network: deny` profile is
+admitted only on the product's own `--net-leg` proof (a fresh unprivileged
+`CLONE_NEWUSER|CLONE_NEWNET` per confined child, verified by distinct namespace inodes and by kernel
+errnos on tcp/udp while the listener counters do not move). The GitHub-hosted runner does not confirm
+that proof, so the provider answers `network-destination: unsupported` and refuses every
+`network=deny` spawn before any process. The confined subprocess face that `grep` runs through carries
+the same profile, which is why the grep arms cascaded.
+
+| C row | capability cell | local (capability present) | hosted `ci-census` (capability absent) | status |
+| --- | --- | --- | --- | --- |
+| C-subprocess | OS profile: network deny enforced (netns) | `A5SF-CAPABILITY network-deny=present` ⇒ `NET-DENY-CONFIRMED`; `OS-2`/`OS-3` kernel controls GREEN | `network-destination: unsupported`; `OS-2`/`OS-3` assert the FAIL-CLOSED refusal (`IO_POLICY_UNSUPPORTED`, no plan, no payload) | **PROVEN locally / ENV-LIMITED hosted** (`FAIL-CLOSED-CONTROL`, code `NETWORK_DENY_UNPROVEN`) |
+| C-fs (search face, confined spawn) | in-ceiling `grep` runs on the confined face | `SLICE-28` + `ADM-66` GREEN (`Found 1 match`, settlement `COMPLETED`) | the spawn is refused (admission `allow`, execution `failed`, settlement `FAILED`, zero spawns); the lane refusal control still GREEN | **PROVEN locally / ENV-LIMITED hosted** (`ENV-BLOCK`, `NETWORK_DENY_UNPROVEN`) |
+| C-subprocess (ladder order) | the 4-rung positive ladder order | `ADM-70` GREEN on `read→write→grep→web_fetch` | runnable-rung order and DURABLE admission order GREEN; the 4-rung positive ladder not claimed | **PROVEN locally / ENV-LIMITED hosted** (`ENV-BLOCK`) |
+
+The five env-limited arms are named, stable and printed (`UTE-VNEXT-A1-ENV-LIMITED …`, aggregated as
+`DSH-TEST-DISPATCH-ENV-LIMITED count=5 proven=0 env_blocks=3 fail_closed_controls=2`); they call
+`t.skip` only after their assertions, so a fail-closed regression still turns them RED. They are NOT
+passes and they do not raise any row's status. Every other row of this matrix is unaffected: the
+absence is in the HOST's namespace provisioning, not in the centre, the compiled lanes, or the
+provider's policy code.
+
+**Product gap or runner limit?** Runner limit. `CLONE_NEWUSER|CLONE_NEWNET` is already what the
+product's launcher does; there is no realm-provisioning option that can make a kernel/container that
+refuses `unshare` enforce a namespace. The probe line and the exact failure mode are committed in
+`dev/agent-workflow/evidence/ute-a1/ENV-LIMITED-CAPABILITY-20261123.md`.
