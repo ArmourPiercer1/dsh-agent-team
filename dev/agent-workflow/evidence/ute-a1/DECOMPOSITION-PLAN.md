@@ -2,6 +2,10 @@
 
 **Snapshot:** commit `4fd8f8e75` (2026-11-22T00:43:14+08:00), clean working tree.
 `agent-bindings.mjs` = **5,042 lines** (`sha256 46aa3303…`); `root.ts` = **5,110 lines** (`sha256 77ed8dd0…`).
+
+> **Round 86 measurement (later HEAD):** at `c29da52d3`, `agent-bindings.mjs` is **4,967 lines** and
+> `root.ts` is **5,239 lines** (`wc -l`). The snapshot line numbers below are still the ones the anchors
+> were derived from; the anchors, not the offsets, are the contract (the plan says so itself).
 Line numbers below are from that snapshot. The file was edited by a parallel lane three times while
 this plan was written (5,283 → 5,301 → 5,092 → 5,042), so **every row carries a grep anchor** (the
 declaration name). Re-derive a range with `grep -n 'function <anchor>' <file>` before cutting.

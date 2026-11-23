@@ -8,6 +8,25 @@ Ordered by how much they block: items 1–2 block D acceptance claims; items 3�
 
 ---
 
+## ROUND 86 CORRECTION — the current state of each item (the sections below are the round-63 record)
+
+Four of the six are **answered or implemented**; keeping them listed as open decisions was the largest
+staleness in this candidate's evidence set. Read this block as the status; read the sections below as the
+history and the option analysis.
+
+| item | state at round 86 | evidence |
+| --- | --- | --- |
+| 1 process lane (`bash`/PTY/PTC) | **bash/PTY resolved and live-proven** — the shipped preset DOES mount `@deepseek-ai/dsh-tool-bash-persistent` (`cordis.patch.yml:363-368`), `io.process` is no longer needed (process authority is a compiled tool-level `execution` declaration, `admission.ts:424-466`), and `d3:persistent-subprocess` is PROVEN in two agreeing boots (round 76). **PTC only** is refused, now with a narrowed `CORE_SEAM_BLOCKER` on the worker OS profile (round 85). The "shipped preset never mounts the persistent shell" and "`d3` stays REFUTED" sentences below are FALSE at this HEAD. | `OWNER-DECISIONS.md` §1 (historical); `PTC-FOUR-PART-FINDING.md`; report §6.3 |
+| 2 runtime team creation (405) | **RESOLVED (round 74)** — the S6 management plane is built/installed and `team.create` mints a Team at runtime; the "cannot create a team at runtime / 405" section below is history. | `ESCALATION-centre-row-creation-entrance.md`; report §6.2 |
+| 3 settlement recheck | **RESOLVED (round 73, owner Option A)** — the "cannot be produced without widening the settlement state machine" text below is superseded; `ADM-119` is the positive. | `CONTRACT-CHANGE-REQUEST-settlement-recheck.md:51` |
+| 4 realm-less admission | **OPEN** — the ruling is still wanted; the code refuses (`MEMBER_CENTRE_UNWIRED`, `ADM-44`). | `ESCALATION-realmless-admission.md` |
+| 5 search-face governance depth | **OPEN** — shape B shipped; shape A (overlay can deny a search) is the open ruling. | `CONTRACT-CHANGE-REQUEST-search-face.md` |
+| 6 Alpha.6 routing | **IMPLEMENTED (round 84)** — formal routing is a join on existing surfaces (no new axis, no `CORE_SEAM_BLOCKER`); a coherent row is admitted, incoherent pieces are refused and recorded. The "config gate refuses the opt-in on every row / routed path unreachable" text below is superseded; the remaining gap is a **live routed wake**, not a ruling. | `ALPHA6-FORMAL-ROUTING.md`; report §6.5 |
+
+**So the owner is asked for two rulings (items 4 and 5) + one decision on PTC's upstream seam**, not six.
+
+---
+
 ## 1. Process lane — `bash`, PTY, `run_code` (C-subprocess / C-pty / C-ptc)
 
 **Measured (round 63, live host):** `bash` on a governed Member is refused `ADMISSION_AXIS_UNSUPPORTED`

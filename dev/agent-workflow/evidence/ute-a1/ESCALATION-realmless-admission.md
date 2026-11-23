@@ -2,7 +2,7 @@
 
 > **ROUND 67 CORRECTION — the "What the code says" section below is stale.** Round 35 added the narrow
 > refusal this document predates: a row that set `centreStatePath` and mounted no realm is **refused**
-> `MEMBER_CENTRE_UNWIRED` (`centre-config.ts:36-49`, called at `agent-bindings.mjs:1942-1944`;
+> `MEMBER_CENTRE_UNWIRED` (`centre-config.ts:36-49`, called at `agent-bindings.mjs:1972`;
 > `ADM-44`). It does not run unmediated. What remains outside the centre is the row that **never asked**
 > for it (unchanged behaviour by design). The design question in this document (admit a realm-less
 > member against the same compiled ceiling with an explicitly unconfined provider, vs refuse) is still
