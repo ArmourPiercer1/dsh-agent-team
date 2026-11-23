@@ -377,7 +377,7 @@ import { memberCentreUnwiredViolation } from './centre-config.js'
 import { installMemberExecution } from './member-execution.mjs'
 // SHAPE A (round 61): a governed member's native modules are mounted into its realm BY DEFAULT,
 // derived from the ACTIVE preset's own rows. The lane is the ONE mount seam (realm-lane.mjs).
-import { mountGovernedNativeToolModules, VnextRealmError } from './realm-lane.mjs'
+import { mountGovernedNativeToolModules } from './realm-lane.mjs'
 // B (the ask path): the ONE grant binder the contract names lives in the product's
 // `member-io-policy` lane, and the durable approval authority is the Control plane. Both are supplied
 // together below; the centre refuses an ask that has only one of them.
@@ -3545,7 +3545,6 @@ export function createAgentBindings(deps) {
   // the ONE shared real-input path plus the B6 context, the TCM-M3 initial work and the C1 control
   // notification callers. The completion notification stays in this closure (it reads `closing`).
   const {
-    deliverRootInput,
     deliverRootContext,
     deliverRootWork,
     deliverRootControlNotification,
