@@ -1,11 +1,9 @@
 $ /home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt
-# exit=1 signal=null error=none seconds=13
+# exit=0 signal=null error=none seconds=13
 --- stdout ---
-lint-identities: 125 identity lines, 64 distinct (target .)
+lint-identities: 123 identity lines, 63 distinct (target .)
 lint-identities: universe: 1498 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
-baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 1, resolved 13
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 13
 
 --- stderr ---
-NEW IDENTITIES (1):
-  error @typescript-eslint/no-unused-vars packages/runtime/src/plugin/vnext/agent-bindings.mjs
 
