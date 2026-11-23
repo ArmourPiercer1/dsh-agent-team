@@ -11176,7 +11176,7 @@ Moved (old lines → new module → module size): governed preset row module spe
 readers, fiber retirement (158 → `mcp-witness-lane.mjs`, 205); the Root input delivery ports — the ONE shared
 real-input path + B6/TCM-M3/C1 callers (208 → `root-delivery.mjs`, 248); the Member stop lane — interrupt + PD-29
 goal disarm, recursive drain, residency (205 in 3 chunks → `stop-drain-lane.mjs`, 249). `agent-bindings.mjs`
-**4,967 → 4,302**; `root.ts` untouched.
+**4,967 → 4,302**; `root.ts` untouched. Correction (append, §8.5.5): the final `wc -l` on the pushed head is **4,301** — the lint follow-up (`ea9104d5b`) removed one unused destructure line and one unused import name; the elsewhere-quoted 4,302 is the pre-fix count, and the substantive claim (698 moved lines, 4,967 → ~4,301) is unchanged.
 
 Proof: every moved range was copied by line range from `git show HEAD:` and the receipt
 (`evidence/ute-a1/round90/byte-identity.txt`) is a TWO-WAY substring test — each of the six ranges is present in its

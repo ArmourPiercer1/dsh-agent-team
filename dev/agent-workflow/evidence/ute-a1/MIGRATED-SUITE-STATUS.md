@@ -2976,7 +2976,7 @@ imported back:
 | Root input delivery ports (shared real-input path + B6/TCM-M3/C1 callers) | `root-delivery.mjs` | 208 |
 | Member stop lane (interrupt + PD-29 disarm, recursive drain, residency) | `stop-drain-lane.mjs` | 205 (3 chunks) |
 
-`agent-bindings.mjs` **4,967 → 4,302** lines. The byte-identity receipt
+`agent-bindings.mjs` **4,967 → 4,301** lines (4,302 before the one-line lint follow-up). The byte-identity receipt
 (`round90/byte-identity.txt`) is a two-way substring test — each of the six original ranges is present in
 its module AND absent from the rewritten glue (698 lines, all `True`). The exported surface is unchanged.
 

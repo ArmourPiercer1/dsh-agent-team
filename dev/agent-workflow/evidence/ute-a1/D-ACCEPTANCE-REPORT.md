@@ -99,7 +99,7 @@ named in that same row/section (the reviewable set uses this to keep the tables 
 | working tree at measurement start | clean | `git status --porcelain` (empty) |
 | diff vs A0 | **3,476** files changed, **+249,967 / −160,719** | `git diff --shortstat a19d1df01..HEAD` |
 | file-status counts vs A0 | **2,646 A · 616 D · 211 M · 2 R094 · 1 R095** | `git diff --name-status a19d1df01..HEAD \| awk '{print $1}' \| sort \| uniq -c` (git warns that exhaustive rename detection was skipped; the rename counts are a lower bound) |
-| entry files | `agent-bindings.mjs` **4,302** lines (round 90: was 4,967; four cohesive spans moved VERBATIM into the sibling modules listed in §6.16) · `root.ts` **5,239** lines (unchanged) | `wc -l` on `packages/runtime/src/plugin/vnext/{agent-bindings.mjs,root.ts,governed-preset-modules.mjs,mcp-witness-lane.mjs,root-delivery.mjs,stop-drain-lane.mjs}` |
+| entry files | `agent-bindings.mjs` **4,301** lines (round 90: was 4,967; four cohesive spans moved VERBATIM into the sibling modules listed in §6.16) · `root.ts` **5,239** lines (unchanged) | `wc -l` on `packages/runtime/src/plugin/vnext/{agent-bindings.mjs,root.ts,governed-preset-modules.mjs,mcp-witness-lane.mjs,root-delivery.mjs,stop-drain-lane.mjs}` |
 | `master` containment | `git merge-base --is-ancestor HEAD origin/master` → **false** | `origin/master` = `a19d1df01`, the A0 PR #821 |
 
 ### 1.1 Cut closure (fresh runs, this HEAD, pasted verbatim)
@@ -989,7 +989,9 @@ was itself the review risk. Round 90 (branch `vnext/a1-cut`, evidence
 | the Root (Leader) input delivery ports: the ONE shared real-input path + the B6 context, TCM-M3 initial work, C1 control notification | `root-delivery.mjs` | 208 | 248 |
 | the Member stop lane: interrupt + PD-29 goal disarm, the recursive descendant drain, the live-residency port | `stop-drain-lane.mjs` | 205 (3 chunks: 95 + 12 + 98) | 249 |
 
-`agent-bindings.mjs` went **4,967 → 4,302** lines; `root.ts` is untouched (5,239). Every module is a
+`agent-bindings.mjs` went **4,967 → 4,301** lines; `root.ts` is untouched (5,239). (The last
+single line came off in the follow-up that removed the two bindings the move left unused — an
+unused import name and an unused destructure entry; see the round-90 settlement comment.) Every module is a
 factory over one row instance — no module-level mutable state, exactly like the closure it came from.
 
 **How "verbatim" was proved, not asserted.** Each moved range was copied by line range from
