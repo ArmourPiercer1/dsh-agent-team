@@ -1,0 +1,47 @@
+{
+  "head": "2215e1fda0b1fcc9e9530097d65121a57eb9a6c3",
+  "baseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md",
+  "baselineIds": [],
+  "reports": [
+    {
+      "jsonPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/census/census-20261123T043035Z-5-1.json",
+      "files": 599,
+      "legs": 7414,
+      "ids": []
+    },
+    {
+      "jsonPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/census/census-20261123T043035Z-5-2.json",
+      "files": 599,
+      "legs": 7414,
+      "ids": [
+        "TEST packages/runtime/test/u6-mcp-017-regression.test.ts::U6 — real apply() discovery against the plan §9.3 mini-MCP variants single: the legacy one-tool endpoint discovers exactly one tool"
+      ]
+    }
+  ],
+  "comparison": {
+    "verdict": "fail",
+    "setIdentical": false,
+    "countsMoved": true,
+    "added": [
+      "TEST packages/runtime/test/u6-mcp-017-regression.test.ts::U6 — real apply() discovery against the plan §9.3 mini-MCP variants single: the legacy one-tool endpoint discovers exactly one tool"
+    ],
+    "newReds": [
+      "TEST packages/runtime/test/u6-mcp-017-regression.test.ts::U6 — real apply() discovery against the plan §9.3 mini-MCP variants single: the legacy one-tool endpoint discovers exactly one tool"
+    ],
+    "newCollections": [],
+    "escalations": [],
+    "resolved": [],
+    "totals": {
+      "files": 599,
+      "legs": 7414,
+      "declared": {
+        "files": 626,
+        "legs": 7936
+      },
+      "moved": true,
+      "capturesAgree": "2 captures, identity sets DIFFER — graded as the union, so a red seen once is a red",
+      "captured": "599f/7414l, 599f/7414l",
+      "totalsNote": "captured 599f/7414l, 599f/7414l vs baseline-declared 626 / 7936"
+    }
+  }
+}
