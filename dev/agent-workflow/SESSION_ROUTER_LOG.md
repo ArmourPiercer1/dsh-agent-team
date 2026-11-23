@@ -11107,3 +11107,27 @@ Gates (verbatim in `bl-30-ask-consumer/gates.log` + `ci-pr-gate.log`): leg `ute-
 209 pass + 2 pre-existing skips exit 0; catalog 785 / uncollected 38 / excluded 14 (bounds 41/7);
 ute-cut-closure, ute-p0-assets, docs-sync, place-dist-glue (30), eb3-ci-required (10/0) all pass; bound
 vitest leg 238/238; UTE G1 argv 89/89; full `ci-pr-gate --full --census-captures 2` per its log.
+
+### R87-R88 — the last live gap is OURS, not upstream: Alpha.6's wake has no case-forming ask, and a granted ask cannot execute
+
+The D4 probe (v5 authored blueprint, coherent Alpha.6 enablement, Officer member, scripted model) measured FIVE live
+judges on rc.2, two agreeing boots: enablement PROVEN, Officer up PROVEN, Officer binding PROVEN (its own
+`fs.read` allow fact + settlement in ITS ledger), refusal side PROVEN (incoherent row -> typed code + recorded deny
+fact + zero intent files) — and `d4:routed-wake` **REFUTED** by the product itself: the router returns `null` with
+`memberListCalls: 0` because the durable `leader-approval` control row carries NO `approvalCaseId`/`legOrdinal`.
+
+Two in-repo seams, neither upstream:
+1. no Alpha.6-aware ordinary ask-case producer (`requestApprovalLeg` is called only for `envelope-mutation`;
+   `isDelegableOrdinaryToolAsk` excludes it; both ordinary ask producers are case-less by construction);
+2. **BL-30**: an `ask`-disposition call is refused at execution because `resolveAskClassCall` has no production
+   caller. Round 88 measured WHY it cannot simply be wired: the only production ask producer hard-codes
+   `executionCoupling:'inline'` (`admission-port.mjs:163`), an inline durable allow is never a guard token
+   (`control/service.ts:4155-4165`), and the one-shot grant is ALREADY consumed at the host tool guard
+   (`admission-port.mjs:770-784`) before the provider plane is reached. Measured both couplings side by side: row
+   `guarded` -> guard allows + one consumption + `resolveAskClassCall` ok; row `inline` (production) ->
+   `no-request` + `APPROVAL_DENIED` + zero consumption rows.
+
+So a Member can ASK, be GRANTED, and still not run the granted call in production. Two lawful designs, both owner
+decisions: (a) flip the ask to `guarded` (loses the Stop-cancels-a-pending-ask law as currently pinned), or (b) give
+the OS/provider plane a read port onto the centre's already-enforced per-call decision. Nothing was auto-approved,
+no invariant was bent, and the level stays MECHANISM.
