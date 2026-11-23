@@ -70,7 +70,7 @@ export const HOST_SURFACE_REFUSALS = Object.freeze({
     code: 'ADMISSION_REMOTE_UNAVAILABLE',
     axis: 'team.control',
     subject: 'S6 remote command',
-    missing: 'an S6 command that would dispatch a native tool, execute a shell or produce agent I/O has no member Binding for UTE to admit, and the S6 dispatcher\'s principal is not a member: serving it would be a second execution authority',
+    missing: 'a command that executes a tool/shell, starts an executor with no delivery to acknowledge, or awaits another agent\'s turn (round 83: only `team.admitInitialWork`/`team.ensureRootLive`) has no member Binding for UTE to admit, so serving it would be a second execution authority; DELIVERY is served as a handover into the Member\'s own governed path',
   }),
   alpha6: Object.freeze({
     code: 'ADMISSION_ALPHA6_UNAVAILABLE',

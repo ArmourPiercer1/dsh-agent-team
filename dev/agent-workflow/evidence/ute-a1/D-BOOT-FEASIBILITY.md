@@ -880,3 +880,46 @@ RESULT PASS (2/2 boots; agreeing pair=true)
 - Multi-user RBAC is NOT claimed: the principal is a per-DSH_HOME authenticated operator.
 - No S6 command that would execute a tool/agent I/O has a positive path (they are refused by design,
   which is the point); `member.create`/`member.followup` are refused like `member.send`.
+
+## 18. Round 83 update (2026-11-23) — the plane DELIVERS work, the MEMBER executes it (D2 `d2:remote-delivery`, two agreeing boots)
+
+Round 74 restored the S6 management plane but refused five commands. Three of them were real product
+operations, and round 83 delivers them the only lawful way: **a management command may enqueue work into
+the target agent's own governed path; it may never execute a tool or a model turn itself.**
+
+Classification (`s6-command-classification.ts`): a third served class `work-delivery` —
+`member.create` (the ONE activation authority, `member-activated` only), `member.send` (the P6-T3
+coordinator's durable intent + input ACCEPTANCE + confirmation), `member.followup` (the action facade
+with `execution: 'async'`: durable `team-work-admitted` receipt, Phase B/C detached inside the Team
+runtime). `team.admitInitialWork` and `team.ensureRootLive` STAY REFUSED: their only seams await the root
+turn / start an executor with nothing to acknowledge.
+
+Measured live on the D2 world (`--boots 2`, DEV-LIVE, two agreeing boots; `d2/README.md` "Judge 4"):
+
+- `POST /team-remote/member.send` (authenticated human operator, owned-root claim) → **HTTP 200**,
+  `outcome.status='delivered'`, intent seq **39**, confirmation **40**;
+- **at the acknowledgement** the Member's delivered call had **0 admission facts and 0 execution facts**
+  — the request executed nothing; the ACK carries no tool result;
+- the delivered prompt then ran in Member B's own turn (2 provider requests carrying the delivered
+  token) and the centre wrote `allow` on `fs.read` under **B's own** `instanceId`+`agentId` at B's
+  in-lane locator into **B's own** `<instanceId>.facts.jsonl` **~113 ms AFTER** the ack (18 → 20 facts),
+  with a `completed` execution and the file's bytes in B's transcript;
+- error paths: unknown member → `TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED`; archived member →
+  `TEAM_RUNTIME_WORK_STATE_REJECTED` (both typed, zero provider requests, zero executions); duplicate
+  send → a SECOND durable coordination (at-least-once, not a token replay) with 0 provider requests at
+  the ACK and still exactly ONE completed execution for the delivered call; `member.restore` → delivery
+  served again; Stop during a DELIVERED turn → `ADMISSION_STOPPED`, settlement `REFUSED`/`not-started`.
+
+`d2:remote-delivery` is **PROVEN on both boots** and the two-run agreement table now carries
+`remoteDeliveryVerdict`, `deliveryAckIsNotAnExecution`, `deliveredTurnAdmittedUnderMemberBinding` and
+`memberAdmissionFacts=1` (agreeing=true, differing=[]).
+
+### What this round does NOT prove
+
+- `member.create` and `member.followup` are proven at the production port (E3/ADM-86) and by the
+  router's own async-detach suite, not live over the S6 API; only `member.send` has the live delivery
+  proof above.
+- `team.admitInitialWork` / `team.ensureRootLive` remain REFUSED; no async root-work seam exists.
+- The model is the product's scripted mock; the operator is a per-DSH_HOME authenticated human whose
+  claim must be an owned root — not multi-user RBAC.
+

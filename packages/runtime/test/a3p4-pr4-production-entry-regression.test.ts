@@ -1171,8 +1171,11 @@ describe('E3 — the REAL createAgentBindings consumes a FILLED plane ref (BLOCK
     // CONTROL PLANE: a team read is served (no execution, no member binding needed).
     const catalogRead = (await governedRemote('catalog.list', { version: 1, params: {} })) as { ok?: boolean }
     expect(catalogRead.ok, `a control-plane read must be served on a governed row, got ${JSON.stringify(catalogRead)}`).toBe(true)
-    // AGENT EXECUTION: refused with the EXISTING host-surface code, and the refusal is durable.
-    for (const method of ['member.send', 'member.create', 'member.followup', 'team.admitInitialWork', 'team.ensureRootLive']) {
+    // AGENT EXECUTION: the two ROOT commands stay refused with the EXISTING host-surface code, and
+    // the refusal is durable. ROUND 83 — the three member commands are NO LONGER in this set: they are
+    // `work-delivery` and are served as a handover (asserted below at the production port, where the
+    // facade receives the async delivery receipt and NO tool can run).
+    for (const method of ['team.admitInitialWork', 'team.ensureRootLive']) {
       const refused = (await governedRemote(method, { version: 1, params: {} })) as {
         ok?: boolean
         error?: { code?: string }
@@ -1183,12 +1186,93 @@ describe('E3 — the REAL createAgentBindings consumes a FILLED plane ref (BLOCK
     const refusalFacts = `${centreStatePath}/remote.host-surface.facts.jsonl`
     expect(existsSync(refusalFacts), 'the refusal must be on the durable record').toBe(true)
     const recorded = readFileSync(refusalFacts, 'utf8').trim().split('\n').filter((line) => line !== '').map((line) => JSON.parse(line) as Record<string, unknown>)
-    for (const method of ['member.send', 'member.create', 'member.followup', 'team.admitInitialWork', 'team.ensureRootLive']) {
+    for (const method of ['team.admitInitialWork', 'team.ensureRootLive']) {
       const fact = recorded.find((row) => row.kind === 'invocation-authority' && row.toolName === `remote.command:${method}`)
       expect(fact, `${method}: the refusal must leave an invocation-authority fact`).toBeDefined()
       expect(fact?.decision).toBe('deny')
       expect(fact?.axis).toBe('team.control')
     }
+    // NO REFUSAL for a delivery command: the plane serves it, and the host-surface refusal ledger
+    // carries no deny row that would claim the centre judged a member's turn from the operator seat.
+    for (const method of ['member.send', 'member.create', 'member.followup']) {
+      expect(
+        recorded.find((row) => row.kind === 'invocation-authority' && row.toolName === `remote.command:${method}`),
+        `${method}: a work-delivery command must NOT be an agent-execution refusal`,
+      ).toBeUndefined()
+    }
+
+    // ROUND 83 — THE DELIVERY HANDOVER AT THE PRODUCTION PORT. `createS6RemotePorts` is the exact
+    // function the root calls; over a spy facade/coordinator it proves what the plane CAN reach:
+    // `member.followup` asks the facade for the ASYNC receipt (Phase B/C detach inside the Team
+    // runtime — the request must not await, and cannot observe, the Member's turn), `member.create`
+    // is the creation-only action, and `member.send` is the messaging coordinator's inbox acceptance.
+    // No spy here executes a tool, because the S6 plane has no tool/provider port at all.
+    const deliveryCalls: Array<Record<string, unknown>> = []
+    const deliveryPorts = createS6RemotePorts({
+      rootSessionId: GLUE_ROOT,
+      repositories: domain.repositories,
+      isOwnedRoot: (sid: string) => sid === GLUE_ROOT,
+      runtime: {
+        performAction: async (request: Record<string, unknown>) => {
+          deliveryCalls.push(request)
+          return request['action'] === 'create-member'
+            ? { kind: 'member-activated', instanceId: GLUE_INST, templateId: 'tpl-a', childSessionId: GLUE_CHILD, operationId: 'e3-create', replayed: false, admissionCode: 'ADMITTED' }
+            : { kind: 'work-admitted', instanceId: String(request['targetInstanceId']), fromLifecycle: 'RUNNING', lifecycleCommitted: false, sequence: 11, settled: false, workStatus: 'admitted' }
+        },
+      },
+      messaging: {
+        sendTeamMessage: async (request: Record<string, unknown>) => {
+          deliveryCalls.push({ action: 'send-message', ...request })
+          return {
+            status: 'delivered',
+            rootSessionId: GLUE_ROOT,
+            action: 'send-message',
+            callerRole: 'human',
+            recipientInstanceId: String(request['recipientInstanceId']),
+            deliveryMode: 'direct',
+            deliveredToInstanceId: String(request['recipientInstanceId']),
+            deliveredToSessionId: GLUE_CHILD,
+            factSequence: 12,
+            deliveredSequence: 13,
+            requestToken: String(request['requestToken']),
+          }
+        },
+      },
+    } as never)
+    const dispatchDelivery = createS6RemoteDispatcher(
+      deliveryPorts,
+      () => Promise.resolve({ kind: 'human', humanId: GLUE_ROOT } as never),
+    )
+    const deliverySession = GLUE_ROOT
+    const deliveryCaller = { kind: 'human', humanId: deliverySession }
+    const sent = (await dispatchDelivery('member.send', {
+      version: REMOTE_CONTRACT_VERSION_V7,
+      params: { teamSessionId: deliverySession, caller: deliveryCaller, recipientInstanceId: GLUE_INST, body: 'read the file, one tool call', requestToken: 'e3-delivery-send' },
+    })) as { ok?: boolean; value?: { data?: { outcome?: Record<string, unknown> } } }
+    expect(sent.ok, `member.send must be SERVED as a delivery, got ${JSON.stringify(sent)}`).toBe(true)
+    expect(sent.value?.data?.outcome?.status).toBe('delivered')
+    expect(sent.value?.data?.outcome?.deliveredSequence).toBe(13)
+    const created = (await dispatchDelivery('member.create', {
+      version: REMOTE_CONTRACT_VERSION_V7,
+      params: { teamSessionId: deliverySession, caller: deliveryCaller, requestToken: 'e3-delivery-create', delegationTemplateId: 'tpl-a', payload: { label: 'e3 worker' } },
+    })) as { ok?: boolean; value?: { data?: { outcome?: Record<string, unknown> } } }
+    expect(created.ok, `member.create must be SERVED through the governed creation path, got ${JSON.stringify(created)}`).toBe(true)
+    expect(created.value?.data?.outcome?.kind).toBe('member-activated')
+    const followed = (await dispatchDelivery('member.followup', {
+      version: REMOTE_CONTRACT_VERSION_V7,
+      params: { teamSessionId: deliverySession, caller: deliveryCaller, targetInstanceId: GLUE_INST, requestToken: 'e3-delivery-follow', payload: { prompt: 'read the file, one tool call' } },
+    })) as { ok?: boolean; value?: { data?: { outcome?: Record<string, unknown> } } }
+    expect(followed.ok, `member.followup must be SERVED as a delivery, got ${JSON.stringify(followed)}`).toBe(true)
+    expect(followed.value?.data?.outcome?.workStatus).toBe('admitted')
+    expect(followed.value?.data?.outcome?.settled).toBe(false)
+    // THE DELIVERY LAW: the facade request carries `execution: 'async'` (Phase A receipt only), and
+    // the creation request does NOT (creation is not a work action).
+    const followRequest = deliveryCalls.find((call) => call['action'] === 'follow-up')
+    expect(followRequest?.['execution'], 'follow-up must ask for the ASYNC delivery receipt').toBe('async')
+    const createRequest = deliveryCalls.find((call) => call['action'] === 'create-member')
+    expect(createRequest, 'member.create reaches the creation-only action').toBeDefined()
+    expect(Object.prototype.hasOwnProperty.call(createRequest ?? {}, 'execution')).toBe(false)
+    expect(deliveryCalls.some((call) => call['action'] === 'send-message')).toBe(true)
     const plane = permissionPlaneRef.current
     if (plane === undefined) throw new Error('the a3p4e3 root did not fill the plane reference')
 

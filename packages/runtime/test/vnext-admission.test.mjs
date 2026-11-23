@@ -3079,6 +3079,12 @@ test('ADM-85 — C-alpha6 is EXPLICITLY UNAVAILABLE: the decision is refused bef
   assert.match(String(fact.reason), /no review-routing axis/u, 'the reason names the missing axis, not "unavailable"')
   // The SETTLEMENT: the product store closed the record REFUSED, and it never left ADMITTED.
   const settled = world.store.read(world.identityOf({ callId: fact.callId }).executionId)
+  assert.deepEqual(world.faults, [], `the refusal must record both durable shapes with no fault, got ${JSON.stringify(world.faults.map((fault) => String(fault[0])))}`)
+  // THE 512-CHAR SETTLEMENT REASON CAP (round 74 discipline, kept by round 83): the fixed reason plus
+  // the LONGEST detail the product appends must still fit, or the refusal would be recorded as a fact
+  // with NO settlement (the writer rejects an over-long reason).
+  const renderedReason = String(fact.reason)
+  assert.ok(renderedReason.length <= 512, `the refusal reason must fit the settlement cap (got ${renderedReason.length})`)
   assert.equal(settled.state, 'REFUSED')
   assert.equal(settled.observation.dispatch, 'not-started')
   assert.equal(settled.observation.bodyOutcome, 'not-started')
@@ -3088,19 +3094,22 @@ test('ADM-85 — C-alpha6 is EXPLICITLY UNAVAILABLE: the decision is refused bef
   assert.match(String(centreConfigViolation({ alpha6ReviewRouting: true, centreStatePath: '/srv/centre' })), new RegExp(HOST_SURFACE_REFUSALS.alpha6.code, 'u'))
 })
 
-test('ADM-86 — ROUND 74: a governed row serves the S6 CONTROL PLANE and refuses AGENT-EXECUTION commands with the existing typed code, recorded on team.control and settled REFUSED', async () => {
+test('ADM-86 — ROUND 83: a governed row DELIVERS work and never executes it — the closed table, the handover, and the refusal that stays', async () => {
   const { HOST_SURFACE_REFUSALS } = await import('../src/plugin/vnext/host-surface-refusal.mjs')
   const { createS6RemoteDispatcher } = await import('../src/plugin/s6-remote.ts')
   const { REMOTE_METHOD_NAMES } = await import('../../remote/src/contracts/catalog.ts')
   const {
     S6_AGENT_EXECUTION_COMMANDS,
     S6_CLASSIFIED_COMMANDS,
+    S6_COMMAND_EFFECTS,
     S6_CONTROL_PLANE_COMMANDS,
+    S6_WORK_DELIVERY_COMMANDS,
     isS6ControlPlaneCommand,
+    isS6WorkDeliveryCommand,
     s6CommandEffectOf,
   } = await import('../src/plugin/s6-command-classification.ts')
 
-  // 1. THE CLOSED TABLE, PINNED IN BOTH DIRECTIONS.
+  // 1. THE CLOSED TABLE, PINNED IN BOTH DIRECTIONS, WITH THE THIRD CLASS LITERAL.
   // Every frozen catalog method is classified (a catalog addition cannot silently fall through), and
   // the classification table carries no method the catalog does not know.
   assert.deepEqual(
@@ -3108,39 +3117,84 @@ test('ADM-86 — ROUND 74: a governed row serves the S6 CONTROL PLANE and refuse
     [...REMOTE_METHOD_NAMES].sort(),
     'the closed S6 effect table and the frozen remote catalog must be the SAME set',
   )
-  for (const method of REMOTE_METHOD_NAMES) {
-    assert.notEqual(s6CommandEffectOf(method), undefined, `${method}: every catalog method needs an effect class`)
-  }
-  // The refused set is pinned LITERALLY (a widened allow set turns this red).
+  // ROUND 83 — the three real product operations are DELIVERIES, pinned LITERALLY. A widening of the
+  // refused set or a narrowing of the delivery set turns this red.
+  assert.deepEqual(
+    [...S6_WORK_DELIVERY_COMMANDS],
+    ['member.create', 'member.followup', 'member.send'],
+    'the work-delivery set is exactly the member handover trio',
+  )
+  // The refused set stays LITERALLY the two root commands (the delivery law cannot express them).
   assert.deepEqual(
     [...S6_AGENT_EXECUTION_COMMANDS],
-    ['member.create', 'member.followup', 'member.send', 'team.admitInitialWork', 'team.ensureRootLive'],
-    'the agent-execution set is the closed refusal list: dispatch a native tool / shell / agent I/O',
+    ['team.admitInitialWork', 'team.ensureRootLive'],
+    'the agent-execution set is the closed refusal list: an executor start and a turn-awaiting root delivery',
   )
-  // And every other catalog command is control-plane — no third bucket, no silent gap.
+  // No overlap, no gap: every classified command is exactly one of the three effect families, and the
+  // served set is the union of control-plane + work-delivery.
+  assert.deepEqual(
+    S6_WORK_DELIVERY_COMMANDS.filter((method) => S6_AGENT_EXECUTION_COMMANDS.includes(method)),
+    [],
+    'a command cannot be both a delivery and an execution',
+  )
   assert.deepEqual(
     [...S6_CONTROL_PLANE_COMMANDS],
     [...REMOTE_METHOD_NAMES].filter((method) => S6_AGENT_EXECUTION_COMMANDS.includes(method) === false).sort(),
-    'every non-refused catalog command is control-plane',
+    'every served command is the union of the control plane and the work-delivery handover',
   )
+  for (const method of S6_WORK_DELIVERY_COMMANDS) {
+    assert.equal(s6CommandEffectOf(method), S6_COMMAND_EFFECTS.WORK_DELIVERY, `${method}: its effect class is the delivery`)
+    assert.equal(isS6WorkDeliveryCommand(method), true, `${method}: it is a delivery command`)
+    assert.equal(isS6ControlPlaneCommand(method), true, `${method}: a delivery command is SERVED`)
+  }
+  assert.equal(isS6WorkDeliveryCommand('team.create'), false, 'creation is not a delivery')
   // A NEW command cannot default to allowed: there is no fallback branch.
   assert.equal(s6CommandEffectOf('team.executeNativeTool'), undefined, 'an unclassified command has NO effect class')
   assert.equal(isS6ControlPlaneCommand('team.executeNativeTool'), false, 'an unclassified command is REFUSED, never default-allowed')
-  assert.equal(isS6ControlPlaneCommand('member.send'), false)
-  assert.equal(isS6ControlPlaneCommand('team.create'), true, 'creation is a control-plane command')
-  assert.equal(isS6ControlPlaneCommand('team.getProjection'), true, 'a team read is a control-plane command')
+  assert.equal(isS6WorkDeliveryCommand('team.executeNativeTool'), false, 'an unclassified command is never a delivery')
 
-  // 2. THE GOVERNED DISPATCHER: control plane served, agent execution refused BEFORE the handler.
+  // 2. THE GOVERNED DISPATCHER: a control read + the THREE delivery handovers are SERVED, and the
+  // management request performs ZERO tool executions (there is no tool/provider port on this plane).
   const world = await hostSurfaceWorld('remote')
   const point = world.point('remote')
-  const called = []
-  // Deliberately NO messaging/member/admission ports: a refused command must never reach one, so a
-  // missing port would be a TypeError rather than a green. `catalog.list` is the served control arm.
-  const ports = { catalog: { list: async () => { called.push('catalog.list'); return [] } } }
+  const calls = { admission: [], messaging: [], refusals: [] }
+  const ports = {
+    catalog: { list: async () => [] },
+    // The member handover ports. NOTHING here can execute a tool: the architecture of this surface
+    // is the proof — `admission` is the TeamRuntime ACTION facade (durable effects) and `messaging`
+    // is the input-acceptance coordinator. A tool port would have to be invented, and there is none.
+    admission: {
+      performAction: async (request, caller) => {
+        calls.admission.push({ request, caller })
+        if (request.action === 'create-member') {
+          return { kind: 'member-activated', instanceId: 'inst-created-1', templateId: 'worker', childSessionId: 'session-child-created-1', operationId: 'op-1', replayed: false, admissionCode: 'ADMITTED' }
+        }
+        // The async work-action receipt the facade returns once Phase A committed (work-execution):
+        return { kind: 'work-admitted', instanceId: request.targetInstanceId, fromLifecycle: 'CREATED', lifecycleCommitted: false, sequence: 7, settled: false, workStatus: 'admitted' }
+      },
+    },
+    messaging: {
+      sendTeamMessage: async (request) => {
+        calls.messaging.push(request)
+        return {
+          status: 'delivered',
+          rootSessionId: request.rootSessionId,
+          action: 'send-message',
+          callerRole: 'human',
+          recipientInstanceId: request.recipientInstanceId,
+          deliveryMode: 'direct',
+          deliveredToInstanceId: request.recipientInstanceId,
+          deliveredToSessionId: 'session-child-b',
+          factSequence: 4,
+          deliveredSequence: 5,
+          requestToken: request.requestToken,
+        }
+      },
+    },
+  }
   const principal = () => ({ kind: 'human', humanId: 'operator' })
-  const refusals = []
   const dispatcher = createS6RemoteDispatcher(ports, principal, undefined, (method) => {
-    refusals.push(method)
+    calls.refusals.push(method)
     return point.refuse({
       subject: `remote.command:${method}`,
       owner: 'root-host-surface',
@@ -3148,23 +3202,86 @@ test('ADM-86 — ROUND 74: a governed row serves the S6 CONTROL PLANE and refuse
       detail: method,
     }).admission
   })
+  const teamSessionId = 'session-governed-root'
+  const humanCaller = { kind: 'human', humanId: teamSessionId }
 
   const served = await dispatcher('catalog.list', { version: 1, params: {} })
   assert.equal(served.ok, true, `a control-plane read must be served, got ${JSON.stringify(served)}`)
-  assert.deepEqual(called, ['catalog.list'])
-  assert.deepEqual(refusals, [], 'the refusal hook is never consulted for a control-plane command')
 
-  const refused = await dispatcher('member.send', { version: 1, params: {} })
-  assert.equal(refused.ok, false)
-  assert.equal(refused.error.code, HOST_SURFACE_REFUSALS.remote.code, 'the typed wire code is the EXISTING host-surface code')
-  assert.match(String(refused.error.message), /explicitly unavailable/u, 'the wire message names the refusal')
-  assert.equal(refused.error.details.reason, 'domain-error', 'invariant 4b stamps the vocabulary pass-through reason')
-  assert.deepEqual(refusals, ['member.send'])
-  assert.deepEqual(called, ['catalog.list'], 'ZERO side effects: no handler/port/agent path ran for the refused command')
+  // 2a. member.send — the messaging coordinator's input ACCEPTANCE is the delivery acknowledgement.
+  const send = await dispatcher('member.send', {
+    version: 1,
+    params: { teamSessionId, caller: humanCaller, recipientInstanceId: 'inst-target-b', body: 'read the file, one tool call', requestToken: 'adm-send-1' },
+  })
+  assert.equal(send.ok, true, `member.send must be SERVED as a delivery, got ${JSON.stringify(send)}`)
+  const sendOutcome = send.value.data.outcome
+  assert.equal(sendOutcome.status, 'delivered', 'the operator receives the DELIVERY acknowledgement')
+  assert.equal(sendOutcome.deliveredToInstanceId, 'inst-target-b')
+  assert.equal(sendOutcome.factSequence, 4)
+  assert.equal(sendOutcome.deliveredSequence, 5)
+  assert.equal(sendOutcome.requestToken, 'adm-send-1')
+  // NOT a fabricated tool result: the ack carries no tool/assistant/execution payload at all.
+  for (const forbidden of ['toolResult', 'result', 'assistant', 'executionId', 'body']) {
+    assert.equal(Object.prototype.hasOwnProperty.call(sendOutcome, forbidden), false, `member.send ack must not carry '${forbidden}'`)
+  }
+  assert.equal(calls.messaging.length, 1, 'member.send reaches the ONE input-delivery coordinator')
+  assert.deepEqual(calls.admission, [], 'member.send is NOT routed through the action facade (no second work path)')
 
-  // 3. THE REFUSAL IS DURABLE (fact + settlement), the same shape as the other host-surface refusals.
+  // 2b. member.followup — the work facade is asked for the ASYNC delivery receipt, not for a turn.
+  const follow = await dispatcher('member.followup', {
+    version: 1,
+    params: { teamSessionId, caller: humanCaller, targetInstanceId: 'inst-target-b', requestToken: 'adm-follow-1', payload: { prompt: 'read the file, one tool call' } },
+  })
+  assert.equal(follow.ok, true, `member.followup must be SERVED as a delivery, got ${JSON.stringify(follow)}`)
+  assert.equal(calls.admission.length, 1)
+  assert.equal(calls.admission[0].request.action, 'follow-up')
+  assert.equal(calls.admission[0].request.targetInstanceId, 'inst-target-b')
+  // The dispatcher hands the S6-level request to the ONE action port; the port is where the delivery
+  // law is applied (the facade `execution: 'async'` mode — pinned at the product port by E3, and the
+  // detached Phase B/C run is pinned by issue1-async-delegation). What this arm proves is the routing:
+  // `follow-up` reaches the action facade exactly once and NO tool port exists to reach.
+  assert.equal(calls.admission[0].request.action, 'follow-up')
+  const followOutcome = follow.value.data.outcome
+  assert.equal(followOutcome.kind, 'work-admitted')
+  assert.equal(followOutcome.workStatus, 'admitted')
+  assert.equal(followOutcome.settled, false)
+  assert.equal(followOutcome.memberResult, undefined, 'the ack carries NO member business body: the turn has not run yet')
+  assert.equal(followOutcome.sequence, 7, 'the ack carries the durable admission sequence')
+
+  // 2c. member.create — creation ONLY: the action facade, no work chain, no turn, no execution field.
+  const create = await dispatcher('member.create', {
+    version: 1,
+    params: { teamSessionId, caller: humanCaller, requestToken: 'adm-create-1', delegationTemplateId: 'worker', payload: { label: 'adm-worker' } },
+  })
+  assert.equal(create.ok, true, `member.create must be SERVED through the governed creation path, got ${JSON.stringify(create)}`)
+  assert.equal(calls.admission.length, 2)
+  assert.equal(calls.admission[1].request.action, 'create-member')
+  assert.equal(calls.admission[1].request.delegationTemplateId, 'worker')
+  assert.equal(Object.prototype.hasOwnProperty.call(calls.admission[1].request, 'execution'), false, 'creation is not a work action and must not carry an execution mode')
+  const createOutcome = create.value.data.outcome
+  assert.equal(createOutcome.kind, 'member-activated', 'the effect is the activation, nothing else')
+  assert.equal(createOutcome.childSessionId, 'session-child-created-1')
+
+  // THE BOUNDARY. Zero tools, zero providers, zero refusals were touched by the three deliveries.
+  assert.deepEqual(calls.refusals, [], 'the agent-execution refusal hook is NEVER consulted for a work-delivery command')
+  assert.deepEqual(
+    Object.keys(ports).filter((key) => /tool|provider|execute|bridge/u.test(key)),
+    [],
+    'the management plane has no tool/provider port to call: delivery cannot widen into execution',
+  )
+
+  // 3. THE REFUSED PAIR STAYS REFUSED (the delivery law cannot express them), recorded and settled.
+  for (const method of ['team.admitInitialWork', 'team.ensureRootLive']) {
+    const refused = await dispatcher(method, { version: 1, params: {} })
+    assert.equal(refused.ok, false, `${method}: must be REFUSED on a governed row`)
+    assert.equal(refused.error.code, HOST_SURFACE_REFUSALS.remote.code, `${method}: the EXISTING host-surface code`)
+    assert.match(String(refused.error.message), /explicitly unavailable/u)
+    assert.deepEqual(calls.refusals.slice(-1), [method], `${method}: the refusal is the pre-dispatch hook`)
+  }
+  assert.equal(calls.messaging.length, 1, 'ZERO side effects from the refused pair')
+  assert.equal(calls.admission.length, 2, 'ZERO side effects from the refused pair')
   const fact = world.ledger.readAll().find(
-    (record) => record.kind === 'invocation-authority' && record.toolName === 'remote.command:member.send',
+    (record) => record.kind === 'invocation-authority' && record.toolName === 'remote.command:team.admitInitialWork',
   )
   assert.notEqual(fact, undefined, 'the refused command must leave an invocation-authority fact')
   assert.equal(fact.decision, 'deny')
@@ -3172,17 +3289,38 @@ test('ADM-86 — ROUND 74: a governed row serves the S6 CONTROL PLANE and refuse
   assert.equal(fact.axis, 'team.control', 'a remote command belongs to the team control plane, not to an invented axis')
   assert.match(String(fact.reason), /member Binding for UTE/u, 'the reason names the missing member binding/axis')
   const settled = world.store.read(world.identityOf({ callId: fact.callId }).executionId)
+  assert.deepEqual(world.faults, [], `the refusal must record both durable shapes with no fault, got ${JSON.stringify(world.faults.map((fault) => String(fault[0])))}`)
+  // THE 512-CHAR SETTLEMENT REASON CAP (round 74 discipline, kept by round 83): the fixed reason plus
+  // the LONGEST detail the product appends must still fit, or the refusal would be recorded as a fact
+  // with NO settlement (the writer rejects an over-long reason).
+  const renderedReason = String(fact.reason)
+  assert.ok(renderedReason.length <= 512, `the refusal reason must fit the settlement cap (got ${renderedReason.length})`)
   assert.equal(settled.state, 'REFUSED')
   assert.equal(settled.observation.dispatch, 'not-started')
 
-  // 4. UNAUTHENTICATED: without the connection-gate authority basis EVERY command is refused before
+  // 4. SEAM UNWIRED — a delivery command on a row with no delivery port fails CLOSED, typed, before
+  // any handler body: it never silently falls back to executing.
+  const bare = createS6RemoteDispatcher({ catalog: { list: async () => [] } }, principal, undefined, () => {
+    throw new Error('the refusal hook must not be consulted for a delivery command')
+  })
+  const unwired = await bare('member.send', {
+    version: 1,
+    params: { teamSessionId, caller: humanCaller, recipientInstanceId: 'inst-target-b', body: 'x', requestToken: 'adm-send-bare' },
+  })
+  assert.equal(unwired.ok, false, 'a delivery command with no delivery seam must fail closed')
+  assert.equal(unwired.error.code, 'ADMISSION_REMOTE_UNAVAILABLE', 'the EXISTING wire code (no new vocabulary)')
+  assert.match(String(unwired.error.message), /wires no delivery seam/u, 'the message names the missing seam')
+  assert.equal(unwired.error.details.reason, 'domain-error', 'the typed domain failure is distinguishable from a contract/invariant fault')
+  assert.equal(unwired.error.details.cause.code, 'ADMISSION_REMOTE_UNAVAILABLE', 'the source code rides under cause (no new vocabulary)')
+
+  // 5. UNAUTHENTICATED: without the connection-gate authority basis EVERY command is refused before
   // the effect guard, the params and any port — the same fail-closed principal context as before.
   const unauthenticated = createS6RemoteDispatcher(ports, principal, {})
   const denied = await unauthenticated('catalog.list', { version: 1, params: {} })
   assert.equal(denied.ok, false)
   assert.equal(denied.error.code, 'TEAM_REMOTE_PRINCIPAL_INVALID', 'an unauthenticated request cannot reach a command at all')
-  assert.deepEqual(called, ['catalog.list'], 'the unauthenticated request reached no port')
-  assert.deepEqual(refusals, ['member.send'], 'the unauthenticated request reached no guard/handler')
+  assert.equal(calls.messaging.length, 1, 'the unauthenticated request reached no delivery port')
+  assert.equal(calls.admission.length, 2, 'the unauthenticated request reached no action port')
 
   // The three host-surface codes stay distinct BY CONSTRUCTION (the closed table), not by a comment.
   const codes = [HOST_SURFACE_REFUSALS.remote.code, HOST_SURFACE_REFUSALS.alpha6.code, HOST_SURFACE_REFUSALS.ptc.code]

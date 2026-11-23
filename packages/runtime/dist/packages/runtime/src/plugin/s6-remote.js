@@ -80,6 +80,15 @@ import { sha256Hex } from '../../../domain/blueprint/src/index.js';
 import { DEFAULT_POLICY_STATE_ID } from '../../../domain/policy/src/index.js';
 import { createGovernanceWarningSourceAdapter, projectInterventions, } from '../../intervention/index.js';
 // --- the stable S6 remote error codes (the typed domain errors) ----------------------
+/**
+ * ROUND 83 — the EXISTING host-surface wire code, reused (NO new wire code) for the work-delivery
+ * seam's fail-closed absence. A row that does not wire the delivery port (`messaging` for
+ * `member.send`, `admission` for `member.create` / `member.followup`) cannot deliver work, and it
+ * must say so TYPED before the handler body — never crash out of a handler into `internal-error`.
+ * The wire semantics stay "this S6 command is not available through this row's management plane";
+ * the `details.reason` names the missing seam.
+ */
+export const S6_WORK_DELIVERY_SEAM_CODE = 'ADMISSION_REMOTE_UNAVAILABLE';
 /** The stable error codes the S6 remote surfaces throw (CR-4/CR-12 boundary). */
 export const S6_REMOTE_ERROR_CODES = {
     /** A34 — the ledger-page tracker rejected the page (the 20.5/20.6 boundary). */
@@ -386,6 +395,24 @@ function blueprintToRecord(blueprint) {
         };
     }
     return record;
+}
+/**
+ * ROUND 83 — the work-delivery seam preflight. A work-delivery command is SERVED on a governed row,
+ * so its absence is not the round-74 refusal: it is a row that did not wire the delivery port. It
+ * fails closed with the existing host-surface wire code and a `reason` that names the missing seam,
+ * BEFORE any claim read, parameter use or durable write.
+ *
+ * @param command - the S6 command being served (for the message and the durable-facing detail).
+ * @param seam - the port the command's handover requires.
+ */
+function requireWorkDeliverySeam(command, seam) {
+    const present = seam !== undefined &&
+        seam !== null &&
+        (typeof seam === 'object' || typeof seam === 'function') &&
+        Object.keys(seam).length > 0;
+    if (present)
+        return;
+    throw new TeamPluginError(S6_WORK_DELIVERY_SEAM_CODE, `${command} is a work-delivery command and this row wires no delivery seam for it — the command is not available through this management plane (it would have to execute, and the plane never executes)`, { reason: 'work-delivery-seam-unwired', command });
 }
 /** The durable effect sequence of an admission outcome (the frozen rule, verbatim). */
 function admissionEffectSequence(outcome) {
@@ -1642,6 +1669,12 @@ export function createS6RemotePorts(options) {
                         ...base,
                         action: 'follow-up',
                         targetInstanceId: request.targetInstanceId,
+                        // ROUND 83 — THE DELIVERY LAW at the facade. `async` is closed to the WORK actions
+                        // (`delegate` / `follow-up`) by the facade's own validation: Phase A commits the durable
+                        // admission and that receipt is returned; Phase B/C detach into the Team runtime WITHOUT
+                        // the caller's signal. The management request therefore never waits on — and never
+                        // observes — the Member's turn; the answer is the delivery acknowledgement.
+                        execution: 'async',
                         ...(request.payload !== undefined ? { payload: { ...request.payload } } : {}),
                     };
                 }
@@ -2535,6 +2568,11 @@ function buildS6CategoryHandlers(ports, principal) {
         [REMOTE_CATEGORIES.MEMBER]: ((method, params, envelope) => {
             switch (method) {
                 case 'member.create': {
+                    // ROUND 83 — WORK DELIVERY (creation handover), not execution. The port is the ONE
+                    // governed creation facade; the effect is `member-activated` ONLY (the ActivationProvider
+                    // is the sole activation authority; no work chain, no turn, no tool). A row without the
+                    // facade cannot create through this plane and answers typed.
+                    requireWorkDeliverySeam('member.create', ports.admission);
                     const createParams = params;
                     const request = {
                         rootSessionId: createParams.teamSessionId,
@@ -2555,6 +2593,13 @@ function buildS6CategoryHandlers(ports, principal) {
                     }));
                 }
                 case 'member.send': {
+                    // ROUND 83 — WORK DELIVERY, not execution: the messaging coordinator commits the
+                    // durable intent fact, places the attributed input in the recipient's OWN session
+                    // inbox (the delivery success boundary = inbox acceptance), commits the confirmation
+                    // fact and returns `SendTeamMessageOutcome`. It never awaits the recipient's turn:
+                    // the Member's agent loop runs on its own, and every tool call in it is admitted by
+                    // the centre under THAT Member's Binding.
+                    requireWorkDeliverySeam('member.send', ports.messaging);
                     const sendParams = params;
                     // T12-V16: the FULL coordinator path — facade admission (the
                     // durable `team-coordination-recorded` intent fact) + LIVE
@@ -2580,6 +2625,11 @@ function buildS6CategoryHandlers(ports, principal) {
                     }));
                 }
                 case 'member.followup': {
+                    // ROUND 83 — WORK DELIVERY, not execution: the work-action facade runs Phase A (the
+                    // durable `team-work-admitted` receipt) and the dispatcher answers with that receipt;
+                    // Phase B (delivery into the Member's own child session) and Phase C (settlement) run
+                    // DETACHED inside the Team runtime (see the facade port's `execution: 'async'`).
+                    requireWorkDeliverySeam('member.followup', ports.admission);
                     const followupParams = params;
                     const request = {
                         rootSessionId: followupParams.teamSessionId,

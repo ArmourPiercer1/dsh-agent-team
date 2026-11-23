@@ -76,7 +76,7 @@ import { createA5sfHarness } from '../../lib/a5sf-harness.mjs'
 import { settleDevLiveLease } from '../../lib/dev-live-slots.mjs'
 import { preRegisterDevLiveBudget, resolveHeadCommit } from '../../suites/150-a5sf-read.mjs'
 import {
-  lastUserTextOfStatic, messagesOf, surfaceNamesOf, textOf,
+  lastUserTextOfStatic, messagesOf, remoteCall, surfaceNamesOf, textOf,
 } from '../../lib/u6-fs-assembly.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -134,7 +134,13 @@ const TOK_B_PRE = 'dboot-d2-b-pre-revoke'
 const TOK_B_MID = 'dboot-d2-b-mid-revoke'
 const TOK_B_POST = 'dboot-d2-b-post-revoke'
 const TOK_B_WIDEN = 'dboot-d2-b-widen-probe'
-const MEMBER_TOKENS = Object.freeze([TOK_A_STOP, TOK_B_AFTER, TOK_B_PRE, TOK_B_MID, TOK_B_POST, TOK_B_WIDEN, TOK_A, TOK_B])
+// ROUND 83 — the two delivered-work tokens. They arrive inside a
+// `[team-relay ...]` envelope (the messaging coordinator's rendered input),
+// which `memberTokenOf` below also accepts: the delivery must select the
+// Member script STRUCTURALLY, exactly like a delegated `[team-work ...]` one.
+const TOK_RD = 'dboot-d2-remote-delivery'
+const TOK_RD_STOP = 'dboot-d2-remote-delivery-stop'
+const MEMBER_TOKENS = Object.freeze([TOK_RD_STOP, TOK_RD, TOK_A_STOP, TOK_B_AFTER, TOK_B_PRE, TOK_B_MID, TOK_B_POST, TOK_B_WIDEN, TOK_A, TOK_B])
 
 const CALL_A_OWN = 'call-d2-a-own'
 const CALL_A_CROSS = 'call-d2-a-cross'
@@ -148,6 +154,9 @@ const CALL_B_PRE_INLANE = 'call-d2-b-pre-inlane'
 const CALL_B_MID_INLANE = 'call-d2-b-mid-inlane'
 const CALL_B_POST_INLANE = 'call-d2-b-post-inlane'
 const CALL_B_WIDEN = 'call-d2-b-widen'
+// ROUND 83 — the calls the DELIVERED turns make, and the replies that close them.
+const CALL_RD = 'call-d2-remote-delivery'
+const CALL_RD_STOP = 'call-d2-remote-delivery-stop'
 const CALL_GRANT_WIDEN = 'call-d2-grant-widen'
 const CALL_DELEGATE_A = 'call-d2-delegate-a'
 const CALL_DELEGATE_B = 'call-d2-delegate-b'
@@ -167,6 +176,8 @@ const DONE_MEMBER_B_PRE = 'DBOOT_D2_MEMBER_B_PRE_DONE'
 const DONE_MEMBER_B_MID = 'DBOOT_D2_MEMBER_B_MID_DONE'
 const DONE_MEMBER_B_POST = 'DBOOT_D2_MEMBER_B_POST_DONE'
 const DONE_MEMBER_B_WIDEN = 'DBOOT_D2_MEMBER_B_WIDEN_DONE'
+const DONE_MEMBER_RD = 'DBOOT_D2_MEMBER_RD_DONE'
+const DONE_MEMBER_RD_STOP = 'DBOOT_D2_MEMBER_RD_STOP_DONE'
 const DONE_L8 = 'DBOOT_D2_L8_DONE'
 const DONE_L9 = 'DBOOT_D2_L9_DONE'
 const DONE_L1 = 'DBOOT_D2_L1_DONE'
@@ -516,7 +527,11 @@ function memberTokenOf(req) {
   for (let i = users.length - 1; i >= 0; i -= 1) {
     const m = users[i]
     const text = typeof m.content === 'string' ? m.content : JSON.stringify(m.content ?? '')
-    if (!text.includes('[team-work ')) continue
+    // ROUND 83 — a DELIVERED message is not a `[team-work ...]` envelope: the
+    // messaging coordinator renders `[team-relay] from=… to=…` (mediation.ts) and
+    // the input is ordinary first-person text. Both envelopes are the STRUCTURAL
+    // marker; the token inside still selects the script.
+    if (!text.includes('[team-work ') && !text.includes('[team-relay')) continue
     return MEMBER_TOKENS.find((token) => text.includes(token)) ?? null
   }
   return null
@@ -656,6 +671,20 @@ function makeDecide({ paths, ids }) {
       if (token === TOK_B_WIDEN) {
         if (!seen.has(CALL_B_WIDEN)) return readCall(CALL_B_WIDEN, paths.aInLane)
         return text(`${DONE_MEMBER_B_WIDEN} ${lastToolResultText(req).slice(0, 260)}`)
+      }
+      // ── ROUND 83 — the DELIVERED work unit (member.send, not a delegation):
+      //    B reads its own in-lane file, exactly one native tool call, then
+      //    reports. The call is admitted by the centre under B's OWN binding. ──
+      if (token === TOK_RD) {
+        if (!seen.has(CALL_RD)) return readCall(CALL_RD, paths.bInLane)
+        return text(`${DONE_MEMBER_RD} ${lastToolResultText(req).slice(0, 260)}`)
+      }
+      // ── ROUND 83 — the STOP arm of a delivered turn: A's ask lane parks at
+      //    the centre's durable approval wait, so the product's Stop can land
+      //    while the DELIVERED turn is live. ──
+      if (token === TOK_RD_STOP) {
+        if (!seen.has(CALL_RD_STOP)) return readCall(CALL_RD_STOP, paths.ask)
+        return text(`${DONE_MEMBER_RD_STOP} ${lastToolResultText(req).slice(0, 400)}`)
       }
       return text('DBOOT_D2_MEMBER_NOOP')
     }
@@ -1084,6 +1113,62 @@ function factsAtIdentity(facts, locator, identity) {
 }
 
 /**
+ * ROUND 83 — THE DELIVERY LAW, measured on the live row.
+ *
+ * The management plane may DELIVER work; it may never EXECUTE a tool. A
+ * `member.send` is lawful exactly when: the operator receives the messaging
+ * coordinator's durable delivery ACKNOWLEDGEMENT (inbox acceptance, with its
+ * intent + confirmation sequences), the request itself leaves ZERO admission
+ * and ZERO execution facts, and the work then runs in the MEMBER's own turn —
+ * where the centre's `allow` for that `read` is written under the MEMBER's
+ * binding in the MEMBER's own fact ledger, AFTER the acknowledgement.
+ *
+ * The error paths are part of the same proposition: an unknown member, a
+ * duplicate delivery (a replay, not a second turn), an ARCHIVED member (typed,
+ * not work-accepting, nothing runs), the restore that re-enables delivery, and
+ * the product's Stop during a DELIVERED turn (ADMISSION_STOPPED, never a
+ * completion).
+ */
+function judgeRemoteDelivery({ b, paths, delivery }) {
+  const ack = delivery?.atAck ?? null
+  const after = delivery?.after ?? null
+  const ackOutcome = ack?.outcome ?? null
+  const admissions = after?.admissions ?? []
+  const allow = admissions.find((r) => r?.decision === 'allow') ?? null
+  const executions = after?.executions ?? []
+  const completed = executions.find((r) => r?.outcome === 'completed') ?? null
+  const text = String(after?.memberResult?.text ?? '')
+  const ackedAt = Date.parse(String(delivery?.ackedAt ?? ''))
+  const admittedAt = Date.parse(String(allow?.at ?? ''))
+  const ackKeys = Object.keys(ackOutcome ?? {})
+  return verdictOf(
+    'the S6 management plane DELIVERS work and never executes it: `member.send` returns the coordinator\'s durable delivery acknowledgement with ZERO tool executions and the Member\'s own governed turn then writes the centre\'s admission `allow` (for that Member\'s binding) into the MEMBER\'s fact ledger',
+    [
+      { id: 'ack-http-ok', ok: ack?.status === 200 && ack?.ok === true, detail: `status=${String(ack?.status)} ok=${String(ack?.ok)} code=${String(ack?.code)}` },
+      { id: 'ack-is-delivery-outcome', ok: ackOutcome?.status === 'delivered' && String(ackOutcome?.deliveredToInstanceId ?? '') === String(b?.instance), detail: `outcome=${JSON.stringify(ackOutcome)}` },
+      { id: 'ack-carries-durable-sequences', ok: typeof ackOutcome?.factSequence === 'number' && typeof ackOutcome?.deliveredSequence === 'number' && Number(ackOutcome.deliveredSequence) > Number(ackOutcome.factSequence), detail: `intent=${String(ackOutcome?.factSequence)} confirmation=${String(ackOutcome?.deliveredSequence)}` },
+      { id: 'ack-is-not-a-tool-result', ok: ackOutcome !== null && ['toolResult', 'result', 'assistant', 'executionId'].every((key) => ackKeys.includes(key) === false), detail: `ack keys=${JSON.stringify(ackKeys)}` },
+      { id: 'request-executed-nothing', ok: ack?.admissions === 0 && ack?.executions === 0, detail: `admissions=${String(ack?.admissions)} executions=${String(ack?.executions)} AT the acknowledgement` },
+      { id: 'ack-precedes-the-member-admission', ok: Number.isFinite(ackedAt) && Number.isFinite(admittedAt) && admittedAt >= ackedAt, detail: `ack=${String(delivery?.ackedAt)} admission=${String(allow?.at)}` },
+      { id: 'member-own-admission-allow', ok: allow !== null && allow?.decision === 'allow' && allow?.axis === 'fs.read', detail: `decision=${String(allow?.decision)} axis=${String(allow?.axis)}` },
+      { id: 'member-admission-under-member-binding', ok: String(allow?.instanceId ?? '') === String(b?.instance) && String(allow?.agentId ?? '') === String(b?.instance) && String(allow?.locator ?? '') === paths.bInLane, detail: `instance=${String(allow?.instanceId)} agent=${String(allow?.agentId)} locator=${String(allow?.locator)}` },
+      { id: 'no-operator-identity-in-member-ledger', ok: admissions.length >= 1 && admissions.every((r) => String(r?.instanceId ?? '') === String(b?.instance)), detail: `identities=${JSON.stringify([...new Set(admissions.map((r) => String(r?.instanceId)))])}` },
+      { id: 'member-execution-completed', ok: completed !== null && completed?.isError === false, detail: `outcomes=${JSON.stringify(executions.map((r) => r?.outcome))}` },
+      { id: 'member-read-really-ran', ok: after?.memberResult?.isError === false && text.includes(B_IN_LANE_TEXT), detail: `isError=${String(after?.memberResult?.isError)} bytes=${String(text.includes(B_IN_LANE_TEXT))}` },
+      { id: 'member-turn-came-from-the-delivery', ok: Number(after?.memberRequests) >= 1, detail: `member provider requests carrying the delivered token=${String(after?.memberRequests)}` },
+      { id: 'unknown-member-typed-no-execution', ok: delivery?.unknownMember?.ok === false && typeof delivery?.unknownMember?.code === 'string' && delivery.unknownMember.code !== 'ADMISSION_REMOTE_UNAVAILABLE' && delivery?.unknownMember?.requestsAdded === 0, detail: `code=${String(delivery?.unknownMember?.code)} requestsAdded=${String(delivery?.unknownMember?.requestsAdded)}` },
+      { id: 'duplicate-delivery-durable-and-ghost-free', ok: delivery?.duplicate?.ok === true && delivery?.duplicate?.outcome?.status === 'delivered' && delivery?.duplicate?.requestsAdded === 0 && executions.filter((r) => r?.outcome === 'completed').length === 1, detail: `ok=${String(delivery?.duplicate?.ok)} delivered=${String(delivery?.duplicate?.outcome?.status)} newDurableCoordination=${String(delivery?.duplicate?.distinctFromFirst)} requestsAddedAtAck=${String(delivery?.duplicate?.requestsAdded)} completedExecutionsForTheDeliveredCall=${String(executions.filter((r) => r?.outcome === 'completed').length)} (at-least-once delivery: a second send is a second coordination, never an operator-side execution)` },
+      { id: 'archived-member-refused-typed', ok: delivery?.archived?.archiveOk === true && delivery?.archived?.lifecycle === 'ARCHIVED' && delivery?.archived?.ok === false && typeof delivery?.archived?.code === 'string' && delivery.archived.code !== 'ADMISSION_REMOTE_UNAVAILABLE' && delivery?.archived?.requestsAdded === 0, detail: `lifecycle=${String(delivery?.archived?.lifecycle)} code=${String(delivery?.archived?.code)} requestsAdded=${String(delivery?.archived?.requestsAdded)}` },
+      { id: 'restore-reenables-delivery', ok: (delivery?.restored?.lifecycle === 'SETTLED' || delivery?.restored?.lifecycle === 'RUNNING') && delivery?.restored?.ok === true, detail: `lifecycle=${String(delivery?.restored?.lifecycle)} ok=${String(delivery?.restored?.ok)} code=${String(delivery?.restored?.code)}` },
+      { id: 'stop-during-delivered-turn-acked', ok: delivery?.stop?.ack?.ok === true && delivery?.stop?.pending === true, detail: `ackOk=${String(delivery?.stop?.ack?.ok)} pending=${String(delivery?.stop?.pending)}` },
+      { id: 'stopped-delivered-call-is-admission-stopped', ok: delivery?.stop?.fact?.refusalCode === 'ADMISSION_STOPPED' && delivery?.stop?.fact?.decision === 'deny', detail: `refusalCode=${String(delivery?.stop?.fact?.refusalCode)} decision=${String(delivery?.stop?.fact?.decision)}` },
+      { id: 'stopped-delivered-not-completed', ok: (delivery?.stop?.executions ?? []).every((r) => r?.outcome !== 'completed'), detail: `executions=${JSON.stringify((delivery?.stop?.executions ?? []).map((r) => r?.outcome))}` },
+      { id: 'stopped-delivered-settlement-refused', ok: delivery?.stop?.settlement?.state === 'REFUSED' && delivery?.stop?.settlement?.dispatch !== 'dispatched', detail: `state=${String(delivery?.stop?.settlement?.state)} dispatch=${String(delivery?.stop?.settlement?.dispatch)}` },
+    ],
+  )
+}
+
+/**
  * ROUND 71 (judge semantics). The old REQUIRED clause demanded that the
  * durable overlay WIDEN authority: revoking the durable deny had to refuse a
  * call that previously succeeded, with a new compiled generation in the fact.
@@ -1505,6 +1590,255 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
     if (!(await waitFor(() => sawReply(DONE_MEMBER_B_WIDEN), 150_000))) throw new Error('member B widening-probe read never completed')
     await waitSettled(ids.b, 'member B after widening read')
 
+    const settleOf = (instanceId, callId) => {
+      const executionId = dispatchExecutionId({ rootSessionId: BOOT_ROOT, agentInstanceId: instanceId }, callId)
+      const file = join(paths.centre, 'settlement', instanceId, `${executionId}.settlement.json`)
+      let record = null
+      try {
+        const envelope = JSON.parse(readFileSync(file, 'utf8'))
+        // The store persists a CHECKSUMMED ENVELOPE; the record is its payload.
+        record = envelope?.payload ?? envelope
+      } catch { record = null }
+      return record === null ? null : {
+        file,
+        state: record.state,
+        dispatch: record.observation?.dispatch ?? null,
+        bodyOutcome: record.observation?.bodyOutcome ?? null,
+        stops: record.stops ?? [],
+        transitions: (record.transitions ?? []).map((t) => t.to),
+      }
+    }
+    // ── ROUND 83: THE MANAGEMENT PLANE DELIVERS; THE MEMBER EXECUTES ────────
+    // The delivery law measured on the LIVE row, over the product's own S6 API:
+    //   · `member.send` returns the messaging coordinator's ACKNOWLEDGEMENT (the
+    //     durable intent + confirmation of INBOX ACCEPTANCE) — not a tool result,
+    //     and the request itself performs NO tool execution;
+    //   · the delivered prompt then makes Member B run its OWN turn, and the
+    //     centre's admission `allow` for that `read` appears in B's OWN fact
+    //     ledger, under B's binding, written by the centre — not by the plane.
+    // Error paths (same live row): unknown member, duplicate delivery, an
+    // ARCHIVED member, and the product's Stop during a DELIVERED turn.
+    abortStage = 'remote-delivery'
+    await waitSettled(ids.b, 'member B before the remote delivery')
+    const ledgerBPath = join(paths.centre, `${ids.b}.facts.jsonl`)
+    const ledgerAPath = join(paths.centre, `${ids.a}.facts.jsonl`)
+    const deliveryOf = (ledgerPath, callId) => {
+      const rows = parseJsonl(ledgerPath)
+      return {
+        rows,
+        admissions: rows.filter((r) => r?.kind === 'invocation-authority' && String(r?.callId) === callId),
+        executions: rows.filter((r) => r?.kind === 'execution' && String(r?.callId) === callId),
+      }
+    }
+    const beforeDelivery = {
+      requests: requests().length,
+      centreB: parseJsonl(ledgerBPath).length,
+      transcriptCalls: (readMemberTranscript(world.home, rowB.childSessionId)?.calls ?? []).length,
+    }
+    const DELIVERY_TOKEN = 'dboot-d2-remote-send'
+    const DELIVERY_BODY = `${TOK_RD}: read the file \`${paths.bInLane}\`, one tool call, then report the first line briefly.`
+    const deliveryRequestedAt = new Date().toISOString()
+    const deliveryResponse = await remoteCall(fetchJson, origin, cookie, 'member.send', {
+      teamSessionId: BOOT_ROOT,
+      caller: { kind: 'human', humanId: BOOT_ROOT },
+      recipientInstanceId: ids.b,
+      body: DELIVERY_BODY,
+      requestToken: DELIVERY_TOKEN,
+    }, 'd2rd')
+    const deliveryAckedAt = new Date().toISOString()
+    const deliveryEnvelope = deliveryResponse.body?.result ?? null
+    const deliveryOutcome = deliveryEnvelope?.value?.data?.outcome ?? null
+    const atAck = {
+      status: deliveryResponse.status,
+      ok: deliveryEnvelope?.ok === true,
+      code: deliveryEnvelope?.error?.code ?? null,
+      outcome: deliveryOutcome,
+      centreB: parseJsonl(ledgerBPath).length,
+      requests: requests().length,
+      ...deliveryOf(ledgerBPath, CALL_RD),
+    }
+    log(`[boot${String(index)}] member.send ack: status=${String(atAck.status)} ok=${String(atAck.ok)} code=${String(atAck.code)} deliveredSeq=${String(deliveryOutcome?.deliveredSequence)} facts=${String(atAck.centreB)} admissions=${String(atAck.admissions.length)} executions=${String(atAck.executions.length)}`)
+
+    // The MEMBER's own turn runs the delivered prompt (a bounded wait on the
+    // MEMBER's own reply — never on the delivery request).
+    const memberRan = await waitFor(() => sawReply(DONE_MEMBER_RD), 150_000)
+    if (!memberRan) {
+      collectDiagnostics('remote-delivery')
+      throw new Error('the delivered prompt never produced a Member turn (no read/reply)')
+    }
+    await waitSettled(ids.b, 'member B after the remote delivery')
+    const deliveryTranscript = readMemberTranscript(world.home, rowB.childSessionId)
+    const deliveryCall = deliveryTranscript?.calls.find((c) => String(c.callId) === CALL_RD) ?? null
+    const afterDelivery = {
+      requests: requests().length,
+      centreB: parseJsonl(ledgerBPath).length,
+      transcriptCalls: deliveryTranscript?.calls.length ?? 0,
+      ...deliveryOf(ledgerBPath, CALL_RD),
+      settlement: settleOf(ids.b, CALL_RD),
+      memberRequests: requests().filter((r) => memberTokenOf(r) === TOK_RD).length,
+      memberResult: deliveryCall?.result ?? null,
+    }
+
+    // (a) UNKNOWN member: a typed answer, no execution, no ghost turn.
+    const requestsBeforeUnknown = requests().length
+    const unknownResponse = await remoteCall(fetchJson, origin, cookie, 'member.send', {
+      teamSessionId: BOOT_ROOT,
+      caller: { kind: 'human', humanId: BOOT_ROOT },
+      recipientInstanceId: 'inst-dboot-d2-does-not-exist',
+      body: 'read the file, one tool call',
+      requestToken: 'dboot-d2-remote-send-unknown',
+    }, 'd2rd')
+    const unknownMember = {
+      status: unknownResponse.status,
+      ok: unknownResponse.body?.result?.ok === true,
+      code: unknownResponse.body?.result?.error?.code ?? null,
+      requestsAdded: requests().length - requestsBeforeUnknown,
+    }
+    log(`[boot${String(index)}] member.send unknown member: ok=${String(unknownMember.ok)} code=${String(unknownMember.code)} requestsAdded=${String(unknownMember.requestsAdded)}`)
+
+    // (b) DUPLICATE delivery: the SAME requestToken again is the facade's REPLAY
+    //     (same durable sequences), not a second intent and not a second turn.
+    const requestsBeforeDuplicate = requests().length
+    const duplicateResponse = await remoteCall(fetchJson, origin, cookie, 'member.send', {
+      teamSessionId: BOOT_ROOT,
+      caller: { kind: 'human', humanId: BOOT_ROOT },
+      recipientInstanceId: ids.b,
+      body: DELIVERY_BODY,
+      requestToken: DELIVERY_TOKEN,
+    }, 'd2rd')
+    const duplicateOutcome = duplicateResponse.body?.result?.value?.data?.outcome ?? null
+    const duplicateDelivery = {
+      status: duplicateResponse.status,
+      ok: duplicateResponse.body?.result?.ok === true,
+      code: duplicateResponse.body?.result?.error?.code ?? null,
+      outcome: duplicateOutcome,
+      sameIntent: duplicateOutcome?.factSequence === deliveryOutcome?.factSequence,
+      sameConfirmation: duplicateOutcome?.deliveredSequence === deliveryOutcome?.deliveredSequence,
+      // MEASURED CONTRACT: `send-message` coordination is AT-LEAST-ONCE per
+      // request, not de-duplicated by token — a second send of the same text is
+      // a second durable coordination (new intent + confirmation sequences and a
+      // second input acceptance). What MUST never happen is an EXECUTION on the
+      // operator's behalf; the member's own turn executes (or not) under its own
+      // binding, so this is recorded, not asserted as a replay.
+      distinctFromFirst: duplicateOutcome?.factSequence !== deliveryOutcome?.factSequence && duplicateOutcome?.deliveredSequence !== deliveryOutcome?.deliveredSequence,
+      requestsAdded: requests().length - requestsBeforeDuplicate,
+    }
+    log(`[boot${String(index)}] member.send duplicate: ok=${String(duplicateDelivery.ok)} distinct=${String(duplicateDelivery.distinctFromFirst)} requestsAdded=${String(duplicateDelivery.requestsAdded)}`)
+    // The duplicate delivered the SAME text again, so Member B runs a second
+    // (no-tool) turn; let it settle before the lifecycle probes below.
+    await waitSettled(ids.b, 'member B after the duplicate delivery')
+
+    // (c) ARCHIVED member: `member.archive` (management, served) then a delivery
+    //     — the target is not work-accepting, so the coordinator fails closed
+    //     typed and NOTHING runs. `member.restore` then re-enables delivery.
+    const archiveResponse = await remoteCall(fetchJson, origin, cookie, 'member.archive', {
+      teamSessionId: BOOT_ROOT,
+      instanceId: ids.b,
+    }, 'd2rd')
+    const archivedLifecycle = (await readState())?.members?.find((m) => m.instanceId === ids.b)?.lifecycle ?? null
+    const requestsBeforeArchived = requests().length
+    const archivedResponse = await remoteCall(fetchJson, origin, cookie, 'member.send', {
+      teamSessionId: BOOT_ROOT,
+      caller: { kind: 'human', humanId: BOOT_ROOT },
+      recipientInstanceId: ids.b,
+      body: `${TOK_RD}: read the file \`${paths.bInLane}\`, one tool call`,
+      requestToken: 'dboot-d2-remote-send-archived',
+    }, 'd2rd')
+    const archivedDelivery = {
+      archiveStatus: archiveResponse.status,
+      archiveOk: archiveResponse.body?.result?.ok === true,
+      lifecycle: archivedLifecycle,
+      status: archivedResponse.status,
+      ok: archivedResponse.body?.result?.ok === true,
+      code: archivedResponse.body?.result?.error?.code ?? null,
+      requestsAdded: requests().length - requestsBeforeArchived,
+      executionsAfter: deliveryOf(ledgerBPath, CALL_RD).executions.length,
+    }
+    log(`[boot${String(index)}] member.send archived: lifecycle=${String(archivedDelivery.lifecycle)} ok=${String(archivedDelivery.ok)} code=${String(archivedDelivery.code)} requestsAdded=${String(archivedDelivery.requestsAdded)}`)
+    const restoreResponse = await remoteCall(fetchJson, origin, cookie, 'member.restore', {
+      teamSessionId: BOOT_ROOT,
+      instanceId: ids.b,
+    }, 'd2rd')
+    const restoredLifecycle = (await readState())?.members?.find((m) => m.instanceId === ids.b)?.lifecycle ?? null
+    const restoredResponse = await remoteCall(fetchJson, origin, cookie, 'member.send', {
+      teamSessionId: BOOT_ROOT,
+      caller: { kind: 'human', humanId: BOOT_ROOT },
+      recipientInstanceId: ids.b,
+      body: `${TOK_RD}: one more delivery after the restore`,
+      requestToken: 'dboot-d2-remote-send-restored',
+    }, 'd2rd')
+    const restoredDelivery = {
+      restoreStatus: restoreResponse.status,
+      restoreOk: restoreResponse.body?.result?.ok === true,
+      lifecycle: restoredLifecycle,
+      status: restoredResponse.status,
+      ok: restoredResponse.body?.result?.ok === true,
+      code: restoredResponse.body?.result?.error?.code ?? null,
+    }
+    log(`[boot${String(index)}] member.send restored: lifecycle=${String(restoredDelivery.lifecycle)} ok=${String(restoredDelivery.ok)} code=${String(restoredDelivery.code)}`)
+
+    // (d) STOP DURING A DELIVERED TURN: the delivery is acknowledged, the
+    //     delivered turn parks on the ask lane, the product's Stop closes that
+    //     wait as ADMISSION_STOPPED and the settlement is REFUSED/not-started.
+    await waitSettled(ids.b, 'member B before the delivered stop probe')
+    // Member A is NOT awaited for SETTLED here: its first turn was STOPPED
+    // mid-call (round 83 measures that above), so its lifecycle is RUNNING and
+    // the delivery must still be accepted and then stopped again.
+    const requestsBeforeStop = requests().length
+    const stopDeliveryResponse = await remoteCall(fetchJson, origin, cookie, 'member.send', {
+      teamSessionId: BOOT_ROOT,
+      caller: { kind: 'human', humanId: BOOT_ROOT },
+      recipientInstanceId: ids.a,
+      body: `${TOK_RD_STOP}: read the file \`${paths.ask}\`, one tool call, then report briefly.`,
+      requestToken: 'dboot-d2-remote-send-stop',
+    }, 'd2rd')
+    const stopAck = {
+      status: stopDeliveryResponse.status,
+      ok: stopDeliveryResponse.body?.result?.ok === true,
+      code: stopDeliveryResponse.body?.result?.error?.code ?? null,
+      requestsAdded: requests().length - requestsBeforeStop,
+    }
+    const stopPendingOk = await waitFor(async () => {
+      const st = await readState()
+      return (st?.control?.requests ?? []).some((r) => String(r.targetInstanceId) === ids.a && String(r.status) === 'pending')
+    }, 120_000, 200)
+    const stopDeliveryCancel = await apiSessionCancel(origin, cookie, rowA.childSessionId, 'dbootd2rdstop')
+    const stopDeliveredLanded = await waitFor(async () => {
+      const tx = readMemberTranscript(world.home, rowA.childSessionId)
+      const call = tx?.calls.find((c) => String(c.callId) === CALL_RD_STOP)
+      return call !== undefined && call !== null && call.result !== null && call.result !== undefined
+    }, 60_000, 200)
+    const stopDelivered = {
+      ack: stopAck,
+      pending: stopPendingOk,
+      cancelStatus: stopDeliveryCancel.status,
+      landed: stopDeliveredLanded,
+      fact: deliveryOf(ledgerAPath, CALL_RD_STOP).admissions[0] ?? null,
+      executions: deliveryOf(ledgerAPath, CALL_RD_STOP).executions,
+      settlement: settleOf(ids.a, CALL_RD_STOP),
+      call: readMemberTranscript(world.home, rowA.childSessionId)?.calls.find((c) => String(c.callId) === CALL_RD_STOP) ?? null,
+    }
+    log(`[boot${String(index)}] delivered-stop: ackOk=${String(stopAck.ok)} pending=${String(stopPendingOk)} landed=${String(stopDeliveredLanded)} state=${String(stopDelivered.settlement?.state)} refusal=${String(stopDelivered.fact?.refusalCode)}`)
+
+    const remoteDelivery = {
+      at: new Date().toISOString(),
+      root: BOOT_ROOT,
+      target: ids.b,
+      operator: { kind: 'human', humanId: BOOT_ROOT },
+      requestToken: DELIVERY_TOKEN,
+      requestedAt: deliveryRequestedAt,
+      ackedAt: deliveryAckedAt,
+      before: beforeDelivery,
+      atAck: { status: atAck.status, ok: atAck.ok, code: atAck.code, outcome: atAck.outcome, centreB: atAck.centreB, requests: atAck.requests, admissions: atAck.admissions.length, executions: atAck.executions.length },
+      after: { requests: afterDelivery.requests, centreB: afterDelivery.centreB, transcriptCalls: afterDelivery.transcriptCalls, admissions: afterDelivery.admissions, executions: afterDelivery.executions, settlement: afterDelivery.settlement, memberRequests: afterDelivery.memberRequests, memberResult: afterDelivery.memberResult },
+      unknownMember,
+      duplicate: duplicateDelivery,
+      archived: { ...archivedDelivery, restoreStatus: restoreResponse.status, restoreOk: restoreResponse.body?.result?.ok === true, restoredLifecycle },
+      restored: restoredDelivery,
+      stop: stopDelivered,
+    }
+    writeFileSync(join(bootDir, 'remote-delivery.json'), JSON.stringify(remoteDelivery, null, 2) + '\n')
+
     // ── evidence collection (before teardown deletes the World home) ────────
     abortStage = 'evidence-collection'
     const allRequests = requests()
@@ -1529,24 +1863,6 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
     writeFileSync(join(bootDir, 'centre-facts-a.json'), JSON.stringify(centreA, null, 2) + '\n')
     writeFileSync(join(bootDir, 'centre-facts-b.json'), JSON.stringify(centreB, null, 2) + '\n')
 
-    const settleOf = (instanceId, callId) => {
-      const executionId = dispatchExecutionId({ rootSessionId: BOOT_ROOT, agentInstanceId: instanceId }, callId)
-      const file = join(paths.centre, 'settlement', instanceId, `${executionId}.settlement.json`)
-      let record = null
-      try {
-        const envelope = JSON.parse(readFileSync(file, 'utf8'))
-        // The store persists a CHECKSUMMED ENVELOPE; the record is its payload.
-        record = envelope?.payload ?? envelope
-      } catch { record = null }
-      return record === null ? null : {
-        file,
-        state: record.state,
-        dispatch: record.observation?.dispatch ?? null,
-        bodyOutcome: record.observation?.bodyOutcome ?? null,
-        stops: record.stops ?? [],
-        transitions: (record.transitions ?? []).map((t) => t.to),
-      }
-    }
     const settlement = {
       ask: settleOf(ids.a, CALL_A_ASK),
       bAfter: settleOf(ids.b, CALL_B_AFTER),
@@ -1557,6 +1873,9 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
       bMidInLane: settleOf(ids.b, CALL_B_MID_INLANE),
       bPostInLane: settleOf(ids.b, CALL_B_POST_INLANE),
       bWiden: settleOf(ids.b, CALL_B_WIDEN),
+      // ROUND 83 — the DELIVERED turn's call (B) and the STOPPED delivered call (A).
+      delivery: settleOf(ids.b, CALL_RD),
+      deliveryStop: settleOf(ids.a, CALL_RD_STOP),
     }
     writeFileSync(join(bootDir, 'settlement.json'), JSON.stringify(settlement, null, 2) + '\n')
 
@@ -1609,6 +1928,19 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
     counters.bGuardFacts = facts.filter((f) => String(f.memberIdentity) === ids.b).length
     counters.aAdmissions = centreA.filter((r) => r?.kind === 'invocation-authority').length
     counters.bAdmissions = centreB.filter((r) => r?.kind === 'invocation-authority').length
+    counters.remoteDelivery = {
+      acked: remoteDelivery.atAck.ok === true,
+      outcome: remoteDelivery.atAck.outcome?.status ?? null,
+      atAckAdmissions: remoteDelivery.atAck.admissions,
+      atAckExecutions: remoteDelivery.atAck.executions,
+      memberAdmissions: remoteDelivery.after.admissions.length,
+      memberExecutions: remoteDelivery.after.executions.length,
+      memberProviderRequests: remoteDelivery.after.memberRequests,
+      unknownMemberCode: remoteDelivery.unknownMember.code,
+      duplicateSameConfirmation: remoteDelivery.duplicate.sameConfirmation,
+      archivedCode: remoteDelivery.archived.code,
+      stoppedRefusalCode: remoteDelivery.stop.fact?.refusalCode ?? null,
+    }
     counters.mockRequests = allRequests.length
     counters.memberModelRequests = allRequests.filter((r) => isMemberRequest(r) && surfaceNamesOf(r).length > 0).length
     counters.aWindow = aWindow
@@ -1620,6 +1952,7 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
       multiMember: judgeMultiMember({ a, b, facts, paths }),
       revocation: judgeRevocation({ b, paths, mutation: calls.mutation, widening: calls.widening, settlement }),
       stop: judgeStop({ a, b, paths, control: { pending: pendingRequest, cancelStatus: cancel.status, stopAt }, settlement }),
+      remoteDelivery: judgeRemoteDelivery({ b, paths, delivery: remoteDelivery }),
     }
     // NOTE: `detail` must NOT carry a `verdict` key — the record spreads it
     // AFTER the passed verdict and would silently overwrite it.
@@ -1632,6 +1965,7 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
     add('d2:multi-member-concurrency', verdicts.multiMember.verdict, verdicts.multiMember)
     add('d2:revocation', verdicts.revocation.verdict, verdicts.revocation)
     add('d2:stop', verdicts.stop.verdict, verdicts.stop)
+    add('d2:remote-delivery', verdicts.remoteDelivery.verdict, verdicts.remoteDelivery)
 
     const final = record.finalize()
     const summary = formatSummary(final)
@@ -1648,6 +1982,7 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
       counters,
       verdicts,
       settlement,
+      remoteDelivery,
       paths,
       locus: buildLocus({ world, bootInfo, a, b, facts, centreA, centreB, paths, bootDir }),
       stopAt,
@@ -1868,6 +2203,7 @@ function buildAgreement(results) {
     multiMemberVerdict: r?.verdicts?.multiMember?.verdict ?? null,
     revocationVerdict: r?.verdicts?.revocation?.verdict ?? null,
     stopVerdict: r?.verdicts?.stop?.verdict ?? null,
+    remoteDeliveryVerdict: r?.verdicts?.remoteDelivery?.verdict ?? null,
     aAdmissions: r?.counters?.aAdmissions ?? null,
     bAdmissions: r?.counters?.bAdmissions ?? null,
     aGuardFacts: r?.counters?.aGuardFacts ?? null,
@@ -1879,14 +2215,18 @@ function buildAgreement(results) {
     revocationRestored: r?.verdicts?.revocation?.clauses?.find((c) => c.id === 'b-call-restored-admitted')?.ok ?? null,
     revocationWideningNotMinted: r?.verdicts?.revocation?.clauses?.find((c) => c.id === 'd-widening-not-minted')?.ok ?? null,
     bAfterStopCompleted: r?.verdicts?.stop?.clauses?.find((c) => c.id === 'second-member-unaffected')?.ok ?? null,
+    deliveryAckIsNotAnExecution: r?.verdicts?.remoteDelivery?.clauses?.find((c) => c.id === 'request-executed-nothing')?.ok ?? null,
+    deliveredTurnAdmittedUnderMemberBinding: r?.verdicts?.remoteDelivery?.clauses?.find((c) => c.id === 'member-admission-under-member-binding')?.ok ?? null,
+    memberAdmissionFacts: r?.counters?.remoteDelivery?.memberAdmissions ?? null,
   })
   const rows = ok.map((r) => ({ boot: r.boot, ...pick(r) }))
   const keys = [
-    'overall', 'multiMemberVerdict', 'revocationVerdict', 'stopVerdict',
+    'overall', 'multiMemberVerdict', 'revocationVerdict', 'stopVerdict', 'remoteDeliveryVerdict',
     'aAdmissions', 'bAdmissions', 'aGuardFacts', 'bGuardFacts',
     'windowsOverlap', 'crossRefused', 'stopSettlementState',
     'revocationDenyRefused', 'revocationRestored', 'revocationWideningNotMinted',
-    'bAfterStopCompleted',
+    'bAfterStopCompleted', 'deliveryAckIsNotAnExecution', 'deliveredTurnAdmittedUnderMemberBinding',
+    'memberAdmissionFacts',
   ]
   // Agreement is about the MEASURED facts being reproduced. The widening ANSWER
   // shape is recorded per boot, not compared, because a typed code is allowed to
@@ -1895,7 +2235,7 @@ function buildAgreement(results) {
   const agreeing = rows.length >= 2 && differing.length === 0
   const header = ['fact', ...rows.map((r) => `boot${String(r.boot)}`)]
   const body = keys.map((k) => [k, ...rows.map((r) => String(r[k]))])
-  const width = Math.max(34, ...header.map((h) => h.length)) + 2
+  const width = Math.max(34, ...header.map((h) => h.length), ...keys.map((k) => k.length)) + 2
   const cell = (v) => String(v).padEnd(width)
   const table = [
     'TWO-RUN AGREEMENT (the same command, two boots; every measured row must be identical)',

@@ -1,10 +1,10 @@
 {
-  "at": "2026-11-22T14:55:31.040Z",
-  "head": "8faf1c8f3b40ce07c3b350de5f4b4b13c9c6991d",
+  "at": "2026-11-23T02:09:44.032Z",
+  "head": "c8b299dc329d980b235033a8f26fce851261eb4b",
   "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use",
   "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
-  "driverSha256": "f968b97a114349e22c85c58c9cef17e085562f82048bdf9197253f6eded0a56e",
+  "driverSha256": "b3d6b6f786eacf935e683dd07f86a5930e1edc5a74f41dcd0c889989656d3fc8",
   "jsSubstitutions": [
     {
       "expression": "(process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split(',').map((entry) => entry.trim()).filter((entry) => entry !== '')",

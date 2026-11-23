@@ -4325,11 +4325,21 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   // What has NOT changed: the plane is not a second agent-tool execution authority. Every endpoint is
   // classified by its ACTUAL effect in the ONE closed table (`s6-command-classification.ts`), and the
   // dispatcher refuses any command whose effect is agent execution — dispatching a native tool,
-  // executing a shell or producing agent I/O — BEFORE the envelope/params/handler, because such a
-  // command has no member Binding the UTE centre could admit it on. The refusal is recorded through
-  // the SAME host-surface refusal point as every other host-surface refusal (invocation-authority
-  // fact first, then a settlement closed REFUSED/not-started), and it is a typed wire code from the
-  // existing vocabulary (ADMISSION_REMOTE_UNAVAILABLE).
+  // executing a shell, starting an executor without a delivery, or waiting on another agent's turn —
+  // BEFORE the envelope/params/handler, because such a command has no member Binding the UTE centre
+  // could admit it on. The refusal is recorded through the SAME host-surface refusal point as every
+  // other host-surface refusal (invocation-authority fact first, then a settlement closed
+  // REFUSED/not-started), and it is a typed wire code from the existing vocabulary
+  // (ADMISSION_REMOTE_UNAVAILABLE).
+  //
+  // ROUND 83 — the plane may DELIVER work; it may never EXECUTE a tool. The member commands were
+  // real product operations the round-74 refusal kept safe but not delivered, so they are now
+  // `work-delivery`: each hands over into the Member's OWN governed path and returns a durable
+  // delivery acknowledgement (creation through the ONE activation authority; `member.send` through
+  // the messaging coordinator's inbox acceptance; `member.followup` through the work facade's
+  // `execution: 'async'` receipt, whose Phase B/C run detached inside the Team runtime). The plane
+  // has no tool/provider port at all, so "delivery" cannot widen into "execution": the Member's own
+  // loop runs and the centre admits every call under THAT Member's Binding.
   //
   // On a row that never configured the centre the point is `undefined`, no command hook is passed,
   // and the plane keeps its pre-round behaviour byte-for-byte (every command served, as before).
@@ -4343,7 +4353,9 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
               subject: `remote.command:${method}`,
               owner: rootSid,
               locator: rootSid,
-              detail: `the command '${method}' is not control-plane (agent execution); only UTE admits a bound member's tool call`,
+              // Kept SHORT: the refusal reason is a settlement input capped at 512 characters, and
+              // the fixed reason already carries the argument. This names the command and the law.
+              detail: `${method} is agent-execution not work-delivery`,
             })
             return recorded.admission
           },

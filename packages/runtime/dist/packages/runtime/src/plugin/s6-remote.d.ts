@@ -77,6 +77,15 @@ import type { LegacyHomePort, LegacyInspectFn } from './legacy-surface.js';
 import type { ProjectionService } from '../../projection/index.js';
 import type { GovernanceWarningService, GovernanceStartOutcome } from '../../governance-warning/index.js';
 import type { InterventionControlSource, RequiredAuthorityFacts, RequiredAuthorityReaderInput } from '../../intervention/index.js';
+/**
+ * ROUND 83 — the EXISTING host-surface wire code, reused (NO new wire code) for the work-delivery
+ * seam's fail-closed absence. A row that does not wire the delivery port (`messaging` for
+ * `member.send`, `admission` for `member.create` / `member.followup`) cannot deliver work, and it
+ * must say so TYPED before the handler body — never crash out of a handler into `internal-error`.
+ * The wire semantics stay "this S6 command is not available through this row's management plane";
+ * the `details.reason` names the missing seam.
+ */
+export declare const S6_WORK_DELIVERY_SEAM_CODE = "ADMISSION_REMOTE_UNAVAILABLE";
 /** The stable error codes the S6 remote surfaces throw (CR-4/CR-12 boundary). */
 export declare const S6_REMOTE_ERROR_CODES: {
     /** A34 — the ledger-page tracker rejected the page (the 20.5/20.6 boundary). */

@@ -1257,22 +1257,57 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
     }
     log(`[boot${String(index)}] duplicate team.create: ok=${String(duplicateCreate.ok)} roots=${String(duplicateCreate.rootsAfter)} newRoots=${JSON.stringify(duplicateCreate.newRoots)} mockAdded=${String(duplicateCreate.mockRequestsAdded)}`)
 
-    // (5) NO S6 COMMAND REACHES A MODEL TOOL WITHOUT ADMISSION: `member.send` is
-    // on the closed agent-execution list and is refused before params/ports.
+    // (5) THE DELIVERY LAW AT THE MANAGEMENT PLANE (round 83). The S6 plane may
+    // DELIVER work; it may never EXECUTE a tool. Measured both ways on this row:
+    //   (5a) the two ROOT commands stay `agent-execution` and are refused before
+    //        params/ports with the existing host-surface code;
+    //   (5b) `member.send` is a `work-delivery` command: it is SERVED — on this
+    //        member-less row it reaches the messaging coordinator and returns a
+    //        TYPED target/domain answer, mind you WITHOUT a single provider
+    //        request (nothing executed).
     const requestsBeforeExecutionRefusal = (world.mock?.requests ?? []).length
-    const refusedSend = await remoteCall(fetchJson, origin, cookie, 'member.send', {
+    const refusedRootWork = await remoteCall(fetchJson, origin, cookie, 'team.admitInitialWork', {
       teamSessionId: ACCEPTANCE_ROOT,
-      memberInstanceId: 'member-instance-1',
-      payload: { kind: 'text', text: 'dboot refusal probe' },
-      requestToken: 'dboot-refusal-probe',
+      requestToken: 'dboot-refusal-probe-root-work',
+      payload: { prompt: 'dboot refusal probe' },
+    }, 'a5sflm', 2)
+    const refusedRootLive = await remoteCall(fetchJson, origin, cookie, 'team.ensureRootLive', {
+      teamSessionId: ACCEPTANCE_ROOT,
+      requestToken: 'dboot-refusal-probe-root-live',
+    }, 'a5sflm', 3)
+    const servedSend = await remoteCall(fetchJson, origin, cookie, 'member.send', {
+      teamSessionId: ACCEPTANCE_ROOT,
+      caller: { kind: 'human', humanId: ACCEPTANCE_ROOT },
+      recipientInstanceId: 'inst-dboot-does-not-exist',
+      body: 'dboot delivery probe (no member exists on this row)',
+      requestToken: 'dboot-delivery-probe',
     }, 'a5sflm')
     const executionRefusal = {
-      status: refusedSend.status,
-      code: refusedSend.body?.result?.error?.code ?? null,
-      ok: refusedSend.body?.result?.ok === true,
+      rootWork: {
+        status: refusedRootWork.status,
+        code: refusedRootWork.body?.result?.error?.code ?? null,
+        ok: refusedRootWork.body?.result?.ok === true,
+      },
+      rootLive: {
+        status: refusedRootLive.status,
+        code: refusedRootLive.body?.result?.error?.code ?? null,
+        ok: refusedRootLive.body?.result?.ok === true,
+      },
+      delivery: {
+        status: servedSend.status,
+        code: servedSend.body?.result?.error?.code ?? null,
+        ok: servedSend.body?.result?.ok === true,
+        servedNotRefused: (servedSend.body?.result?.error?.code ?? null) !== 'ADMISSION_REMOTE_UNAVAILABLE',
+      },
       mockRequestsAdded: (world.mock?.requests ?? []).length - requestsBeforeExecutionRefusal,
     }
-    log(`[boot${String(index)}] refused member.send: status=${String(executionRefusal.status)} code=${String(executionRefusal.code)} mockAdded=${String(executionRefusal.mockRequestsAdded)}`)
+    if (executionRefusal.rootWork.code !== 'ADMISSION_REMOTE_UNAVAILABLE' || executionRefusal.rootLive.code !== 'ADMISSION_REMOTE_UNAVAILABLE') {
+      throw new Error(`the ROOT work commands must stay refused with ADMISSION_REMOTE_UNAVAILABLE, got ${JSON.stringify(executionRefusal)}`)
+    }
+    if (!executionRefusal.delivery.servedNotRefused) {
+      throw new Error(`member.send must be SERVED as a work-delivery command, got ${JSON.stringify(executionRefusal.delivery)}`)
+    }
+    log(`[boot${String(index)}] remote boundary: rootWork=${String(executionRefusal.rootWork.code)} rootLive=${String(executionRefusal.rootLive.code)} delivery=${String(executionRefusal.delivery.code)} mockAdded=${String(executionRefusal.mockRequestsAdded)}`)
 
     const remoteCreation = {
       rootsBefore: rootsBeforeIds,

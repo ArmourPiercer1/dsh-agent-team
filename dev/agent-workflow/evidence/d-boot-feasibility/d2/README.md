@@ -25,6 +25,7 @@ boots**, and `overall=PASS` (exit 0) is the driver's own result — not a weaken
 | `d2:multi-member-concurrency` | **PROVEN** | **PROVEN** | two governed Members ran with overlapping model turns, each native `read` admitted inside its OWN compiled lane, guard facts name their own member, ledgers separate; A's cross-member read was refused `LANE_DENY` with zero B bytes |
 | `d2:revocation` | **PROVEN** | **PROVEN** | (a) a durable DENY refuses the previously admitted call (`ADMISSION_OVERLAY_DENY`, zero body, settlement `REFUSED`, overlay named as the deciding authority with a policy generation); (b) removing the deny RESTORES the call (admitted + `COMPLETED`, a NEW fact in the same call-id family); (c) the untouched in-lane call is admitted at every phase; (d) the same lane CANNOT mint an `allow` beyond the compiled ceiling, and the widened locator is still `LANE_DENY` with zero foreign bytes |
 | `d2:stop` | **PROVEN** | **PROVEN** | a Member turn stopped through the product's own `session/cancel` path ended as the centre's `ADMISSION_STOPPED` (`REFUSED`/`not-started` settlement), never a completion and never `UNKNOWN`; the second Member completed |
+| `d2:remote-delivery` | **PROVEN** | **PROVEN** | round 83: the S6 management plane `member.send` returned the coordinator's durable delivery ACKNOWLEDGEMENT with **0 admissions / 0 executions at the acknowledgement**, and the delivered prompt then ran in Member B's OWN turn, where the centre wrote its `allow` (`fs.read`, B's binding, B's in-lane locator) into B's OWN ledger AFTER the ack; unknown member, archived member, duplicate send (at-least-once, no operator-side execution), restore, and Stop during a DELIVERED turn (`ADMISSION_STOPPED`) all measured on the same row |
 
 ## Judge 1 — two Members at once (PROVEN)
 
@@ -137,7 +138,43 @@ Why stopping works: `admission-port.mjs:334` (`refuseStop`), `:471` (Stop priori
 
 Single-boot nature: the Stop leg is a race between the durable ask and the cancel; it is reproduced in
 BOTH boots (`REFUSED` in both), so no single-boot concession was needed. The two-boot requirement was
-kept for all three judges.
+kept for all four judges.
+
+## Judge 4 — the delivery boundary (round 83, PROVEN)
+
+**The law.** The S6 management plane may DELIVER work; it may never EXECUTE a tool. The command
+classification (`s6-command-classification.ts`) now has a third served class, `work-delivery`
+(`member.create`, `member.send`, `member.followup`); `team.admitInitialWork` and `team.ensureRootLive`
+stay `agent-execution` and stay REFUSED, because their only seams await the root's turn / start an
+executor with nothing to acknowledge.
+
+**Measured on the live row** (boot1; boot2 identical, both `PROVEN`):
+
+- `POST /team-remote/member.send` as the authenticated human operator (`caller.humanId` = the owned
+  root), body = a prompt that makes Member B read its own in-lane file:
+  **HTTP 200**, `ok=true`, `outcome.status='delivered'`, `deliveredToInstanceId = B`,
+  `factSequence=39` (intent), `deliveredSequence=40` (confirmation).
+- **At the acknowledgement**: `0` invocation-authority facts and `0` execution facts for the
+  delivered call (`CALL_RD`) in B's ledger — the request itself executed nothing. The ACK carries no
+  `toolResult`/`result`/`assistant`/`executionId`; it is the coordinator's inbox-acceptance record.
+- **Then** B's own turn ran (2 provider requests carrying the delivered token) and the centre wrote
+  its admission `allow` (`axis=fs.read`, `instanceId = agentId = B`, locator = B's in-lane file,
+  `at=…40.623Z`, i.e. **~113 ms AFTER** the ack at `…40.510Z`) into **B's own**
+  `<instanceId>.facts.jsonl` (18 → 20 facts), plus a `completed` execution and B's in-lane bytes in
+  B's transcript.
+- **Error paths**: unknown member → `TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED` (typed, 0 provider
+  requests); archived member (`member.archive` → `ARCHIVED`) → `TEAM_RUNTIME_WORK_STATE_REJECTED`
+  (typed, 0 provider requests, 0 executions added); duplicate send of the same `requestToken` → a
+  SECOND durable coordination (new intent 41 / confirmation 42: `send-message` delivery is
+  at-least-once, not de-duplicated by token) with 0 provider requests at the ACK and still exactly
+  ONE `completed` execution for the delivered call; `member.restore` → `SETTLED` and the delivery is
+  served again; the product's Stop during a DELIVERED turn → the call's fact is
+  `ADMISSION_STOPPED`, settlement `REFUSED`/`not-started`, never a completion.
+
+**What this judge does NOT claim**: it is not a real-model claim (the model is the scripted mock), not
+a candidate claim (DEV-LIVE), and not a multi-user authority claim (the operator is the per-DSH_HOME
+authenticated human whose claim must be an owned root). The delivery's *timing* relative to the ack is
+measured by durable fact timestamps, not by assuming scheduling.
 
 ## Fixtures (disclosed) and what is NOT a fixture
 
@@ -173,7 +210,8 @@ ceiling is test-authored, the mutation path that refuses to exceed it is the shi
   nothing here claims the widening shape is reachable.
 - That a stopped call can be observed from the Team UI: the Stop was issued through the same public
   `session/cancel` RPC the button issues, not by clicking the button.
-- Runtime team creation over the remote plane (still 405 on a centre-configured row); the Team here is
-  the boot-created one.
+- Runtime team creation over the remote plane on THIS driver (the Team here is the boot-created one;
+  `team.create` over S6 is measured by the D1 driver, round 74), and `member.create` over S6 is proven
+  at the production port (E3 + ADM-86), not live.
 - That the mock's interleaving equals a real model's timing; only that the PRODUCT accepted and served
   two member turns whose request windows overlap.

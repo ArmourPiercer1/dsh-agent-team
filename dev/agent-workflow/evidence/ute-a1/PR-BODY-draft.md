@@ -384,3 +384,33 @@ changed, +107914 / −79603** (1199 A · 363 D · 76 M · 2 R060 · 1 R094 · 1 
 ## Not done here
 
 Candidate must not auto-merge. No release, no deploy, no version bump. `master` is untouched.
+
+## Round 83 — work DELIVERY on the management plane (the round-74 refusal narrowed)
+
+Round 74 restored S6 Remote as a governed management plane and refused five commands as
+`agent-execution`. Round 83 keeps the boundary and makes the three real product operations reachable:
+
+**The management plane may DELIVER work; it may never EXECUTE a tool.** A third served effect class
+`work-delivery` (`s6-command-classification.ts`) hands each command into the target agent's own governed
+path — `member.create` (the ONE activation authority), `member.send` (the messaging coordinator's durable
+inbox acceptance), `member.followup` (the action facade's `execution: 'async'` delivery receipt, whose
+Phase B/C run detached inside the Team runtime). `team.admitInitialWork` and `team.ensureRootLive` stay
+REFUSED because their only seams await a root turn / start an executor with nothing to acknowledge.
+
+Boundary arms: **ADM-86** (rewritten: literal delivery/refusal sets, the dispatcher's three handovers,
+no tool port, an ack with no tool result, the durable refusal for the two root commands, typed
+seam-unwired fail-closed, unauthenticated refusal, 512-char settlement reason cap) and **E3** (production
+root: only the two root refusals leave deny facts; at `createS6RemotePorts` the follow-up requests
+`execution: 'async'`, creation carries no execution mode, `member.send` reaches the coordinator).
+
+Live proof (`d2:remote-delivery`, DEV-LIVE, `--boots 2`, two agreeing boots): `member.send` answered
+HTTP 200 with the coordinator's `delivered` acknowledgement (intent 39 / confirmation 40) while the
+Member's delivered call had **0 admissions and 0 executions at the acknowledgement**; the delivered
+prompt then ran in the Member's own turn, and the centre's `allow` for that `read` appeared in the
+MEMBER's own ledger under the MEMBER's binding ~113 ms after the ack, with a `completed` execution.
+Error paths measured on the same row: unknown member, archived member, duplicate send (at-least-once,
+no operator-side execution), restore, and Stop during a delivered turn (`ADMISSION_STOPPED`).
+
+Not claimed: no live `member.create`/`member.followup`; the two root commands stay unavailable; the model
+is the scripted mock; the operator is a per-DSH_HOME authenticated human, not RBAC.
+

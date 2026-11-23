@@ -10964,3 +10964,52 @@ env-limited), forced-absence override reproduces the same leg locally.
 Result: **hosted `ci-required` SUCCESS for the first time** (census 22/22 x2, next-host 184/184, UTE G1 89/89, leg
 206), `pr-gate` SUCCESS, five dated settlement comments. HEAD `2349f2e7b`, PR #822 restored to DRAFT (it had been
 flipped ready by an earlier writer; the candidate is not finished, so draft is the honest state) and never merged.
+
+### R83 — the management plane may DELIVER work; it may never EXECUTE a tool
+
+Round 74 restored S6 Remote as a governed management plane but refused five commands as `agent-execution`.
+Three of them were real product operations. Round 83 keeps the boundary and makes them reachable by
+HANDOVER, adding the third served effect class `work-delivery` in the SAME closed table
+(`s6-command-classification.ts`, no default-allow):
+
+- `member.create` -> the S6 admission port -> `performAction({action:'create-member'})` -> the ONE
+  ActivationProvider (`member-activated`; creation only, no work chain, no turn);
+- `member.send` -> the P6-T3 coordinator: durable intent fact -> input ACCEPTANCE into the recipient's own
+  session inbox -> confirmation fact (`SendTeamMessageOutcome`; the ACK is the answer);
+- `member.followup` -> `performAction({action:'follow-up', execution:'async'})`: Phase A commits the
+  durable `team-work-admitted` receipt and returns it; Phase B/C run DETACHED inside the Team runtime.
+- `team.admitInitialWork` / `team.ensureRootLive` STAY REFUSED: the first's only seam awaits the root turn
+  to idle (root-scoped, not a Member delivery), the second starts an executor with nothing to acknowledge.
+  Neither can be expressed as a delivery. The refusal reason was shortened to fit the 512-char settlement
+  cap and now says exactly that.
+
+Fail closed: a delivery command on a row with no delivery port answers the EXISTING wire code
+`ADMISSION_REMOTE_UNAVAILABLE` naming the unwired seam, typed, before any claim/param/durable write.
+
+Arms: ADM-86 rewritten (literal delivery/refusal sets; the dispatcher's three handovers; the refusal hook
+never consulted for a delivery; the plane has NO tool/provider port; the ACK carries no tool result; the
+two root commands keep the durable `team.control` refusal + REFUSED/not-started settlement; seam-unwired
+typed; unauthenticated first; 512-char reason cap). E3 updated (production root: only the two root
+refusals leave deny facts; at `createS6RemotePorts` follow-up asks `execution:'async'`, creation carries
+no execution mode, `member.send` reaches the coordinator).
+
+Live, D2 `--boots 2`, two agreeing boots, `d2:remote-delivery` PROVEN (4/4 judges PASS, overall PASS):
+`member.send` HTTP 200 + `delivered` ACK (intent 39 / confirmation 40) with **0 admissions and 0
+executions at the acknowledgement**; the delivered prompt then ran in Member B's OWN turn and the centre
+wrote its `allow` (`fs.read`, B's instanceId+agentId, B's in-lane locator) into B's OWN ledger ~113 ms
+AFTER the ack (18 -> 20 facts), one `completed` execution, B's in-lane bytes in B's transcript. Error
+paths on the same row: unknown member `TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED`; archived member
+`TEAM_RUNTIME_WORK_STATE_REJECTED`; duplicate send = a SECOND durable coordination (at-least-once, no
+operator-side execution); restore re-enables delivery; Stop during a DELIVERED turn =
+`ADMISSION_STOPPED`, REFUSED/not-started.
+
+Gates at this HEAD: leg 206/204+2, catalog 785/38, cut-closure cut(0/148), P0 37/180/69,512, docs-sync 0
+findings, 29 placements, ci-required 10/0, bound vitest 216, migrated population 238/238, UTE G1 89/89,
+`ci-pr-gate --full --census-captures 2` pass=10 fail=0 legs=10 (see the round-83 settlement comment for
+the verbatim block and the hosted `ci-required` verdict).
+
+NOT proven: no live `member.create`/`member.followup` (production-port + router-detach arms only); the two
+root commands stay unavailable (no async root-work seam exists and none was invented); the model is the
+scripted mock; the operator is a per-DSH_HOME authenticated human with an owned-root claim, NOT multi-user
+RBAC; no cell moves to PRODUCT-PROVEN.
+

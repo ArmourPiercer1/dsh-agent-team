@@ -1,18 +1,31 @@
 {
   "aGuardFacts": 14,
-  "bGuardFacts": 14,
-  "aAdmissions": 9,
-  "bAdmissions": 9,
-  "mockRequests": 57,
-  "memberModelRequests": 25,
+  "bGuardFacts": 16,
+  "aAdmissions": 10,
+  "bAdmissions": 10,
+  "remoteDelivery": {
+    "acked": true,
+    "outcome": "delivered",
+    "atAckAdmissions": 0,
+    "atAckExecutions": 0,
+    "memberAdmissions": 1,
+    "memberExecutions": 1,
+    "memberProviderRequests": 2,
+    "unknownMemberCode": "TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
+    "duplicateSameConfirmation": false,
+    "archivedCode": "TEAM_RUNTIME_WORK_STATE_REJECTED",
+    "stoppedRefusalCode": "ADMISSION_STOPPED"
+  },
+  "mockRequests": 62,
+  "memberModelRequests": 29,
   "aWindow": {
-    "first": "2026-11-22T14:59:47.380Z",
-    "last": "2026-11-22T14:59:48.111Z",
+    "first": "2026-11-23T02:13:15.602Z",
+    "last": "2026-11-23T02:13:16.289Z",
     "count": 10
   },
   "bWindow": {
-    "first": "2026-11-22T14:59:47.573Z",
-    "last": "2026-11-22T14:59:47.788Z",
+    "first": "2026-11-23T02:13:15.796Z",
+    "last": "2026-11-23T02:13:16.001Z",
     "count": 3
   }
 }

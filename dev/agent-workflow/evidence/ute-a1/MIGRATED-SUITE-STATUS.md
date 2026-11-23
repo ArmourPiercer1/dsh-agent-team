@@ -2672,3 +2672,27 @@ population stays 238. `A5SF_FORCE_NETWORK_DENY_ABSENT=1` is the documented PROBE
 the absent path on this capable machine (it replaces only the net VERDICT at the provider's
 `deps.probeFacts` seam; the ABI and the three enforcement legs stay real). It is not an environment
 fake and it is disclosed in every printed line.
+
+---
+
+## Round 83 — the delivery boundary: population unchanged, one node arm rewritten and strengthened
+
+Round 83 turned the round-74 refusal of three member commands into lawful **work DELIVERY**
+(`work-delivery` effect class) and rewrote **ADM-86** in `packages/runtime/test/vnext-admission.test.mjs`
+(the `ute-vnext-a1` node leg). The vitest population is **unchanged at 238** (15 migrated files, all
+passing) and the bound `ci-security` vitest layer is **unchanged at 216** (14 suites / 14 files /
+61 describes); no new test file was added, so the `test-catalog` population (785) and the p4t6 scan
+surface are unchanged (the p4t6 scan test passes with no new booking).
+
+| runner | before | after | note |
+| --- | --- | --- | --- |
+| `ute-vnext-a1` node leg | 206 (204 pass + 2 disclosed skips) | 206 (204 pass + 2 disclosed skips) | ADM-86 rewritten in place (stronger: literal delivery/refusal sets, three handovers, no tool port, seam-unwired fail-closed, 512-char cap) |
+| migrated vitest population | 238 | 238 | E3 (`a3p4-pr4-production-entry-regression.test.ts`) updated in place: only the two root commands refuse; the delivery handover is pinned at the production port |
+| bound `ci-security` layer | 216 | 216 | no file added or removed |
+| `test-catalog` | 785 | 785 | no new file |
+| p4t6 booking scan | pass | pass | no new scannable surface to book |
+
+Distinct from the population: the **live** D2 driver gained a fourth judge (`d2:remote-delivery`),
+PROVEN on two agreeing DEV-LIVE boots (`evidence/d-boot-feasibility/d2/README.md` "Judge 4"). That is
+not a vitest population change — it is the live row — and it does not move any cell to PRODUCT-PROVEN.
+

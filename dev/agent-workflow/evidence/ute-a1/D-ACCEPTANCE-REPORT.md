@@ -380,6 +380,11 @@ allProven` is per driver).
 
 All eight commands were run fresh at this HEAD in this worktree. Pasted verbatim.
 
+> **Round 83 note.** The pastes below are the round-74/76 measurement and are kept as the historical
+> record. Round 83 re-ran every required gate at its own HEAD; the fresh outputs are in **§9** and are
+> the ones that apply to this candidate now (dispatch leg 206/204+2, catalog 785/38, closure/assets/docs
+> unchanged, placements 29, ci-required 10/0, bound vitest 216, migrated population 238, UTE G1 89/89).
+
 ### 4.1 `dispatch-tests --run --leg ute-vnext-a1`
 
 ```
@@ -931,3 +936,138 @@ A box a reviewer can tick against this HEAD. Every line names the check and wher
 
 **Plain statement.** This candidate is reviewable now and mergeable **only by the owner**. Nothing here
 is a release, a deployment, a version bump, or a claim that the product is accepted.
+
+---
+
+## 9. Round 83 — work DELIVERY on the management plane, and the gates at this HEAD
+
+### 9.1 What changed
+
+Round 74 restored S6 Remote as a governed management plane and refused five commands as
+`agent-execution`. Three of those were real product operations. Round 83 keeps the exact boundary and
+delivers them the only lawful way:
+
+> **The management plane may DELIVER work. It may never EXECUTE a tool.**
+
+- **Classification** (`packages/runtime/src/plugin/s6-command-classification.ts`): a third SERVED class
+  `work-delivery` = `member.create`, `member.send`, `member.followup`. The refused set shrinks to
+  `team.admitInitialWork`, `team.ensureRootLive` (both `agent-execution`). Still ONE closed table, no
+  default-allow, unknown commands still refused.
+- **`member.create`** → the S6 admission port → `TeamRuntime.performAction({action:'create-member'})` →
+  the ONE ActivationProvider; the effect is `member-activated`. Creation only: no work chain, no turn.
+- **`member.send`** → the S6 messaging port → P6-T3 coordinator: durable intent fact → input ACCEPTANCE
+  into the recipient's own session inbox → confirmation fact. The answer IS the acknowledgement.
+- **`member.followup`** → the S6 admission port → `performAction({action:'follow-up',
+  execution:'async'})`: Phase A commits the durable `team-work-admitted` receipt and returns it; Phase
+  B/C run DETACHED inside the Team runtime. The request never awaits, and never observes, the turn.
+- **`team.admitInitialWork` / `team.ensureRootLive` stay REFUSED**, stated as a ruling: the first's only
+  seam awaits the root's turn to idle (and is root-scoped, not a Member delivery); the second starts an
+  executor and returns no delivery acknowledgement at all. Neither can be expressed as a delivery.
+- **Fail closed**: a delivery command on a row with no delivery port answers the EXISTING wire code
+  `ADMISSION_REMOTE_UNAVAILABLE` with a message naming the unwired seam, typed, before any claim/param/
+  durable write — never a fallback to executing. The refusal reason was shortened to fit the 512-char
+  settlement reason cap (ADM-86 now asserts the cap; E3 runs with zero settlement faults).
+
+### 9.2 Boundary arms (host-free)
+
+- `packages/runtime/test/vnext-admission.test.mjs` **ADM-86** (rewritten): literal delivery set and
+  refusal set; served `catalog.list`; `member.send` reaches the coordinator exactly once and returns the
+  `delivered` outcome (no `toolResult|result|assistant|executionId`); `member.followup` reaches the
+  action facade once; `member.create` reaches the creation action once with no execution mode; the
+  refusal hook is NEVER consulted for a delivery command; the plane has no `tool|provider|execute|
+  bridge` port; the two root commands keep the durable `team.control` refusal + `REFUSED`/`not-started`
+  settlement; an unwired seam fails closed typed; unauthenticated is refused first.
+- `packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts` **E3**: the production root
+  installs the plane, serves a read, refuses ONLY the two root commands (facts on the row's own ledger),
+  leaves NO deny fact for a member command, and at the exact production port
+  (`createS6RemotePorts`) `member.followup` asks the facade for `execution:'async'`, `member.create`
+  carries no execution mode, `member.send` reaches the coordinator.
+
+### 9.3 Live proof (D2, DEV-LIVE, `--boots 2`, two agreeing boots)
+
+`d2:remote-delivery` **PROVEN on both boots**; `agreeing=true differing=[]`.
+
+```
+[ boot1] member.send ack: status=200 ok=true code=null deliveredSeq=40 facts=18 admissions=0 executions=0
+[ boot1] member.send unknown member: ok=false code=TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED requestsAdded=0
+[ boot1] member.send duplicate: ok=true distinct=true requestsAdded=0
+[ boot1] member.send archived: lifecycle=ARCHIVED ok=false code=TEAM_RUNTIME_WORK_STATE_REJECTED requestsAdded=0
+[ boot1] member.send restored: lifecycle=SETTLED ok=true code=null
+[ boot1] delivered-stop: ackOk=true pending=true landed=true state=REFUSED refusal=ADMISSION_STOPPED
+[ boot1] case d2:remote-delivery: PASS
+```
+
+Measured facts (boot1; boot2 identical): ack intent seq **39** / confirmation **40**; at the ack
+**0 admissions / 0 executions** for the delivered call; after the member's own turn, B's ledger 18 → 20
+facts with the centre's `allow` on `fs.read` (`instanceId = agentId = B`, B's in-lane locator) at
+`…40.623Z` vs the ack at `…40.510Z` (**~113 ms later**), one `completed` execution, and B's in-lane bytes
+in B's transcript. Duplicate send is a SECOND durable coordination (at-least-once, not a token replay)
+with 0 provider requests at the ACK and still exactly one completed execution. Stop during a DELIVERED
+turn is `ADMISSION_STOPPED` with a `REFUSED`/`not-started` settlement. Host porcelain empty after both
+boots; DEV-LIVE slots released.
+
+### 9.4 Required gates re-run at this HEAD
+
+```
+$ node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1
+ℹ tests 206
+ℹ pass 204
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 2
+ℹ todo 0
+DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 set=sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975
+
+$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+  tests=785 instruments=3 digest=sha256:da8a452d65130a3a7f62ef90b549a5289909e689e1ff619c4b3e0c45d5f5ed32
+  DISCOVERED_AND_COLLECTED 733
+  EXCLUDED_WITH_REASON     14
+  UNCOLLECTED              38
+DSH-TEST-CATALOG tests=785 digest=sha256:da8a452d65130a3a7f62ef90b549a5289909e689e1ff619c4b3e0c45d5f5ed32 refused=0 findings=0
+
+$ node scripts/ute-cut-closure.mjs --check
+UTE-CUT-CLOSURE pass deleted=148 references=3 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 retiredSurfaces=12 placements=self findings=0
+
+$ node scripts/ute-p0-assets.mjs --check
+UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 wave1=146 wave2=0 cut=cut(148/148) findings=0
+
+$ node scripts/place-dist-glue.mjs
+place-dist-glue: done (29 placement(s))
+
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=10 findings=0
+
+$ node scripts/eb3-security-run.mjs --layer ci-security      # the bound vitest leg
+EB3-LAYER layer=ci-security verdict=PASS suites=14 files=14 describes=61 passed=216 failed=0 clock_ms=20000
+
+$ npx vitest run <the 15 migrated files in evidence/ute-a1/migrated-entry-imports.json>
+ Test Files  15 passed (15)
+      Tests  238 passed (238)
+
+$ node --test --test-force-exit --test-timeout=480000 --test-reporter=spec \
+    tests/ute1-fs/native-fs-binding.test.mjs tests/ute-g1-fs/lane-suite.test.mjs \
+    tests/ute-g1-fs/lib/refusal-categories.test.mjs tests/ute-g1-fs/product-route-image.test.mjs \
+    tests/ute-g1-search/lane-suite.test.mjs tests/ute-g1-web/lane-suite.test.mjs \
+    tests/ute-g1-process/lane-suite.test.mjs tests/ute-g1-agentctl/lane-suite.test.mjs \
+    tests/ute-g1-uistate/lane-suite.test.mjs
+ℹ tests 89
+ℹ pass 89
+ℹ fail 0
+```
+
+`docs-sync --check`, `ci-pr-gate --full --census-captures 2`, the PR settlement gate and the hosted
+`ci-required` verdict for this HEAD are recorded in the round-83 settlement comment on PR #822 (the
+comment is the living record; this report names the commands).
+
+### 9.5 NOT proven in round 83
+
+- `member.create` and `member.followup` have NO live S6 proof (production-port + router-detach arms
+  only); only `member.send` was driven over the real API in the D2 world.
+- `team.admitInitialWork` / `team.ensureRootLive` remain unavailable through this plane; no async
+  root-work delivery seam exists and none was invented.
+- The operator is the per-DSH_HOME authenticated human whose claim must be an owned root — not
+  multi-user RBAC, and no user-level isolation is claimed.
+- The model is the product's scripted mock; the delivery's timing is measured from durable fact
+  timestamps, not from a real provider's scheduling.
+- No PRODUCT-PROVEN row moves: every live claim here is DEV-LIVE.
+

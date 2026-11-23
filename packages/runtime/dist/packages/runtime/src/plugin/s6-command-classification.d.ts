@@ -13,9 +13,21 @@
  *   control-plane-read        a read of the durable TeamDomain/Control/catalog state (no execution)
  *   control-plane-creation    Team creation through the ONE create-and-start primitive
  *   control-plane-management  lifecycle / governance / control / compatibility mutations
+ *   work-delivery             a command that ENQUEUES work into a Member's OWN session/queue and
+ *                             returns a durable delivery acknowledgement — it never runs a tool or
+ *                             a model turn itself; the Member's own agent loop runs and every one
+ *                             of that turn's tool calls is admitted by the centre under THAT
+ *                             Member's Binding (round 83)
  *   agent-execution           a command that would dispatch a native tool, execute a shell, deliver
  *                             work to an Agent or otherwise produce agent I/O — REFUSED on a governed
  *                             row, because it has no member binding the centre could admit it on
+ *
+ * THE DELIVERY LAW (round 83, the boundary this file encodes). Work delivery is lawful on the
+ * management plane because it is a HANDOVER, not an execution: the command writes a durable
+ * admission/coordination record, places the input in the target agent's own inbox and returns the
+ * acknowledgement. It must never await the target's turn (which would make the request the observer
+ * of an execution it did not admit) and must never call a tool or a provider. A command that cannot
+ * be expressed that way stays `agent-execution` and stays REFUSED.
  *
  * THE AUTHORITY TABLE (do not collapse it):
  *
@@ -35,11 +47,16 @@
  *
  * @module packages/runtime/src/plugin/s6-command-classification
  */
-/** The effect classes, CLOSED. `agent-execution` is the only class refused on a governed row. */
+/**
+ * The effect classes, CLOSED. `agent-execution` is the only class refused on a governed row.
+ * `work-delivery` (round 83) is the THIRD served class: it is served, but only as a handover into
+ * the target agent's own governed path — the plane itself never executes.
+ */
 export declare const S6_COMMAND_EFFECTS: Readonly<{
     readonly READ: "control-plane-read";
     readonly CREATION: "control-plane-creation";
     readonly MANAGEMENT: "control-plane-management";
+    readonly WORK_DELIVERY: "work-delivery";
     readonly AGENT_EXECUTION: "agent-execution";
 }>;
 /** One effect class. */
@@ -54,13 +71,22 @@ export declare const S6_COMMAND_EFFECT_VALUES: readonly S6CommandEffect[];
  * served from a principal-authorized management surface, because it has no member Binding for UTE to
  * admit and would therefore be a second execution authority. Those commands keep failing closed until
  * they are re-entered through the governed agent path.
+ *
+ * `work-delivery` is the answer for the product operations the round-74 refusal kept safe but NOT
+ * delivered: they ARE real operations, and the lawful way to serve them is delivery, not execution.
+ * The member commands therefore hand over into the Member's own governed path (creation through the
+ * ONE activation authority; `member.send` through the messaging coordinator's input acceptance;
+ * `member.followup` through the work-action facade's `execution: 'async'` receipt, whose Phase B/C
+ * run detached inside the Team runtime, not inside this request).
  */
 export declare const S6_COMMAND_EFFECT_TABLE: Readonly<Record<string, S6CommandEffect>>;
 /** Every classified method, deterministic (sorted) order. */
 export declare const S6_CLASSIFIED_COMMANDS: readonly string[];
 /** The commands REFUSED on a governed row (agent execution), deterministic (sorted) order. */
 export declare const S6_AGENT_EXECUTION_COMMANDS: readonly string[];
-/** The control-plane commands (every non-refused class), deterministic (sorted) order. */
+/** The WORK-DELIVERY commands (handover into a Member's own governed path), sorted. */
+export declare const S6_WORK_DELIVERY_COMMANDS: readonly string[];
+/** The control-plane commands (every served class), deterministic (sorted) order. */
 export declare const S6_CONTROL_PLANE_COMMANDS: readonly string[];
 /**
  * The effect class of one command, or `undefined` when the command is NOT in the closed table.
@@ -72,12 +98,23 @@ export declare function s6CommandEffectOf(method: unknown): S6CommandEffect | un
 /**
  * May a governed (centre-configured) row serve this command?
  *
- * True ONLY for an explicitly classified control-plane command. An unknown/unclassified command is
- * `false` — a new command cannot default to "allowed".
+ * True ONLY for an explicitly classified command whose effect is NOT agent execution (the control
+ * plane and the work-delivery handover). An unknown/unclassified command is `false` — a new command
+ * cannot default to "allowed".
  *
  * @param method - the remote endpoint / method name.
  */
 export declare function isS6ControlPlaneCommand(method: unknown): boolean;
+/**
+ * Is this command a WORK-DELIVERY handover (served, but only through the delivery seam)?
+ *
+ * The dispatcher uses this to keep the two served classes distinguishable without widening the
+ * refusal: a work-delivery command is served, and the handler is the delivery port — the plane never
+ * has a tool-execution port to reach.
+ *
+ * @param method - the remote endpoint / method name.
+ */
+export declare function isS6WorkDeliveryCommand(method: unknown): boolean;
 /**
  * Every catalog method that this table does NOT classify, in the caller's order (deduplicated).
  * Used by the pin test to keep the table and the frozen catalog in lockstep.
