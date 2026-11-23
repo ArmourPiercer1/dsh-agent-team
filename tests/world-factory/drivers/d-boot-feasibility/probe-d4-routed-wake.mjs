@@ -85,7 +85,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { zstdDecompressSync } from 'node:zlib'
 
-import { apiPrompt, authenticate, emitPatchLayer, fetchJson } from '../../lib/world-factory.mjs'
+import { apiPrompt, apiSessionCancel, authenticate, emitPatchLayer, fetchJson } from '../../lib/world-factory.mjs'
 import { createRunRecord, formatSummary, readAuthorityBinding } from '../../lib/run-record.mjs'
 import { selectedHostPin, selectedHostTree } from '../../../next-host/host-select.mjs'
 import { createA5sfHarness } from '../../lib/a5sf-harness.mjs'
@@ -142,6 +142,9 @@ const CASE_ID = {
   officerBinding: 'd4:officer-binding',
   routedWake: 'd4:routed-wake',
   refusal: 'd4:refusal',
+  askExecute: 'd4:ask-execute',
+  askDenied: 'd4:ask-denied',
+  askStopped: 'd4:ask-stopped',
 }
 const TEAM_TOOL_NAMES = [
   'team_delegate', 'team_collect', 'team_resolve_control', 'team_list_pending_control',
@@ -433,7 +436,7 @@ function resultIdsOf(record) {
   }
   return ids
 }
-function makeDecide({ paths, ids }) {
+function makeDecide({ paths, ids, resolveDecision = 'allow' }) {
   const text = (content) => ({ kind: 'text', content })
   const readCall = (id, filePath) => ({ kind: 'tool-call', toolCalls: [{ id, name: 'read', arguments: { file_path: filePath } }] })
   const writeCall = (id, filePath, content) => ({ kind: 'tool-call', toolCalls: [{ id, name: 'write', arguments: { file_path: filePath, content } }] })
@@ -442,7 +445,7 @@ function makeDecide({ paths, ids }) {
     toolCalls: [{
       id,
       name: 'team_resolve_control',
-      arguments: { rootSessionId: ROOT, requestToken: `dboot-d4-resolve-${String(requestId)}`, requestId, decision: 'allow' },
+      arguments: { rootSessionId: ROOT, requestToken: `dboot-d4-resolve-${String(requestId)}`, requestId, decision: resolveDecision },
     }],
   })
   // The SHIPPED `team_delegate` argument shape (packages/tools/src/tools.ts
@@ -623,7 +626,21 @@ function settlementOf(home, instanceId, callId) {
   return {
     executionId, file, present: record !== null,
     state: record?.state ?? null,
+    bodyOutcome: record?.observation?.bodyOutcome ?? null,
+    dispatch: record?.observation?.dispatch ?? null,
     transitions: Array.isArray(record?.transitions) ? record.transitions.map((t) => t?.to ?? t) : [],
+  }
+}
+/** Read the REAL bytes the boot left on the host filesystem (outside the Member sandbox). */
+function fileEvidence(filePath) {
+  if (!existsSync(filePath)) return { path: filePath, exists: false, content: null, bytes: null, sha256: null }
+  const content = readFileSync(filePath, 'utf8')
+  return {
+    path: filePath,
+    exists: true,
+    content,
+    bytes: Buffer.byteLength(content),
+    sha256: createHash('sha256').update(content).digest('hex'),
   }
 }
 /**
@@ -810,6 +827,90 @@ function judgeRefusal({ configGate, booted, hostLogText, refusalFacts, wakeInten
   )
 }
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// R3 judges — the live ask → grant → execute chain for ONE native `write`
+// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * `d4:ask-execute` — THE POSITIVE LIVE CHAIN.
+ *
+ * The worker's `write` is admitted with lane disposition `ask`, the product
+ * raises a real durable Control request, the Leader settles it through the real
+ * control path (`team_resolve_control`), the centre rechecks, the host Tool
+ * Guard consumes the one-shot grant, mints the ApprovedAskReceipt, opens the
+ * execution scope, and the confined Provider verifies it and writes REAL bytes.
+ *
+ * Byte-level evidence: the file is read AFTER the boot from the world workspace
+ * on the host filesystem (outside the Member sandbox), and its sha256/length
+ * are recorded. The settlement must be COMPLETED with `bodyOutcome: completed`.
+ */
+function judgeAskExecute({ requestRaised, resolveOutcome, file, expectedBytes, facts, settlement, writeCall }) {
+  const allowFacts = facts.filter((f) => f?.kind === 'invocation-authority' && f?.decision === 'allow')
+  const hash = file.content === null ? null : createHash('sha256').update(file.content).digest('hex')
+  const expectedHash = createHash('sha256').update(expectedBytes).digest('hex')
+  return verdictOf(
+    'a Member `write` whose disposition is `ask` raises a REAL Control request, is approved through the REAL control path, and then executes: the confined Provider verifies the minted receipt and writes the exact approved bytes, settled COMPLETED',
+    [
+      { id: 'control-request-raised', ok: requestRaised === true, detail: `requestRaised=${String(requestRaised)}` },
+      {
+        id: 'approved-through-real-control-path',
+        ok: resolveOutcome?.isError !== true && typeof resolveOutcome?.result === 'string' && /resolved|allow|success/iu.test(resolveOutcome.result),
+        detail: `leader team_resolve_control result=${JSON.stringify(String(resolveOutcome?.result ?? '').slice(0, 500))}`,
+      },
+      {
+        id: 'admission-fact-allow-lane-ask',
+        ok: allowFacts.length === 1 && allowFacts[0]?.laneDecision === 'ask',
+        detail: `allow facts=${JSON.stringify(allowFacts.map((f) => ({ callId: f.callId, decision: f.decision, laneDecision: f.laneDecision, axis: f.axis })))}`,
+      },
+      { id: 'write-tool-result-not-an-error', ok: writeCall?.result?.isError === false, detail: `write result isError=${String(writeCall?.result?.isError)} text=${JSON.stringify(String(writeCall?.result?.text ?? '').slice(0, 400))}` },
+      { id: 'real-bytes-on-disk', ok: file.content === expectedBytes, detail: `file exists=${String(file.exists)} bytes=${String(file.content === null ? null : Buffer.byteLength(file.content))} sha256=${String(hash)} expectedSha256=${expectedHash}` },
+      { id: 'settlement-completed', ok: settlement?.state === 'COMPLETED' && settlement?.bodyOutcome === 'completed', detail: `state=${String(settlement?.state)} bodyOutcome=${String(settlement?.bodyOutcome)} transitions=${JSON.stringify(settlement?.transitions ?? [])}` },
+    ],
+  )
+}
+
+/**
+ * `d4:ask-denied` — the NEGATIVE live arm: the SAME ask, denied through the
+ * real control path. No grant is minted, so no receipt can exist: zero bytes,
+ * a deny fact with `ADMISSION_APPROVAL_DENIED`, and a REFUSED / not-started
+ * settlement (the body never started).
+ */
+function judgeAskDenied({ requestRaised, resolveOutcome, file, facts, settlement }) {
+  const denyFacts = facts.filter((f) => f?.kind === 'invocation-authority' && f?.decision === 'deny')
+  const denied = denyFacts.find((f) => String(f?.refusalCode ?? f?.code ?? '').includes('ADMISSION_APPROVAL_DENIED')) ?? null
+  return verdictOf(
+    'the SAME live `write` ask denied through the real control path mints nothing and writes nothing: zero bytes on disk, a recorded deny fact, and a REFUSED / not-started settlement',
+    [
+      { id: 'control-request-raised', ok: requestRaised === true, detail: `requestRaised=${String(requestRaised)}` },
+      { id: 'denied-through-real-control-path', ok: resolveOutcome?.isError !== true, detail: `leader team_resolve_control result=${JSON.stringify(String(resolveOutcome?.result ?? '').slice(0, 500))}` },
+      { id: 'deny-fact-recorded', ok: denied !== null, detail: `deny facts=${JSON.stringify(denyFacts.map((f) => ({ callId: f.callId, refusalCode: f.refusalCode ?? f.code ?? null, decision: f.decision })))}` },
+      { id: 'zero-bytes', ok: file.exists === false && file.content === null, detail: `file exists=${String(file.exists)} bytes=${String(file.content === null ? null : Buffer.byteLength(file.content))}` },
+      { id: 'settlement-refused-not-started', ok: settlement?.state === 'REFUSED' && settlement?.bodyOutcome === 'not-started', detail: `state=${String(settlement?.state)} bodyOutcome=${String(settlement?.bodyOutcome)} transitions=${JSON.stringify(settlement?.transitions ?? [])}` },
+    ],
+  )
+}
+
+/**
+ * `d4:ask-stopped` — the Stop-while-pending live arm: the ask is raised, the
+ * worker's own session is cancelled BEFORE any decision, the wait aborts, and
+ * the product refuses with its own Stop vocabulary. Zero bytes; the settlement
+ * is REFUSED / not-started (no allow decision was ever recorded for this call).
+ */
+function judgeAskStopped({ requestRaised, cancelStatus, file, facts, settlement }) {
+  const denyFacts = facts.filter((f) => f?.kind === 'invocation-authority' && f?.decision === 'deny')
+  const stopped = denyFacts.find((f) => String(f?.refusalCode ?? f?.code ?? '').includes('ADMISSION_STOPPED')) ?? null
+  return verdictOf(
+    'a live `write` ask that is STOPPED while pending is refused with the product Stop code: zero bytes on disk and a REFUSED / not-started settlement, never an execution',
+    [
+      { id: 'control-request-raised', ok: requestRaised === true, detail: `requestRaised=${String(requestRaised)}` },
+      { id: 'cancel-reached-the-host', ok: typeof cancelStatus === 'number' && cancelStatus >= 200 && cancelStatus < 300, detail: `session/cancel status=${String(cancelStatus)}` },
+      { id: 'stop-fact-recorded', ok: stopped !== null, detail: `deny facts=${JSON.stringify(denyFacts.map((f) => ({ callId: f.callId, refusalCode: f.refusalCode ?? f.code ?? null, decision: f.decision })))}` },
+      { id: 'zero-bytes', ok: file.exists === false && file.content === null, detail: `file exists=${String(file.exists)} bytes=${String(file.content === null ? null : Buffer.byteLength(file.content))}` },
+      { id: 'settlement-refused-not-started', ok: settlement?.state === 'REFUSED' && settlement?.bodyOutcome === 'not-started', detail: `state=${String(settlement?.state)} bodyOutcome=${String(settlement?.bodyOutcome)} transitions=${JSON.stringify(settlement?.transitions ?? [])}` },
+    ],
+  )
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // port / health helpers
 // ─────────────────────────────────────────────────────────────────────────────
@@ -906,6 +1007,138 @@ async function planOnly() {
   log('PLAN OK')
 }
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// R3 NEGATIVE LIVE ARMS — deny while pending, and Stop while pending
+// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * Boot ONE world whose only job is the negative side of the SAME live ask the
+ * positive arm proves: the worker's `write` is disposition `ask`, a real
+ * Control request is raised, and then the call is either DENIED through the
+ * real control path or STOPPED (its own session cancelled) while pending.
+ *
+ * Both arms must leave ZERO bytes and a REFUSED / not-started settlement — a
+ * deny/Stop is not an execution, and no receipt may exist because no grant was
+ * consumed. Nothing here shortens the positive judges; it is a separate judge.
+ */
+async function runAskNegativeArm({ kind, harness, record, index, bootDir, phase, lease, head }) {
+  const label = kind === 'deny' ? 'ask-denied' : 'ask-stopped'
+  const ids = { officer: null, worker: null, pendingRequestId: null }
+  let world = null
+  let target = null
+  let cancelStatus = null
+  let settleAttempts = 0
+  try {
+    // The target lives INSIDE the Member's own workspace (the host sandbox root), so the ONLY
+    // reason no byte exists in this arm is the deny/Stop the judge measures.
+    world = await harness.createWorld({ line: LINE, u6Fs: { rows: [] } })
+    mkdirSync(world.workspaceDir, { recursive: true })
+    const dir = join(world.workspaceDir, 'lane')
+    mkdirSync(dir, { recursive: true })
+    target = join(dir, `${label}.txt`)
+    const dirs = { dir }
+    const paths = { dir, officerFile: join(dir, 'officer.txt'), workerFile: target }
+    const main = mainBlueprintYaml({ dirs })
+    assertBlueprintText(main, BP_ID, `${label}.yaml`, false)
+    mkdirSync(join(world.home, 'blueprints'), { recursive: true })
+    writeFileSync(join(world.home, 'blueprints', 'main.yaml'), main)
+    writeFileSync(join(world.home, 'p6t6-directive.json'), `${JSON.stringify(p6t6Directive({ worldId: world.id, logDir: world.logDir }), null, 2)}\n`)
+    // Alpha.6 is NOT enabled here: this arm measures the ordinary Control ask path, and a wake
+    // route would add a recipient that has nothing to do with the deny/Stop question.
+    world.u6Fs.rows.push(...composedRows({ home: world.home, mainYaml: main, alpha6: { enabled: false } }))
+    await world.startMock({ decide: makeDecide({ paths, ids, resolveDecision: kind === 'deny' ? 'deny' : 'allow' }) })
+    const boot = await lease.boot(async () => {
+      return harness.boot({ world, phase: `${phase}-${label}`, bootTimeoutMs: 300_000 })
+    })
+    const origin = new URL(boot.url).origin
+    const cookie = await authenticate(origin, world.token)
+    const health = await waitHealthy(origin, cookie, 120_000)
+    if (health?.ok !== true) throw new Error(`the ${label} host never became ready: ${JSON.stringify(health?.body ?? null).slice(0, 500)}`)
+    const requests = () => world.mock?.requests ?? []
+    const replyOf = (r) => String(r?.reply?.content ?? '')
+    const sawReply = (marker) => requests().some((r) => replyOf(r).trim().startsWith(marker))
+    const waitFor = async (predicate, timeoutMs, everyMs = 200) => {
+      const deadline = Date.now() + timeoutMs
+      for (;;) {
+        let hit = false
+        try { hit = (await predicate()) === true } catch { hit = false }
+        if (hit) return true
+        if (Date.now() >= deadline) return false
+        await sleep(everyMs)
+      }
+    }
+    const promptTurn = async (marker, tag) => {
+      const res = await apiPrompt(origin, cookie, ROOT, marker, tag)
+      try { writeFileSync(join(bootDir, `prompt-${tag}.json`), `${JSON.stringify({ status: res?.status ?? null, body: redact(JSON.stringify(res?.body ?? null)) }, null, 2)}\n`) } catch { /* diagnostic */ }
+      if (res?.status !== 200) throw new Error(`session/prompt(${tag}) failed: status=${String(res?.status)}`)
+    }
+
+    await promptTurn(MK_WRK, `d4wrk-${label}`)
+    if (!(await waitFor(() => sawReply(DONE_WRK), 120_000))) throw new Error(`the ${label} worker delegation never answered`)
+    const workerUp = await waitFor(async () => {
+      const st = await readState(origin, cookie)
+      return membersOf(st).some((m) => String(m?.templateId ?? '') === 'worker')
+    }, 120_000, 300)
+    if (!workerUp) throw new Error(`the ${label} worker instance never came up`)
+    const state = await readState(origin, cookie)
+    const workerRow = membersOf(state).find((m) => String(m?.templateId ?? '') === 'worker') ?? null
+    ids.worker = String(workerRow.instanceId)
+    const askAppeared = await waitFor(async () => {
+      const st = await readState(origin, cookie)
+      const row = pendingAskOf(st, ids.worker)
+      if (row !== null && ids.pendingRequestId === null) ids.pendingRequestId = String(row.requestId)
+      return row !== null
+    }, 180_000, 300)
+    if (!askAppeared) throw new Error(`the ${label} arm never raised a pending Control request`)
+    writeFileSync(join(bootDir, `${label}-ask.json`), `${JSON.stringify({ requestId: ids.pendingRequestId, worker: ids.worker }, null, 2)}\n`)
+
+    let resolveOutcome = null
+    if (kind === 'deny') {
+      // Deny through the SAME real control path the positive arm uses.
+      await promptTurn(MK_RESOLVE, `d4res-${label}`)
+      await waitFor(() => sawReply(DONE_RESOLVE), 120_000)
+      const leaderTx = readMemberTranscript(world.home, ROOT)
+      const resolveCall = (leaderTx?.calls ?? []).find((c) => String(c.callId) === CALL_RESOLVE) ?? null
+      resolveOutcome = { call: resolveCall?.arguments ?? null, result: resolveCall?.result?.text?.slice(0, 800) ?? null, isError: resolveCall?.result?.isError ?? null }
+    } else {
+      // STOP WHILE PENDING: cancel the WORKER's own session (the host's turn abort). The admission
+      // port combines this signal with its own close and the ONE wait bridge abandons the inline ask.
+      const cancel = await apiSessionCancel(origin, cookie, String(workerRow.childSessionId), `d4stop-${label}`)
+      cancelStatus = cancel?.status ?? null
+    }
+
+    // Wait for the product to settle the call; never a fixed sleep as the evidence.
+    const terminal = await waitFor(() => {
+      const settled = settlementOf(world.home, ids.worker, CALL_WRK_WRITE)
+      settleAttempts += 1
+      return settled.present === true && (settled.state === 'REFUSED' || settled.state === 'CANCELLED' || settled.state === 'COMPLETED' || settled.state === 'FAILED')
+    }, 120_000, 400)
+    await sleep(700)
+    const file = fileEvidence(target)
+    const settlement = settlementOf(world.home, ids.worker, CALL_WRK_WRITE)
+    const facts = factsFor(readLedger(world.home, ids.worker), CALL_WRK_WRITE)
+    const verdict = kind === 'deny'
+      ? judgeAskDenied({ requestRaised: ids.pendingRequestId !== null, resolveOutcome, file, facts, settlement })
+      : judgeAskStopped({ requestRaised: ids.pendingRequestId !== null, cancelStatus, file, facts, settlement })
+    writeFileSync(join(bootDir, `${label}.json`), `${JSON.stringify({
+      kind, terminal, resolveOutcome, cancelStatus, file, settlement, facts, verdict,
+    }, null, 2)}\n`)
+    fnWriteVerdict(bootDir, label, verdict)
+    log(`[boot${String(index)}] d4:${label}=${verdict.verdict} failing=${JSON.stringify(verdict.failing)}`)
+    return { verdict, worldId: world.id, requestId: ids.pendingRequestId, cancelStatus, file: { exists: file.exists, bytes: file.bytes, sha256: file.sha256 }, settlement: { state: settlement.state, bodyOutcome: settlement.bodyOutcome }, resolveOutcome }
+  } catch (error) {
+    const verdict = verdictOf(`${kind} arm must run`, [{ id: 'arm-ran', ok: false, detail: String(error?.message ?? error) }])
+    log(`[boot${String(index)}] d4:${label} ARM FAILED: ${String(error?.message ?? error)}`)
+    writeFileSync(join(bootDir, `${label}-failure.json`), `${JSON.stringify({ error: String(error?.stack ?? error) }, null, 2)}\n`)
+    fnWriteVerdict(bootDir, label, verdict)
+    return { verdict, error: String(error?.message ?? error) }
+  } finally {
+    if (world !== null) {
+      try { await world.teardown({ keepHome: false }) } catch (error) { log(`[boot${String(index)}] ${label} teardown note: ${String(error?.message ?? error)}`) }
+    }
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // one boot
 // ─────────────────────────────────────────────────────────────────────────────
@@ -917,7 +1150,7 @@ async function probeOnce({ index, head, grant }) {
   const record = createRunRecord({
     runId,
     suite: 'a5sf-live-d4-probe',
-    selectedCases: ['d4:enablement', 'd4:officer-up', 'd4:officer-binding', 'd4:routed-wake', 'd4:refusal'],
+    selectedCases: ['d4:enablement', 'd4:officer-up', 'd4:officer-binding', 'd4:routed-wake', 'd4:refusal', 'd4:ask-execute', 'd4:ask-denied', 'd4:ask-stopped'],
     bindings: runBindings(head, grant),
     ledgerPath: LEDGER_PATH,
     recordClass: 'DEV-LIVE',
@@ -939,15 +1172,12 @@ async function probeOnce({ index, head, grant }) {
     REPO_ROOT, 'packages', 'runtime', 'dist', 'packages', 'runtime', 'src', 'plugin', 'vnext', 'centre-config.js',
   )).href)
 
-  const dirs = { dir: join(EVIDENCE, 'runs-workspace', `boot${String(index)}`) }
-  mkdirSync(dirs.dir, { recursive: true })
-  const paths = {
-    dir: dirs.dir,
-    officerFile: join(dirs.dir, 'officer-read.txt'),
-    workerFile: join(dirs.dir, 'worker-ask.txt'),
-  }
-  writeFileSync(paths.officerFile, 'DBOOT_D4_OFFICER_READ_SOURCE\n', 'utf8')
-
+  // The Member's OWN workspace is the host sandbox's root, so the probe's target MUST live inside it:
+  // a target outside would be refused by the HOST's workspace-write sandbox and would prove nothing
+  // about the lane or the receipt. The world is created before the blueprint is authored so the
+  // authored ask lane and the bytes it approves are both inside that root.
+  let dirs = null
+  let paths = null
   const ids = { officer: null, worker: null, pendingRequestId: null }
   let world = null
   let refusalWorld = null
@@ -959,27 +1189,35 @@ async function probeOnce({ index, head, grant }) {
 
   try {
     // ── the POSITIVE world: one coherent v5 row ──
+    world = await harness.createWorld({ line: LINE, u6Fs: { rows: [] } })
+    mkdirSync(world.workspaceDir, { recursive: true })
+    dirs = { dir: join(world.workspaceDir, 'lane') }
+    mkdirSync(dirs.dir, { recursive: true })
+    paths = {
+      dir: dirs.dir,
+      officerFile: join(dirs.dir, 'officer-read.txt'),
+      workerFile: join(dirs.dir, 'worker-ask.txt'),
+    }
+    writeFileSync(paths.officerFile, 'DBOOT_D4_OFFICER_READ_SOURCE\n', 'utf8')
+    const wakeIntentPath = join(join(EVIDENCE, 'runs-workspace', `boot${String(index)}`), WAKE_DIR)
+    const main = mainBlueprintYaml({ dirs })
+    assertBlueprintText(main, BP_ID, 'main.yaml')
+    const configGate = centreConfigViolation({
+      alpha6ReviewRouting: true,
+      centreStatePath: join(EVIDENCE, 'runs-workspace', `boot${String(index)}`, "centre"),
+      alpha6WakeIntentPath: wakeIntentPath,
+      blueprintSource: main,
+    })
+    log(`[boot${String(index)}] alpha6 config gate (positive): ${JSON.stringify(configGate ?? null)}`)
+    writeFileSync(join(bootDir, 'enablement.json'), `${JSON.stringify({ configGate: configGate ?? null, wakeIntentPath, centreStatePath: join(EVIDENCE, 'runs-workspace', `boot${String(index)}`, 'centre') }, null, 2)}\n`)
+    mkdirSync(join(world.home, 'blueprints'), { recursive: true })
+    writeFileSync(join(world.home, 'blueprints', 'main.yaml'), main)
+    writeFileSync(join(world.home, 'p6t6-directive.json'), `${JSON.stringify(p6t6Directive({ worldId: world.id, logDir: world.logDir }), null, 2)}\n`)
+    world.u6Fs.rows.push(...composedRows({ home: world.home, mainYaml: main, alpha6: { enabled: true, wakeIntentPath: join(world.home, WAKE_DIR) } }))
+    record.record.bindings.compositionDrops = COMPOSITION_DROPS
+    writeFileSync(join(bootDir, 'composition-drops.json'), `${JSON.stringify(COMPOSITION_DROPS, null, 2)}\n`)
+    await world.startMock({ decide: makeDecide({ paths, ids }) })
     const boot = await lease.boot(async () => {
-      const wakeIntentPath = join(join(EVIDENCE, 'runs-workspace', `boot${String(index)}`), WAKE_DIR)
-      const main = mainBlueprintYaml({ dirs })
-      assertBlueprintText(main, BP_ID, 'main.yaml')
-      const configGate = centreConfigViolation({
-        alpha6ReviewRouting: true,
-        centreStatePath: join(EVIDENCE, 'runs-workspace', `boot${String(index)}`, "centre"),
-        alpha6WakeIntentPath: wakeIntentPath,
-        blueprintSource: main,
-      })
-      log(`[boot${String(index)}] alpha6 config gate (positive): ${JSON.stringify(configGate ?? null)}`)
-      writeFileSync(join(bootDir, 'enablement.json'), `${JSON.stringify({ configGate: configGate ?? null, wakeIntentPath, centreStatePath: join(EVIDENCE, 'runs-workspace', `boot${String(index)}`, 'centre') }, null, 2)}\n`)
-      world = await harness.createWorld({ line: LINE, u6Fs: { rows: [] } })
-      mkdirSync(world.workspaceDir, { recursive: true })
-      mkdirSync(join(world.home, 'blueprints'), { recursive: true })
-      writeFileSync(join(world.home, 'blueprints', 'main.yaml'), main)
-      writeFileSync(join(world.home, 'p6t6-directive.json'), `${JSON.stringify(p6t6Directive({ worldId: world.id, logDir: world.logDir }), null, 2)}\n`)
-      world.u6Fs.rows.push(...composedRows({ home: world.home, mainYaml: main, alpha6: { enabled: true, wakeIntentPath: join(world.home, WAKE_DIR) } }))
-      record.record.bindings.compositionDrops = COMPOSITION_DROPS
-      writeFileSync(join(bootDir, 'composition-drops.json'), `${JSON.stringify(COMPOSITION_DROPS, null, 2)}\n`)
-      await world.startMock({ decide: makeDecide({ paths, ids }) })
       return harness.boot({ world, phase, bootTimeoutMs: 300_000 })
     })
     const origin = new URL(boot.url).origin
@@ -1101,6 +1339,47 @@ async function probeOnce({ index, head, grant }) {
       resolveOutcome = { call: resolveCall?.arguments ?? null, result: resolveCall?.result?.text?.slice(0, 800) ?? null, isError: resolveCall?.result?.isError ?? null }
       log(`[boot${String(index)}] leader resolve result: ${String(resolveOutcome.result).slice(0, 200)}`)
     }
+
+    // ── R3 POSITIVE: the approved worker `write` must now EXECUTE through the confined Provider ──
+    //
+    // The write was admitted with disposition `ask`; the Leader's allow is the durable decision; the
+    // centre rechecks, consumes the one-shot grant, mints the receipt and delivers it only inside the
+    // tool body. The Provider verifies it and writes REAL bytes. Wait for the worker's tool RESULT and
+    // the settlement — never for a fixed sleep — then read the bytes from the HOST filesystem.
+    const writeSettled = await waitFor(() => {
+      const tx = readMemberTranscript(world.home, String(workerRow.childSessionId))
+      const call = (tx?.calls ?? []).find((c) => String(c.callId) === CALL_WRK_WRITE) ?? null
+      const settled = settlementOf(world.home, ids.worker, CALL_WRK_WRITE)
+      return call?.result !== null && call?.result !== undefined && settled.present === true
+    }, 120_000, 400)
+    await sleep(500)
+    const workerTxFinal = readMemberTranscript(world.home, String(workerRow.childSessionId))
+    const workerWriteCall = (workerTxFinal?.calls ?? []).find((c) => String(c.callId) === CALL_WRK_WRITE) ?? null
+    const askFile = fileEvidence(paths.workerFile)
+    const askSettlement = settlementOf(world.home, ids.worker, CALL_WRK_WRITE)
+    const workerLedgerFinal = readLedger(world.home, ids.worker)
+    const askFacts = factsFor(workerLedgerFinal, CALL_WRK_WRITE)
+    const askExecuteVerdict = judgeAskExecute({
+      requestRaised: ids.pendingRequestId !== null,
+      resolveOutcome,
+      file: askFile,
+      expectedBytes: `${WORKER_TEXT}\n`,
+      facts: askFacts,
+      settlement: askSettlement,
+      writeCall: workerWriteCall,
+    })
+    writeFileSync(join(bootDir, 'ask-execute.json'), `${JSON.stringify({
+      writeSettled,
+      requestId: ids.pendingRequestId,
+      resolveOutcome,
+      workerWriteCall,
+      file: askFile,
+      settlement: askSettlement,
+      facts: askFacts,
+      verdict: askExecuteVerdict,
+    }, null, 2)}\n`)
+    fnWriteVerdict(bootDir, 'ask-execute', askExecuteVerdict)
+    log(`[boot${String(index)}] d4:ask-execute=${askExecuteVerdict.verdict} failing=${JSON.stringify(askExecuteVerdict.failing)}`)
 
     // ── the governed delivery should have happened by now: measure it ──
     await sleep(1500)
@@ -1296,12 +1575,49 @@ async function probeOnce({ index, head, grant }) {
     enablementVerdict.failing = enablementVerdict.clauses.filter((c) => c.ok !== true).map((c) => c.id)
     log(`[boot${String(index)}] d4:enablement=${enablementVerdict.verdict} failing=${JSON.stringify(enablementVerdict.failing)}`)
 
+    // ── R3 NEGATIVE LIVE ARMS ──
+    //
+    // The positive and refusal worlds still hold the two dev-live slots, so they are torn down
+    // BEFORE the negative arms boot. Everything measured from them is captured first; nothing is
+    // re-booted and no positive judge is shortened.
+    const positiveWorldId = world.id
+    const positiveHome = world.home
+    const refusalWorldId = refusalWorld.id
+    if (refusalWorld !== null) {
+      try { refusalTeardown = await refusalWorld.teardown({ keepHome: false }) } catch (error) { log(`refusal teardown note: ${String(error?.message ?? error)}`) }
+      refusalWorld = null
+    }
+    if (world !== null) {
+      try { teardown = await world.teardown({ keepHome: false }) } catch (error) { log(`teardown note: ${String(error?.message ?? error)}`) }
+      world = null
+    }
+    const negativeLease = await preRegisterDevLiveBudget({
+      grantPath: GRANT_PATH, headCommit: head, runRecord: record,
+      face: 'FS Provider', world: LINE, leaseRoot: factory.leaseRoot,
+      requiredBoots: 2, // deny-while-pending + Stop-while-pending
+    })
+    const deniedArm = await runAskNegativeArm({
+      kind: 'deny', harness, record, index, bootDir, phase, lease: negativeLease, head,
+    })
+    const stoppedArm = await runAskNegativeArm({
+      kind: 'stop', harness, record, index, bootDir, phase, lease: negativeLease, head,
+    })
+    try {
+      const settled = settleDevLiveLease(negativeLease)
+      log(`[boot${String(index)}] negative dev-live slot released (released=${String(settled?.released)} held=${String(settled?.held)})`)
+    } catch (error) {
+      log(`negative lease settle note: ${String(error?.message ?? error)}`)
+    }
+
     const verdicts = {
       enablement: enablementVerdict,
       officerUp: officerUpVerdict,
       officerBinding: officerVerdict,
       routedWake: routedVerdict,
       refusal: refusalVerdict,
+      askExecute: askExecuteVerdict,
+      askDenied: deniedArm.verdict,
+      askStopped: stoppedArm.verdict,
     }
     const overall = Object.values(verdicts).every((v) => v.verdict === 'PROVEN') ? 'PASS' : 'BLOCKED'
     result = {
@@ -1315,13 +1631,24 @@ async function probeOnce({ index, head, grant }) {
         wakeIntentFiles: wakeIntentFiles.length,
         reviewWakeHits: reviewWakeHits.length,
         officerAllowFacts: factsFor(officerLedger, CALL_OFF_READ).filter((f) => f?.kind === 'invocation-authority' && f?.decision === 'allow').length,
+        askExecuteBytes: askFile.bytes,
+        askExecuteSha256: askFile.sha256,
+        askExecuteSettlement: askSettlement.state,
+        askDeniedBytes: deniedArm.file?.bytes ?? null,
+        askDeniedSettlement: deniedArm.settlement?.state ?? null,
+        askStoppedBytes: stoppedArm.file?.bytes ?? null,
+        askStoppedSettlement: stoppedArm.settlement?.state ?? null,
       },
       ids: { ...ids },
-      worldId: world.id,
-      home: world.home,
+      worldId: positiveWorldId,
+      home: positiveHome,
       port: boot.port,
       logPath: boot.logPath,
-      refusalWorldId: refusalWorld.id,
+      refusalWorldId,
+      negativeArms: {
+        denied: { requestId: deniedArm.requestId ?? null, cancelStatus: deniedArm.cancelStatus ?? null },
+        stopped: { requestId: stoppedArm.requestId ?? null, cancelStatus: stoppedArm.cancelStatus ?? null },
+      },
       bootedAt: startedBoot,
       elapsedMs: Date.now() - startedBoot,
     }

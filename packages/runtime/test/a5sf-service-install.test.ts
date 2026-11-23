@@ -46,9 +46,17 @@ import type {
 } from '../member-io-policy/src/types.js'
 import { installMemberIoProviders, installToolBindingRealm } from '../team-services/src/install.js'
 import { mountA5sfRealm } from '../team-services/src/mount.js'
+import { createInvocationBinder } from '../member-io-policy/src/invocation.js'
+import {
+  mintApprovedAskReceipt,
+  prepareApprovedWriteOperation,
+  registerPendingApprovedAskReceipt,
+  runWithApprovedAskExecutionScope,
+} from '../member-io-policy/src/approved-ask-receipt.js'
 import {
   createGuardConsultFileSink,
   GuardObservationError,
+  observeGuard,
   readGuardConsultFile,
   type GuardConsultFact,
 } from '../team-services/src/guard-observability.js'
@@ -492,6 +500,21 @@ describe('P2 seam: observable guard consultations', () => {
     await observed.dispose()
   })
 
+  it('observer forwards the optional operation context VERBATIM (R3 receipt bytes)', async () => {
+    const seen: Array<{ method: string; hostPath: string; operation: unknown }> = []
+    const inner = async (method: string, hostPath: string, _annotations?: readonly string[], operation?: { content?: string }): Promise<void> => {
+      seen.push({ method, hostPath, operation })
+    }
+    const observed = observeGuard(inner, () => undefined, {
+      realm: 'member',
+      memberIdentity: 'member-observe-operation',
+      toolBindingIdentity: null,
+      policyRevision: 'rev-observe-operation',
+    })
+    await observed('writeText', '/tmp/x', undefined, { content: 'approved bytes' })
+    expect(seen).toEqual([{ method: 'writeText', hostPath: '/tmp/x', operation: { content: 'approved bytes' } }])
+  })
+
   it('observer records one fact per consultation, and the JSONL sink round-trips', async () => {
     const dir = await mkdtemp(join(rootDir, 'seam-observe-'))
     await writeFile(join(dir, 'ok.txt'), 'ok\n', 'utf8')
@@ -534,5 +557,135 @@ describe('P2 seam: observable guard consultations', () => {
     await expect(realm.fs.readText(await realm.fs.resolve(join(dir, 'ok.txt')))).rejects.toBeInstanceOf(GuardObservationError)
     expect(TestFileSystem.reads).toBe(0)
     await realm.dispose()
+  })
+})
+
+/**
+ * R3 PRODUCTION WIRING (round 95). The mount must hand the confined Provider
+ * the SAME invocation binder the centre spends grants through, or a receipt
+ * minted for an approved `write` can never be verified and every ask fails
+ * closed. These arms pin the SEAM, not the approval chain itself (the chain is
+ * proven by ADM-154…161 and by the live D4 judge):
+ *
+ *  - with the authority supplied, an in-scope receipt for THIS effect authorizes
+ *    the `writeText` and the REAL bytes land;
+ *  - with the authority OMITTED (the pre-R3 mount), the same receipt is refused
+ *    `RECEIPT_AUTHORITY_UNAVAILABLE` — fail-closed, never an ambient allow;
+ *  - with the authority supplied but NO execution scope, the ask is refused
+ *    `RECEIPT_NOT_IN_SCOPE` before any byte.
+ *
+ * No lane is widened: the write axis still says `ask`, `deny` still wins, and
+ * the receipt is only consulted on the `ask` branch.
+ */
+describe('R3 production wiring: the mount passes the invocation binder', () => {
+  const CONTENT = 'WIRED-APPROVED-BYTES\n'
+
+  async function wiredRealm(options: { withAuthority: boolean }): Promise<{
+    identity: TrustedMemberIdentity
+    dir: string
+    target: string
+    fs: MemberServiceInstallation['fs']
+    binder: ReturnType<typeof createInvocationBinder>
+    dispose: () => Promise<void>
+  }> {
+    const dir = await mkdtemp(join(FIXTURE_PARENT, 'a5sf-r3-wiring-'))
+    const target = join(dir, 'approved.txt')
+    const identity: TrustedMemberIdentity = {
+      ...IDENTITY_A,
+      memberInstanceId: `member-r3-${options.withAuthority ? 'authority' : 'no-authority'}-${Math.random().toString(36).slice(2, 8)}`,
+    }
+    const scopedRoot = new Context()
+    await scopedRoot.plugin(SystemPrompt, {})
+    await scopedRoot.plugin(ToolRuntime)
+    await scopedRoot.plugin(BaseFileSystem, { root: dir })
+    const binder = createInvocationBinder()
+    const installation = await installMemberIoProviders({
+      root: scopedRoot,
+      members: [{
+        identity,
+        policy: { ok: true, value: policyOf(identity, lane([dir]), lane([], [], [dir])) },
+      }],
+      ...(options.withAuthority ? { approvedAskAuthority: { binder } } : {}),
+    })
+    return {
+      identity,
+      dir,
+      target,
+      fs: installation.members[0]!.fs,
+      binder,
+      dispose: installation.dispose,
+    }
+  }
+
+  async function receiptFor(identity: TrustedMemberIdentity, dir: string, target: string, binder: ReturnType<typeof createInvocationBinder>) {
+    const prepared = await prepareApprovedWriteOperation({ locator: target, content: CONTENT })
+    expect(prepared.ok).toBe(true)
+    if (!prepared.ok) throw new Error(prepared.detail)
+    const minted = mintApprovedAskReceipt({
+      executionId: 'exec-r3-wiring',
+      callId: 'call-r3-wiring',
+      member: identity,
+      toolName: 'write',
+      toolBindingIdentity: '',
+      operation: prepared.value,
+      policyGeneration: `rev-${identity.memberInstanceId}`,
+      approval: { requestId: 'req-r3-wiring', decisionId: 'decision-r3-wiring', caseId: null, legOrdinal: null },
+      grant: {
+        consumed: true,
+        binderEpoch: binder.currentEpoch(),
+        memberEpoch: binder.currentMemberEpoch(identity.memberInstanceId),
+      },
+      bounds: { read: lane([dir]), write: lane([], [], [dir]) },
+    })
+    expect(minted.ok).toBe(true)
+    if (!minted.ok) throw new Error(minted.detail)
+    return minted.value
+  }
+
+  it('with authority: an in-scope receipt authorizes the approved writeText and the bytes land', async () => {
+    const realm = await wiredRealm({ withAuthority: true })
+    try {
+      const receipt = await receiptFor(realm.identity, realm.dir, realm.target, realm.binder)
+      registerPendingApprovedAskReceipt({}, receipt)
+      await runWithApprovedAskExecutionScope(receipt, async () => {
+        await realm.fs.writeText({ hostPath: realm.target } as never, CONTENT)
+      })
+      expect(await readFile(realm.target, 'utf8')).toBe(CONTENT)
+    } finally {
+      await realm.dispose()
+      await rm(realm.dir, { recursive: true, force: true })
+    }
+  })
+
+  it('without authority (pre-R3 mount): the same receipt is refused, zero bytes', async () => {
+    const realm = await wiredRealm({ withAuthority: false })
+    try {
+      const receipt = await receiptFor(realm.identity, realm.dir, realm.target, realm.binder)
+      registerPendingApprovedAskReceipt({}, receipt)
+      await expect(runWithApprovedAskExecutionScope(receipt, async () => {
+        await realm.fs.writeText({ hostPath: realm.target } as never, CONTENT)
+      })).rejects.toMatchObject({
+        code: 'IO_ASK_RECEIPT_REFUSED',
+        message: expect.stringContaining('RECEIPT_AUTHORITY_UNAVAILABLE'),
+      })
+      await expect(statFile(realm.target)).rejects.toMatchObject({ code: 'ENOENT' })
+    } finally {
+      await realm.dispose()
+      await rm(realm.dir, { recursive: true, force: true })
+    }
+  })
+
+  it('with authority but outside any execution scope: refused, zero bytes', async () => {
+    const realm = await wiredRealm({ withAuthority: true })
+    try {
+      await expect(realm.fs.writeText({ hostPath: realm.target } as never, CONTENT)).rejects.toMatchObject({
+        code: 'IO_ASK_RECEIPT_REFUSED',
+        message: expect.stringContaining('RECEIPT_NOT_IN_SCOPE'),
+      })
+      await expect(statFile(realm.target)).rejects.toMatchObject({ code: 'ENOENT' })
+    } finally {
+      await realm.dispose()
+      await rm(realm.dir, { recursive: true, force: true })
+    }
   })
 })

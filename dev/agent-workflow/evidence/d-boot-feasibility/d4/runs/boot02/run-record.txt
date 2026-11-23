@@ -1,1 +1,1 @@
-RUN-SUMMARY run=a5sf-live-d4-2026-11-23T20-04-49-723Z-b2 suite=a5sf-live-d4-probe overall=FAIL cases=5 FAIL:1 PASS:4 worlds=none recordClass=DEV-LIVE (not candidate evidence)
+RUN-SUMMARY run=a5sf-live-d4-2026-11-23T22-37-25-285Z-b2 suite=a5sf-live-d4-probe overall=FAIL cases=8 FAIL:1 PASS:7 worlds=none recordClass=DEV-LIVE (not candidate evidence)

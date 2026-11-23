@@ -6,11 +6,21 @@ officerUp                            "PROVEN"                             "PROVE
 officerBinding                       "PROVEN"                             "PROVEN"                            
 routedWake                           "REFUTED"                            "REFUTED"                           
 refusal                              "PROVEN"                             "PROVEN"                            
+askExecute                           "PROVEN"                             "PROVEN"                            
+askDenied                            "PROVEN"                             "PROVEN"                            
+askStopped                           "PROVEN"                             "PROVEN"                            
 askAppeared                          true                                 true                                
 pendingRequestId                     "ctrl-1xxrzo21k29yc31rawhls0qn"      "ctrl-1xxrzo21k29yc31rawhls0qn"     
 wakeFacts                            0                                    0                                   
 wakeIntentFiles                      0                                    0                                   
 reviewWakeHits                       0                                    0                                   
 officerAllowFacts                    1                                    1                                   
+askExecuteBytes                      27                                   27                                  
+askExecuteSha256                     "ced10112e5b82a2b1b6bca1b85b1dff24   "ced10112e5b82a2b1b6bca1b85b1dff24  
+askExecuteSettlement                 "COMPLETED"                          "COMPLETED"                         
+askDeniedBytes                       null                                 null                                
+askDeniedSettlement                  "REFUSED"                            "REFUSED"                           
+askStoppedBytes                      null                                 null                                
+askStoppedSettlement                 "REFUSED"                            "REFUSED"                           
 
 agreeing=true differing=[]

@@ -127,12 +127,39 @@ survives iff neither side's disposition for that locator is `deny`; it stays `as
 The fix is in `path-rules.ts` (with a G11 rationale comment), pinned by two new arms in
 `a5sf-member-policy.test.ts`. No lane is widened; the deny lane still wins.
 
+## Production wiring (round 95)
+
+The round-94 PoC left the last gap open: the real mount constructed `createMemberFsGuard(policy)`
+with no authority, so a booted product turn could never verify a receipt. Round 95 wires the REAL
+binder into the production mount for `write`/`writeText` ONLY:
+
+- `agent-bindings.mjs:1771-1790` — when (and only when) the row's Control service is wired
+  (`grants !== undefined`), the member realm mount is given
+  `approvedAskAuthority: { binder: grantBinder }`. `grantBinder` is the SAME binder instance the
+  centre's `grants` consumes through; it is not a new authority and mints nothing.
+- `a5sf-realm-row.mjs:835,968` → `mount.ts:796,896,965` → `install.ts:104,513,880` — the authority
+  is forwarded unchanged to `createMemberFsGuard(spec.effective, undefined, authority)` on the
+  MEMBER face and on the BINDING-REALM face (a declared `write` tool binding routes `writeText`
+  through the binding realm; its receipt bounds come from the same compiled answer). The terminal
+  faces are untouched and keep R4.
+- `guard-observability.ts:280-305` — the `observeGuard` wrapper now forwards the optional
+  `FsGuardOperation` VERBATIM. It is a pass-through, not a decision point; without this, a governed
+  realm (which always supplies an evidence sink) dropped the `writeText` content and refused a
+  valid receipt with `RECEIPT_CONTENT_UNAVAILABLE`. Nothing about the decision changes.
+
+The no-authority branch is byte-identical to before (guarded by the new `RECEIPT_AUTHORITY_UNAVAILABLE`
+arms in `a5sf-service-install.test.ts`). No `guarded` coupling, no global callId map, no
+attribution-ALS reuse, no second authority, no admission-duty expansion, no upstream patch.
+
 ## What this ADR does NOT prove
 
-The live v5 `d4:routed-wake` boot is still not re-run: the PoC drives the real Provider, binder,
-ControlService, admission port and settlement store, but the HOST LOOP is a double supplying the
-pinned dispatch order. Production entry wiring of the Provider's receipt authority (constructing
-`createMemberFsGuard(policy, resolver, {binder})` on the real mount) is not wired by this round; in
-production today the third argument is absent, so every `ask` still fails closed. The `ask → grant →
-execute` chain is PROVEN for `write` at the mechanism level; it is NOT yet PROVEN in a booted
-product turn, and NOT PROVEN for any other tool.
+- **Scope.** Only `write`/`writeText` is covered. `editText`/`patchText`/`deleteFile`/`moveFile`,
+  subprocess, and every other face still refuse `IO_ASK_REQUIRES_APPROVAL` (R4).
+- **Product status.** The D4 live evidence is `DEV-LIVE` (a booted rc.2 host, not a gate); no row is
+  PRODUCT-PROVEN. `d4:routed-wake` remains REFUTED — the receipt closes the post-grant refusal, not
+  Alpha.6 routing.
+- **Content binding.** The receipt binds the `writeText` content string the Provider receives. A
+  tool that mutates the payload between the centre's prepare and the Provider call would be refused
+  (`RECEIPT_CONTENT_MISMATCH`), not adapted.
+- **`caseId`.** An inline admission request mints `caseId:null`; it binds the durable
+  request/decision identity it actually has, not an Alpha.6 case it never had.

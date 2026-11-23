@@ -20,7 +20,7 @@
           {
             "id": "team-session-served",
             "ok": true,
-            "detail": "teamSession={\"rootSessionId\":\"session-dboot-d4-root\",\"blueprintId\":\"team.dboot.d4.v5\",\"revision\":\"1\",\"contentHash\":\"sha256:ca9ca0a091aa70526ecc796e117dce81b906a69776fb64b72c59501f6170e46b\",\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T19-58-00Z/workspace\",\"createdAt\":\"2026-11-23T20:00:22.051Z\",\"generation\":11}"
+            "detail": "teamSession={\"rootSessionId\":\"session-dboot-d4-root\",\"blueprintId\":\"team.dboot.d4.v5\",\"revision\":\"1\",\"contentHash\":\"sha256:3448c47903bea4c5a3a1bd35cc1c7e982a8d0fbe12bbae736519648aaaea6045\",\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-23-40Z/workspace\",\"createdAt\":\"2026-11-23T22:26:04.226Z\",\"generation\":11}"
           },
           {
             "id": "no-alpha6-refusal-in-host-log",
@@ -96,7 +96,7 @@
           {
             "id": "ordinary-tool-ask-created",
             "ok": true,
-            "detail": "durable row={\"requestId\":\"ctrl-1xxrzo21k29yc31rawhls0qn\",\"kind\":\"leader-approval\",\"actionName\":\"admission-ask\",\"targetInstanceId\":\"inst-0ty67u70r99a\",\"toolName\":\"write\",\"summary\":\"admission ask: write (fs.write \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/runs-workspace/boot1/worker-ask.txt\\\" requires approval under policy generation a5sf1:252bb6604e7b023506588e3902046231)\",\"approvalCaseId\":null,\"legOrdinal\":null,\"reviewAuthority\":null,\"operationFingerprint\":null,\"requestedEffect\":null,\"blueprintContentHash\":null}"
+            "detail": "durable row={\"requestId\":\"ctrl-1xxrzo21k29yc31rawhls0qn\",\"kind\":\"leader-approval\",\"actionName\":\"admission-ask\",\"targetInstanceId\":\"inst-0ty67u70r99a\",\"toolName\":\"write\",\"summary\":\"admission ask: write (fs.write \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-23-40Z/workspace/lane/worker-ask.txt\\\" requires approval under policy generation a5sf1:2cd4e5619ecf9308b629d2b5f5443e11)\",\"approvalCaseId\":null,\"legOrdinal\":null,\"reviewAuthority\":null,\"operationFingerprint\":null,\"requestedEffect\":null,\"blueprintContentHash\":null}"
           },
           {
             "id": "row-carries-approval-case",
@@ -167,7 +167,7 @@
           {
             "id": "refusal-recorded",
             "ok": true,
-            "detail": "deny facts=[{\"refusalCode\":\"ADMISSION_ALPHA6_UNAVAILABLE\",\"axis\":\"host.service\",\"callId\":\"alpha6:bbe38626-6884-4254-a659-57ed8fc2f823:0\"}]"
+            "detail": "deny facts=[{\"refusalCode\":\"ADMISSION_ALPHA6_UNAVAILABLE\",\"axis\":\"host.service\",\"callId\":\"alpha6:b67a6c2f-8689-468c-a1ae-9d04c3ad2a3e:0\"}]"
           },
           {
             "id": "refusal-is-not-a-route",
@@ -181,6 +181,107 @@
           }
         ],
         "failing": []
+      },
+      "askExecute": {
+        "proposition": "a Member `write` whose disposition is `ask` raises a REAL Control request, is approved through the REAL control path, and then executes: the confined Provider verifies the minted receipt and writes the exact approved bytes, settled COMPLETED",
+        "verdict": "PROVEN",
+        "clauses": [
+          {
+            "id": "control-request-raised",
+            "ok": true,
+            "detail": "requestRaised=true"
+          },
+          {
+            "id": "approved-through-real-control-path",
+            "ok": true,
+            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1xxrzo21k29yc31rawhls0qn\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":9,\\\"decisionSequence\\\":10,\\\"createdAt\\\":\\\"2026-11-23T22:26:06.6\""
+          },
+          {
+            "id": "admission-fact-allow-lane-ask",
+            "ok": true,
+            "detail": "allow facts=[{\"callId\":\"call-d4-worker-write\",\"decision\":\"allow\",\"laneDecision\":\"ask\",\"axis\":\"fs.write\"}]"
+          },
+          {
+            "id": "write-tool-result-not-an-error",
+            "ok": true,
+            "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-23-40Z/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+          },
+          {
+            "id": "real-bytes-on-disk",
+            "ok": true,
+            "detail": "file exists=true bytes=27 sha256=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3 expectedSha256=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3"
+          },
+          {
+            "id": "settlement-completed",
+            "ok": true,
+            "detail": "state=COMPLETED bodyOutcome=completed transitions=[\"ADMITTED\",\"RUNNING\",\"COMPLETED\"]"
+          }
+        ],
+        "failing": []
+      },
+      "askDenied": {
+        "proposition": "the SAME live `write` ask denied through the real control path mints nothing and writes nothing: zero bytes on disk, a recorded deny fact, and a REFUSED / not-started settlement",
+        "verdict": "PROVEN",
+        "clauses": [
+          {
+            "id": "control-request-raised",
+            "ok": true,
+            "detail": "requestRaised=true"
+          },
+          {
+            "id": "denied-through-real-control-path",
+            "ok": true,
+            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1xxrzo21k29yc31rawhls0qn\\\",\\\"decision\\\":\\\"deny\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":4,\\\"decisionSequence\\\":5,\\\"createdAt\\\":\\\"2026-11-23T22:32:58.242\""
+          },
+          {
+            "id": "deny-fact-recorded",
+            "ok": true,
+            "detail": "deny facts=[{\"callId\":\"call-d4-worker-write\",\"refusalCode\":\"ADMISSION_APPROVAL_DENIED\",\"decision\":\"deny\"}]"
+          },
+          {
+            "id": "zero-bytes",
+            "ok": true,
+            "detail": "file exists=false bytes=null"
+          },
+          {
+            "id": "settlement-refused-not-started",
+            "ok": true,
+            "detail": "state=REFUSED bodyOutcome=not-started transitions=[\"ADMITTED\",\"REFUSED\"]"
+          }
+        ],
+        "failing": []
+      },
+      "askStopped": {
+        "proposition": "a live `write` ask that is STOPPED while pending is refused with the product Stop code: zero bytes on disk and a REFUSED / not-started settlement, never an execution",
+        "verdict": "PROVEN",
+        "clauses": [
+          {
+            "id": "control-request-raised",
+            "ok": true,
+            "detail": "requestRaised=true"
+          },
+          {
+            "id": "cancel-reached-the-host",
+            "ok": true,
+            "detail": "session/cancel status=200"
+          },
+          {
+            "id": "stop-fact-recorded",
+            "ok": true,
+            "detail": "deny facts=[{\"callId\":\"call-d4-worker-write\",\"refusalCode\":\"ADMISSION_STOPPED\",\"decision\":\"deny\"}]"
+          },
+          {
+            "id": "zero-bytes",
+            "ok": true,
+            "detail": "file exists=false bytes=null"
+          },
+          {
+            "id": "settlement-refused-not-started",
+            "ok": true,
+            "detail": "state=REFUSED bodyOutcome=not-started transitions=[\"ADMITTED\",\"REFUSED\"]"
+          }
+        ],
+        "failing": []
       }
     },
     "counters": {
@@ -189,20 +290,37 @@
       "wakeFacts": 0,
       "wakeIntentFiles": 0,
       "reviewWakeHits": 0,
-      "officerAllowFacts": 1
+      "officerAllowFacts": 1,
+      "askExecuteBytes": 27,
+      "askExecuteSha256": "ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3",
+      "askExecuteSettlement": "COMPLETED",
+      "askDeniedBytes": null,
+      "askDeniedSettlement": "REFUSED",
+      "askStoppedBytes": null,
+      "askStoppedSettlement": "REFUSED"
     },
     "ids": {
       "officer": "inst-1crltnl0089j",
       "worker": "inst-0ty67u70r99a",
       "pendingRequestId": "ctrl-1xxrzo21k29yc31rawhls0qn"
     },
-    "worldId": "u5u5a5sfdev1-20261123T19-58-00Z",
-    "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T19-58-00Z",
+    "worldId": "u5u5a5sfdev1-20261123T22-23-40Z",
+    "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-23-40Z",
     "port": 3194,
-    "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/driver/logs/u5u5a5sfdev1-20261123T19-58-00Z/instance-port3194.log",
-    "refusalWorldId": "u5u5a5sfdev1-20261123T20-02-26Z",
-    "bootedAt": 1795463880242,
-    "elapsedMs": 409258
+    "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/driver/logs/u5u5a5sfdev1-20261123T22-23-40Z/instance-port3194.log",
+    "refusalWorldId": "u5u5a5sfdev1-20261123T22-28-08Z",
+    "negativeArms": {
+      "denied": {
+        "requestId": "ctrl-1xxrzo21k29yc31rawhls0qn",
+        "cancelStatus": null
+      },
+      "stopped": {
+        "requestId": "ctrl-1xxrzo21k29yc31rawhls0qn",
+        "cancelStatus": 200
+      }
+    },
+    "bootedAt": 1795472620937,
+    "elapsedMs": 824346
   },
   {
     "boot": 2,
@@ -225,7 +343,7 @@
           {
             "id": "team-session-served",
             "ok": true,
-            "detail": "teamSession={\"rootSessionId\":\"session-dboot-d4-root\",\"blueprintId\":\"team.dboot.d4.v5\",\"revision\":\"1\",\"contentHash\":\"sha256:5f8731ca11eab98e80cb12483fe63bf8bad0bb0d6e98647a2decf3c5be38b019\",\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T20-04-49Z/workspace\",\"createdAt\":\"2026-11-23T20:07:12.535Z\",\"generation\":11}"
+            "detail": "teamSession={\"rootSessionId\":\"session-dboot-d4-root\",\"blueprintId\":\"team.dboot.d4.v5\",\"revision\":\"1\",\"contentHash\":\"sha256:7704ba420feafe5d53b390d64ad3d9c7d7035c1520407d530dea65aae4ebdb67\",\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-37-25Z/workspace\",\"createdAt\":\"2026-11-23T22:39:49.491Z\",\"generation\":11}"
           },
           {
             "id": "no-alpha6-refusal-in-host-log",
@@ -301,7 +419,7 @@
           {
             "id": "ordinary-tool-ask-created",
             "ok": true,
-            "detail": "durable row={\"requestId\":\"ctrl-1xxrzo21k29yc31rawhls0qn\",\"kind\":\"leader-approval\",\"actionName\":\"admission-ask\",\"targetInstanceId\":\"inst-0ty67u70r99a\",\"toolName\":\"write\",\"summary\":\"admission ask: write (fs.write \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/runs-workspace/boot2/worker-ask.txt\\\" requires approval under policy generation a5sf1:4bf187752b145ccf2a09ba91244bb34e)\",\"approvalCaseId\":null,\"legOrdinal\":null,\"reviewAuthority\":null,\"operationFingerprint\":null,\"requestedEffect\":null,\"blueprintContentHash\":null}"
+            "detail": "durable row={\"requestId\":\"ctrl-1xxrzo21k29yc31rawhls0qn\",\"kind\":\"leader-approval\",\"actionName\":\"admission-ask\",\"targetInstanceId\":\"inst-0ty67u70r99a\",\"toolName\":\"write\",\"summary\":\"admission ask: write (fs.write \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-37-25Z/workspace/lane/worker-ask.txt\\\" requires approval under policy generation a5sf1:8314c9a1c612344cea629f54a0437aae)\",\"approvalCaseId\":null,\"legOrdinal\":null,\"reviewAuthority\":null,\"operationFingerprint\":null,\"requestedEffect\":null,\"blueprintContentHash\":null}"
           },
           {
             "id": "row-carries-approval-case",
@@ -372,7 +490,7 @@
           {
             "id": "refusal-recorded",
             "ok": true,
-            "detail": "deny facts=[{\"refusalCode\":\"ADMISSION_ALPHA6_UNAVAILABLE\",\"axis\":\"host.service\",\"callId\":\"alpha6:8f42491c-3719-4100-bff6-f8731083b712:0\"}]"
+            "detail": "deny facts=[{\"refusalCode\":\"ADMISSION_ALPHA6_UNAVAILABLE\",\"axis\":\"host.service\",\"callId\":\"alpha6:dc44cbc6-5e03-4d52-b244-57bb411849b0:0\"}]"
           },
           {
             "id": "refusal-is-not-a-route",
@@ -386,6 +504,107 @@
           }
         ],
         "failing": []
+      },
+      "askExecute": {
+        "proposition": "a Member `write` whose disposition is `ask` raises a REAL Control request, is approved through the REAL control path, and then executes: the confined Provider verifies the minted receipt and writes the exact approved bytes, settled COMPLETED",
+        "verdict": "PROVEN",
+        "clauses": [
+          {
+            "id": "control-request-raised",
+            "ok": true,
+            "detail": "requestRaised=true"
+          },
+          {
+            "id": "approved-through-real-control-path",
+            "ok": true,
+            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1xxrzo21k29yc31rawhls0qn\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":9,\\\"decisionSequence\\\":10,\\\"createdAt\\\":\\\"2026-11-23T22:39:51.8\""
+          },
+          {
+            "id": "admission-fact-allow-lane-ask",
+            "ok": true,
+            "detail": "allow facts=[{\"callId\":\"call-d4-worker-write\",\"decision\":\"allow\",\"laneDecision\":\"ask\",\"axis\":\"fs.write\"}]"
+          },
+          {
+            "id": "write-tool-result-not-an-error",
+            "ok": true,
+            "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-37-25Z/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+          },
+          {
+            "id": "real-bytes-on-disk",
+            "ok": true,
+            "detail": "file exists=true bytes=27 sha256=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3 expectedSha256=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3"
+          },
+          {
+            "id": "settlement-completed",
+            "ok": true,
+            "detail": "state=COMPLETED bodyOutcome=completed transitions=[\"ADMITTED\",\"RUNNING\",\"COMPLETED\"]"
+          }
+        ],
+        "failing": []
+      },
+      "askDenied": {
+        "proposition": "the SAME live `write` ask denied through the real control path mints nothing and writes nothing: zero bytes on disk, a recorded deny fact, and a REFUSED / not-started settlement",
+        "verdict": "PROVEN",
+        "clauses": [
+          {
+            "id": "control-request-raised",
+            "ok": true,
+            "detail": "requestRaised=true"
+          },
+          {
+            "id": "denied-through-real-control-path",
+            "ok": true,
+            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1xxrzo21k29yc31rawhls0qn\\\",\\\"decision\\\":\\\"deny\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":4,\\\"decisionSequence\\\":5,\\\"createdAt\\\":\\\"2026-11-23T22:46:43.677\""
+          },
+          {
+            "id": "deny-fact-recorded",
+            "ok": true,
+            "detail": "deny facts=[{\"callId\":\"call-d4-worker-write\",\"refusalCode\":\"ADMISSION_APPROVAL_DENIED\",\"decision\":\"deny\"}]"
+          },
+          {
+            "id": "zero-bytes",
+            "ok": true,
+            "detail": "file exists=false bytes=null"
+          },
+          {
+            "id": "settlement-refused-not-started",
+            "ok": true,
+            "detail": "state=REFUSED bodyOutcome=not-started transitions=[\"ADMITTED\",\"REFUSED\"]"
+          }
+        ],
+        "failing": []
+      },
+      "askStopped": {
+        "proposition": "a live `write` ask that is STOPPED while pending is refused with the product Stop code: zero bytes on disk and a REFUSED / not-started settlement, never an execution",
+        "verdict": "PROVEN",
+        "clauses": [
+          {
+            "id": "control-request-raised",
+            "ok": true,
+            "detail": "requestRaised=true"
+          },
+          {
+            "id": "cancel-reached-the-host",
+            "ok": true,
+            "detail": "session/cancel status=200"
+          },
+          {
+            "id": "stop-fact-recorded",
+            "ok": true,
+            "detail": "deny facts=[{\"callId\":\"call-d4-worker-write\",\"refusalCode\":\"ADMISSION_STOPPED\",\"decision\":\"deny\"}]"
+          },
+          {
+            "id": "zero-bytes",
+            "ok": true,
+            "detail": "file exists=false bytes=null"
+          },
+          {
+            "id": "settlement-refused-not-started",
+            "ok": true,
+            "detail": "state=REFUSED bodyOutcome=not-started transitions=[\"ADMITTED\",\"REFUSED\"]"
+          }
+        ],
+        "failing": []
       }
     },
     "counters": {
@@ -394,19 +613,36 @@
       "wakeFacts": 0,
       "wakeIntentFiles": 0,
       "reviewWakeHits": 0,
-      "officerAllowFacts": 1
+      "officerAllowFacts": 1,
+      "askExecuteBytes": 27,
+      "askExecuteSha256": "ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3",
+      "askExecuteSettlement": "COMPLETED",
+      "askDeniedBytes": null,
+      "askDeniedSettlement": "REFUSED",
+      "askStoppedBytes": null,
+      "askStoppedSettlement": "REFUSED"
     },
     "ids": {
       "officer": "inst-1crltnl0089j",
       "worker": "inst-0ty67u70r99a",
       "pendingRequestId": "ctrl-1xxrzo21k29yc31rawhls0qn"
     },
-    "worldId": "u5u5a5sfdev1-20261123T20-04-49Z",
-    "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T20-04-49Z",
+    "worldId": "u5u5a5sfdev1-20261123T22-37-25Z",
+    "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-37-25Z",
     "port": 3194,
-    "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/driver/logs/u5u5a5sfdev1-20261123T20-04-49Z/instance-port3194.log",
-    "refusalWorldId": "u5u5a5sfdev1-20261123T20-09-16Z",
-    "bootedAt": 1795464289758,
-    "elapsedMs": 409427
+    "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/driver/logs/u5u5a5sfdev1-20261123T22-37-25Z/instance-port3194.log",
+    "refusalWorldId": "u5u5a5sfdev1-20261123T22-41-53Z",
+    "negativeArms": {
+      "denied": {
+        "requestId": "ctrl-1xxrzo21k29yc31rawhls0qn",
+        "cancelStatus": null
+      },
+      "stopped": {
+        "requestId": "ctrl-1xxrzo21k29yc31rawhls0qn",
+        "cancelStatus": 200
+      }
+    },
+    "bootedAt": 1795473445326,
+    "elapsedMs": 825488
   }
 ]

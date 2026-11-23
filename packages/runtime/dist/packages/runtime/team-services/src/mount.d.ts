@@ -39,7 +39,7 @@
  */
 import type { Context, Fiber, Plugin } from '@deepseek-ai/cordis';
 import type { CompileResult, EffectiveIoPolicy, MemberPolicy, TrustedMemberIdentity } from '../../member-io-policy/src/types.js';
-import type { FsProviderConstructor } from './fs.js';
+import type { ApprovedAskProviderAuthority, FsProviderConstructor } from './fs.js';
 import type { GuardConsultObserver } from './guard-observability.js';
 import { type MemberServiceSpec, type ToolBindingRealm } from './install.js';
 import type { ConfinedSubprocessRealmSpec, ConfinedTerminalRealmSpec, ConfinedWebRealmSpec } from './install.js';
@@ -420,6 +420,14 @@ export interface MountA5sfRealmInput {
      * by the inherited, legacy-generation PTY service.
      */
     readonly terminal?: ConfinedTerminalRealmSpec;
+    /**
+     * R3 PRODUCTION WIRING (round 95). The SAME invocation binder the centre
+     * spends one-shot grants through, handed to every realm guard this mount
+     * builds so a Provider can prove a minted receipt is still live. Omitted =
+     * default-preserving fail-closed asks. It is a liveness reader, NEVER an
+     * allow source: it cannot mint, widen a lane or override `deny`.
+     */
+    readonly approvedAskAuthority?: ApprovedAskProviderAuthority;
 }
 export interface MountedA5sfRealm {
     readonly members: readonly MemberServiceSpec[];

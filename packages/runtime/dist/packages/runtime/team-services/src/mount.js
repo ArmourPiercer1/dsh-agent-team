@@ -476,6 +476,7 @@ export async function mountA5sfRealm(input) {
         ...(input.subprocess === undefined ? {} : { subprocess: input.subprocess }),
         ...(input.web === undefined ? {} : { web: input.web }),
         ...(input.terminal === undefined ? {} : { terminal: input.terminal }),
+        ...(input.approvedAskAuthority === undefined ? {} : { approvedAskAuthority: input.approvedAskAuthority }),
     });
     // ROUTE C (2026-11-03): the native tool modules are re-mounted INSIDE the
     // Member's isolated scope by the CALLER, through this realm's
@@ -546,6 +547,7 @@ export async function mountA5sfRealm(input) {
                 spec,
                 ...(input.providerClass === undefined ? {} : { providerClass: input.providerClass }),
                 ...(input.onGuardConsult === undefined ? {} : { onGuardConsult: input.onGuardConsult }),
+                ...(input.approvedAskAuthority === undefined ? {} : { approvedAskAuthority: input.approvedAskAuthority }),
             }));
         }
     }

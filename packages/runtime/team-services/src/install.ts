@@ -33,6 +33,7 @@ import { requireProviderCapabilities } from '../../member-io-policy/src/provider
 import {
   createConfinedFileSystemClass,
   createMemberFsGuard,
+  type ApprovedAskProviderAuthority,
   type FsProviderConstructor,
   type FsProviderSurface,
 } from './fs.js'
@@ -89,6 +90,18 @@ export interface InstallMemberIoProvidersInput {
    * `guard-observability.ts`.
    */
   readonly onGuardConsult?: GuardConsultObserver
+  /**
+   * R3 PRODUCTION WIRING (owner ruling 20261124-0151 §2, round 95). The
+   * invocation binder's read-only epoch surface. Supplied by the production
+   * mount that shares the SAME binder the centre spends grants through, so a
+   * receipt minted at grant consumption can be proven live at the Provider's
+   * `ask` branch. Omitted = the pre-R3 fail-closed state: every `ask` refuses
+   * `IO_ASK_REQUIRES_APPROVAL`/`IO_ASK_RECEIPT_REFUSED`, never an ambient
+   * allow. This is NOT an allow source: the receipt still has to cover THIS
+   * execution, Member, tool, bounds, canonical path and bytes, and `deny` still
+   * wins before any receipt is consulted.
+   */
+  readonly approvedAskAuthority?: ApprovedAskProviderAuthority
   /**
    * BL-16 (additive, default-preserving): mount a CONFINED `subprocess`
    * Provider on the SAME isolated Member scope, so a routed native module that
@@ -497,7 +510,7 @@ export async function installMemberIoProviders(
     const scoped = input.terminal === undefined
       ? withWeb
       : withWeb.isolate('terminals', Symbol(`member-terminals:${spec.identity.memberInstanceId}`))
-    const guard = createMemberFsGuard(policy)
+    const guard = createMemberFsGuard(policy, undefined, input.approvedAskAuthority)
     // DEFAULT PATH = the original guard object (no wrapper, no extra call).
     const observed = input.onGuardConsult === undefined
       ? guard
@@ -833,6 +846,8 @@ export async function installToolBindingRealm(input: {
    * consultation before delegation, and a report failure refuses the call.
    */
   readonly onGuardConsult?: GuardConsultObserver
+  /** Same R3 wiring as {@link InstallMemberIoProvidersInput.approvedAskAuthority}. */
+  readonly approvedAskAuthority?: ApprovedAskProviderAuthority
 }): Promise<ToolBindingRealm> {
   const { root, spec } = input
   if (!spec.toolBindingIdentity.trim()) {
@@ -862,7 +877,7 @@ export async function installToolBindingRealm(input: {
   if (!capability.ok) {
     throw new TeamServiceInstallError('PROVIDER_INCOMPATIBLE', capability.detail)
   }
-  const guard = createMemberFsGuard(spec.effective)
+  const guard = createMemberFsGuard(spec.effective, undefined, input.approvedAskAuthority)
   // DEFAULT PATH = the original guard object (no wrapper, no extra call).
   const observed = input.onGuardConsult === undefined
     ? guard

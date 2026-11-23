@@ -1,0 +1,32 @@
+{
+  "proposition": "a live `write` ask that is STOPPED while pending is refused with the product Stop code: zero bytes on disk and a REFUSED / not-started settlement, never an execution",
+  "verdict": "PROVEN",
+  "clauses": [
+    {
+      "id": "control-request-raised",
+      "ok": true,
+      "detail": "requestRaised=true"
+    },
+    {
+      "id": "cancel-reached-the-host",
+      "ok": true,
+      "detail": "session/cancel status=200"
+    },
+    {
+      "id": "stop-fact-recorded",
+      "ok": true,
+      "detail": "deny facts=[{\"callId\":\"call-d4-worker-write\",\"refusalCode\":\"ADMISSION_STOPPED\",\"decision\":\"deny\"}]"
+    },
+    {
+      "id": "zero-bytes",
+      "ok": true,
+      "detail": "file exists=false bytes=null"
+    },
+    {
+      "id": "settlement-refused-not-started",
+      "ok": true,
+      "detail": "state=REFUSED bodyOutcome=not-started transitions=[\"ADMITTED\",\"REFUSED\"]"
+    }
+  ],
+  "failing": []
+}

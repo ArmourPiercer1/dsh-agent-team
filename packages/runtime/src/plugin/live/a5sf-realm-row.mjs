@@ -824,10 +824,15 @@ export function a5sfAgentToolSurface(root, runtimeAgent) {
  *   unconfigured.
  * @param {object} input.member - the admitted member descriptor forwarded to
  *   `compiledFor`.
+ * @param {object} [input.approvedAskAuthority] - R3 PRODUCTION WIRING (round
+ *   95): the SAME invocation binder the centre spends one-shot grants through,
+ *   forwarded to the realm mount so the confined Provider can verify a receipt
+ *   minted for THIS execution. Omitted = default-preserving fail-closed asks.
+ *   It is a liveness reader, never an allow source.
  * @returns {Promise<object | undefined>} the mounted realm (`dispose()` must be
  *   kept on the row), or `undefined` when not configured / nothing compiled.
  */
-export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member }) {
+export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member, approvedAskAuthority }) {
   if (a5sfConfig === undefined || a5sfConfig === null) return undefined
   // GOVERNED REALM (2026-11-11): the neutral key promised that the COMPOSITION
   // provides the compiled realm. A row that carries it and finds no provider
@@ -960,6 +965,7 @@ export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member 
     ...(compiled.terminal === undefined ? {} : { terminal: compiled.terminal }),
     ...(web === undefined ? {} : { web }),
     ...(sink === undefined ? {} : { onGuardConsult: (fact) => sink.record(fact) }),
+    ...(approvedAskAuthority === undefined ? {} : { approvedAskAuthority }),
   }
   // The realm mount is UNCHANGED and does NOT create the native shadow. ROUTE C
   // attaches the shadow LATER, through `attachA5sfNativeToolModules`, called by

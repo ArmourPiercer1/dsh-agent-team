@@ -1772,6 +1772,14 @@ export function createAgentBindings(deps) {
           root: agentCtx,
           a5sfConfig: a5sfRowConfig,
           provider: a5sfRealmProvider,
+          // R3 PRODUCTION WIRING (owner ruling 20261124-0151 §2; round 95). The confined Provider is
+          // given the SAME binder instance the centre's `grants` spends through, so at the Provider's
+          // `ask` branch a receipt minted for THIS execution can be proven live (binder/member epochs).
+          // Supplied only when the ask path itself is wired (`grants` exists) — a row with no Control
+          // service never mints a receipt, and gets the byte-identical fail-closed mount. This is NOT
+          // an allow source: the guard still requires an in-scope receipt covering THIS effect, and
+          // `deny` is decided before any receipt consult.
+          ...(grants === undefined ? {} : { approvedAskAuthority: { binder: grantBinder } }),
           member: {
             sessionId,
             instanceId,

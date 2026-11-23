@@ -147,17 +147,25 @@ function laneOfRefusal(code) {
  */
 export function observeGuard(guard, observer, context) {
     let sequence = 0;
-    return async function observedGuard(method, hostPath, annotations) {
+    return async function observedGuard(method, hostPath, annotations, operation) {
         // PD-19: the dispatch this consultation belongs to, read ONCE at entry from
         // the async context the `tools/execute` waterfall established. Reading it is
         // the only thing attribution does here — `guard(method, hostPath, …)` below
         // is the same call, on the same inputs, as before this field existed.
+        //
+        // R3 (round 95): the OPTIONAL operation context is forwarded VERBATIM too.
+        // The observer is a pass-through, not a decision point; dropping the
+        // `writeText` content here made a governed realm (which always supplies an
+        // evidence sink) refuse an otherwise valid approved-ask receipt with
+        // `RECEIPT_CONTENT_UNAVAILABLE`. Forwarding it changes no decision: the
+        // inner guard still decides on `(method, hostPath)` and the operation is
+        // only the effect a receipt is checked against.
         const attribution = TOOL_CALL_ATTRIBUTION.getStore();
         let decision;
         let decidedBy;
         let denial = null;
         try {
-            await guard(method, hostPath, annotations);
+            await guard(method, hostPath, annotations, operation);
             decision = 'allow';
             decidedBy = GUARD_ALLOW_DECIDED_BY;
         }

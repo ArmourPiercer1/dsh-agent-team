@@ -3195,3 +3195,52 @@ authority is absent — the real mount passes no third argument, so a product tu
 `IO_ASK_REQUIRES_APPROVAL`. (3) Only `write`/`writeText` is covered; every other FS method, subprocess
 and tool keeps R4. (4) The receipt binds `caseId:null` for an inline admission request, which is the
 identity it actually has.
+
+## Round 95 (2026-11-24) — R3 is WIRED INTO THE PRODUCTION MOUNT and PROVEN LIVE for `write`
+
+The round-94 PoC proved the receipt mechanism but left the production mount passing no Provider
+authority, so a booted product turn still failed closed. This round wires the REAL invocation binder
+into the real mount for `write`/`writeText` only, and proves it on a booted rc.2 host.
+
+**Production wiring (no invariant moved).** `agent-bindings.mjs:1771-1790` passes
+`approvedAskAuthority: { binder: grantBinder }` to the member-realm mount **only when the row's Control
+service is wired** (`grants !== undefined`); the realm row (`835,968`), `mount.ts` (`796,896,965`) and
+`install.ts` (`104,513,880`) forward it to `createMemberFsGuard(policy, undefined, authority)` on the
+member face and the binding-realm face. A row without Control keeps the byte-identical fail-closed
+mount. `guard-observability.ts:280-305` now forwards the optional `FsGuardOperation` verbatim (the
+wrapper had dropped `writeText`'s content, which made a governed realm refuse a valid receipt with
+`RECEIPT_CONTENT_UNAVAILABLE`). No `guarded` coupling, no global callId map, no attribution-ALS reuse,
+no second authority, no admission-duty expansion, no upstream patch.
+
+**New regression arms.** `a5sf-service-install.test.ts` `R3 production wiring: the mount passes the
+invocation binder` — authority ⇒ bytes written; no authority ⇒ `IO_ASK_RECEIPT_REFUSED` /
+`RECEIPT_AUTHORITY_UNAVAILABLE`, ENOENT; outside scope ⇒ `RECEIPT_NOT_IN_SCOPE`, ENOENT — plus the
+`observeGuard` operation-forwarding arm. File `20/20`.
+
+**LIVE — `probe-d4-routed-wake.mjs --boots 2`** (real rc.2 host, DEV-LIVE, scripted model only; every
+judge is the probe's own and none was weakened). Target inside the Member's own workspace (the host
+sandbox root), so the measured effect is the lane/receipt, not a sandbox accident.
+
+| judge | boot1 | boot2 |
+| --- | --- | --- |
+| `d4:ask-execute` | **PROVEN** — real ask → real Leader allow → one-shot consume → receipt verified → 27 bytes, `COMPLETED` | **PROVEN** — same bytes, same `sha256`, `COMPLETED` |
+| `d4:ask-denied` | **PROVEN** — 0 bytes, `REFUSED`/`not-started` | **PROVEN** — 0 bytes, `REFUSED`/`not-started` |
+| `d4:ask-stopped` | **PROVEN** — Stop via public `session/cancel`, 0 bytes, `REFUSED`/`not-started` | **PROVEN** — same |
+| `d4:enablement` / `d4:officer-up` / `d4:officer-binding` / `d4:refusal` | PROVEN | PROVEN |
+| `d4:routed-wake` | **REFUTED (unchanged)** — the ordinary ask carries no approval CASE | **REFUTED (unchanged)** |
+
+Two-boot agreement: `agreeing=true`, `differing=[]`; `askExecuteBytes 27/27`,
+`askExecuteSha256` identical, `askExecuteSettlement COMPLETED/COMPLETED`, deny/Stop `REFUSED` both
+boots.
+
+**Counts that moved.** `ute-vnext-a1`: unchanged `tests 228 / pass 225 / fail 0 / skipped 3`; leg
+digest unchanged `sha256:edd4f1c4…c8a975` (7 files). Catalog unchanged (`tests=785`, uncollected 38,
+excluded 14, digest `sha256:da8a452d…5f5ed32`). Bound vitest: `ci-security 218 → 222` (the four new
+arms), `ci-integration 238` unchanged. UTE G1 argv `89/89`. No new scannable file ⇒ no p4t6 delta.
+
+**Not proven / not claimed.** (1) `C-alpha6` stays MECHANISM and `d4:routed-wake` stays REFUTED — R3 is
+not routing evidence. (2) No row is PRODUCT-PROVEN: DEV-LIVE is a record, not a gate. (3) Only
+`write`/`writeText` is covered; `editText`/`patchText`/`deleteFile`/`moveFile`, subprocess and every
+other tool keep R4 (`IO_ASK_REQUIRES_APPROVAL`). (4) The receipt binds `caseId:null` for an inline
+admission request. (5) The live run uses the scripted model; no real-model interleaving was measured.
+

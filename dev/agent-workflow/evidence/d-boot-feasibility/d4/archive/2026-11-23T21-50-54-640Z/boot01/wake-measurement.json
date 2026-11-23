@@ -1,0 +1,66 @@
+{
+  "ids": {
+    "officer": "inst-1crltnl0089j",
+    "worker": "inst-0ty67u70r99a",
+    "pendingRequestId": "ctrl-1xxrzo21k29yc31rawhls0qn"
+  },
+  "resolveOutcome": {
+    "call": {
+      "rootSessionId": "session-dboot-d4-root",
+      "requestToken": "dboot-d4-resolve-ctrl-1xxrzo21k29yc31rawhls0qn",
+      "requestId": "ctrl-1xxrzo21k29yc31rawhls0qn",
+      "decision": "allow"
+    },
+    "result": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-1xxrzo21k29yc31rawhls0qn\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"scope\":{\"rootSessionId\":\"session-dboot-d4-root\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0ty67u70r99a\"},\"targetInstanceId\":\"inst-0ty67u70r99a\",\"actionName\":\"admission-ask\",\"correlation\":\"admission:call-d4-worker-write\",\"toolName\":\"write\"},\"requestSequence\":9,\"decisionSequence\":10,\"createdAt\":\"2026-11-23T21:37:14.440Z\"}}",
+    "isError": false
+  },
+  "durableRowShape": {
+    "actionName": "admission-ask",
+    "correlation": "admission:call-d4-worker-write",
+    "executionCoupling": "inline",
+    "kind": "leader-approval",
+    "ownerRootSessionId": "session-dboot-d4-root",
+    "requestId": "ctrl-1xxrzo21k29yc31rawhls0qn",
+    "requester": {
+      "instanceId": "inst-0ty67u70r99a",
+      "kind": "instance",
+      "role": "member"
+    },
+    "subject": {
+      "instanceId": "inst-0ty67u70r99a",
+      "kind": "instance"
+    },
+    "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/runs-workspace/boot1/worker-ask.txt\" requires approval under policy generation a5sf1:252bb6604e7b023506588e3902046231)",
+    "targetInstanceId": "inst-0ty67u70r99a",
+    "toolName": "write"
+  },
+  "routeProbe": {
+    "route": null,
+    "memberListCalls": 0,
+    "officerInstanceId": "inst-1crltnl0089j"
+  },
+  "factTypeCensus": {
+    "provision-member-instance": 2,
+    "team-work-admitted": 2,
+    "activity-interval-opened": 2,
+    "activity-interval-closed": 2,
+    "member-lifecycle-changed": 2,
+    "control-request-recorded": 1,
+    "control-decision-recorded": 1
+  },
+  "wakeFacts": [],
+  "wakeIntentFiles": [],
+  "reviewWakeHits": [],
+  "officerUserText": "[team-work requestToken=dboot-d4-delegate-officer] dboot-d4-officer-work DBOOT_D4_OFFICER_DELEGATED: perform the ONE tool call your instructions name, then report DBOOT_D4_OFFICER_DELEGATED.\n<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\n\nInstructions from: AGENTS.md\n\n# AGENTS.md — dsh-agent-team 仓库代理规则\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->\n<!-- phase-identity: alpha5-sandbox-first -->\n\n\n本仓库是 DSH Team-mode **vNext** 的 authoritative repository。**CORE PATCH BUDGET = 0**：upstream DSH 保持 clean，全部能力通过外部插件 + 公开 seam 提供；任何需要 upstream source patch 的路径都是阻塞（`CORE_SEAM_BLOCKER`），不是待办。\n\n## 会话开始必读（提示词注入要求）\n\n在本仓库工作的一切 agent（主 Agent、任务子代理、review 子代理、workflow 拉起的任意代理），**会话/子任务开始后的第一步**必须读取：\n\n1. `docs/ROUTER_RULES.md` — 无人值守执行协议：**先读 §0（当期计划优先裁决）**，其余条款为默认底线：blocker 类型与固定格式（含 `CORE_SEAM_BLOCKER`、禁止 patch upstream）、只追加执行日志、无人值守纪律、git 纪律（1 task=1 branch=1 worktree=1 writer、gated 历史禁止 force-push、master=alpha 线 / stable=已裁决 RC）。\n2. 当期阶段计划（现为 `docs/plans/active/alpha5-sandbox-first/current-implementation-plan.md`；有效待办唯一入口 = 同目录 `ALPHA5-SANDBOX-BACKLOG.md`，逐工具验收 = 同目录 `TOOL-ACCEPTANCE-MATRIX.md`）— 当期任务分解、并行 lane 与文件所有权、审查组成与顺序、每 PR 合并门、临时语义披露；与 ROUTER_RULES 冲突处以计划为准。\n3. `docs/TEST_METHODS.md` — 测试基础设施约束：测试 DSH 源码 = `tests/deepseek-harness-test-use`（pristine upstream，基线 **0.2.0-rc.2 @ `639ed01539`**（2026-10-03 起，宿主升级轮；锚点 = fork 分支 `stable-3-0.2.0-rc.2` tip，fork 无该 tag；此前 0.1.7-rc.1 @ `46a7f68b09`（2026-09-24 … 2026-10-03）、0.1.5-rc.2 @ `fb2c4b9e69`（2026-09-17 起）；**DSH 0.1.2 不再支持**；版本/路径唯一来源 = `tests/paths.mjs`：`DSH_BASELINE_VERSION` / `TEST_USE_BASELINE_SHA` / `CLIENT_COMMIT_HASH`），DSH_HOME = `tests/homes/<world>`（**必须工作区内**，workspace-write 沙箱约束；命名/清理协议见其 §7），port = `3180` 族；构建/启动链与沙箱实测见其 §2/§5；**严禁影响稳定开发实例**（:3080 及其 DSH_HOME）。\n\n读取之后才可执行任务；不得以\"上下文已熟悉\"为由跳过，不得违反其中禁止项。\n\n## 文档权威序\n\nupstream 公开契约 → `docs/plans/finished/` 四份 20260829 冻结文档（Architecture / UI / Development Plan / Task Decomposition，只读、语义唯一权威；2026-09-02 由 `docs/plans/active/` 移入 `docs/plans/paused/`，2026-10-07 归档整理时随 G8 审计报告与 P8-S 收束计划一并移入 `docs/plans/finished/`（tracked，@ b5c8d1dab），冻结基线地位不变；路径引用以本行为准）→ `docs/plans/active/` 当期执行计划 → `docs/ROUTER_RULES.md`（执行协议；其 **§0 = 当期计划优先**裁决）→ `docs/TEST_METHODS.md`（测试约束）→ `docs/migration/`（legacy inventory/reuse map，参考）→ legacy 代码（仅证据）→ 实现便利。冲突时按此序裁决，科学/设计理由需显式记录。\n\n**当前阶段（2026-11-02）**：**Alpha.5 Sandbox-First 阶段**（Member × Tool 两轴上界编译进 Service 与 OS 两条真实执行路径；P1 机制已落地并有证据，逐工具验收 G2–G5 未开始，release BLOCKED）。当期计划集 = `docs/plans/active/alpha5-sandbox-first/`（`current-implementation-plan.md` + `ALPHA5-SANDBOX-BACKLOG.md` + `TOOL-ACCEPTANCE-MATRIX.md`），设计需求正本 = `docs/plans/memo/alpha5-sandbox-first-20261101/`。**当前合同六字段（phase_id / active_plan / backlog / matrix / baseline / baseline_collected）的唯一可编辑当前权威 = `dev/engineering/current-authority.json`**——两键指针 `{snapshot_version, content_digest}`，解析到 `dev/engineering/authority-snapshots/<version>.json` 不可变快照；读取唯一入口 `scripts/current-authority.mjs`（冻结 schema + F0 摘要校验，失败即关闭，绝不回退 graph.yaml 或派生视图），写指针唯一入口 `scripts/switch-authority.mjs`（旧指针字节前置条件 + 原子写 + 失败精确恢复）。原 `dev/agent-workflow/graph.yaml#current_contract` 块已于 2026-10-25 G2 switchover（同 commit set 移除）退役为历史引用；指针与该块并存 = TWO_CURRENT_AUTHORITY，各 gate 点名红；回滚 = `git revert` switch commit set（详见 `dev/engineering/README.md`）。本文件不保留 SHA 副本。**当期唯一实施计划 = `docs/plans/active/alpha5-sandbox-first/current-implementation-plan.md`；设计正本 = PR #531（`docs/plans/memo/alpha5-sandbox-first-20261101/`，2026-11-02 合并）。前一阶段（Alpha.5 工具 IO 治理 / PR #364）保留为历史与回归义务，不再是当期实施计划。**以下为前一阶段 **Alpha.4 硬治理阶段（2026-10-07，历史记录）**：当期计划集 = `docs/plans/active/alpha4-permission-governance/`（`ADR-alpha4-hard-governance.md` + `alpha4-permission-governance-spec.md` + `alpha4-implementation-plan.md`，A4-PR0…A4-PR7 串行（PR0 =",
+  "leaderUserTextHead": "DBOOT_D4_DISC\n<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\n\nInstructions from: AGENTS.md\n\n# AGENTS.md — dsh-agent-team 仓库代理规则\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->\n<!-- phase-identity: alpha5-sandbox-first -->\n\n\n本仓库是 DSH Team-mode **vNext** 的 authoritative repository。**CORE PATCH BUDGET = 0**：upstream DSH 保持 clean，全部能力通过外部插件 + 公开 seam 提供；任何需要 upstream source patch 的路径都是阻塞（`CORE_SEAM_BLOCKER`），不是待办。\n\n## 会话开始必读（提示词注入要求）\n\n在本仓库工作的一切 agent（主 Agent、任务子代理、review 子代理、workflow 拉起的任意代理），**会话/子任务开始后的第一步**必须读取：\n\n1. `docs/ROUTER_RULES.md` — 无人值守执行协议：**先读 §0（当期计划优先裁决）**，其余条款为默认底线：blocker 类型与固定格式（含 `CORE_SEAM_BLOCKER`、禁止 patch upstream）、只追加执行日志、无人值守纪律、git 纪律（1 task=1 branch=1 worktree=1 writer、gated 历史禁止 force-push、master=alpha 线 / stable=已裁决 RC）。\n2. 当期阶段计划（现为 `docs/plans/active/alpha5-sandbox-first/current-implementation-plan.md`；有效待办唯一入口 = 同目录 `ALPHA5-SANDBOX-BACKLOG.md`，逐工具验收 = 同目录 `TOOL-ACCEPTANCE-MATRIX.md`）— 当期任务分解、并行 lane 与文件所有权、审查组成与顺序、每 PR 合并门、临时语义披露；与 ROUTER_RULES 冲突处以计划为准。\n3. `docs/TEST_METHODS.md` — 测试基础设施约束：测试 DSH 源码 = `tests/deepseek-harness-test-use`（pristine upstream，基线 **0.2.0-rc.2 @ `639ed01539`**（2026-10-03 起，宿主升级轮；锚点 = fork 分支 `stable-3-0.2.0-rc.2` tip，fork 无该 tag；此前 0.1.7-rc.1 @ `46a7f68b09`（2026-09-24 … 2026-10-03）、0.1.5-rc.2 @ `fb2c4b9e69`（2026-09-17 起）；**DSH 0.1.2 不再支持**；版本/路径唯一来源 = `tests/paths.mjs`：`DSH_BASELINE_VERSION` / `TEST_USE_BASELINE_SHA` / `CLIENT_COMMIT_HASH`），DSH_HOME = `tests/homes/<world>`（**必须工作区内**，workspace-write 沙箱约束；命名/清理协议见其 §7），port = `3180` 族；构建/启动链与沙箱实测见其 §2/§5；**严禁影响稳定开发实例**（:3080 及其 DSH_HOME）。\n\n读取之后才可执行任务；不得以\"上下文已熟悉\"为由跳过，不得违反其中禁止项。\n\n## 文档权威序\n\nupstream 公开契约 → `docs/plans/finished/` 四份 20260829 冻结文档（Architecture / UI / Development P",
+  "leaderNotification": "[team-control requestId=ctrl-1xxrzo21k29yc31rawhls0qn]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-1xxrzo21k29yc31rawhls0qn\nrequester: inst-0ty67u70r99a\nsubject: instance inst-0ty67u70r99a\ntarget: inst-0ty67u70r99a\ntool: write\nsummary: admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/runs-workspace/boot1/worker-ask.txt\" requires approval under policy generation a5sf1:252bb6604e7b02350658…\n\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\nRecover or inspect pending requests with `team_list_pending_control`.",
+  "workerWrite": {
+    "arguments": {
+      "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/runs-workspace/boot1/worker-ask.txt",
+      "content": "DBOOT_D4_WORKER_ASK_CALLED\n"
+    },
+    "result": "Error: RECEIPT_CONTENT_UNAVAILABLE: the Provider call carries no content string, so the approved bytes cannot be checked",
+    "isError": true
+  },
+  "workerFileExists": false
+}

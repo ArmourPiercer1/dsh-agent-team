@@ -39,7 +39,7 @@
 
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { appendFile, readFile } from 'node:fs/promises'
-import type { FsGuard } from './fs.js'
+import type { FsGuard, FsGuardOperation } from './fs.js'
 import { TeamIoDenial, type TeamIoDenialCode } from './types.js'
 
 /** The one record schema. A reader that does not know it must fail loud. */
@@ -277,17 +277,25 @@ export function observeGuard(
   context: GuardConsultContext,
 ): FsGuard {
   let sequence = 0
-  return async function observedGuard(method: string, hostPath: string, annotations?: readonly string[]): Promise<void> {
+  return async function observedGuard(method: string, hostPath: string, annotations?: readonly string[], operation?: FsGuardOperation): Promise<void> {
     // PD-19: the dispatch this consultation belongs to, read ONCE at entry from
     // the async context the `tools/execute` waterfall established. Reading it is
     // the only thing attribution does here — `guard(method, hostPath, …)` below
     // is the same call, on the same inputs, as before this field existed.
+    //
+    // R3 (round 95): the OPTIONAL operation context is forwarded VERBATIM too.
+    // The observer is a pass-through, not a decision point; dropping the
+    // `writeText` content here made a governed realm (which always supplies an
+    // evidence sink) refuse an otherwise valid approved-ask receipt with
+    // `RECEIPT_CONTENT_UNAVAILABLE`. Forwarding it changes no decision: the
+    // inner guard still decides on `(method, hostPath)` and the operation is
+    // only the effect a receipt is checked against.
     const attribution = TOOL_CALL_ATTRIBUTION.getStore()
     let decision: GuardConsultDecision
     let decidedBy: string
     let denial: TeamIoDenial | null = null
     try {
-      await guard(method, hostPath, annotations)
+      await guard(method, hostPath, annotations, operation)
       decision = 'allow'
       decidedBy = GUARD_ALLOW_DECIDED_BY
     } catch (error) {

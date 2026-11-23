@@ -231,7 +231,7 @@ export async function installMemberIoProviders(input) {
         const scoped = input.terminal === undefined
             ? withWeb
             : withWeb.isolate('terminals', Symbol(`member-terminals:${spec.identity.memberInstanceId}`));
-        const guard = createMemberFsGuard(policy);
+        const guard = createMemberFsGuard(policy, undefined, input.approvedAskAuthority);
         // DEFAULT PATH = the original guard object (no wrapper, no extra call).
         const observed = input.onGuardConsult === undefined
             ? guard
@@ -522,7 +522,7 @@ export async function installToolBindingRealm(input) {
     if (!capability.ok) {
         throw new TeamServiceInstallError('PROVIDER_INCOMPATIBLE', capability.detail);
     }
-    const guard = createMemberFsGuard(spec.effective);
+    const guard = createMemberFsGuard(spec.effective, undefined, input.approvedAskAuthority);
     // DEFAULT PATH = the original guard object (no wrapper, no extra call).
     const observed = input.onGuardConsult === undefined
         ? guard

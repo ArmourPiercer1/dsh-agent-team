@@ -13,14 +13,14 @@
     "toolName": "write",
     "correlation": "admission:call-d4-worker-write",
     "status": "pending",
-    "createdAt": "2026-11-23T20:07:14.538Z",
+    "createdAt": "2026-11-23T22:39:51.457Z",
     "subject": {
       "kind": "instance",
       "instanceId": "inst-0ty67u70r99a"
     },
     "executionCoupling": "inline",
     "requestSequence": 9,
-    "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/runs-workspace/boot2/worker-ask.txt\" requires approval under policy generation a5sf1:4bf187752b145ccf2a09ba91244bb34e)"
+    "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-37-25Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:8314c9a1c612344cea629f54a0437aae)"
   },
   "requests": [
     {
@@ -31,14 +31,14 @@
       "toolName": "write",
       "correlation": "admission:call-d4-worker-write",
       "status": "pending",
-      "createdAt": "2026-11-23T20:07:14.538Z",
+      "createdAt": "2026-11-23T22:39:51.457Z",
       "subject": {
         "kind": "instance",
         "instanceId": "inst-0ty67u70r99a"
       },
       "executionCoupling": "inline",
       "requestSequence": 9,
-      "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/runs-workspace/boot2/worker-ask.txt\" requires approval under policy generation a5sf1:4bf187752b145ccf2a09ba91244bb34e)"
+      "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-37-25Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:8314c9a1c612344cea629f54a0437aae)"
     }
   ]
 }
