@@ -15,6 +15,11 @@ import { planReviewWakes } from '../alpha6/wake-plan.js'
 import { dispatchReviewWakes, reviewWakeKeyFor } from '../alpha6/wake-dispatch.js'
 
 const ROOT = 'session-root-a6-pr7-merged'
+// ROUND 84: the wake is a governed DELIVERY to a real MEMBER child session (it used to reach the ROOT
+// session because the fake routing facts used the root id as the Officer's instance). The routing facts
+// now name a real Officer instance and a real bound child session.
+const OFFICER = 'inst-a6pr7officer'
+const OFFICER_SESSION = 'session-child-a6-pr7-officer'
 const ROUTING: ReviewRouting = {
   enabled: true,
   officerTemplateId: 'officer',
@@ -46,7 +51,7 @@ function input(requestId: string): ReviewRouteInput {
   return {
     policy: POLICY,
     currentLeg: { ...LEG, requestId },
-    currentOfficer: { status: 'active', instanceId: ROOT, templateId: 'officer' },
+    currentOfficer: { status: 'active', instanceId: OFFICER, templateId: 'officer' },
     leader: { instanceId: 'session-leader-a6-pr7', templateId: 'leader' },
     transfer: null,
   }
@@ -54,16 +59,29 @@ function input(requestId: string): ReviewRouteInput {
 
 interface WakeBinding {
   boot(): Promise<void>
-  deliverReviewWake(input: { rootSessionId: string; targetSessionId: string; wakeId: string; text: string }): Promise<void>
+  deliverReviewWake(input: {
+    rootSessionId: string
+    targetSessionId: string
+    wakeId: string
+    text: string
+    // ROUND 84: the routed reviewer + the durable leg ride the governed delivery.
+    recipientInstanceId?: string
+    requestId?: string
+  }): Promise<void>
 }
 
 describe('A6-PR7 merged wake — real Host inbox', () => {
   it('delivers three routed asks as ONE attributed inbox input', async () => {
-    const world = await createLiveWorld({ rootSessionId: ROOT })
+    const world = await createLiveWorld({
+      rootSessionId: ROOT,
+      members: [{ instanceId: OFFICER, templateId: 'tpl-t12a', childSessionId: OFFICER_SESSION }],
+      configOverrides: { alpha6ReviewRouting: true },
+      persistence: { exists: (sid: string) => sid === OFFICER_SESSION },
+    })
     const binding = world.binding as unknown as WakeBinding
     await binding.boot()
     const before = world.records.followups.length
-    const plan = planReviewWakes([input('req-1'), input('req-2'), input('req-3')], { sessionIdFor: (id) => (id === ROOT ? ROOT : undefined) })
+    const plan = planReviewWakes([input('req-1'), input('req-2'), input('req-3')], { sessionIdFor: (id) => (id === OFFICER ? OFFICER_SESSION : undefined) })
     expect(plan.wakes).toHaveLength(1)
     const coordinator = createReviewWakeCoordinator(reviewWakeKeyFor(plan.wakes[0]!, ROOT, 0))
     const deliver = async (input: {
@@ -76,6 +94,8 @@ describe('A6-PR7 merged wake — real Host inbox', () => {
         targetSessionId,
         wakeId: input.wakeId,
         text: input.text,
+        recipientInstanceId: OFFICER,
+        requestId: 'req-1',
       })
     }
 
@@ -88,7 +108,7 @@ describe('A6-PR7 merged wake — real Host inbox', () => {
     expect(result.delivered).toHaveLength(1)
     const added = world.records.followups.slice(before) as { sessionId: string; message: { content: { text?: string }[]; source: unknown } }[]
     expect(added).toHaveLength(1)
-    expect(added[0]?.sessionId).toBe(ROOT)
+    expect(added[0]?.sessionId).toBe(OFFICER_SESSION)
     expect(added[0]?.message.content[0]?.text).toContain('[team-review-wake')
     expect(added[0]?.message.source).toEqual({ kind: 'plugin:dsh-agent-team' })
   })

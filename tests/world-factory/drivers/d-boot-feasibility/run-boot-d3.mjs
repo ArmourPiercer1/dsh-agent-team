@@ -1074,9 +1074,13 @@ function judgeAlpha6({ arm, refusalTable, configGate }) {
       // refusal AND that nothing live claims the Alpha.6 route.
       { id: 'row-refused-with-typed-code', ok: arm?.rowRefused === true, detail: `rowRefused=${String(arm?.rowRefused)} threw=${String(arm?.threw)} reachable=${String(arm?.reachable)}` },
       { id: 'typed-code-present', ok: text.includes('ADMISSION_ALPHA6_UNAVAILABLE'), detail: `refusal text=${text.slice(0, 1200)}` },
-      { id: 'missing-axis-named', ok: text.includes('no review-routing axis'), detail: `names the missing axis=${String(text.includes('no review-routing axis'))}` },
-      { id: 'config-gate-is-product-rule', ok: typeof configGate === 'string' && configGate.includes('ADMISSION_ALPHA6_UNAVAILABLE') && configGate.includes('no review-routing axis'), detail: `centreConfigViolation=${String(configGate).slice(0, 600)}` },
-      { id: 'closed-refusal-table-entry', ok: refusalTable?.code === 'ADMISSION_ALPHA6_UNAVAILABLE' && refusalTable?.axis === 'host.service' && String(refusalTable?.missing ?? '').includes('no review-routing axis'), detail: `HOST_SURFACE_REFUSALS.alpha6=${JSON.stringify(refusalTable).slice(0, 700)}` },
+      // ROUND 84: this world's Alpha.6 row is INCOHERENT (a v4 blueprint with no authored
+      // `reviewRouting`), so it is still refused — but the refusal now names the missing PIECE
+      // (`ADMISSION_ALPHA6_ROUTING_REQUIRED`) instead of claiming no axis exists at all. The condition
+      // this arm exists for is unchanged: refused, typed, nothing live, nothing silently routed.
+      { id: 'missing-piece-named', ok: text.includes('ADMISSION_ALPHA6_ROUTING_REQUIRED'), detail: `names the missing piece=${String(text.includes('ADMISSION_ALPHA6_ROUTING_REQUIRED'))}` },
+      { id: 'config-gate-is-product-rule', ok: typeof configGate === 'string' && configGate.includes('ADMISSION_ALPHA6_UNAVAILABLE') && configGate.includes('ADMISSION_ALPHA6_ROUTING_REQUIRED'), detail: `centreConfigViolation=${String(configGate).slice(0, 600)}` },
+      { id: 'closed-refusal-table-entry', ok: refusalTable?.code === 'ADMISSION_ALPHA6_UNAVAILABLE' && refusalTable?.axis === 'host.service' && String(refusalTable?.missing ?? '').includes('ADMISSION_ALPHA6_ROUTING_REQUIRED'), detail: `HOST_SURFACE_REFUSALS.alpha6=${JSON.stringify(refusalTable).slice(0, 700)}` },
       { id: 'no-team-row-live', ok: arm?.teamRowLive === false && arm?.liveMemberCount === 0, detail: `teamSession present=${String(arm?.teamRowLive)} liveMembers=${String(arm?.liveMemberCount)} stateHttp=${String(arm?.liveStateHttp)} stateError=${String(arm?.liveStateError)}` },
       // ROUND 68: the CONDITION is unchanged; the probe now evaluates it as "a fact that claims a
       // route (or is not this row's typed denial)" instead of "any fact file exists", because the

@@ -20,9 +20,19 @@
  * moved from the SURFACE to the COMMAND: the plane is the product's only runtime team-creation
  * entrance, so a centre row now builds it as a governed control plane and refuses only the commands
  * whose actual effect is agent execution (`s6-command-classification.ts`). The `remote` entry below
- * therefore describes the refused SUBSET. Alpha.6 and PTC are unchanged (still surface-level; round
- * 75 re-justified PTC on the missing worker/nested/escalation/Stop proof rather than on a missing
- * process lane, because process execution authority is now a real declaration).
+ * therefore describes the refused SUBSET. PTC is unchanged (round 75 re-justified it on the missing
+ * worker/nested/escalation/Stop proof rather than on a missing process lane, because process execution
+ * authority is now a real declaration).
+ *
+ * ROUND 84 UPDATE. The Alpha.6 entry is no longer "the capability cannot be judged at all". What round
+ * 55 measured — that the routing decision had no centre join and no durable record — is closed by
+ * recording the routed review as a DELIVERY over the P6-T3 session-input mechanism (durable intent +
+ * confirmation facts, correlation token, requirement gate, machine attribution) and by admitting the
+ * Officer's own calls (including `team_resolve_control`) under the OFFICER's binding. The routing
+ * decision itself still EXECUTES nothing, so it is still not admitted on an I/O axis — and none is
+ * invented. The `alpha6` entry below therefore describes the RESIDUAL refusal: a row that opts in
+ * without a coherent configuration (the three pieces are named in `centre-config.ts`). The recorded
+ * refusal, its axis and its settlement shape are unchanged.
  *
  * Each therefore ends EXPLICITLY UNAVAILABLE rather than silently absorbed by whichever surface
  * happened to answer first. The refusal is one closed table (so the three codes cannot collapse into
@@ -76,7 +86,17 @@ export const HOST_SURFACE_REFUSALS = Object.freeze({
     code: 'ADMISSION_ALPHA6_UNAVAILABLE',
     axis: 'host.service',
     subject: 'Alpha.6 review-routing decision',
-    missing: 'no review-routing axis exists: Alpha.6 decides who may review whom from the trusted review facts before any tool call, so there is no locator or lane for the centre to judge, and the decision would otherwise be made by a second governance authority',
+    // ROUND 84 — the RESIDUAL refusal. The three coordinated pieces are now named (and each missing
+    // piece has its own typed code, so a coherent row boots); what is still unavailable is the
+    // INCOHERENT row. The old text claimed "no review-routing axis exists", which was true when the
+    // positive path had not been assembled and is now a measured fact of a different shape: there is
+    // still no member I/O AXIS for the routing decision — and there must not be one, because the
+    // decision executes nothing. The durable record of a routed review is a DELIVERY over the P6-T3
+    // session-input port (the same mechanism `member.send` uses), and the Officer's own calls —
+    // `team_resolve_control` and every other tool — are admitted by the centre under the OFFICER's
+    // binding. `missing` stays under the settlement reason bound (512 chars) so the refusal is always
+    // RECORDED, not merely thrown.
+    missing: 'a coherent configuration (ADMISSION_ALPHA6_ROUTING_REQUIRED / _CENTRE_REQUIRED / _WAKE_INTENT_PATH_REQUIRED). A routing decision executes nothing, so no axis is invented: the wake is a governed DELIVERY with durable intent + confirmation facts, and the Officer\'s calls are admitted under the OFFICER\'s binding',
   }),
   ptc: Object.freeze({
     code: 'ADMISSION_PTC_UNAVAILABLE',

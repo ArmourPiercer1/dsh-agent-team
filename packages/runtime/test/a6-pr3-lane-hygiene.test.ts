@@ -161,7 +161,7 @@ describe('A6-PR3 lane purity', () => {
   })
 })
 
-describe('A6-PR3 zero production consumers', () => {
+describe('A6-PR3 production consumers are exactly the round-84 governed delivery', () => {
   it('no production file under packages/ imports or references the lane', () => {
     const files = walk(PACKAGES_DIR, [], { skipTests: true })
     const consumers: string[] = []
@@ -179,6 +179,13 @@ describe('A6-PR3 zero production consumers', () => {
       // (`src/plugin/root.ts` → `src/plugin/vnext/root.ts`). The exemption stays "exactly this file",
       // so any OTHER runtime consumer of the lane is still a finding.
       if (file === join(PACKAGES_DIR, 'runtime', 'src', 'plugin', 'vnext', 'root.ts')) continue
+      // ROUND 84: the routed review's wake is now a GOVERNED DELIVERY, which is the one thing the
+      // lane needed and did not have. Two named files carry it — the delivery port itself and the live
+      // glue that delegates to it — and they are exempt BY EXACT PATH, so any OTHER consumer is still
+      // a finding. (The old law said "zero production consumers" because the capability was refused on
+      // every row; the refusal arms still hold for an incoherent row.)
+      if (file === join(PACKAGES_DIR, 'runtime', 'src', 'plugin', 'vnext', 'review-wake-delivery.mjs')) continue
+      if (file === join(PACKAGES_DIR, 'runtime', 'src', 'plugin', 'vnext', 'agent-bindings.mjs')) continue
       const code = codeOnly(readFileSync(file, 'utf8'))
       if (/\breview-wake\b/.test(code) || /\bReviewWake/.test(code)) {
         consumers.push(relative(PACKAGES_DIR, file))

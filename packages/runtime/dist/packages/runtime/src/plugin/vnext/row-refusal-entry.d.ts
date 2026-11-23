@@ -10,11 +10,12 @@
  * `d3:alpha6` PROVEN as a typed refusal with "no fact file").
  *
  * WHAT CHANGES, AND WHAT DOES NOT. The row still does not boot and the gate still throws the same typed
- * `TEAM_PLUGIN_CONFIG_INVALID` carrying `ADMISSION_ALPHA6_UNAVAILABLE` / "no review-routing axis"; the
- * ONLY difference is that the entry now builds the SAME point the root builds, at the moment the gate
- * decides, and records the refusal through it before the unchanged throw. Nothing here decides anything:
- * `centreConfigViolation` is still the rule, `refuseHostSurfaceBefore` is still the product's refusal
- * helper, and the ledger/settlement writers are the product's own.
+ * `TEAM_PLUGIN_CONFIG_INVALID` carrying the closed table's `ADMISSION_ALPHA6_UNAVAILABLE` prefix (round
+ * 84: followed by the PIECE code the coherence rule refused, e.g. `ADMISSION_ALPHA6_ROUTING_REQUIRED`);
+ * the ONLY difference is that the entry now builds the SAME point the root builds, at the moment the
+ * gate decides, and records the refusal through it before the unchanged throw. Nothing here decides
+ * anything: `centreConfigViolation` is still the rule, `refuseHostSurfaceBefore` is still the product's
+ * refusal helper, and the ledger/settlement writers are the product's own.
  *
  * WHY A HOOK AND NOT A MOVED GATE. Moving the throw below root construction would build a team root
  * (durable effects) merely to refuse it, and would leave the no-centre row — where no durable directory

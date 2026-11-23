@@ -106,6 +106,10 @@ describe('A6 root control notifier — trusted reviewer resolution', () => {
       targetSessionId: 'session-officer-child',
       wakeId: 'review:req-a6-pr6-1',
       text: renderOfficerReviewWake(legRequest),
+      // ROUND 84: the routed reviewer and the durable leg ride the delivery, so the governed
+      // delivery fact can name exactly who was woken for which request.
+      recipientInstanceId: 'inst-officer',
+      requestId: 'req-a6-pr6-1',
     })
   })
 

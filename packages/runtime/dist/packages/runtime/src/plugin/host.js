@@ -226,6 +226,11 @@ export function validateTeamPluginConfig(raw, hooks) {
     // The CENTRE's own config rules live in `vnext/centre-config.ts` so they are testable without
     // booting the host (host.ts reaches the remote handler tree through `.js` specifiers that only
     // exist after a build). This call is the only place they are enforced.
+    //
+    // ROUND 84: the Alpha.6 rule is a COHERENCE rule now, so it reads the same four pieces the wiring
+    // needs — the opt-in, the durable centre, the durable wake-intent directory and the bound Blueprint
+    // source whose authored v5 `reviewRouting` policy it must find. Passing a narrower fact set would
+    // make "no routing policy" unobservable at the only production enforcement point.
     const centreViolation = centreConfigViolation(c);
     if (centreViolation !== undefined) {
         // The refusal is decided HERE. The entry gets the chance to make it durable through the product's

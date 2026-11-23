@@ -2702,3 +2702,68 @@ product: the D2 driver now declares its FULL case set (a subset record must name
 driver has none to name), and `a6-pr1-lane-hygiene`'s package-wide import scan tolerates a temp file
 that another suite removes mid-walk (the walk already did; the read now does) — the census measured
 that race once in two captures, and the fix removes it without relaxing any assertion.
+
+## Round 84 (Alpha.6 formal routing — the positive path)
+
+The 20261122-2305 review (§4.3) found Alpha.6 in a one-sided state: the REFUSAL path was proven
+(config gates, recorded refusal, live D3 measurement) while the FORMAL routing was only assembled in
+tests. This round implements it through the ONE centre interface — and, as the pre-code determination
+records (`ALPHA6-FORMAL-ROUTING.md`), **no `CORE_SEAM_BLOCKER` was needed**.
+
+### What was actually missing (determined before coding)
+
+1. **The routing axis.** None is lawful and none is needed: a routing decision EXECUTES nothing, so it
+   has no locator/lane for the centre to judge; `ADM-99` had already measured what happens when one is
+   driven anyway (`ADMISSION_TOOL_UNBOUND`, recorded on the FABRICATED fallback axis `fs.read`). The
+   decision stays a projection of the durable control row through the ONE shared policy.
+2. **The wake path.** `deliverReviewWake` resolved the live agent and wrote a hand-built message
+   (`followup`/`steer`) — skipping the durable intent fact, the correlation token, the
+   requirement-aware final-input verdict, the A56 machine attribution and the confirmation fact that
+   round 83 built for `member.send`. A review wake is INPUT to the Officer's session, so it is now
+   delivered by the SAME mechanism.
+3. **The enablement config.** Two unconditional gates refused the opt-in on every row, so no
+   configuration could ever be coherent. Enablement is now a coherence question with a typed answer.
+
+### The change
+
+- `packages/runtime/src/plugin/vnext/review-wake-delivery.mjs` (new) — the ONE governed wake
+  delivery: durable `team-review-wake-routed` intent → `SessionInputPort.submitAttributedInput` →
+  `team-review-wake-delivered` confirmation, in the row's own TeamDomain ledger, correlated by the
+  wake token; a duplicate converges on the existing confirmation; an unknown/unbound recipient is a
+  typed refusal BEFORE any write.
+- `packages/runtime/src/plugin/vnext/agent-bindings.mjs` — `deliverReviewWake` delegates to it (the
+  seam keeps its four non-empty-string validations and its signature gains optional
+  `recipientInstanceId`/`requestId`/`requesterInstanceId`); a session that is not a bound Member child
+  session is refused rather than treated as a recipient.
+- `packages/runtime/src/plugin/vnext/centre-config.ts` — `alpha6EnablementRefusal` (coherent ⇒
+  admitted; otherwise the FIRST missing piece with its own code) and the widened
+  `centreConfigViolation`.
+- `packages/runtime/src/plugin/vnext/root.ts` — the direct-root gate uses the same rule and records
+  the piece code through the row's own point (reason kept under the 512-char settlement cap).
+- `packages/runtime/alpha6/notifier.ts` + `packages/runtime/src/plugin/types.ts` — the routed reviewer
+  and the durable leg ride the delivery seam instead of being re-derived by it.
+
+### Arms
+
+`ADM-141` (positive enablement; each piece refused AND recorded), `ADM-142` (officer route over the
+shared policy; nothing executed, input frozen), `ADM-143` (intent + confirmation + machine attribution
++ ZERO tool executions), `ADM-144` (Officer's own `team_resolve_control` admitted on `team.control`
+under ITS binding; unbound ⇒ `ADMISSION_NO_BINDING`), `ADM-146` (duplicate ⇒ ONE confirmation; unknown
+recipient ⇒ typed refusal with zero facts), `a6-pr4-review-wake-glue` (real glue: one attributed inbox
+input, facts read back), `a6-pr7-merged-wake-host` (three asks ⇒ ONE inbox input), `a6-root-wiring` (a
+PRODUCTION root boots a coherent Alpha.6 row). The existing refusal arms were re-stated, not weakened:
+`ADM-34/85/99/116/117/118` still prove denial + typed code + recorded fact + `REFUSED`/`not-started` +
+zero wakes, and the D3 live driver still measures the row refusal.
+
+### Level
+
+**MECHANISM, proven over the real ports** (routing policy, centre admission, delivery port, production
+root boot). The **LIVE** routed wake is NOT proven: the D3 world's blueprint is v4 with one worker
+member and no Officer/approval case, and the mock model resolves no control, so that world can express
+only the refusal side. No cell is upgraded to PRODUCT-PROVEN.
+
+| runner | before | after | note |
+| --- | --- | --- | --- |
+| `ute-vnext-a1` node leg | 129 tests in `vnext-admission` | 134 (129 + 5 new arms) | +ADM-141/142/143/144/146 |
+| migrated vitest population | 238 | 238 (unchanged count) | `a6-pr4` gained two arms in place; `a6-pr7`/`a6-root-wiring` adapted to the governed delivery (stronger: recipient identity is now real) |
+| `test-catalog` | — | unchanged file population | no new test FILE; two arms added to an existing one |

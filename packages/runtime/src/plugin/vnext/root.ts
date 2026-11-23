@@ -379,6 +379,9 @@ import { refuseHostSurfaceBefore, HOST_SURFACE_REFUSALS } from './host-surface-r
 // Round 68: the point CONSTRUCTION is shared with the host entry (`row-refusal-entry.ts`), so a row
 // refused at validation and a root refused at construction name the same ledger/settlement files.
 import { createCentreHostSurfacePoint } from './row-refusal-entry.js'
+// Round 84: the Alpha.6 coherence rule is the ONE rule both gates use (the row validator and this
+// root construction), so the positive answer and the typed piece refusal cannot drift apart.
+import { alpha6EnablementRefusal } from './centre-config.js'
 import type {
   S6CatalogMigrationState,
   S6RemoteCompatibilityOperations,
@@ -2493,18 +2496,36 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   // ENTRY records it through this same constructor (`row-refusal-entry.ts`)
   // before the row gate throws, so the two paths leave identical durable shapes
   // in the same ledger/settlement files.
+  // ROUND 84: the same coherence rule now has a POSITIVE answer. A root whose
+  // row carries all three pieces (an authored v5 policy the composition above
+  // already parsed, the durable centre this very point is built from, and the
+  // absolute wake-intent directory checked just below) is admitted; a root that
+  // reached here with a piece missing is refused through the SAME rule and
+  // recorded through the SAME point. No new gate, no second authority: a
+  // direct-root caller is held to exactly the configuration the row validator
+  // enforces.
   if (alpha6Wiring.mode === 'alpha6') {
-    const alpha6Refused = refuseHostSurfaceBefore(hostSurfaceRefusalPoint('alpha6'), {
-      subject: 'alpha6.review-routing',
-      owner: rootSid,
-      locator: rootSid,
-      detail: 'the row is configured for the centre, and the centre has no review-routing axis',
+    const alpha6Refusal = alpha6EnablementRefusal({
+      alpha6ReviewRouting: true,
+      centreStatePath: config.centreStatePath,
+      alpha6WakeIntentPath: config.alpha6WakeIntentPath,
+      blueprintSource: config.blueprintSource,
     })
-    if (alpha6Refused) {
+    if (alpha6Refusal !== undefined) {
+      const detail = `${alpha6Refusal.piece} — ${alpha6Refusal.reason}`
+      // The SETTLEMENT reason carries only the typed piece code: the record's reason field is bounded
+      // (512 chars, `execution-settlement`), and a refusal that cannot be RECORDED is not a refusal.
+      // The full explanation still reaches the caller in the thrown error below.
+      refuseHostSurfaceBefore(hostSurfaceRefusalPoint('alpha6'), {
+        subject: 'alpha6.review-routing',
+        owner: rootSid,
+        locator: rootSid,
+        detail: `${alpha6Refusal.piece} (direct root)`,
+      })
       throw new TeamPluginError(
         'TEAM_PLUGIN_CONFIG_INVALID',
-        `${HOST_SURFACE_REFUSALS.alpha6.code}: alpha6ReviewRouting is explicitly unavailable in this cut. ${HOST_SURFACE_REFUSALS.alpha6.missing}`,
-        { rootSessionId: rootSid, reason: 'alpha6-review-routing-unavailable', code: HOST_SURFACE_REFUSALS.alpha6.code },
+        `${HOST_SURFACE_REFUSALS.alpha6.code}: ${detail}. ${HOST_SURFACE_REFUSALS.alpha6.missing}`,
+        { rootSessionId: rootSid, reason: 'alpha6-review-routing-incoherent', code: alpha6Refusal.piece },
       )
     }
   }
@@ -2646,6 +2667,10 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
                 targetSessionId,
                 wakeId: delivery.wakeId,
                 text: delivery.text,
+                // ROUND 84: the latch knows the routed reviewer (it is the latch's subject) and the
+                // legs it carries; the delivery fact records both instead of only a session id.
+                recipientInstanceId: input.reviewerInstanceId,
+                requestId: input.currentLegIds.join(','),
               })
             },
           })
@@ -2719,6 +2744,10 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
                   targetSessionId,
                   wakeId: delivery.wakeId,
                   text: renderLatchWake(delivery),
+                  // ROUND 84: this is the post-turn rescan for the SAME latch, so the recipient is the
+                  // coordinator's own latch key holder and the legs are the rescan's ids.
+                  recipientInstanceId: reviewerInstanceId,
+                  requestId: fresh.map((entry) => entry.requestId).join(','),
                 })
               },
             })

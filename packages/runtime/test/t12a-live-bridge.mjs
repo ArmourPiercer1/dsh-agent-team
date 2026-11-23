@@ -1154,11 +1154,33 @@ export async function createDomainDouble({
   const findRow = (id) => rows.find((row) => String(row.rootSessionId) === String(id))
   const pickByRoot = (byRoot, root, fallback) =>
     Object.prototype.hasOwnProperty.call(byRoot, String(root)) ? byRoot[String(root)] : fallback
+  // ROUND 84: the durable fact ledger. The double used to stop at the member/override/session reads,
+  // but a governed DELIVERY (round 83's `member.send`, and now the Alpha.6 review wake) writes a
+  // delivery intent fact + a confirmation fact through `repositories.ledger` and allocates their
+  // sequences there. An in-memory ledger with the REAL repository's contract (list / get / put /
+  // atomic allocateSequence) keeps the world honest: an arm reads the facts back through the same
+  // port the product writes them through, not through a private test hook.
+  const ledgerEntries = []
+  const ledger = {
+    list: () => [...ledgerEntries].sort((left, right) => left.sequence - right.sequence),
+    get: (sequence) => ledgerEntries.find((entry) => entry.sequence === sequence),
+    async put(entry) {
+      const stored = Object.freeze({ ...entry })
+      ledgerEntries.push(stored)
+      return stored
+    },
+    async allocateSequence() {
+      return ledgerEntries.length === 0
+        ? 1
+        : Math.max(...ledgerEntries.map((entry) => Number(entry.sequence) || 0)) + 1
+    },
+  }
   return {
     repositories: {
       memberInstances: { list: (root) => pickByRoot(membersByRoot, root, members) },
       overrides: { list: (root) => pickByRoot(overridesByRoot, root, overrides) },
       teamSessions: { get: (id) => findRow(id), list: () => rows },
+      ledger,
     },
     consumption: {
       model: { resolveDurableModelSelection: modelModule.resolveDurableModelSelection },

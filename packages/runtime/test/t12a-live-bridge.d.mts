@@ -344,6 +344,18 @@ export interface DomainDouble {
       get(rootSessionId: string): object | undefined
       list(): Array<Record<string, unknown> & { readonly rootSessionId: string }>
     }
+    /**
+     * ROUND 84: the durable fact ledger, shaped like the REAL `LedgerRepository` contract (list / get /
+     * put / atomic allocateSequence). A governed delivery (`member.send`, and now the Alpha.6 review
+     * wake) writes a delivery intent + confirmation fact through it; an arm reads them back through the
+     * same port the product writes them through.
+     */
+    readonly ledger: {
+      list(): Array<{ readonly sequence: number; readonly factType?: string; readonly payload?: Record<string, unknown> }>
+      get(sequence: number): { readonly sequence: number; readonly factType?: string; readonly payload?: Record<string, unknown> } | undefined
+      put(entry: object): Promise<object>
+      allocateSequence(): Promise<number>
+    }
   }
   readonly consumption: {
     readonly model: {

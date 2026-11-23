@@ -10,11 +10,12 @@
  * `d3:alpha6` PROVEN as a typed refusal with "no fact file").
  *
  * WHAT CHANGES, AND WHAT DOES NOT. The row still does not boot and the gate still throws the same typed
- * `TEAM_PLUGIN_CONFIG_INVALID` carrying `ADMISSION_ALPHA6_UNAVAILABLE` / "no review-routing axis"; the
- * ONLY difference is that the entry now builds the SAME point the root builds, at the moment the gate
- * decides, and records the refusal through it before the unchanged throw. Nothing here decides anything:
- * `centreConfigViolation` is still the rule, `refuseHostSurfaceBefore` is still the product's refusal
- * helper, and the ledger/settlement writers are the product's own.
+ * `TEAM_PLUGIN_CONFIG_INVALID` carrying the closed table's `ADMISSION_ALPHA6_UNAVAILABLE` prefix (round
+ * 84: followed by the PIECE code the coherence rule refused, e.g. `ADMISSION_ALPHA6_ROUTING_REQUIRED`);
+ * the ONLY difference is that the entry now builds the SAME point the root builds, at the moment the
+ * gate decides, and records the refusal through it before the unchanged throw. Nothing here decides
+ * anything: `centreConfigViolation` is still the rule, `refuseHostSurfaceBefore` is still the product's
+ * refusal helper, and the ledger/settlement writers are the product's own.
  *
  * WHY A HOOK AND NOT A MOVED GATE. Moving the throw below root construction would build a team root
  * (durable effects) merely to refuse it, and would leave the no-centre row — where no durable directory
@@ -125,11 +126,20 @@ export function recordAlpha6RowRefusal (input: {
   if (point === undefined) return undefined
   // The product's own point records BOTH durable shapes (invocation-authority fact first, then the
   // settlement closed REFUSED/not-started); the row is refused before any Alpha.6 surface runs.
+  // ROUND 84: the recorded reason carries the PIECE the rule refused (the violation is
+  // `<capability code>: <piece code> — <reason>`), so a durable refusal names the exact missing
+  // configuration instead of only the capability. Code, axis and subject are unchanged.
+  const piece = input.violation.startsWith(`${code}: `) ? input.violation.slice(code.length + 2) : ''
+  // The SETTLEMENT reason carries only the typed piece code: the record's reason field is bounded
+  // (512 chars, `execution-settlement`), and a refusal that cannot be RECORDED is not a refusal.
+  const pieceCode = piece.split(' — ')[0] ?? ''
   const recorded = point.refuse({
     subject: 'alpha6.review-routing',
     owner: typeof config.rootSessionId === 'string' ? config.rootSessionId : '',
     locator: typeof config.rootSessionId === 'string' ? config.rootSessionId : '',
-    detail: 'the row is refused at row validation, before any root is built',
+    detail: pieceCode === ''
+      ? 'row validation, before any root is built'
+      : `row validation, before any root is built: ${pieceCode}`,
   })
   return Object.freeze({
     code,

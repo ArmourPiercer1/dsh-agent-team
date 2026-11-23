@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "ROUND84ALPHA6ROUTING",
+  "paths": [
+    "packages/runtime/src/plugin/vnext/review-wake-delivery.mjs"
+  ],
+  "expectedDelta": {
+    "from": 1312,
+    "to": 1313
+  },
+  "reason": "Round 84 (Alpha.6 formal routing) adds ONE scannable production source, packages/runtime/src/plugin/vnext/review-wake-delivery.mjs: the governed review-wake DELIVERY (durable intent + confirmation facts over the P6-T3 SessionInputPort, correlation token, typed refusals), imported by the live glue (agent-bindings.mjs) and mirrored into dist by the placement list (dist is outside the scan). The file carries no legacy denylist vocabulary; the denylist hit set is measured unchanged at fifteen.",
+  "tieNote": "MEASURED on this tree, not copied: the p4t6 coverage leg printed `scanner counts 1313, ledger derives 0 + 1312 = 1312` before this booking, and the single unbooked scanned path was exactly the one above. 1312 + 1 = 1313."
+}

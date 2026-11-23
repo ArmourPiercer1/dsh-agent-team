@@ -172,6 +172,10 @@ export function createAlpha6RootControlNotifier(ports) {
                 targetSessionId,
                 wakeId: `review:${request.requestId}`,
                 text: renderOfficerReviewWake(request),
+                // ROUND 84: the routed reviewer + the durable leg ride the delivery, so the governed
+                // delivery fact names exactly who was woken for which request.
+                recipientInstanceId: reviewer.instanceId,
+                requestId: request.requestId,
             });
             return;
         }
@@ -179,6 +183,8 @@ export function createAlpha6RootControlNotifier(ports) {
             targetSessionId,
             wakeId: `review:${mergedIds.join(',')}`,
             text: renderMergedOfficerReviewWake(merged),
+            recipientInstanceId: reviewer.instanceId,
+            requestId: request.requestId,
         });
     }
 }

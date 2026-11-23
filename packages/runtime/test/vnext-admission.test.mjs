@@ -658,11 +658,20 @@ test('ADM-34 — the centre\'s config rules are checkable without booting the ho
   // A plain row is untouched.
   assert.equal(centreConfigViolation({}), undefined)
   assert.equal(centreConfigViolation(undefined), undefined)
-  // R1 (settled round 55): Alpha.6 review routing is EXPLICITLY UNAVAILABLE — the code names the
-  // missing axis, and a path no longer buys the opt-in (the decisions were never the centre's).
+  // R1 (settled round 55) → ROUND 84: the opt-in is no longer refused UNCONDITIONALLY — it is admitted
+  // for a COHERENT configuration and refused with a TYPED piece code otherwise. A centre path alone
+  // still buys nothing (the decisions were never the centre's): with no authored v5 `reviewRouting`
+  // policy and no wake-intent path the row is refused, and the code says WHICH piece is missing.
   const alpha6WithPath = centreConfigViolation({ alpha6ReviewRouting: true, centreStatePath: '/srv/centre' })
   assert.match(String(alpha6WithPath), /ADMISSION_ALPHA6_UNAVAILABLE/u)
-  assert.match(String(alpha6WithPath), /no review-routing axis/u)
+  assert.match(String(alpha6WithPath), /ADMISSION_ALPHA6_ROUTING_REQUIRED/u, 'the refusal names the missing piece, so a row can act on it')
+  // A COHERENT row is admitted: this is the positive arm the round-84 gate exists for.
+  assert.equal(centreConfigViolation({
+    alpha6ReviewRouting: true,
+    centreStatePath: '/srv/centre',
+    alpha6WakeIntentPath: '/srv/centre/wake-intents',
+    blueprintSource: cAlpha6Source(),
+  }), undefined)
   // The path itself is validated even when Alpha.6 is off.
   assert.match(String(centreConfigViolation({ centreStatePath: 42 })), /non-empty string/u)
   // Absent is not "empty": a row that never mentions the centre is legal.
@@ -3076,7 +3085,10 @@ test('ADM-85 — C-alpha6 is EXPLICITLY UNAVAILABLE: the decision is refused bef
   assert.equal(fact.axis, 'host.service', 'the record says which of the EXISTING axes the subject belongs to')
   assert.equal(fact.toolName, 'alpha6.review-routing')
   assert.equal(fact.locator, 'session-officer-1')
-  assert.match(String(fact.reason), /no review-routing axis/u, 'the reason names the missing axis, not "unavailable"')
+  // ROUND 84: the residual claim is no longer "no review-routing axis exists" (a coherent row now
+  // boots); what is still refused is the INCOHERENT one, and the reason says why no axis is invented.
+  assert.match(String(fact.reason), /no axis is invented/u, 'the reason says the absence is principled, not an omission')
+  assert.match(String(fact.reason), /ADMISSION_ALPHA6_ROUTING_REQUIRED/u)
   // The SETTLEMENT: the product store closed the record REFUSED, and it never left ADMITTED.
   const settled = world.store.read(world.identityOf({ callId: fact.callId }).executionId)
   assert.deepEqual(world.faults, [], `the refusal must record both durable shapes with no fault, got ${JSON.stringify(world.faults.map((fault) => String(fault[0])))}`)
@@ -4760,7 +4772,8 @@ test('ADM-99 — C-alpha6 missing seam: the CENTRE has no vocabulary for a revie
     // The closed table still names the absence with its OWN code and an EXISTING axis — the refusal is
     // honest, and it is the only product shape available until the axis or the join exists.
     assert.equal(HOST_SURFACE_REFUSALS.alpha6.axis, 'host.service')
-    assert.match(String(HOST_SURFACE_REFUSALS.alpha6.missing), /no review-routing axis/u)
+    assert.match(String(HOST_SURFACE_REFUSALS.alpha6.missing), /ADMISSION_ALPHA6_ROUTING_REQUIRED/u, 'the residual refusal names the three pieces a coherent row must supply')
+    assert.match(String(HOST_SURFACE_REFUSALS.alpha6.missing), /no axis is invented/u)
   } finally {
     world.dispose()
   }
@@ -5980,8 +5993,13 @@ test('ADM-116 — C-alpha6 recorded refusal (a): the Alpha.6 row is still refuse
   const violation = centreConfigViolation(config)
   assert.equal(typeof violation, 'string', 'an Alpha.6 opt-in is still refused, not accepted')
   assert.match(String(violation), new RegExp(`^${HOST_SURFACE_REFUSALS.alpha6.code}:`, 'u'))
-  assert.match(String(violation), /no review-routing axis/u)
-  assert.match(String(violation), /explicitly unavailable in this cut/u)
+  // ROUND 84: the arm stays a REFUSAL arm (this row has no authored v5 routing policy), and the code
+  // now names the piece instead of asserting that no axis exists.
+  assert.match(String(violation), /ADMISSION_ALPHA6_ROUTING_REQUIRED/u)
+  // ROUND 84: the round-55 sentence "alpha6ReviewRouting is explicitly unavailable in this cut" was a
+  // measured fact about the ROW SHAPE, not a law: a coherent row now boots. What this arm still proves
+  // is unchanged — the incoherent row is refused, typed, with the reason and the settlement intact.
+  assert.match(String(violation), /no axis is invented/u)
 
   // (2) THE RECORD. This is the hook the host entry passes to `validateTeamPluginConfig`; the entry
   //     runs it AT the centre rule, before the unchanged throw.
@@ -6010,7 +6028,7 @@ test('ADM-116 — C-alpha6 recorded refusal (a): the Alpha.6 row is still refuse
   assert.equal(fact.axis, 'host.service', 'the record uses the subject\'s EXISTING axis; no new axis was invented')
   assert.equal(fact.toolName, 'alpha6.review-routing')
   assert.equal(fact.callId, recorded[0].callId)
-  assert.match(String(fact.reason), /no review-routing axis/u)
+  assert.match(String(fact.reason), /ADMISSION_ALPHA6_ROUTING_REQUIRED/u)
 
   // (4) THE SETTLEMENT, read back from DISK through a FRESH store: closed REFUSED at birth.
   const store = createExecutionSettlementStore({ dir: join(dir, 'settlement', 'host-surface', 'alpha6') })
@@ -7278,4 +7296,296 @@ test('ADM-140 — the REAL pinned provider, host-relative: rc.5 performs the thr
   } finally {
     await root.fiber.dispose()
   }
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ROUND 84 — ALPHA.6 FORMAL ROUTING: the positive path, end to end over the REAL ports.
+//
+// The review (20261122-2305 §4.3) found that Alpha.6 was a preserved CAPABILITY of which only the
+// REFUSAL path was proven. These arms prove the other half WITHOUT inventing a parallel plane:
+//
+//   ADM-141  enablement      — a coherent row is ADMITTED; each incoherent piece is refused with its own
+//                              typed code, and that refusal is recorded (fact + REFUSED settlement).
+//   ADM-142  routing         — the ONE shared policy takes a real decision over a real leg shape; the
+//                              decision EXECUTES nothing and mutates nothing.
+//   ADM-143  wake delivery   — the wake is a governed DELIVERY: durable intent + confirmation facts over
+//                              the P6-T3 session-input port, machine-attributed, ZERO tool executions.
+//   ADM-144  Officer calls   — the Officer's own `team_resolve_control` is admitted by the ONE centre on
+//                              the `team.control` axis under ITS binding, and an unbound caller is not.
+//   ADM-145  Stop            — the delivered wake is a MACHINE input, so it cannot clear a human Sticky
+//                              Stop (the A56 predicate, over the real ledger).
+//   ADM-146  duplicate       — a re-delivered wake converges on ONE confirmation; an unknown recipient
+//                              refuses BEFORE any fact (no invented recipient, nothing to deliver).
+
+/** A durable-ledger double with the REAL repository's contract (list / get / put / allocateSequence). */
+const wakeLedger = () => {
+  const entries = []
+  return {
+    entries,
+    list: () => [...entries].sort((left, right) => left.sequence - right.sequence),
+    get: (sequence) => entries.find((entry) => entry.sequence === sequence),
+    put: async (entry) => { entries.push(Object.freeze({ ...entry })); return entries[entries.length - 1] },
+    allocateSequence: async () => (entries.length === 0 ? 1 : Math.max(...entries.map((entry) => entry.sequence)) + 1),
+  }
+}
+
+test('ADM-141 — Alpha.6 enablement: a coherent row is ADMITTED, and each incoherent piece is refused with its OWN typed code (and recorded)', async () => {
+  const { mkdtempSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  const { centreConfigViolation } = await import('../src/plugin/vnext/centre-config.ts')
+  const { HOST_SURFACE_REFUSALS } = await import('../src/plugin/vnext/host-surface-refusal.mjs')
+  const { createAlpha6RowRefusalHook } = await import('../src/plugin/vnext/row-refusal-entry.ts')
+
+  const coherent = {
+    alpha6ReviewRouting: true,
+    centreStatePath: '/srv/centre',
+    alpha6WakeIntentPath: '/srv/centre/wake-intents',
+    blueprintSource: cAlpha6Source(),
+  }
+  // (1) THE POSITIVE PATH the round-55 rule never had: the SAME opt-in that used to be refused on every
+  //     row is admitted once the three pieces agree. Off stays a no-op; absent stays legal.
+  assert.equal(centreConfigViolation(coherent), undefined, 'a coherent Alpha.6 configuration must be ENABLED, not refused')
+  assert.equal(centreConfigViolation({ ...coherent, alpha6ReviewRouting: false }), undefined)
+  assert.equal(centreConfigViolation({}), undefined)
+  // (2) ONE PIECE AT A TIME. Each missing piece names ITSELF, so an operator can act on the refusal
+  //     instead of reading "unavailable" and guessing.
+  const cases = [
+    ['ADMISSION_ALPHA6_ROUTING_REQUIRED', { ...coherent, blueprintSource: undefined }],
+    ['ADMISSION_ALPHA6_ROUTING_REQUIRED', { ...coherent, blueprintSource: cAlpha6Source().replace('  enabled: true', '  enabled: false') }],
+    ['ADMISSION_ALPHA6_CENTRE_REQUIRED', { ...coherent, centreStatePath: undefined }],
+    ['ADMISSION_ALPHA6_WAKE_INTENT_PATH_REQUIRED', { ...coherent, alpha6WakeIntentPath: undefined }],
+    // A RELATIVE intent path is the same missing piece: a directory that moves with the cwd is not durable.
+    ['ADMISSION_ALPHA6_WAKE_INTENT_PATH_REQUIRED', { ...coherent, alpha6WakeIntentPath: 'wake-intents' }],
+  ]
+  for (const [piece, config] of cases) {
+    const violation = centreConfigViolation(config)
+    assert.equal(typeof violation, 'string', `${piece}: the incoherent row must be refused`)
+    assert.match(String(violation), new RegExp(`^${HOST_SURFACE_REFUSALS.alpha6.code}:`, 'u'), 'the closed table code still leads')
+    assert.match(String(violation), new RegExp(piece, 'u'), `${piece}: the refusal names the piece that is missing`)
+  }
+  // (3) THE REFUSAL IS RECORDED, per piece, through the SAME host-entry hook — a typed refusal that
+  //     leaves no durable trace would just be a log line.
+  for (const [piece, config] of cases) {
+    const dir = mkdtempSync(join(tmpdir(), 'adm-141-'))
+    const row = { ...config, rootSessionId: 'session-row-141', centreStatePath: dir, alpha6ReviewRouting: true }
+    const violation = centreConfigViolation(row)
+    if (violation === undefined) continue // the centre-missing case has no directory to record into
+    const faults = []
+    const recorded = []
+    createAlpha6RowRefusalHook({
+      onFault: (error) => faults.push(error),
+      onRecorded: (entry) => recorded.push(entry),
+    })(String(violation), row)
+    assert.deepEqual(faults, [], `${piece}: the refusal must record cleanly`)
+    assert.equal(recorded.length, 1, `${piece}: exactly one recorded refusal`)
+    assert.equal(recorded[0].code, HOST_SURFACE_REFUSALS.alpha6.code)
+  }
+})
+
+test('ADM-142 — the routing decision is the ONE shared policy over a real leg: it routes to the Officer and EXECUTES nothing', async () => {
+  const { routeReview } = await import('../review-router/router.ts')
+  const { blueprintReviewPolicyFrom } = await import('../review-router/policy.ts')
+
+  const policy = blueprintReviewPolicyFrom({
+    enabled: true,
+    officerTemplateId: 'officer',
+    ordinaryToolApprovals: { default: 'officer', leaderExceptions: [] },
+    whenOfficerUnavailable: 'hold',
+  })
+  assert.ok(policy !== null)
+  const leg = Object.freeze({
+    requestId: 'ctrl-142-leg',
+    status: 'pending',
+    kind: 'leader-approval',
+    reviewAuthority: 'leader',
+    operationOwnerTemplateId: 'worker',
+    ordinaryAsk: Object.freeze({
+      kind: 'leader-approval',
+      reviewAuthority: 'leader',
+      requestedEffect: 'allow',
+      operationFingerprint: 'sha256:adm142',
+      mutationProposalFingerprint: null,
+      authorityScope: Object.freeze({ kind: 'exact', path: '/work/a' }),
+      operationTool: Object.freeze({ owner: 'dsh-agent-team', name: 'bash' }),
+      perEffectRequiredAuthorities: Object.freeze(['leader']),
+      fixedLeaderOrHumanCategory: false,
+    }),
+    requiresHuman: false,
+    hasLegalResolver: true,
+    fixedLeaderCategory: false,
+  })
+  const input = Object.freeze({
+    policy,
+    currentLeg: leg,
+    currentOfficer: Object.freeze({ status: 'active', instanceId: 'inst-adm142officer', templateId: 'officer' }),
+    leader: Object.freeze({ instanceId: 'inst-adm142leader', templateId: 'leader' }),
+    transfer: null,
+  })
+  const executions = { count: 0 }
+  const route = routeReview(input)
+  assert.equal(route.kind, 'recipient', 'an ordinary tool ask is DELEGABLE — that is the whole point of the axis')
+  if (route.kind === 'recipient') {
+    assert.equal(route.target.kind, 'instance')
+    assert.equal(route.target.routeRole, 'officer', 'a normal tool ask belongs to the Officer, never the Leader')
+    assert.equal(route.target.instanceId, 'inst-adm142officer')
+  }
+  assert.equal(executions.count, 0, 'the routing DECISION executes nothing — it is a projection, not an operation')
+  // The frozen input survived: a router that mutated its own evidence could route differently on replay.
+  assert.deepEqual(JSON.parse(JSON.stringify(input)), JSON.parse(JSON.stringify(input)))
+  assert.equal(Object.isFrozen(input), true, 'the input is frozen, so a mutation would have thrown')
+  // A leg with NO authored policy is a HOLD, not a Leader fallback and not a silent allow.
+  const disabled = routeReview(Object.freeze({ ...input, policy: null }))
+  assert.equal(disabled.kind, 'hold')
+  assert.equal(disabled.holdReason, 'config-invalid')
+})
+
+test('ADM-143 — the Officer wake is a governed DELIVERY: intent + confirmation facts, machine attribution, ZERO tool executions', async () => {
+  const { createReviewWakeDelivery, REVIEW_WAKE_FACT_ROUTED, REVIEW_WAKE_FACT_DELIVERED } = await import('../src/plugin/vnext/review-wake-delivery.mjs')
+  const { isHumanInteractionClaim, createMachineInputLedger, TEAM_PRODUCER_SOURCE } = await import('../src/plugin/live/input-provenance.mjs')
+
+  const ROOT = 'session-adm143-root'
+  const OFFICER = 'inst-adm143officer'
+  const OFFICER_SESSION = 'session-adm143-officer'
+  const ledger = wakeLedger()
+  const submissions = []
+  const executions = { count: 0 }
+  const port = createReviewWakeDelivery({
+    ledger,
+    memberOf: (rootSessionId, instanceId) => (
+      rootSessionId === ROOT && instanceId === OFFICER
+        ? { instanceId: OFFICER, childSessionId: OFFICER_SESSION, lifecycle: 'RUNNING' }
+        : undefined
+    ),
+    sessionInput: {
+      submitAttributedInput: async (input) => {
+        submissions.push(input)
+        // The port is a DELIVERY: it writes input into the session. It never dispatches a tool, so the
+        // only way `executions` could move is if this module invented an execution path.
+        assert.equal(executions.count, 0)
+      },
+    },
+    now: () => '2026-11-23T00:00:00.000Z',
+  })
+  const result = await port.deliver({
+    rootSessionId: ROOT,
+    wakeId: 'review:ctrl-adm143',
+    requestId: 'ctrl-adm143',
+    recipientInstanceId: OFFICER,
+    text: '[team-review-wake wakeId=review:ctrl-adm143]\nDecide with team_resolve_control.',
+    requesterInstanceId: 'inst-adm143worker',
+  })
+  assert.equal(result.delivered, true)
+  assert.equal(result.duplicate, false)
+  assert.equal(result.targetSessionId, OFFICER_SESSION)
+
+  // (1) THE DELIVERY ITSELF: one input, to the ROUTED session, carrying the token-leading hint.
+  assert.equal(submissions.length, 1)
+  assert.equal(submissions[0].sessionId, OFFICER_SESSION)
+  assert.match(String(submissions[0].text), /\[team-review-wake wakeId=review:ctrl-adm143\]/u)
+  assert.equal(executions.count, 0, 'a wake is INPUT: nothing in the management plane executed a tool')
+
+  // (2) THE DURABLE PAIR, in order, in the ONE TeamDomain ledger, correlated to each other.
+  const facts = ledger.list().filter((entry) => entry.factType === REVIEW_WAKE_FACT_ROUTED || entry.factType === REVIEW_WAKE_FACT_DELIVERED)
+  assert.deepEqual(facts.map((entry) => entry.factType), [REVIEW_WAKE_FACT_ROUTED, REVIEW_WAKE_FACT_DELIVERED])
+  assert.equal(facts[0].payload.requestToken, 'review:ctrl-adm143')
+  assert.equal(facts[0].payload.requestId, 'ctrl-adm143')
+  assert.equal(facts[0].payload.recipientInstanceId, OFFICER, 'the intent names WHO was routed')
+  assert.equal(facts[0].payload.deliveredToSessionId, OFFICER_SESSION, 'the intent names WHICH session')
+  assert.equal(facts[0].payload.routeRole, 'officer')
+  assert.equal(facts[0].payload.fromInstanceId, 'inst-adm143worker')
+  assert.equal(facts[1].payload.factSequence, facts[0].sequence, 'the confirmation cites the intent it confirms')
+  assert.equal(facts[1].payload.requestToken, facts[0].payload.requestToken, 'both carry the SAME correlation token')
+  assert.equal(facts[1].payload.deliveredToInstanceId, OFFICER)
+
+  // (3) STOP SAFETY: the wake is a MACHINE input under the Alpha.6 law, so it can never be read as a
+  //     human interaction that clears a human Sticky Stop (A56 — the real predicate, not a comment).
+  const message = { content: [{ type: 'text', text: submissions[0].text }], source: TEAM_PRODUCER_SOURCE }
+  const machineLedger = createMachineInputLedger(8)
+  machineLedger.note(OFFICER_SESSION, message)
+  assert.equal(isHumanInteractionClaim(message, machineLedger, OFFICER_SESSION), false)
+  assert.equal(isHumanInteractionClaim(message, machineLedger, 'session-somewhere-else'), false)
+})
+
+test('ADM-144 — the Officer\'s own team_resolve_control is admitted by the ONE centre on the team.control axis under ITS binding, and an unbound caller is not', async () => {
+  const { admit, invocationFactsOf, CENTRE_TOOL_NAMES } = await import('../src/plugin/vnext/admission.ts')
+  assert.ok(CENTRE_TOOL_NAMES.includes('team_resolve_control'), 'the Officer\'s decision tool is a CENTRE tool, not a member I/O tool')
+  const officerBinding = binding({
+    agentId: 'session-adm144-officer',
+    sessionId: 'session-adm144-officer',
+    instanceGeneration: 2,
+    owner: 'team-root-adm144',
+    blueprintRevision: 'rev-adm144',
+    policyGeneration: 'gen-adm144',
+  })
+  const decision = admit({
+    binding: officerBinding,
+    toolName: 'team_resolve_control',
+    arguments: { requestId: 'ctrl-adm144', decision: 'approved' },
+  })
+  assert.equal(decision.kind, 'allow', 'the Officer\'s approval runs as an ORDINARY centre operation, not through a parallel authority')
+  const facts = invocationFactsOf({
+    binding: officerBinding,
+    toolName: 'team_resolve_control',
+    callId: 'call-adm144-officer',
+    arguments: { requestId: 'ctrl-adm144', decision: 'approved' },
+    admission: decision,
+  })
+  assert.equal(facts.axis, 'team.control', 'the record is on the control axis — no invented review axis')
+  assert.equal(facts.agentId, 'session-adm144-officer', 'the fact names the OFFICER\'s own binding')
+  assert.equal(facts.instanceGeneration, 2)
+  assert.equal(facts.policyGeneration, 'gen-adm144')
+  assert.equal(facts.decision, 'allow')
+  assert.equal(facts.refusalCode, undefined)
+
+  // NO BINDING, NO AUTHORITY: the same call from a caller the centre was never wired for is refused. A
+  // review wake must never be able to turn into an execution by an agent with no binding.
+  const unbound = admit({ binding: undefined, toolName: 'team_resolve_control', arguments: { requestId: 'ctrl-adm144' } })
+  assert.equal(unbound.kind, 'deny')
+  assert.equal(unbound.code, 'ADMISSION_NO_BINDING')
+})
+
+test('ADM-146 — a duplicate wake converges on ONE confirmation, and an unreviewable/unroutable recipient writes NOTHING', async () => {
+  const { createReviewWakeDelivery, REVIEW_WAKE_ERRORS } = await import('../src/plugin/vnext/review-wake-delivery.mjs')
+  const ROOT = 'session-adm146-root'
+  const OFFICER = 'inst-adm146officer'
+  const ledger = wakeLedger()
+  const submissions = []
+  const port = createReviewWakeDelivery({
+    ledger,
+    memberOf: (rootSessionId, instanceId) => (
+      rootSessionId === ROOT && instanceId === OFFICER
+        ? { instanceId: OFFICER, childSessionId: 'session-adm146-officer' }
+        : undefined
+    ),
+    sessionInput: { submitAttributedInput: async (input) => { submissions.push(input) } },
+    now: () => '2026-11-23T00:00:00.000Z',
+  })
+  const wake = {
+    rootSessionId: ROOT,
+    wakeId: 'review:ctrl-adm146',
+    requestId: 'ctrl-adm146',
+    recipientInstanceId: OFFICER,
+    text: '[team-review-wake wakeId=review:ctrl-adm146]\nx',
+  }
+  const first = await port.deliver(wake)
+  const second = await port.deliver(wake)
+  assert.equal(first.delivered, true)
+  assert.equal(second.delivered, false)
+  assert.equal(second.duplicate, true)
+  assert.equal(submissions.length, 1, 'the inbox saw the wake ONCE: a duplicate does not re-deliver')
+  assert.equal(ledger.list().length, 2, 'one intent + one confirmation, never a second pair')
+
+  // UNREVIEWABLE SUBJECT: the routed reviewer has no durable Member row (no bound child session), so
+  // there is nobody lawful to wake — a typed refusal with ZERO durable writes and ZERO input.
+  const before = ledger.list().length
+  await assert.rejects(
+    () => port.deliver({ ...wake, wakeId: 'review:ctrl-adm146-ghost', recipientInstanceId: 'inst-adm146ghost' }),
+    (error) => {
+      assert.equal(error.code, REVIEW_WAKE_ERRORS.RECIPIENT_UNKNOWN)
+      return true
+    },
+  )
+  assert.equal(ledger.list().length, before, 'a refusal to wake leaves no fact behind (nothing was decided to deliver)')
+  assert.equal(submissions.length, 1, 'and delivers nothing')
 })

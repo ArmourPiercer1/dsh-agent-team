@@ -14,7 +14,62 @@
 export interface CentreConfigFacts {
     readonly centreStatePath?: unknown;
     readonly alpha6ReviewRouting?: unknown;
+    /** The durable wake-intent directory the latch requires (Alpha.6 opt-in only). */
+    readonly alpha6WakeIntentPath?: unknown;
+    /** The bound bootstrap Blueprint source (Alpha.6 reads its authored v5 routing policy). */
+    readonly blueprintSource?: unknown;
 }
+/**
+ * The Alpha.6 enablement PIECE codes (round 84). Every one is a REFUSAL code: a row is enabled only
+ * when all three pieces are present, and a row that opts in without one is refused naming the exact
+ * piece. They are deliberately NOT new members of the closed host-surface table: that table names
+ * capabilities with no member I/O axis, and Alpha.6 no longer has that absence (the routing decision is
+ * recorded as a delivery, and the Officer's calls are admitted by the centre). The `alpha6` TABLE code
+ * stays the stable capability code every Alpha.6 row refusal carries (the recorded invocation-authority
+ * fact and the recorded reason both start with it), and the piece code follows it in the same string so
+ * a caller never has to parse prose to learn which piece was absent.
+ */
+export declare const ALPHA6_ENABLEMENT_PIECES: Readonly<{
+    /** No authored v5 `reviewRouting` policy: there is no decision to take, so nothing can be routed. */
+    readonly routing: "ADMISSION_ALPHA6_ROUTING_REQUIRED";
+    /** No durable centre: the routing/delivery facts and their settlement would have nowhere to live. */
+    readonly centre: "ADMISSION_ALPHA6_CENTRE_REQUIRED";
+    /** No absolute durable wake-intent directory: the latch would silently degrade to memory-only. */
+    readonly wakeIntentPath: "ADMISSION_ALPHA6_WAKE_INTENT_PATH_REQUIRED";
+}>;
+export type Alpha6EnablementPiece = (typeof ALPHA6_ENABLEMENT_PIECES)[keyof typeof ALPHA6_ENABLEMENT_PIECES];
+/** One refused piece, as the gate names it (structural, so a caller can drive the gate directly). */
+export interface Alpha6EnablementRefusal {
+    readonly piece: Alpha6EnablementPiece;
+    readonly reason: string;
+}
+/**
+ * Is this row's authored Blueprint a v5 document carrying an ENABLED `reviewRouting` block?
+ *
+ * `false` for every other answer (absent source, a v3/v4 document, a malformed document, a v5 document
+ * with no routing block, or a block with `enabled: false`): Alpha.6 has no implicit default, so a row
+ * that names no policy is not routable. The parser is the domain's ONE v5 parser; a parse fault is a
+ * refusal, never a pass.
+ */
+export declare function alpha6RoutingAuthored(blueprintSource: unknown): boolean;
+/**
+ * The Alpha.6 enablement rule (round 84): the row may run review routing exactly when the configured
+ * pieces are COHERENT.
+ *
+ * WHY THE RULE CHANGED. Round 55 made the opt-in unconditionally unavailable because the routing
+ * decision was taken outside the centre with no durable record (`ADM-99`). Round 84 removed that
+ * absence by making the routed review an ordinary governed operation: the decision is a projection of
+ * the centre's own durable control row through the ONE shared review policy, the wake is a DELIVERY
+ * through the P6-T3 session-input mechanism (durable intent + confirmation facts, requirement gate,
+ * machine attribution), and the Officer's approval/own tools are admitted by the centre under the
+ * Officer's binding. What is still needed for that to be true is a configuration that can carry it, and
+ * a row missing any piece would run a claim it cannot record — so each missing piece is refused by
+ * name. Nothing here is an axis, a second authority or a default: `undefined` means "coherent", and
+ * every other answer is a typed refusal.
+ *
+ * A row that never opts in is untouched (the first branch): Alpha.5 stays byte-identical.
+ */
+export declare function alpha6EnablementRefusal(config: CentreConfigFacts): Alpha6EnablementRefusal | undefined;
 /**
  * R3 (round 35): a member whose row is CONFIGURED for the centre but gets no confined-provider realm
  * would otherwise run its native tools with no admission decision, no ledger line and no settlement
@@ -41,19 +96,19 @@ export declare function memberCentreUnwiredViolation(config: CentreConfigFacts |
  * present ("it records its decisions somewhere durable"). Round 55 measured what that bought: the
  * decisions are written by the Alpha.6 composition, NOT by the centre, and no centre call ever
  * receives a review-routing decision — so an enabled router is still a governance claim whose
- * adjudication sits outside the ONE admission authority. C6 is therefore EXPLICITLY UNAVAILABLE: the
- * code names the missing axis, and the row does not boot with a second review authority rather than
- * claiming a join the centre cannot make.
+ * adjudication sits outside the ONE admission authority. Round 55 therefore refused the opt-in on
+ * every row.
  *
- * The code lives in `host-surface-refusal.ts`, the ONE closed table for the capabilities with no
- * member I/O axis, so a config refusal and a recorded refusal can never name the same absence twice
- * with two different strings.
- *
- * ROUND 68: this rule still DECIDES the refusal, and the host entry now RECORDS it. `host.ts` passes
- * `createAlpha6RowRefusalHook` to `validateTeamPluginConfig`, which runs at the exact point below and
- * writes the product's own invocation-authority fact + `REFUSED`/`not-started` settlement through
- * `host-surface-refusal.mjs` — then the unchanged throw refuses the row. A row with no
- * `centreStatePath` has no durable directory, so its refusal stays unwritten but is still a refusal.
+ * ROUND 84 — THE POSITIVE PATH, ON THE SAME LAW. The absence round 55 named is closed by making the
+ * routed review an ordinary governed operation rather than by inventing an axis (see
+ * `ALPHA6-FORMAL-ROUTING.md`): the routing decision is a projection of the centre's own durable control
+ * row, the wake is a delivery through the P6-T3 session-input mechanism with durable intent +
+ * confirmation facts, and the Officer's approval and own tool calls are admitted by the centre under
+ * the Officer's binding. What remains is a CONFIGURATION question, and it is answered by
+ * `alpha6EnablementRefusal` above: a coherent row is enabled, an incoherent one is refused naming the
+ * missing piece. The refusal string still STARTS with the closed table's `alpha6` code, so the host
+ * entry's recorder (`row-refusal-entry.ts`) still records every Alpha.6 row refusal with the same
+ * capability, axis and subject it always used.
  */
 export declare function centreConfigViolation(config: CentreConfigFacts | null | undefined): string | undefined;
 //# sourceMappingURL=centre-config.d.ts.map

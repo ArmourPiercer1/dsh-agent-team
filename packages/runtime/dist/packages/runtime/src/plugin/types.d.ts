@@ -1310,18 +1310,35 @@ export interface TeamAgentBindings {
         readonly text: string;
     }) => Promise<void>;
     /**
-     * Alpha.6 review-wake delivery: write ONE attributed review wake into the
-     * TARGET session's native Host inbox (the Officer's child session), through
-     * the same live-agent seam the PR7 E2E exercises. NON-AUTHORITY: the durable
-     * control row remains the authority; the wake is a hint. OPTIONAL at the
-     * type level, but an explicitly Alpha.6 root REFUSES to boot without it —
-     * never a silent Leader fallback.
+     * Alpha.6 review-wake delivery: DELIVER the routed review wake into the
+     * TARGET session (the Officer's child session).
+     *
+     * ROUND 84: this is no longer a bespoke message write. The production glue
+     * routes it through the SAME governed delivery mechanism round 83 built for
+     * `member.send` — a durable delivery intent fact, the P6-T3
+     * `SessionInputPort` (requirement verdict + machine attribution + inbox
+     * acceptance), and a confirmation fact — so the wake is durable, correlated
+     * and reconcilable. NON-AUTHORITY: the durable control row remains the
+     * authority and the wake executes no tool; the Officer's own turn then calls
+     * its own tools, admitted by the centre under the OFFICER's binding.
+     * OPTIONAL at the type level, but an explicitly Alpha.6 root REFUSES to boot
+     * without it — never a silent Leader fallback.
      */
     readonly deliverReviewWake?: (input: {
         readonly rootSessionId: string;
         readonly targetSessionId: string;
         readonly wakeId: string;
         readonly text: string;
+        /**
+         * The routed reviewer instance and the durable request the wake is about.
+         * The production notifier always passes them (so the delivery fact names
+         * exactly who was routed for which leg); a caller that omits them is still
+         * valid — the glue resolves the instance from the durable Member row bound
+         * to `targetSessionId` and never invents a recipient.
+         */
+        readonly recipientInstanceId?: string;
+        readonly requestId?: string;
+        readonly requesterInstanceId?: string;
     }) => Promise<void>;
     /**
      * A56-SEMANTICS — the input-provenance arbiter. `true` when the claimed

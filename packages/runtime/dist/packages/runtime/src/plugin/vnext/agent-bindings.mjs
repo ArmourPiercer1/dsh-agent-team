@@ -357,6 +357,9 @@ import * as mcpClient from '@deepseek-ai/dsh-mcp-client'
 // tool body and never owns dispatch.
 // The delivered-turn reader lives on its own: it never touched this closure's state.
 import { readDeliveredWorkTurn } from './work-turn-reader.mjs'
+// Round 84: the review wake is delivered by the SAME governed delivery mechanism as `member.send`
+// (durable intent + confirmation facts, correlation token, requirement verdict, machine attribution).
+import { createReviewWakeDelivery } from './review-wake-delivery.mjs'
 // The a5sf realm mount + its row helpers SURVIVE the cut (the realm is the
 // provider installation the lane mounts into).
 // `freshCreateHintAdmits` is imported, not copied: the rule that a bind-path hint may bridge ONLY the
@@ -3588,6 +3591,27 @@ export function createAgentBindings(deps) {
     },
   }
 
+  /**
+   * ROUND 84 — the ONE review-wake delivery port, built lazily over THIS row's own durable ledger and
+   * the SAME `sessionInput` the messaging coordinator uses. Lazy on purpose: a factory/unit world that
+   * never routes a review must not open or touch a ledger, and a world whose domain is a narrow double
+   * keeps working (the port is only constructed when a wake is actually delivered).
+   * @returns {ReturnType<typeof createReviewWakeDelivery>}
+   */
+  let reviewWakeDelivery
+  function reviewWakePort() {
+    if (reviewWakeDelivery === undefined) {
+      reviewWakeDelivery = createReviewWakeDelivery({
+        ledger: domain.repositories.ledger,
+        memberOf: (rootSessionId, instanceId) =>
+          domain.repositories.memberInstances.list(rootSessionId)
+            .find((member) => String(member.instanceId) === String(instanceId)),
+        sessionInput,
+      })
+    }
+    return reviewWakeDelivery
+  }
+
   // The work-delivery port (R1/R6): the ONLY model-visible delivery path —
   // the requestToken rides visibly so at-least-once deliveries stay
   // dedupe-able from the durable child log, and the turn is observed to
@@ -4184,6 +4208,25 @@ export function createAgentBindings(deps) {
     }
   }
 
+  /**
+   * ROUND 84 — THE REVIEW WAKE IS A DELIVERY, NOT A BESPOKE followup/steer.
+   *
+   * The old body resolved the live agent itself and wrote a hand-built message, which meant the wake
+   * skipped everything round 83 built for `member.send`: the durable delivery intent fact, the
+   * correlation token, the requirement-aware final-input verdict (`prepareAgentForRequest`), the A56
+   * machine-attribution ledger (a machine input must never clear a human Sticky Stop), and the
+   * confirmation fact. A review wake is INPUT to the Officer's own session, so it is delivered by the
+   * SAME mechanism — `createReviewWakeDelivery` over THIS row's own TeamDomain ledger and the P6-T3
+   * `SessionInputPort`. The Officer's own turn then runs its own tools under its own binding.
+   *
+   * `targetSessionId` stays in the seam signature (it is the routed reviewer's session the notifier
+   * resolved) and is checked against the durable Member row of `rootSessionId`: a wake is never
+   * delivered to a session that is not that Member's bound child session.
+   *
+   * @param {{rootSessionId: string, targetSessionId: string, wakeId: string, text: string,
+   *   recipientInstanceId?: string, requestId?: string, requesterInstanceId?: string}} input
+   * @returns {Promise<void>}
+   */
   async function deliverReviewWake(input) {
     const rootSessionId = String(input?.rootSessionId ?? '')
     const targetSessionId = String(input?.targetSessionId ?? '')
@@ -4204,19 +4247,32 @@ export function createAgentBindings(deps) {
     if (closing) {
       throw new Error('agent-bindings: live bindings are closing — review wake dropped (best-effort)')
     }
-    const handle = await ensureLiveAgent(targetSessionId)
-    await prepareAgentForRequest(String(targetSessionId), teamRootOfSession(targetSessionId))
+    const recipientInstanceId = String(input?.recipientInstanceId ?? '')
+      || String(domain.repositories.memberInstances.list(rootSessionId)
+        .find((member) => String(member.childSessionId ?? '') === targetSessionId)?.instanceId ?? '')
+    if (recipientInstanceId === '') {
+      throw new Error(
+        `agent-bindings: deliverReviewWake has no Member row of '${rootSessionId}' bound to session '${targetSessionId}' — a review wake is never delivered to an invented recipient`,
+      )
+    }
+    const delivered = await reviewWakePort().deliver({
+      rootSessionId,
+      wakeId,
+      requestId: String(input?.requestId ?? wakeId),
+      recipientInstanceId,
+      text,
+      ...(String(input?.requesterInstanceId ?? '') === '' ? {} : { requesterInstanceId: String(input.requesterInstanceId) }),
+    })
+    // The seam's contract is "the wake is accepted by the recipient session"; a duplicate (already
+    // confirmed) is a successful no-op, exactly like a replayed `member.send`.
+    if (delivered.duplicate === true) return
+    if (delivered.targetSessionId !== targetSessionId) {
+      throw new Error(
+        `agent-bindings: deliverReviewWake delivered to '${delivered.targetSessionId}', not the routed session '${targetSessionId}'`,
+      )
+    }
     if (closing) {
       throw new Error('agent-bindings: live bindings began closing before the review wake — dropped (best-effort)')
-    }
-    const message = createUserMessage({
-      content: [{ type: 'text', text }],
-      source: { kind: 'plugin:dsh-agent-team' },
-    })
-    if (handle.agent.status === 'idle') {
-      handle.agent.followup(message)
-    } else {
-      handle.agent.steer(message)
     }
   }
 
