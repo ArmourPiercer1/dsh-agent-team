@@ -10928,3 +10928,39 @@ enforce a namespace, and patching around it would be absence-as-pass. A capable 
 controls automatically, no code change. The five guarantees are UNPROVEN on an incapable runner and are
 recorded as ENV-LIMITED (never PROVEN) in `CAPABILITY-MATRIX-C.md`; `D-ACCEPTANCE-REPORT.md` §3.1,
 `MIGRATED-SUITE-STATUS.md` and `ROUND80-CI-CLOSURE.md` carry the same qualification.
+
+### R79-R82 — the 23:05 review's two P0s: rc.5 pre-dispatch abort, and the last hosted reds
+
+Review 20261122-2305 named the new bottleneck: rc.5 announces a pre-dispatch cancellation at a boundary we did not
+read, and hosted Required CI still had old-architecture gates.
+
+**rc.5 pre-dispatch abort (P0 #1).** rc.2's pipeline emits `tools/result` for a pre-execution cancel; rc.5's batch
+scheduler returns `ABORTED_BEFORE_DISPATCH` (`.../core/tools/src/batch.ts:225-280`) and NEVER enters the pipeline, so
+that event never fires. The centre now observes the host's OWN returned batch value at the executor completion
+boundary (`pre-dispatch-abort.mjs`, wired from `a5sf-fs-contract-world.mjs` into the composition) and writes ONE
+canonical execution fact per ExecutionId: with an admission record it records a pre-dispatch Stop + settlement
+`CANCELLED` (legal only with that Stop, never UNKNOWN); with no record it writes the fact and reports
+`SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` rather than inventing a settlement. Dedupe lives in the fact ledger's single
+`written` map, pinned by SLICE-37/38. SLICE-21/30 are GREEN on rc.5 **without changing their bodies**, and the
+slice file is 38/38 on both hosts. No scheduler was replaced and no host event was fabricated. CORE gap disclosed:
+the production call site is the host agent loop's `tools.execute`, which the product does not own — the observer is
+exported and driven in the slice composition, and the booted-member wiring is NOT claimed.
+
+**Hosted CI (P0 #2).** The 473 `eb3-family-definitions` findings were decomposed per subject and retired against the
+A0 ledger with named successors; `ci-integration` went green. Then the census job revealed, layer by layer, that
+several instruments were pinned on populations the cut moved (census roots 712->599, dispatch parity, contract tiers)
+and that five UTE G1 lane suites' goldens had been RECORDED WITH the appended confined shadow that `5d1349767`
+deleted — 18 hosted reds. Each arm was disposed per subject with the deleting commit, the frozen-licence row and a
+named successor, and every unit keeps a real post-cut `NC-MEMBER <member>` control. UTE G1 argv 89/89 locally AND
+hosted.
+
+**Then the last red was an ENVIRONMENT absence, not a product regression**: the hosted runner refuses the uid_map
+write, so the network-deny profile cannot be provisioned there (`NETWORK_DENY_UNPROVEN`). A capability probe
+(`a5sf-env-capability.mjs`) now decides per arm: where the capability is present the kernel denial is PROVEN; where
+it is absent the arm asserts the product's FAIL-CLOSED refusal and prints `UTE-VNEXT-A1-ENV-LIMITED` — no proven
+counter moves, the matrix shows those cells ENV-LIMITED. Local 206/204+2, hosted 206/199+7 (2 declared + 5
+env-limited), forced-absence override reproduces the same leg locally.
+
+Result: **hosted `ci-required` SUCCESS for the first time** (census 22/22 x2, next-host 184/184, UTE G1 89/89, leg
+206), `pr-gate` SUCCESS, five dated settlement comments. HEAD `2349f2e7b`, PR #822 restored to DRAFT (it had been
+flipped ready by an earlier writer; the candidate is not finished, so draft is the honest state) and never merged.
