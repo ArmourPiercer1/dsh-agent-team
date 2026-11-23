@@ -2696,3 +2696,9 @@ Distinct from the population: the **live** D2 driver gained a fourth judge (`d2:
 PROVEN on two agreeing DEV-LIVE boots (`evidence/d-boot-feasibility/d2/README.md` "Judge 4"). That is
 not a vitest population change — it is the live row — and it does not move any cell to PRODUCT-PROVEN.
 
+
+Two disclosed follow-ups landed in the same round, both for cross-cut instruments rather than the
+product: the D2 driver now declares its FULL case set (a subset record must name its arms, and the
+driver has none to name), and `a6-pr1-lane-hygiene`'s package-wide import scan tolerates a temp file
+that another suite removes mid-walk (the walk already did; the read now does) — the census measured
+that race once in two captures, and the fix removes it without relaxing any assertion.

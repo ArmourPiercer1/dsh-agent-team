@@ -985,7 +985,8 @@ delivers them the only lawful way:
 
 ### 9.3 Live proof (D2, DEV-LIVE, `--boots 2`, two agreeing boots)
 
-`d2:remote-delivery` **PROVEN on both boots**; `agreeing=true differing=[]`.
+`d2:remote-delivery` **PROVEN on both boots**; the driver runs its FULL declared set
+(`selected=4 / totalCases=4`, `subset=false`) and `agreeing=true differing=[]`.
 
 ```
 [ boot1] member.send ack: status=200 ok=true code=null deliveredSeq=40 facts=18 admissions=0 executions=0
