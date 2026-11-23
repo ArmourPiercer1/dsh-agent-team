@@ -46,6 +46,20 @@ export const TEAM_IO_DENIAL_CODES = [
    */
   'IO_ASK_REQUIRES_APPROVAL',
   /**
+   * R3 (owner ruling 20261124-0151 §2) — an `ask` was consumed, a receipt was
+   * presented, and the Provider REFUSED it: the receipt was missing from this
+   * execution, closed, for another Member or binding, for another canonical
+   * path or different bytes, outside the approved bounds, under a stale policy
+   * generation, or revoked (binder/member epoch moved).
+   *
+   * A code of its own (rather than `IO_ASK_REQUIRES_APPROVAL`) so the audit
+   * trail can tell "nobody asked for approval" from "the approval that was
+   * presented does not cover this effect". It is raised AFTER the body began;
+   * unlike an `ADMISSION_*` code it must settle as FAILED at the real phase,
+   * never as a pre-execution REFUSED/not-started.
+   */
+  'IO_ASK_RECEIPT_REFUSED',
+  /**
    * BL-18 (P2-05) — the confined `web` face's per-call network refusal.
    *
    * The SAME token the install vocabulary already carries (`NETWORK_UNCONFINED_REALM`,

@@ -671,3 +671,20 @@ mechanism half is now stronger than the row above records.
 ROUTE are product-real and pinned by five arms, and (b) the live routed wake still does not happen, for a
 reason that is measured, named (`G11`), Team-side, and not papered over with a fabricated ToolBinding or a
 defaulted authority scope. `R3` (`BL-30`) remains open: an approved `ask` call still cannot execute.
+
+## ROUND 94 ANNOTATION — R3 PoC: `ask → grant → execute` is PROVEN at MECHANISM level for ONE operation (`write`)
+
+An **annotation**, not a re-grade. No row becomes PRODUCT-PROVEN; `C-alpha6` stays MECHANISM (no live
+boot), and the production mount still passes no Provider authority, so a real product turn keeps the
+R4 refusal.
+
+| row | what round 94 measured | level effect |
+| --- | --- | --- |
+| **C-tools** (the `ask` consumer half, BL-30) | The R3 ApprovedAskReceipt is REAL: the centre mints it only after the one-shot grant is consumed, delivers it through a dedicated execution-scoped ALS, and the confined Provider verifies member / binding / policy generation / binder+member epochs / canonical path / content digest / frozen bounds. Over the real `fs` Provider, real binder, real `ControlService` and real settlement store, `ADM-154` writes real bytes (`COMPLETED`); `ADM-155`…`ADM-161` refuse a second effect, a cross-path replay, a revoked Member, a closed receipt, a deny lane, a cross-Member read, and settle a post-body refusal as `FAILED` at the real phase. | **MECHANISM, narrowed for `write` only** — the `ask→grant→execute` leg is no longer "unreachable in every case", but it is NOT PRODUCT-PROVEN (host loop is a double; no boot; no production wiring). Every other tool still refuses. |
+| **C-alpha6** | Unchanged: no live boot was re-run, so `d4:routed-wake` stays REFUTED. Separately, **G11 is fixed as a lane-algebra defect**: a legal pure-ask lane now survives the intersection (stays `ask`, never promoted), so a declared `ToolBinding` + ordinary ask CAN coexist in the compiled lane. That removes the G11 blocker for a future boot but does not itself prove the routed wake. | **MECHANISM, unchanged** — the live routed wake remains UNPROVEN; G11 is closed, the boot is not. |
+| **C-subprocess / C-member / C-env** | Untouched. The receipt covers `writeText` only; no subprocess, network or Stop semantics changed. | **Unchanged.** |
+
+**Explicit non-claim.** No arm in this round is a live product turn, and no row rises to PRODUCT-PROVEN.
+The honest statement is: R3's mechanism is executable and all seven negative controls refuse; BL-30/G2
+is narrowed to "`write` at mechanism level", and the remaining work is production wiring, a live boot,
+and per-operation extension (each a separate ruling).

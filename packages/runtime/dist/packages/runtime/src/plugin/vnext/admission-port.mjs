@@ -31,6 +31,18 @@
  */
 
 import { admit, invocationFactsOf } from './admission.js'
+// R3 (owner ruling 20261124-0151 §2): the execution-scoped ApprovedAskReceipt. The centre MINTS it
+// after the one-shot grant is consumed and delivers it to the tool body through its own
+// `tools/execute` listener; the confined Provider is the only reader. This is a NEW authorization
+// carrier, not the attribution-only guard-observability store.
+import {
+  closeApprovedAskReceipt,
+  mintApprovedAskReceipt,
+  prepareApprovedWriteOperation,
+  registerPendingApprovedAskReceipt,
+  runWithApprovedAskExecutionScope,
+  takePendingApprovedAskReceipt,
+} from '../../../member-io-policy/src/approved-ask-receipt.js'
 
 export class AdmissionPortError extends TypeError {
   constructor (code, message) {
@@ -350,7 +362,7 @@ export function createControlApprovalPort ({
  *   refusal tombstone (`ADMISSION_MEMBER_CLOSED`) for every later call, and keeps observing so an
  *   in-flight call still settles. See the lifecycle arm (ADM-59).
  */
-export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, isReplay, recordReplay, grants, approvals, settlement, overlayDecision, onFault, closedBinding }) {
+export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, isReplay, recordReplay, grants, approvals, settlement, overlayDecision, onFault, closedBinding, executionIdOf }) {
   if (ctx === undefined || ctx === null) throw new AdmissionPortError('CTX_MISSING', 'no agent context to install on')
   const tools = typeof ctx.get === 'function' ? ctx.get('tools') : undefined
   if (tools === undefined || tools === null || typeof tools.guard !== 'function') {
@@ -376,6 +388,8 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
    */
   let closed = false
   let closeSignalled = false
+  /** Every receipt THIS port minted; a close retires all of them, not just pending ones. */
+  const issuedReceipts = new Set()
   /**
    * RETIRED is the removal state (teardown/rollback). It answers NOTHING — not even a refusal — which
    * is what "the point no longer exists" means (ADM-28 pins it: after a removal no point answers).
@@ -492,7 +506,7 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
    * terminal at birth: the store's own admission writer closes a refusal as REFUSED, so a denied or
    * expired approval leaves no open record to recover as UNKNOWN.
    */
-  const commit = (exec, { binding, admission, decision, capability, wanted, overlayOutcome }) => {
+  const commit = (exec, { binding, admission, decision, capability, wanted, overlayOutcome, receipt }) => {
     const callId = callIdOfExec(exec)
     try {
       record(invocationFactsOf({
@@ -540,6 +554,10 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
       guard: undefined,
       capability,
       ...(wanted === undefined ? {} : { wanted }),
+      // The R3 receipt MATERIAL is not a receipt yet: it is the approved operation the centre
+      // prepared before the wait, and `spend` mints the receipt from it only after the grant was
+      // actually consumed. Carrying it here keeps "approved" and "consumed" two separate facts.
+      ...(receipt === undefined ? {} : { receipt }),
     })
   }
 
@@ -783,6 +801,53 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
         decision: { kind: 'deny', code: 'ADMISSION_GRANT_UNMINTABLE', reason: String(minted.code) },
       })
     }
+    // R3 PREPARATION. The approved operation is canonicalized NOW, while the approval is still the
+    // subject of the decision: the Provider will later re-resolve the real path and must be able to
+    // compare it with what was approved. This round covers exactly the native `write` operation; any
+    // other tool keeps the R4 fail-closed `IO_ASK_REQUIRES_APPROVAL` refusal (no receipt is prepared,
+    // so none can be minted).
+    let receiptMaterial
+    if (exec.name === 'write' && typeof exec.arguments?.file_path === 'string' && typeof exec.arguments?.content === 'string') {
+      const prepared = await prepareApprovedWriteOperation({
+        locator: exec.arguments.file_path,
+        content: exec.arguments.content,
+      })
+      if (!prepared.ok) {
+        return commit(exec, {
+          binding,
+          admission,
+          decision: {
+            kind: 'deny',
+            code: prepared.code,
+            reason: `the approved write could not be turned into a canonical operation (${prepared.detail}); the call is refused rather than executed under an approval no receipt can name`,
+          },
+        })
+      }
+      const perTool = binding.perTool?.[exec.name]
+      receiptMaterial = {
+        executionId: typeof executionIdOf === 'function'
+          ? String(executionIdOf(exec))
+          : `${String(binding.sessionId ?? '')}:${String(binding.agentId ?? '')}:${callId}`,
+        member,
+        toolName: exec.name,
+        // The ToolDefinition identity the compiled binding carries; the grant's own binder string
+        // (`owner/tool`) is not the definition identity and must not be compared with it.
+        toolBindingIdentity: perTool?.toolBindingIdentity ?? `${binding.owner}/${exec.name}`,
+        operation: prepared.value,
+        policyGeneration: revision,
+        approval: {
+          requestId: String(approval.approval?.approvalId ?? ''),
+          decisionId: `control-decision:${String(approval.approval?.approvalId ?? '')}:allow`,
+          // An inline admission request is not an Alpha.6 case; null is the honest identity here.
+          caseId: null,
+          legOrdinal: null,
+        },
+        bounds: {
+          read: perTool?.read ?? binding.read,
+          write: perTool?.write ?? binding.write,
+        },
+      }
+    }
     return commit(exec, {
       binding,
       admission,
@@ -794,6 +859,7 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
       },
       capability: minted.value,
       wanted: 'ask',
+      ...(receiptMaterial === undefined ? {} : { receipt: receiptMaterial }),
     })
   }
 
@@ -866,7 +932,39 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
       toolBindingIdentity: entry.capability.toolBindingIdentity,
     })
     entry.capability = undefined
-    if (consumed.ok === true) return undefined
+    if (consumed.ok === true) {
+      // R3 MINT. The grant was CONSUMED exactly now, so — and only now — the centre mints this
+      // call's receipt from the operation it prepared at approval time. The receipt is registered
+      // against the HOST EXECUTION OBJECT (never a callId string) and delivered by the
+      // `tools/execute` listener below, for this body only.
+      if (entry.receipt !== undefined) {
+        const minted = mintApprovedAskReceipt({
+          executionId: entry.receipt.executionId,
+          callId,
+          member: entry.receipt.member,
+          toolName: entry.receipt.toolName,
+          toolBindingIdentity: entry.receipt.toolBindingIdentity,
+          operation: entry.receipt.operation,
+          policyGeneration: entry.receipt.policyGeneration,
+          approval: entry.receipt.approval,
+          grant: {
+            consumed: true,
+            memberEpoch: consumed.value.memberEpoch,
+            binderEpoch: consumed.value.epoch,
+          },
+          bounds: entry.receipt.bounds,
+        })
+        entry.receipt = undefined
+        if (minted.ok !== true) {
+          const refused = `ADMISSION_RECEIPT_UNMINTABLE: the consumed approval for ${JSON.stringify(callId)} could not be turned into a receipt (${minted.code}: ${minted.detail})`
+          entry.guard = refused
+          return refused
+        }
+        issuedReceipts.add(minted.value)
+        registerPendingApprovedAskReceipt(exec, minted.value)
+      }
+      return undefined
+    }
     const verdict = `ADMISSION_GRANT_${consumed.code}: the approval for ${JSON.stringify(callId)} could not be spent`
     entry.guard = verdict
     return verdict
@@ -906,10 +1004,38 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
   // consults the guard twice within a single dispatch, but a SECOND dispatch carrying the same
   // callId is a replay and must meet the ledger, not a stale verdict. `tools/result` is the
   // execution's end, so that is where the memo entry is dropped.
+  /**
+   * R3 DELIVERY. The receipt minted at the grant spend is delivered to the tool body through a NEW
+   * authorization scope (an `AsyncLocalStorage` owned by the receipt module, NOT the attribution-only
+   * guard-observability carrier). The listener takes the receipt by HOST EXECUTION OBJECT identity,
+   * so a second execution carrying the same callId finds nothing, and it closes the receipt in
+   * `finally`, so completion, a throw and a Stop all end availability. A closed member does not
+   * deliver: the receipt is closed unused and the Provider keeps its fail-closed refusal.
+   */
+  const disposeExecute = typeof ctx.on === 'function'
+    ? ctx.on('tools/execute', (exec, next) => {
+      const receipt = takePendingApprovedAskReceipt(exec)
+      if (receipt === undefined) return next()
+      if (retired || closed) {
+        closeApprovedAskReceipt(receipt)
+        return next()
+      }
+      return runWithApprovedAskExecutionScope(receipt, () => next())
+    })
+    : undefined
+
+  // The memo lives for the DURATION OF ONE EXECUTION, not for the lifetime of the port: the host
+  // consults the guard twice within a single dispatch, but a SECOND dispatch carrying the same
+  // callId is a replay and must meet the ledger, not a stale verdict. `tools/result` is the
+  // execution's end, so that is where the memo entry is dropped.
   const disposeResult = typeof ctx.on === 'function'
     ? ctx.on('tools/result', (exec) => {
       const callId = callIdOfExec(exec)
       decided.delete(callId)
+      // A receipt whose body never started (a Stop between the spend and the dispatch) must not
+      // survive into any later execution.
+      const leftover = takePendingApprovedAskReceipt(exec)
+      if (leftover !== undefined) closeApprovedAskReceipt(leftover)
     })
     : undefined
 
@@ -1014,8 +1140,11 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
     if (didDispose) return
     didDispose = true
     retired = true
+    for (const receipt of issuedReceipts) closeApprovedAskReceipt(receipt)
+    issuedReceipts.clear()
     disposeGuard()
     if (typeof disposePre === 'function') disposePre()
+    if (typeof disposeExecute === 'function') disposeExecute()
     if (typeof disposeResult === 'function') disposeResult()
   }
   /**
@@ -1031,6 +1160,8 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
     closeSignalled = true
     closed = true
     closeController.abort()
+    for (const receipt of issuedReceipts) closeApprovedAskReceipt(receipt)
+    issuedReceipts.clear()
     if (typeof disposeResult === 'function') disposeResult()
   }
   return dispose

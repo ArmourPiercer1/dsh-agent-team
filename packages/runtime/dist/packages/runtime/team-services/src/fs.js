@@ -50,6 +50,7 @@
  */
 import { locatorWithinRuleSet } from '../../member-io-policy/src/path-rules.js';
 import { NODE_PATH_IDENTITY_RESOLVER, evaluateLocatorAccess, } from '../../member-io-policy/src/provider-capabilities.js';
+import { authorizeAskWithReceipt, } from '../../member-io-policy/src/approved-ask-receipt.js';
 import { LifecycleAdmissionClosedError, memberAdmissionCloseOf } from '../../lifecycle/admission-state.js';
 import { TeamIoDenial } from './types.js';
 /** Host sandbox modes, strictest first — the ladder `hostPolicyOf` narrows on. */
@@ -83,8 +84,9 @@ const WRITE_METHODS = new Set(['writeText', 'editText', 'patchText', 'deleteFile
  * turn kept obtaining new confined terminal sessions until it ended (measured
  * window 8.56 s / 8.72 s, a second `bash` 290/427 ms before the commit).
  */
-export function createMemberFsGuard(policy, resolver = NODE_PATH_IDENTITY_RESOLVER) {
-    return async function guard(method, hostPath) {
+export function createMemberFsGuard(policy, resolver = NODE_PATH_IDENTITY_RESOLVER, authority) {
+    const policyRevision = policy.policyRevision ?? policy.revision ?? '';
+    return async function guard(method, hostPath, _annotations, operation) {
         // The lifecycle admission close comes FIRST: the lane decision is not even
         // taken for a Member whose archive/dispose has been requested, so there is
         // no allow fact to misread as "this Member was still operable".
@@ -94,21 +96,48 @@ export function createMemberFsGuard(policy, resolver = NODE_PATH_IDENTITY_RESOLV
         const write = WRITE_METHODS.has(method);
         const lane = write ? policy.write : policy.read;
         const decision = await evaluateLocatorAccess({ lane, locator: hostPath, access: write ? 'write' : 'read', resolver });
-        if (decision.decision !== 'allow') {
+        let resolved;
+        if (decision.decision === 'allow') {
+            resolved = decision.resolved;
+        }
+        else if (decision.decision === 'ask') {
+            // THE R3 RECEIPT PATH (owner ruling 20261124-0151 §2). An ask is a
+            // decision, and the ONLY way this plane may satisfy it is a receipt
+            // minted for THIS execution after the one-shot grant was consumed. The
+            // receipt is read from the body's own authorization scope; a missing,
+            // closed, revoked, cross-member, cross-path or replay receipt is the
+            // same typed refusal as before. NOTHING here turns an ask into a lane
+            // allow, and `deny` was already decided above.
+            if (method !== 'writeText' || !write) {
+                throw new TeamIoDenial('IO_ASK_REQUIRES_APPROVAL', decision.detail, { memberIdentity: policy.memberIdentity, method, target: hostPath });
+            }
+            const authorized = await authorizeAskWithReceipt({
+                memberIdentity: policy.memberIdentity,
+                policyRevision,
+                ...(policy.toolBindingIdentity === undefined ? {} : { toolBindingIdentity: policy.toolBindingIdentity }),
+                lane,
+                method,
+                locator: hostPath,
+                access: 'write',
+                ...(operation?.content === undefined ? {} : { content: operation.content }),
+                resolver,
+                ...(authority === undefined ? {} : { authority }),
+            });
+            if (!authorized.ok) {
+                throw new TeamIoDenial('IO_ASK_RECEIPT_REFUSED', `${authorized.code}: ${authorized.detail}`, { memberIdentity: policy.memberIdentity, method, target: hostPath });
+            }
+            resolved = authorized.resolved;
+        }
+        else {
             throw new TeamIoDenial(decision.decision === 'deny'
                 ? (write ? 'IO_WRITE_DENIED' : 'IO_READ_DENIED')
-                // A5-DUAL-PLANE-01: `ask` is a decision, and this plane cannot consume
-                // one (no approval seam is wired); it refuses with its OWN code rather
-                // than borrowing the "unsupported" one. Reaching the base Provider here
-                // would read bytes / change a file with no approval ever requested.
-                : decision.decision === 'ask' ? 'IO_ASK_REQUIRES_APPROVAL' : 'IO_POLICY_UNSUPPORTED', decision.detail, { memberIdentity: policy.memberIdentity, method, target: hostPath });
+                : 'IO_POLICY_UNSUPPORTED', decision.detail, { memberIdentity: policy.memberIdentity, method, target: hostPath });
         }
         if (!write)
             return;
         // write ⇒ read, but only for an EXISTING target: creating a brand-new file
         // has nothing to read, and the upstream read-before-write policy is
         // likewise conditioned on the file existing.
-        const resolved = decision.resolved;
         let exists = true;
         try {
             await resolver.lstat(resolved);
@@ -161,9 +190,9 @@ export function createConfinedFileSystemClass(Base, guard, memberIdentity = '') 
     const baseMoveFile = baseNew.moveFile;
     class TeamConfinedFileSystem extends Base {
         /** Guard one target-bearing call, then delegate to the base Provider. */
-        async admitted(method, target) {
+        async admitted(method, target, operation) {
             const hostPath = this.processPath(target);
-            await guard(method, hostPath);
+            await guard(method, hostPath, undefined, operation);
             return hostPath;
         }
         /**
@@ -214,7 +243,10 @@ export function createConfinedFileSystemClass(Base, guard, memberIdentity = '') 
             return super.watch(target, changed, signal);
         }
         async writeText(target, content, expected, signal, policy) {
-            await this.admitted('writeText', target);
+            // The approved-ask receipt binds THESE bytes: the guard is handed the
+            // content it is about to write so a receipt cannot satisfy a different
+            // payload. Every other method passes no operation and keeps R4.
+            await this.admitted('writeText', target, { content });
             return super.writeText(target, content, expected, signal, this.hostPolicyOf(policy));
         }
         async editText(target, edit, expected, signal, policy) {

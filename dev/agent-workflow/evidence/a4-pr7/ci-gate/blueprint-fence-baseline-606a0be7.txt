@@ -202,4 +202,7 @@ OFFENDING packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts :: 
 #     their OWN v5 fixture (the C93 world) at the end of the file. Same fixture identity, same vocabulary,
 #     nothing added or resolved: the SECOND line is the new arm block's own document, recorded by path so a
 #     reviewer can see it is a test fixture and not product blueprint content.
-OFFENDING packages/runtime/test/vnext-admission.test.mjs :: L4645=v5, L7699=v5
+#   - vnext-admission.test.mjs moved L4645 -> L4646 and L7699 -> L7700 because round 94 (R3 PoC) added ONE
+#     import line (`node:fs` namespace) at the top of the file; no blueprint document was authored, edited
+#     or resolved. Same two fixture identities, re-recorded from the gate's own report.
+OFFENDING packages/runtime/test/vnext-admission.test.mjs :: L4646=v5, L7700=v5

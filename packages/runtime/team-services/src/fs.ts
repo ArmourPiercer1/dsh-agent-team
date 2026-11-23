@@ -56,6 +56,10 @@ import {
   evaluateLocatorAccess,
   type PathIdentityResolver,
 } from '../../member-io-policy/src/provider-capabilities.js'
+import {
+  authorizeAskWithReceipt,
+  type AuthorizeAskWithReceiptInput,
+} from '../../member-io-policy/src/approved-ask-receipt.js'
 import type { EffectiveIoPolicy, MemberPolicy, PathRuleSet } from '../../member-io-policy/src/types.js'
 import { LifecycleAdmissionClosedError, memberAdmissionCloseOf } from '../../lifecycle/admission-state.js'
 import { TeamIoDenial } from './types.js'
@@ -124,7 +128,24 @@ const WRITE_METHODS: ReadonlySet<string> = new Set(['writeText', 'editText', 'pa
  * share exactly this shape, so the SAME guard enforces either one (the tool
  * factor of the invariant is not allowed to be decorative).
  */
-export type PolicyLanes = Pick<MemberPolicy | EffectiveIoPolicy, 'memberIdentity' | 'read' | 'write'>
+export type PolicyLanes = Pick<MemberPolicy | EffectiveIoPolicy, 'memberIdentity' | 'read' | 'write'> & {
+  /** The compiled policy revision, when the lane object carries it. */
+  readonly revision?: string
+  /** The effective policy's revision field (EffectiveIoPolicy spelling). */
+  readonly policyRevision?: string
+  /** The compiled tool binding identity, when the realm has one. */
+  readonly toolBindingIdentity?: string
+}
+
+/**
+ * The one operation context a Provider method may add to its admission call.
+ * ONLY `writeText` supplies content today: the approved-ask receipt binds the
+ * exact bytes, so a receipt cannot be replayed onto different content. Every
+ * other method passes nothing and keeps the pre-receipt fail-closed refusal.
+ */
+export interface FsGuardOperation {
+  readonly content?: string
+}
 
 /**
  * The per-call admission function the subclass calls before delegating.
@@ -135,8 +156,24 @@ export type PolicyLanes = Pick<MemberPolicy | EffectiveIoPolicy, 'memberIdentity
  * root's ancestors are outside the lane). It is not a decision input: the
  * guard still decides on `(method, hostPath)` alone, and the note is recorded
  * on the SAME fact the decision produced, so the fact count never changes.
+ *
+ * `operation` is NOT a decision input either: it is the effect the receipt is
+ * checked against (content digest). A caller that omits it can only ever get
+ * the pre-receipt refusal.
  */
-export type FsGuard = (method: string, hostPath: string, annotations?: readonly string[]) => Promise<void>
+export type FsGuard = (
+  method: string,
+  hostPath: string,
+  annotations?: readonly string[],
+  operation?: FsGuardOperation,
+) => Promise<void>
+
+/**
+ * The trusted, read-only authority the Provider needs to prove a receipt is
+ * still live. Deliberately only the binder's epoch surface: no approval store,
+ * no second policy, no writer.
+ */
+export type ApprovedAskProviderAuthority = NonNullable<AuthorizeAskWithReceiptInput['authority']>
 
 /**
  * Build the admission function for one Member. All checks are fail-closed:
@@ -160,8 +197,10 @@ export type FsGuard = (method: string, hostPath: string, annotations?: readonly 
 export function createMemberFsGuard(
   policy: PolicyLanes,
   resolver: PathIdentityResolver = NODE_PATH_IDENTITY_RESOLVER,
+  authority?: ApprovedAskProviderAuthority,
 ): FsGuard {
-  return async function guard(method: string, hostPath: string): Promise<void> {
+  const policyRevision = policy.policyRevision ?? policy.revision ?? ''
+  return async function guard(method: string, hostPath: string, _annotations?: readonly string[], operation?: FsGuardOperation): Promise<void> {
     // The lifecycle admission close comes FIRST: the lane decision is not even
     // taken for a Member whose archive/dispose has been requested, so there is
     // no allow fact to misread as "this Member was still operable".
@@ -172,15 +211,49 @@ export function createMemberFsGuard(
     const lane: PathRuleSet = write ? policy.write : policy.read
 
     const decision = await evaluateLocatorAccess({ lane, locator: hostPath, access: write ? 'write' : 'read', resolver })
-    if (decision.decision !== 'allow') {
+    let resolved: string
+    if (decision.decision === 'allow') {
+      resolved = decision.resolved
+    } else if (decision.decision === 'ask') {
+      // THE R3 RECEIPT PATH (owner ruling 20261124-0151 §2). An ask is a
+      // decision, and the ONLY way this plane may satisfy it is a receipt
+      // minted for THIS execution after the one-shot grant was consumed. The
+      // receipt is read from the body's own authorization scope; a missing,
+      // closed, revoked, cross-member, cross-path or replay receipt is the
+      // same typed refusal as before. NOTHING here turns an ask into a lane
+      // allow, and `deny` was already decided above.
+      if (method !== 'writeText' || !write) {
+        throw new TeamIoDenial(
+          'IO_ASK_REQUIRES_APPROVAL',
+          decision.detail,
+          { memberIdentity: policy.memberIdentity, method, target: hostPath },
+        )
+      }
+      const authorized = await authorizeAskWithReceipt({
+        memberIdentity: policy.memberIdentity,
+        policyRevision,
+        ...(policy.toolBindingIdentity === undefined ? {} : { toolBindingIdentity: policy.toolBindingIdentity }),
+        lane,
+        method,
+        locator: hostPath,
+        access: 'write',
+        ...(operation?.content === undefined ? {} : { content: operation.content }),
+        resolver,
+        ...(authority === undefined ? {} : { authority }),
+      })
+      if (!authorized.ok) {
+        throw new TeamIoDenial(
+          'IO_ASK_RECEIPT_REFUSED',
+          `${authorized.code}: ${authorized.detail}`,
+          { memberIdentity: policy.memberIdentity, method, target: hostPath },
+        )
+      }
+      resolved = authorized.resolved
+    } else {
       throw new TeamIoDenial(
         decision.decision === 'deny'
           ? (write ? 'IO_WRITE_DENIED' : 'IO_READ_DENIED')
-          // A5-DUAL-PLANE-01: `ask` is a decision, and this plane cannot consume
-          // one (no approval seam is wired); it refuses with its OWN code rather
-          // than borrowing the "unsupported" one. Reaching the base Provider here
-          // would read bytes / change a file with no approval ever requested.
-          : decision.decision === 'ask' ? 'IO_ASK_REQUIRES_APPROVAL' : 'IO_POLICY_UNSUPPORTED',
+          : 'IO_POLICY_UNSUPPORTED',
         decision.detail,
         { memberIdentity: policy.memberIdentity, method, target: hostPath },
       )
@@ -191,7 +264,6 @@ export function createMemberFsGuard(
     // write ⇒ read, but only for an EXISTING target: creating a brand-new file
     // has nothing to read, and the upstream read-before-write policy is
     // likewise conditioned on the file existing.
-    const resolved = decision.resolved
     let exists = true
     try {
       await resolver.lstat(resolved)
@@ -260,9 +332,9 @@ export function createConfinedFileSystemClass(
 
   class TeamConfinedFileSystem extends Base {
     /** Guard one target-bearing call, then delegate to the base Provider. */
-    private async admitted(method: string, target: unknown): Promise<string> {
+    private async admitted(method: string, target: unknown, operation?: FsGuardOperation): Promise<string> {
       const hostPath = this.processPath(target)
-      await guard(method, hostPath)
+      await guard(method, hostPath, undefined, operation)
       return hostPath
     }
 
@@ -340,7 +412,10 @@ export function createConfinedFileSystemClass(
       signal?: AbortSignal,
       policy?: unknown,
     ): Promise<unknown> {
-      await this.admitted('writeText', target)
+      // The approved-ask receipt binds THESE bytes: the guard is handed the
+      // content it is about to write so a receipt cannot satisfy a different
+      // payload. Every other method passes no operation and keeps R4.
+      await this.admitted('writeText', target, { content })
       return super.writeText(target, content, expected, signal, this.hostPolicyOf(policy))
     }
 

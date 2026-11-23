@@ -172,6 +172,71 @@ function isNotFound(error) {
         error.code === 'ENOENT';
 }
 /**
+ * Resolve ONE target through the Provider's own identity functions — the ONE
+ * canonicalizer the lane decision and the approved-ask receipt share.
+ *
+ * Extracted from {@link evaluateLocatorAccess} without changing its order or
+ * its refusals: a read of a missing target is `PATH_NOT_FOUND`; a write may
+ * create the leaf only after the PARENT resolves; a dangling symlink is a
+ * `PATH_SYMLINK_ESCAPE` (its bytes would land wherever the link points); any
+ * other resolver fault is a typed `PATH_RESOLUTION_UNSUPPORTED`. It makes NO
+ * lane decision and reads no approval state, so a second consumer (the
+ * receipt verifier) canonicalizes exactly as the guard does instead of
+ * growing a second path interpretation.
+ */
+export async function resolveTargetIdentity(input) {
+    const access = input.access;
+    const resolver = input.resolver ?? NODE_PATH_IDENTITY_RESOLVER;
+    const locator = input.locator;
+    let resolved;
+    let symlink = false;
+    let linkIdentityKnown = false;
+    try {
+        const identity = await resolver.lstat(locator);
+        symlink = identity.isSymbolicLink();
+        linkIdentityKnown = true;
+        resolved = await resolver.realpath(locator);
+    }
+    catch (error) {
+        if (!isNotFound(error)) {
+            return {
+                ok: false,
+                decision: 'unsupported',
+                code: 'PATH_RESOLUTION_UNSUPPORTED',
+                detail: `the Provider could not resolve '${locator}': ${error instanceof Error ? error.message : String(error)}`,
+            };
+        }
+        if (linkIdentityKnown && symlink) {
+            // A symlink whose target does not resolve is a DANGLING LINK: the leaf
+            // itself exists and points outside. Falling into the create-leaf branch
+            // would approve a write whose bytes land wherever the link points.
+            return {
+                ok: false,
+                decision: 'deny',
+                code: 'PATH_SYMLINK_ESCAPE',
+                detail: `'${locator}' is a dangling symlink whose target does not resolve; a write through it would leave the authorized subtree`,
+            };
+        }
+        if (access === 'read') {
+            return { ok: false, decision: 'deny', code: 'PATH_NOT_FOUND', detail: `read target '${locator}' does not exist` };
+        }
+        // A write may create the leaf, but the PARENT directory must resolve.
+        try {
+            const parent = await resolver.realpath(dirname(locator));
+            resolved = join(parent, basename(locator));
+        }
+        catch (parentError) {
+            return {
+                ok: false,
+                decision: 'unsupported',
+                code: 'PATH_RESOLUTION_UNSUPPORTED',
+                detail: `the Provider could not resolve the parent of '${locator}': ${parentError instanceof Error ? parentError.message : String(parentError)}`,
+            };
+        }
+    }
+    return { ok: true, value: Object.freeze({ resolved, symlink }) };
+}
+/**
  * Decide one authored locator against one lane using Provider-resolved identity.
  *
  * Order (fail-closed, the lane algebra's own precedence `deny > ask > allow`):
@@ -212,38 +277,11 @@ export async function evaluateLocatorAccess(input) {
     if (!locatorWithinRuleSet(input.lane, locator)) {
         return refusePath('deny', 'PATH_NOT_ALLOWED', `authored locator '${locator}' is outside every allow subtree of the lane`);
     }
-    // 2. provider resolution.
-    let resolved;
-    let symlink = false;
-    let linkIdentityKnown = false;
-    try {
-        const identity = await resolver.lstat(locator);
-        symlink = identity.isSymbolicLink();
-        linkIdentityKnown = true;
-        resolved = await resolver.realpath(locator);
-    }
-    catch (error) {
-        if (!isNotFound(error)) {
-            return refusePath('unsupported', 'PATH_RESOLUTION_UNSUPPORTED', `the Provider could not resolve '${locator}': ${error instanceof Error ? error.message : String(error)}`);
-        }
-        if (linkIdentityKnown && symlink) {
-            // A symlink whose target does not resolve is a DANGLING LINK: the leaf
-            // itself exists and points outside. Falling into the create-leaf branch
-            // would approve a write whose bytes land wherever the link points.
-            return refusePath('deny', 'PATH_SYMLINK_ESCAPE', `'${locator}' is a dangling symlink whose target does not resolve; a write through it would leave the authorized subtree`);
-        }
-        if (access === 'read') {
-            return refusePath('deny', 'PATH_NOT_FOUND', `read target '${locator}' does not exist`);
-        }
-        // A write may create the leaf, but the PARENT directory must resolve.
-        try {
-            const parent = await resolver.realpath(dirname(locator));
-            resolved = join(parent, basename(locator));
-        }
-        catch (parentError) {
-            return refusePath('unsupported', 'PATH_RESOLUTION_UNSUPPORTED', `the Provider could not resolve the parent of '${locator}': ${parentError instanceof Error ? parentError.message : String(parentError)}`);
-        }
-    }
+    // 2. provider resolution — the SAME canonicalizer the receipt verifier uses.
+    const resolution = await resolveTargetIdentity({ locator, access, resolver });
+    if (!resolution.ok)
+        return refusePath(resolution.decision, resolution.code, resolution.detail);
+    const { resolved, symlink } = resolution.value;
     // 3. the RESOLVED path is the one the decision is taken on.
     const lexical = resolvePath(locator);
     // A DIFFERENT resolved path is only a SYMLINK escape when a symlink is really

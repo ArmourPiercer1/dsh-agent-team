@@ -50,6 +50,7 @@
  */
 import type { Context } from '@deepseek-ai/cordis';
 import { type PathIdentityResolver } from '../../member-io-policy/src/provider-capabilities.js';
+import { type AuthorizeAskWithReceiptInput } from '../../member-io-policy/src/approved-ask-receipt.js';
 import type { EffectiveIoPolicy, MemberPolicy } from '../../member-io-policy/src/types.js';
 /**
  * The structural Provider surface the confined subclass relies on. The LIVE
@@ -98,7 +99,23 @@ export type FsProviderConstructor = new (ctx: Context, config?: Record<string, u
  * share exactly this shape, so the SAME guard enforces either one (the tool
  * factor of the invariant is not allowed to be decorative).
  */
-export type PolicyLanes = Pick<MemberPolicy | EffectiveIoPolicy, 'memberIdentity' | 'read' | 'write'>;
+export type PolicyLanes = Pick<MemberPolicy | EffectiveIoPolicy, 'memberIdentity' | 'read' | 'write'> & {
+    /** The compiled policy revision, when the lane object carries it. */
+    readonly revision?: string;
+    /** The effective policy's revision field (EffectiveIoPolicy spelling). */
+    readonly policyRevision?: string;
+    /** The compiled tool binding identity, when the realm has one. */
+    readonly toolBindingIdentity?: string;
+};
+/**
+ * The one operation context a Provider method may add to its admission call.
+ * ONLY `writeText` supplies content today: the approved-ask receipt binds the
+ * exact bytes, so a receipt cannot be replayed onto different content. Every
+ * other method passes nothing and keeps the pre-receipt fail-closed refusal.
+ */
+export interface FsGuardOperation {
+    readonly content?: string;
+}
 /**
  * The per-call admission function the subclass calls before delegating.
  *
@@ -108,8 +125,18 @@ export type PolicyLanes = Pick<MemberPolicy | EffectiveIoPolicy, 'memberIdentity
  * root's ancestors are outside the lane). It is not a decision input: the
  * guard still decides on `(method, hostPath)` alone, and the note is recorded
  * on the SAME fact the decision produced, so the fact count never changes.
+ *
+ * `operation` is NOT a decision input either: it is the effect the receipt is
+ * checked against (content digest). A caller that omits it can only ever get
+ * the pre-receipt refusal.
  */
-export type FsGuard = (method: string, hostPath: string, annotations?: readonly string[]) => Promise<void>;
+export type FsGuard = (method: string, hostPath: string, annotations?: readonly string[], operation?: FsGuardOperation) => Promise<void>;
+/**
+ * The trusted, read-only authority the Provider needs to prove a receipt is
+ * still live. Deliberately only the binder's epoch surface: no approval store,
+ * no second policy, no writer.
+ */
+export type ApprovedAskProviderAuthority = NonNullable<AuthorizeAskWithReceiptInput['authority']>;
 /**
  * Build the admission function for one Member. All checks are fail-closed:
  * a resolver failure, an unsupported destination or an uncovered target, a
@@ -129,7 +156,7 @@ export type FsGuard = (method: string, hostPath: string, annotations?: readonly 
  * turn kept obtaining new confined terminal sessions until it ended (measured
  * window 8.56 s / 8.72 s, a second `bash` 290/427 ms before the commit).
  */
-export declare function createMemberFsGuard(policy: PolicyLanes, resolver?: PathIdentityResolver): FsGuard;
+export declare function createMemberFsGuard(policy: PolicyLanes, resolver?: PathIdentityResolver, authority?: ApprovedAskProviderAuthority): FsGuard;
 /**
  * Create the confined Provider class for one Member: the live Provider class is
  * the base, every target-bearing method guards first and delegates second.

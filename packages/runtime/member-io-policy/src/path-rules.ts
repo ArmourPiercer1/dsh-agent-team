@@ -186,9 +186,23 @@ function unionLocators(...lists: readonly (readonly string[])[]): readonly strin
  *    declaration into deny-everything);
  *  - otherwise allow keeps the narrower related subtree of each pair;
  *  - deny is the UNION (a deny on either axis survives);
- *  - `ask` is the STRICTER disposition: an ask survives if the OTHER lane
- *    permits that location, and it is never promoted to allow. Any surviving
- *    ask that is denied is dropped (deny wins).
+ *  - `ask` is the STRICTER disposition: an ask survives if BOTH lanes PERMIT
+ *    that location — "permit" is the lane's own disposition not being `deny`,
+ *    so a lane that ASKS for a location permits it subject to approval, and a
+ *    location that is only in the other lane's allow list is still permitted.
+ *    The ask is never promoted to allow. Any surviving ask that is denied on
+ *    either axis is dropped (deny wins).
+ *
+ * WHY "BOTH PERMIT" AND NOT "THE INTERSECTION'S ALLOW COVERS IT" (G11): a v4
+ * lane may be authored as a PURE ask — `{allow: [], ask: [p]}` — which the
+ * grammar accepts and `matchLocator` reads as `ask` for `p` and `deny`
+ * everywhere else. Requiring the intersection's ALLOW list to cover `p`
+ * dropped that ask (the intersection of an empty allow with anything is
+ * empty), so `{allow: [], ask: [p]} ∩ {allow: [p]}` compiled to deny-all.
+ * That is not a narrowing, it is a LOSS of the authored disposition: the call
+ * that should have been asked was refused as out-of-lane. The corrected rule
+ * preserves the ask and widens nothing — the result is `{allow: [], ask: [p]}`,
+ * so every other locator is still denied and `p` still requires approval.
  */
 export function intersectPathRuleSets(member: PathRuleSet, tool: PathRuleSet): PathRuleSet {
   const allow =
@@ -201,17 +215,14 @@ export function intersectPathRuleSets(member: PathRuleSet, tool: PathRuleSet): P
           : intersectAllowLocators(member.allow, tool.allow)
   const deny = unionLocators(member.deny, tool.deny)
   const mode: 'all' | 'restricted' = member.mode === 'all' && tool.mode === 'all' ? 'all' : 'restricted'
-  const permissive: PathRuleSet = Object.freeze({
-    mode,
-    allow,
-    ask: Object.freeze([]),
-    deny,
-  })
   const ask: string[] = []
   for (const locator of unionLocators(member.ask, tool.ask)) {
     if (ask.includes(locator)) continue
-    if (!laneCoversAllow(permissive, locator)) continue
-    if (laneCoversDeny(permissive, locator)) continue
+    // A lane PERMITS the location when its own disposition is `allow` or
+    // `ask`; only `deny` removes it. This is the lane algebra's own predicate,
+    // not the intersection's allow list (see the G11 note above).
+    if (matchLocator(member, locator) === 'deny') continue
+    if (matchLocator(tool, locator) === 'deny') continue
     ask.push(locator)
   }
   return Object.freeze({

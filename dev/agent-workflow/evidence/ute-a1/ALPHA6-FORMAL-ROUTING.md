@@ -338,3 +338,22 @@ on the lawful plain path (`ADM-151`) with a typed refusal when a required identi
 that needs `G11` (a representation ruling) and then `R3`/`G2` (a provider consumer for an approved `ask`)
 before an approved call can execute. Level: **MECHANISM+** — the case and the route are proven in-process
 over the product's own services, and the live routed wake is REFUTED by measurement, not by inference.
+
+---
+
+### R1-D ADDENDUM (round 94, 2026-11-24) — G11 is FIXED; the live boot is still not re-run
+
+The G11 diagnosis above ("the compiler collapses an `ask` path to an empty deny lane") was **correct as a
+measurement and wrong as a design conclusion**: it is not a necessary semantic, it is a defect in
+`intersectPathRuleSets`' ask-survival algebra. The old rule required an ask locator to be covered by the
+**intersection of the two allow sets**; a pure-ask lane (`{allow:[], ask:[p]}`) is legal v4 authoring
+(`validateLane` does not require `ask ⊆ allow`), so it collapsed against any non-identical tool
+restriction. The law is now: an `ask` survives iff **neither side's disposition for that locator is
+`deny`**, and the result stays `ask` — it is never promoted to `allow`, and `deny` still wins. The
+`approvedOnce:false` argument in the text above was a misattribution: the compiler never reads that field.
+
+So a live v5 world CAN carry both an ordinary `ask` and a declared `toolBindings[]` entry, once the
+compiled lane is rebuilt. **This addendum does not re-run the boot**: `d4:routed-wake` remains REFUTED at
+its last measurement, and `C-alpha6` remains MECHANISM. The next live round must re-boot with the fixed
+compiler and then account for R3's Provider wiring (production wiring of the ApprovedAskReceipt authority
+is still absent, so a product turn still fails closed for every `ask`).

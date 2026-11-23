@@ -10,6 +10,7 @@
 
 import assert from 'node:assert/strict'
 import { appendFileSync, existsSync, rmSync } from 'node:fs'
+import * as nodeFs from 'node:fs'
 import { join as pathJoin } from 'node:path'
 import { register } from 'node:module'
 import { test } from 'node:test'
@@ -8120,3 +8121,458 @@ test('ADM-153 — the SAME case shape is still refused for the Officer asking ab
   assert.equal(route.target?.routeRole === 'officer', false, `the Officer must never review its own operation (route: ${JSON.stringify(route)})`)
   assert.ok(['leader', undefined].includes(route.target?.routeRole), `unexpected route ${JSON.stringify(route)}`)
 })
+
+// ===================================================================================================
+// R3 — ADM-154…ADM-161: the approved-ask → grant → execute chain over the REAL confined Provider.
+//
+// Owner ruling 20261124-0151 §2: R2 is rejected (no `guarded` coupling, no second approval
+// consumption path); R3's direction is approved but only with a small ADR and an EXECUTABLE PoC
+// FIRST. These arms ARE that PoC. The world is the real confined `fs` Provider
+// (`createMemberFsGuard` + `createConfinedFileSystemClass` over the host's own `LocalFileSystem`),
+// the real one-shot binder, the real durable ControlService, the real admission port, the real
+// settlement store. Only the HOST LOOP is a double (it supplies the pinned dispatch order
+// pre-execute → guard → execute → result), the same precedent as ADM-19/20.
+// ===================================================================================================
+
+{
+  const { createP6T4World, createP6T4Service, constantAuthorityRecheck, leaderCaller, P6T4_ROOT, P6T4_SEEDS, destroyP6T1World } = await import('./p6t4-helpers.ts')
+  const { createMemberFsGuard, createConfinedFileSystemClass } = await import('../team-services/src/fs.ts')
+  const { loadFsContractSeams } = await import('../../../tests/world-factory/lib/a5sf-fs-contract-world.mjs')
+
+  const R3_ROOT = pathJoin(DOMAIN_ROOT, '.artifacts', 'tmp', 'adm-r3-receipt')
+  const R3_WORKER = String(P6T4_SEEDS.worker.instanceId)
+  const R3_TEAM = 'team-r3-poc'
+  const R3_CONTENT = 'R3-APPROVED-BYTES\n'
+  const R3_REVISION = 'rev-r3-poc'
+
+  /** A HOST-loop double that understands the pinned order and the ctx surface the centre needs. */
+  function r3FakeHost () {
+    const listeners = new Map()
+    let guardFn
+    const tools = { guard (fn) { guardFn = fn; return () => {} } }
+    const ctx = {
+      get: (name) => (name === 'tools' ? tools : undefined),
+      on: (event, fn) => {
+        const list = listeners.get(event) ?? []
+        list.push(fn)
+        listeners.set(event, list)
+        return () => {
+          const index = list.indexOf(fn)
+          if (index >= 0) list.splice(index, 1)
+        }
+      },
+    }
+    const waterfall = async (event, exec, base) => {
+      const list = [...(listeners.get(event) ?? [])]
+      let index = -1
+      const next = async () => {
+        index += 1
+        if (index >= list.length) return base(exec)
+        return list[index](exec, next)
+      }
+      return next()
+    }
+    return {
+      ctx,
+      preExecute: (exec) => waterfall('tools/pre-execute', exec, async () => ({ kind: 'allow' })),
+      guard: (exec) => guardFn(exec),
+      execute: (exec, body) => waterfall('tools/execute', exec, async () => body()),
+      result: (exec, result) => {
+        for (const fn of listeners.get('tools/result') ?? []) fn(exec, result)
+      },
+    }
+  }
+
+  async function r3Rig (label, options = {}) {
+    const dir = pathJoin(R3_ROOT, label)
+    rmSync(dir, { recursive: true, force: true })
+    nodeFs.mkdirSync(dir, { recursive: true })
+    const inside = pathJoin(dir, 'inside')
+    nodeFs.mkdirSync(inside, { recursive: true })
+    const approvedPath = pathJoin(inside, 'approved.txt')
+    const otherPath = pathJoin(inside, 'other.txt')
+    const write = options.write ?? lane([], [approvedPath])
+    const read = options.read ?? lane([inside])
+    const policy = {
+      memberIdentity: R3_WORKER,
+      toolBindingIdentity: 'dsh.fs/write',
+      policyRevision: R3_REVISION,
+      read,
+      write,
+    }
+    const binding = {
+      agentId: R3_WORKER,
+      sessionId: `session-${label}`,
+      instanceGeneration: 1,
+      read,
+      write,
+      workspaceRoot: inside,
+      definitionSource: '@deepseek-ai/dsh-tool-fs',
+      policyGeneration: R3_REVISION,
+      blueprintRevision: 'bp-r3-poc',
+      owner: P6T4_ROOT,
+      templateId: 'worker',
+      perTool: { write: { read, write, toolBindingIdentity: 'dsh.fs/write', authorization: 'ask' } },
+    }
+    const binder = createInvocationBinder()
+    const world = await createP6T4World(`r3-${label}`, ['leader', 'worker'])
+    const recheck = constantAuthorityRecheck()
+    const service = createP6T4Service(world, { authorityRevalidation: recheck.port })
+    const requests = []
+    const completedCallIds = new Set()
+    const approvals = createControlApprovalPort({
+      controlOf: () => service,
+      rootSessionIdOf: () => P6T4_ROOT,
+      onRequested: (record) => { requests.push(record) },
+    })
+    const host = r3FakeHost()
+    const seams = await loadFsContractSeams(DOMAIN_ROOT)
+    const Confined = createConfinedFileSystemClass(
+      seams.LocalFileSystem,
+      createMemberFsGuard(policy, undefined, { binder }),
+      R3_WORKER,
+    )
+    const root = new seams.Context()
+    await root.plugin(Confined, { cwd: inside, diffBasisMaxBytes: 10 * 1024 * 1024 })
+    const fs = root.get('fs')
+    const store = createExecutionSettlementStore({ dir: pathJoin(dir, 'settlement') })
+    const identityOf = (exec) => ({
+      executionId: dispatchExecutionId({ rootSessionId: 'session-r3', agentInstanceId: R3_WORKER }, exec.callId),
+      actorId: R3_WORKER,
+      worldId: 'world-r3',
+    })
+    const admissions = []
+    const executions = []
+    const centre = installMemberCentre({
+      ctx: host.ctx,
+      binding,
+      resolveBinding: () => binding,
+      recordAdmission: (fact) => admissions.push(fact),
+      recordExecution: (fact) => executions.push(fact),
+      isReplay: (callId) => completedCallIds.has(callId),
+      grants: {
+        binder,
+        memberOf: () => ({
+          teamId: R3_TEAM,
+          memberInstanceId: R3_WORKER,
+          templateId: 'worker',
+          instanceGeneration: 1,
+        }),
+      },
+      approvals,
+      store,
+      identityOf,
+    })
+    return {
+      dir, inside, approvedPath, otherPath, policy, binding, binder, world, service, host, fs, store, centre,
+      requests, admissions, executions, identityOf, seams, completedCallIds,
+      cleanup: async () => {
+        try { centre.dispose() } catch { /* the rig is already closed */ }
+        await destroyP6T1World(world)
+      },
+    }
+  }
+
+  const targetOf = (filePath) => ({ targetKey: filePath, displayPath: filePath })
+
+  /** Run ONE pinned-order dispatch. The approval (when the lane asks) is resolved by the caller hook. */
+  async function r3Dispatch (rig, exec, hooks = {}) {
+    const before = rig.requests.length
+    const pending = rig.host.preExecute(exec)
+    for (let i = 0; i < 2000 && rig.requests.length <= before; i += 1) await new Promise((resolve) => setTimeout(resolve, 1))
+    const request = rig.requests[before]
+    if (request !== undefined) {
+      if (hooks.beforeResolve !== undefined) await hooks.beforeResolve(rig, request)
+      await rig.service.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: leaderCaller(),
+        requestId: request.requestId,
+        decision: hooks.decision ?? 'allow',
+      })
+    }
+    const pre = await pending
+    if (pre.kind !== 'allow') {
+      // A replay refusal is the SAME ExecutionId as the completed execution; the product's
+      // execution-fact dedupe would (correctly) refuse a second fact, so the double records none.
+      if (!String(pre.reason ?? '').startsWith('ADMISSION_REPLAY')) {
+        rig.host.result(exec, { isError: true, error: { message: String(pre.reason ?? pre.kind) }, content: [] })
+      }
+      rig.completedCallIds.add(exec.callId)
+      return { phase: 'pre-execute', pre, recordedRequest: request }
+    }
+    const guard = await rig.host.guard(exec)
+    if (guard !== undefined) {
+      rig.host.result(exec, { isError: true, error: { message: guard }, content: [] })
+      rig.completedCallIds.add(exec.callId)
+      return { phase: 'guard', reason: guard, recordedRequest: request }
+    }
+    let bodyResult
+    let bodyError
+    try {
+      bodyResult = await rig.host.execute(exec, async () => {
+        if (hooks.body !== undefined) return hooks.body(rig, exec)
+        return rig.fs.writeText(targetOf(exec.arguments.file_path), exec.arguments.content)
+      })
+    } catch (error) {
+      bodyError = error
+    }
+    rig.host.result(exec, bodyError !== undefined
+      ? { isError: true, error: { message: String(bodyError?.message ?? bodyError) }, content: [] }
+      : { isError: false, content: [] })
+    rig.completedCallIds.add(exec.callId)
+    return bodyError !== undefined
+      ? { phase: 'body', error: bodyError, recordedRequest: request }
+      : { phase: 'body', result: bodyResult, recordedRequest: request }
+  }
+
+  const fileContent = (filePath) => (existsSync(filePath) ? nodeFs.readFileSync(filePath, 'utf8') : null)
+  const settlementOf = (rig, callId) => rig.store.read(rig.identityOf({ callId }).executionId)
+
+  test('ADM-154 (R3 PoC, POSITIVE) — ask → inline allow → grant consumed → the REAL Provider writes the file; the receipt is execution-scoped, consumed once', async (t) => {
+    const rig = await r3Rig('positive')
+    t.after(rig.cleanup)
+    const exec = {
+      name: 'write',
+      callId: 'call-r3-positive',
+      arguments: { file_path: rig.approvedPath, content: R3_CONTENT },
+    }
+    let scopeSeenInsideBody
+    const run = await r3Dispatch(rig, exec, {
+      body: async (world) => {
+        scopeSeenInsideBody = await currentApprovedAskExecutionScopeForTest()
+        return world.fs.writeText(targetOf(rig.approvedPath), R3_CONTENT)
+      },
+    })
+    assert.equal(run.phase, 'body', `the approved write must reach the real Provider (got ${JSON.stringify(run)})`)
+    assert.equal(run.error, undefined, `the real Provider must not refuse: ${run.error?.message}`)
+    assert.equal(fileContent(rig.approvedPath), R3_CONTENT, 'the REAL confined Provider wrote the approved bytes')
+    assert.ok(scopeSeenInsideBody !== undefined, 'the centre opened an authorization scope for the body')
+    assert.equal(scopeSeenInsideBody?.executionId, rig.identityOf({ callId: exec.callId }).executionId)
+
+    const admission = rig.admissions.find((fact) => fact.callId === exec.callId)
+    assert.equal(admission?.decision, 'allow', 'the enforced decision is the approval')
+    assert.equal(admission?.laneDecision, 'ask', 'the lane answer is preserved in the fact')
+    const settled = settlementOf(rig, exec.callId)
+    assert.equal(settled?.state, 'COMPLETED')
+    assert.equal(settled?.observation.bodyOutcome, 'completed')
+  })
+
+  test('ADM-155 (R3 PoC, NEGATIVE) — the same receipt cannot authorize a SECOND Provider effect (cross-call reuse), and a replayed callId is refused', async (t) => {
+    const rig = await r3Rig('cross-call')
+    t.after(rig.cleanup)
+    const exec = { name: 'write', callId: 'call-r3-cross-call', arguments: { file_path: rig.approvedPath, content: R3_CONTENT } }
+    const run = await r3Dispatch(rig, exec, {
+      body: async (world) => {
+        await world.fs.writeText(targetOf(rig.approvedPath), R3_CONTENT)
+        // A second Provider call in the SAME body is a second call: the one consumed grant and its
+        // receipt cover exactly one effect, so this must be refused, not written twice.
+        return world.fs.writeText(targetOf(rig.approvedPath), R3_CONTENT)
+      },
+    })
+    assert.equal(run.phase, 'body')
+    assert.equal(run.error?.code, 'IO_ASK_RECEIPT_REFUSED')
+    assert.match(String(run.error?.message), /RECEIPT_REUSED/u)
+    assert.equal(fileContent(rig.approvedPath), R3_CONTENT, 'the first (authorized) write is the only effect')
+
+    // A NEW execution carrying the SAME callId is a replay: the centre refuses it before the body.
+    const replayExec = { name: 'write', callId: exec.callId, arguments: { file_path: rig.approvedPath, content: 'REPLAY\n' } }
+    const replayed = await r3Dispatch(rig, replayExec, {
+      body: async () => failForTest('a replayed callId must never reach the body'),
+    })
+    assert.equal(replayed.phase, 'pre-execute')
+    assert.match(String(replayed.pre.reason), /ADMISSION_REPLAY/u)
+    assert.equal(fileContent(rig.approvedPath), R3_CONTENT)
+  })
+
+  test('ADM-156 (R3 PoC, NEGATIVE) — a receipt for path A cannot authorize path B (cross-path reuse), even inside the live lane and the ask class', async (t) => {
+    // Both paths are in the ask class: B is a legal ask, just not THIS approval's operation.
+    const rig = await r3Rig('cross-path', { write: lane([], [pathJoin(R3_ROOT, 'cross-path', 'inside', 'approved.txt'), pathJoin(R3_ROOT, 'cross-path', 'inside', 'other.txt')]) })
+    t.after(rig.cleanup)
+    nodeFs.writeFileSync(rig.otherPath, 'UNTOUCHED\n', 'utf8')
+    const exec = { name: 'write', callId: 'call-r3-cross-path', arguments: { file_path: rig.approvedPath, content: R3_CONTENT } }
+    const run = await r3Dispatch(rig, exec, {
+      body: async (world) => world.fs.writeText(targetOf(rig.otherPath), R3_CONTENT),
+    })
+    assert.equal(run.phase, 'body')
+    assert.equal(run.error?.code, 'IO_ASK_RECEIPT_REFUSED')
+    assert.match(String(run.error?.message), /RECEIPT_OPERATION_MISMATCH/u)
+    assert.equal(fileContent(rig.otherPath), 'UNTOUCHED\n', 'the unapproved path was not modified')
+  })
+
+  test('ADM-157 (R3 PoC, NEGATIVE) — permission revoked AFTER the grant is consumed but BEFORE the Provider call refuses the write', async (t) => {
+    const rig = await r3Rig('revoked')
+    t.after(rig.cleanup)
+    const exec = { name: 'write', callId: 'call-r3-revoked', arguments: { file_path: rig.approvedPath, content: R3_CONTENT } }
+    const run = await r3Dispatch(rig, exec, {
+      body: async (world) => {
+        // The one-shot grant was ALREADY consumed at the guard; revocation must still bite.
+        rig.binder.revoke(R3_WORKER)
+        return world.fs.writeText(targetOf(rig.approvedPath), R3_CONTENT)
+      },
+    })
+    assert.equal(run.phase, 'body')
+    assert.equal(run.error?.code, 'IO_ASK_RECEIPT_REFUSED')
+    assert.match(String(run.error?.message), /RECEIPT_REVOKED/u)
+    assert.equal(fileContent(rig.approvedPath), null, 'no byte was written by a revoked Member')
+  })
+
+  test('ADM-158 (R3 PoC, NEGATIVE) — replaying a completed execution\'s receipt is impossible: the scope is gone and the receipt is CLOSED', async (t) => {
+    const rig = await r3Rig('replay')
+    t.after(rig.cleanup)
+    const exec = { name: 'write', callId: 'call-r3-replay', arguments: { file_path: rig.approvedPath, content: R3_CONTENT } }
+    let capturedScope
+    const run = await r3Dispatch(rig, exec, {
+      body: async (world) => {
+        capturedScope = await currentApprovedAskExecutionScopeForTest()
+        return world.fs.writeText(targetOf(rig.approvedPath), R3_CONTENT)
+      },
+    })
+    assert.equal(run.phase, 'body')
+    assert.equal(run.error, undefined)
+    assert.ok(capturedScope !== undefined)
+    // OUTSIDE the body: no execution scope. A Provider call here (or from another execution) sees nothing.
+    assert.equal(await currentApprovedAskExecutionScopeForTest(), undefined, 'the scope is closed when the body returns')
+    const replayed = await authorizeAskWithReceiptForTest({
+      memberIdentity: R3_WORKER,
+      policyRevision: R3_REVISION,
+      toolBindingIdentity: 'dsh.fs/write',
+      lane: rig.policy.write,
+      method: 'writeText',
+      locator: rig.approvedPath,
+      access: 'write',
+      content: R3_CONTENT,
+      authority: { binder: rig.binder },
+    })
+    assert.equal(replayed.ok, false)
+    assert.equal(replayed.code, 'RECEIPT_NOT_IN_SCOPE')
+    // And the captured receipt itself can never reopen: it is closed with its execution.
+    const direct = await authorizeAskInScopeForTest(capturedScope.receipt, {
+      memberIdentity: R3_WORKER,
+      policyRevision: R3_REVISION,
+      toolBindingIdentity: 'dsh.fs/write',
+      lane: rig.policy.write,
+      method: 'writeText',
+      locator: rig.approvedPath,
+      access: 'write',
+      content: R3_CONTENT,
+      authority: { binder: rig.binder },
+    })
+    assert.equal(direct.ok, false)
+    assert.equal(direct.code, 'SCOPE_REFUSED')
+    assert.match(String(direct.detail), /closed or unknown receipt/u)
+  })
+
+  test('ADM-159 (R3 PoC, NEGATIVE) — deny wins over a live, unused receipt: the deny lane refuses before any receipt consult', async (t) => {
+    const rig = await r3Rig('deny-wins')
+    t.after(rig.cleanup)
+    // A second Provider for the SAME Member whose write lane EXPLICITLY denies the other path.
+    const denyPolicy = {
+      memberIdentity: R3_WORKER,
+      toolBindingIdentity: 'dsh.fs/write',
+      policyRevision: R3_REVISION,
+      read: lane([rig.inside]),
+      write: lane([], [], [rig.otherPath]),
+    }
+    const DenyConfined = createConfinedFileSystemClass(
+      rig.seams.LocalFileSystem,
+      createMemberFsGuard(denyPolicy, undefined, { binder: rig.binder }),
+      R3_WORKER,
+    )
+    const denyRoot = new rig.seams.Context()
+    await denyRoot.plugin(DenyConfined, { cwd: rig.inside, diffBasisMaxBytes: 10 * 1024 * 1024 })
+    const denyFs = denyRoot.get('fs')
+    nodeFs.writeFileSync(rig.otherPath, 'UNTOUCHED\n', 'utf8')
+    const exec = { name: 'write', callId: 'call-r3-deny-wins', arguments: { file_path: rig.approvedPath, content: R3_CONTENT } }
+    const run = await r3Dispatch(rig, exec, {
+      body: async (world) => {
+        // The receipt is live and unused here; deny must still win.
+        await denyFs.writeText(targetOf(rig.otherPath), 'DENIED\n')
+        return world.fs.writeText(targetOf(rig.approvedPath), R3_CONTENT)
+      },
+    })
+    assert.equal(run.phase, 'body')
+    assert.equal(run.error?.code, 'IO_WRITE_DENIED')
+    assert.equal(fileContent(rig.otherPath), 'UNTOUCHED\n', 'deny wins: nothing was written to the denied path')
+  })
+
+  test('ADM-160 (R3 PoC, PHASE HONESTY) — a Provider refusal AFTER body entry settles FAILED at the real phase, never REFUSED/not-started', async (t) => {
+    const rig = await r3Rig('phase-honesty', { write: lane([], [pathJoin(R3_ROOT, 'phase-honesty', 'inside', 'approved.txt'), pathJoin(R3_ROOT, 'phase-honesty', 'inside', 'other.txt')]) })
+    t.after(rig.cleanup)
+    nodeFs.writeFileSync(rig.otherPath, 'UNTOUCHED\n', 'utf8')
+    const exec = { name: 'write', callId: 'call-r3-phase', arguments: { file_path: rig.approvedPath, content: R3_CONTENT } }
+    const run = await r3Dispatch(rig, exec, {
+      body: async (world) => world.fs.writeText(targetOf(rig.otherPath), R3_CONTENT),
+    })
+    assert.equal(run.phase, 'body')
+    assert.equal(run.error?.code, 'IO_ASK_RECEIPT_REFUSED')
+    assert.match(String(run.error?.message), /RECEIPT_OPERATION_MISMATCH/u)
+    const admission = rig.admissions.find((fact) => fact.callId === exec.callId)
+    assert.equal(admission?.decision, 'allow', 'the admission decision was the approval, not a refusal')
+    const execution = rig.executions.find((fact) => fact.callId === exec.callId)
+    assert.equal(execution?.outcome, 'failed', 'the Provider refusal is a BODY failure, not an admission refusal')
+    assert.notEqual(execution?.refusalCode, 'ADMISSION_REFUSED')
+    const settled = settlementOf(rig, exec.callId)
+    assert.equal(settled?.state, 'FAILED')
+    assert.equal(settled?.observation.dispatch, 'quiesced')
+    assert.equal(settled?.observation.bodyOutcome, 'failed')
+    assert.notEqual(settled?.state, 'REFUSED')
+    assert.notEqual(settled?.observation.bodyOutcome, 'not-started')
+  })
+
+  test('ADM-161 (R3 PoC, NEGATIVE) — the authorization scope cannot leak across MEMBERS: Member B\'s Provider refuses A\'s active receipt', async (t) => {
+    const rig = await r3Rig('cross-member')
+    t.after(rig.cleanup)
+    const otherMember = String(P6T4_SEEDS.worker2.instanceId)
+    const otherPolicy = {
+      memberIdentity: otherMember,
+      toolBindingIdentity: 'dsh.fs/write',
+      policyRevision: R3_REVISION,
+      read: lane([rig.inside]),
+      write: lane([], [rig.approvedPath]),
+    }
+    const OtherConfined = createConfinedFileSystemClass(
+      rig.seams.LocalFileSystem,
+      createMemberFsGuard(otherPolicy, undefined, { binder: rig.binder }),
+      otherMember,
+    )
+    const otherRoot = new rig.seams.Context()
+    await otherRoot.plugin(OtherConfined, { cwd: rig.inside, diffBasisMaxBytes: 10 * 1024 * 1024 })
+    const otherFs = otherRoot.get('fs')
+    const exec = { name: 'write', callId: 'call-r3-cross-member', arguments: { file_path: rig.approvedPath, content: R3_CONTENT } }
+    const run = await r3Dispatch(rig, exec, {
+      body: async (world) => {
+        // A.worker's scope is active; another Member's Provider must not read it as its own.
+        await otherFs.writeText(targetOf(rig.approvedPath), R3_CONTENT)
+        return world.fs.writeText(targetOf(rig.approvedPath), R3_CONTENT)
+      },
+    })
+    assert.equal(run.phase, 'body')
+    assert.equal(run.error?.code, 'IO_ASK_RECEIPT_REFUSED')
+    assert.match(String(run.error?.message), /RECEIPT_MEMBER_MISMATCH/u)
+    assert.equal(fileContent(rig.approvedPath), null, 'the other Member wrote nothing')
+  })
+
+  // The receipt module is imported lazily so the arms above read as the product surface; these two
+  // helpers expose ONLY the read-side API (never a mint/registration shortcut) to the PoC.
+  async function currentApprovedAskExecutionScopeForTest () {
+    const mod = await import('../member-io-policy/src/approved-ask-receipt.ts')
+    return mod.currentApprovedAskExecutionScope()
+  }
+  async function authorizeAskWithReceiptForTest (input) {
+    const mod = await import('../member-io-policy/src/approved-ask-receipt.ts')
+    return mod.authorizeAskWithReceipt(input)
+  }
+  async function authorizeAskInScopeForTest (receipt, input) {
+    const mod = await import('../member-io-policy/src/approved-ask-receipt.ts')
+    // Re-run the verifier in a scope that claims to be the receipt's own, to prove the liveness
+    // check (not merely the absence of a scope) refuses a CLOSED receipt.
+    try {
+      return await mod.runWithApprovedAskExecutionScope(receipt, () => mod.authorizeAskWithReceipt(input))
+    } catch (error) {
+      return { ok: false, code: 'SCOPE_REFUSED', detail: String(error?.message ?? error) }
+    }
+  }
+  function failForTest (message) {
+    throw new Error(message)
+  }
+}

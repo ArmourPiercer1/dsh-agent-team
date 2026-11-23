@@ -199,6 +199,9 @@ export function installMemberCentre ({ ctx, binding, resolveBinding, recordAdmis
       ...(settlement === undefined ? {} : { settlement }),
       ...(overlayDecision === undefined ? {} : { overlayDecision }),
       ...(onFault === undefined ? {} : { onFault }),
+      // R3: the receipt binds the SAME settlement ExecutionId the store and facts join on, so a
+      // receipt can never name a different physical execution than the one that settled.
+      ...(typeof identityOf === 'function' ? { executionIdOf: (exec) => identityOf(exec).executionId } : {}),
     })
     disposers.push(admissionPoint)
     executionFacts = installExecutionFacts({

@@ -3153,3 +3153,45 @@ glue-shape guarantee is kept rather than loosened.
 `ALPHA6-FORMAL-ROUTING.md` §R1-D. (2) **R3 is untouched**: even after an allow, the provider still
 refuses the `ask`-disposition call (`BL-30` / `IO_ASK_REQUIRES_APPROVAL`), so the grant→execute half is
 still not reachable. The in-process arms prove the CASE and the ROUTE, not an executed body.
+
+## Round 94 (R3 PoC + G11) — the granted `ask` now EXECUTES for `write`, at mechanism level
+
+Owner ruling `20261124-0151` §2: **R2 REJECTED**, **R3 approved only with a small ADR + executable PoC
+first**, **R4 stays the fail-closed interim**. This round delivers exactly that, and fixes G11.
+
+**ADR:** `dev/agent-workflow/evidence/ute-a1/ADR-approved-ask-receipt.md` (the ApprovedAskReceipt: binding
+fields, lifetime, mint/read points, scoping, non-forgeability, no cross-Member/call/async leak, rejected
+alternatives, failure modes).
+
+**G11 — DEFECT, fixed.** `intersectPathRuleSets`' ask-survival required coverage by the intersection of
+the two allow sets, so a legal pure-ask lane (`{allow:[], ask:[p]}`, accepted by `validateLane`)
+collapsed to an empty deny lane when intersected with a tool restriction. Correct law: an `ask`
+survives iff neither side answers `deny` for that locator, and it stays `ask` (never promoted to
+allow). `approvedOnce:false` was not the cause; the compiler never reads it. Two new arms in
+`a5sf-member-policy.test.ts` pin the pure-ask + non-disjoint tool allow case (`{allow:[], ask:[p]}`,
+`matchLocator` ask for the target, deny for a non-covered path) and the disjoint case (ask coverage
+drops, target denied). Suite `19/19`.
+
+**The PoC — eight arms, `ADM-154`…`ADM-161`.** Over the REAL confined `fs` Provider, REAL binder, REAL
+`ControlService`, REAL admission port and REAL settlement store; only the host loop is a double (pinned
+`pre-execute → guard → execute → result`). Positive: `ask` → inline durable `allow` → grant consumed →
+receipt minted → Provider writes real bytes, settlement `COMPLETED`. Negatives all PASS: second effect
+in the same body (`RECEIPT_REUSED`); cross-path (`RECEIPT_OPERATION_MISMATCH`); revoked after spend
+(`RECEIPT_REVOKED`, zero bytes); replay after completion (scope gone, captured receipt `CLOSED`); deny
+lane wins over a live unused receipt; cross-Member Provider inside the same body
+(`RECEIPT_MEMBER_MISMATCH`); and phase honesty — a post-body Provider refusal settles
+`FAILED`/`quiesced`/`failed`, never `REFUSED`/`not-started`.
+
+**Counts that moved.** `ute-vnext-a1`: `tests 220 → 228`, `pass 217 → 225`, `skipped 3 → 3`. File set
+unchanged (7 files) ⇒ leg digest unchanged
+(`sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975`). Catalog unchanged
+(`tests=785`, uncollected 38, excluded 14). New scannable file
+`packages/runtime/member-io-policy/src/approved-ask-receipt.ts` is booked p4t6
+(`1319 → 1320`, measured by the scanner).
+
+**Not proven / not claimed.** (1) No live v5 boot was re-run: `d4:routed-wake` stays REFUTED and
+`C-alpha6` stays MECHANISM (G11 is fixed, the boot is not). (2) Production wiring of the Provider
+authority is absent — the real mount passes no third argument, so a product turn still fails closed at
+`IO_ASK_REQUIRES_APPROVAL`. (3) Only `write`/`writeText` is covered; every other FS method, subprocess
+and tool keeps R4. (4) The receipt binds `caseId:null` for an inline admission request, which is the
+identity it actually has.

@@ -133,6 +133,40 @@ export interface PathGuardRefused {
     readonly detail: string;
 }
 export type PathGuardDecision = PathGuardAllowed | PathGuardRefused;
+/** The Provider-resolved identity of one target, before any lane decision. */
+export interface ResolvedTargetIdentity {
+    /** The canonical (realpath-ed) path, or parent-realpath + leaf for a create. */
+    readonly resolved: string;
+    /** Whether the FINAL component of the authored locator is a symlink. */
+    readonly symlink: boolean;
+}
+export type ResolveTargetResult = {
+    readonly ok: true;
+    readonly value: ResolvedTargetIdentity;
+} | {
+    readonly ok: false;
+    readonly decision: 'deny' | 'unsupported';
+    readonly code: PathGuardRefusalCode;
+    readonly detail: string;
+};
+/**
+ * Resolve ONE target through the Provider's own identity functions — the ONE
+ * canonicalizer the lane decision and the approved-ask receipt share.
+ *
+ * Extracted from {@link evaluateLocatorAccess} without changing its order or
+ * its refusals: a read of a missing target is `PATH_NOT_FOUND`; a write may
+ * create the leaf only after the PARENT resolves; a dangling symlink is a
+ * `PATH_SYMLINK_ESCAPE` (its bytes would land wherever the link points); any
+ * other resolver fault is a typed `PATH_RESOLUTION_UNSUPPORTED`. It makes NO
+ * lane decision and reads no approval state, so a second consumer (the
+ * receipt verifier) canonicalizes exactly as the guard does instead of
+ * growing a second path interpretation.
+ */
+export declare function resolveTargetIdentity(input: {
+    readonly locator: string;
+    readonly access: PathGuardAccess;
+    readonly resolver?: PathIdentityResolver;
+}): Promise<ResolveTargetResult>;
 /**
  * Decide one authored locator against one lane using Provider-resolved identity.
  *

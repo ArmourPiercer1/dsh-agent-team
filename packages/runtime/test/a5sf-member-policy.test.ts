@@ -16,7 +16,7 @@ import {
   compileMemberPolicy,
   projectToolIoRestriction,
 } from '../member-io-policy/src/compile.js'
-import { locatorWithinRuleSet } from '../member-io-policy/src/path-rules.js'
+import { locatorWithinRuleSet, matchLocator } from '../member-io-policy/src/path-rules.js'
 import type {
   Alpha4EffectiveAuthority,
   BoundBlueprint,
@@ -354,6 +354,54 @@ describe('P1-02 · EffectiveIo = MemberCeiling ∩ ToolRestriction', () => {
     if (!effective.ok) return
     expect(effective.value.read.ask).toEqual(['/work/a/pending'])
     expect(effective.value.read.ask).not.toEqual([])
+  })
+
+  // G11 (round 94). The round-93 D4 binding world authored a PURE ask lane
+  // (`allow: [], ask: [/p]`) on the Member ceiling and a plain allow on the
+  // declared tool. The intersection used to require the permissive ALLOW list
+  // to cover the ask, which is empty by construction in that shape, so the ask
+  // was dropped and the tool compiled to deny-all: a declared binding made an
+  // ordinary ask UNREACHABLE. These arms pin the corrected rule in both
+  // directions — the ask survives where both lanes permit it, and nothing
+  // widens (a disjoint or denied ask is still dropped, and an ask never
+  // becomes an allow).
+  it('G11: a PURE ask lane survives an allow-only tool lane (ask is a disposition, not a gap in allow)', () => {
+    const doc = blueprintDoc({
+      memberIoCeilings: [{
+        templateId: 'alpha',
+        // The exact D4 shape: allow NOTHING unconditionally, ask for one file.
+        io: { read: rw('restricted', { allow: [] }), write: rw('restricted', { allow: [], ask: ['/work/b/ask.txt'] }), network: net('deny') },
+      }],
+      toolBindings: [binding('dsh.fs', 'write', { read: rw('all'), write: rw('restricted', { allow: ['/work/b'] }), network: net('deny') })],
+    })
+    const member = compiled(doc)
+    const writeTool = tool(0, doc)
+    const effective = compileEffectiveIo(member, writeTool, invocationFor(member, writeTool))
+    expect(effective.ok).toBe(true)
+    if (!effective.ok) return
+    expect(effective.value.write.ask).toEqual(['/work/b/ask.txt'])
+    expect(effective.value.write.allow).toEqual([])
+    // The disposition is still ASK: nothing was promoted to allow, and every
+    // other locator under the tool's allow subtree is still denied.
+    expect(matchLocator(effective.value.write, '/work/b/ask.txt')).toBe('ask')
+    expect(matchLocator(effective.value.write, '/work/b/other.txt')).toBe('deny')
+  })
+
+  it('G11: the ask is still dropped when the OTHER lane does not permit it (deny wins, no widening)', () => {
+    const doc = blueprintDoc({
+      memberIoCeilings: [{
+        templateId: 'alpha',
+        io: { read: rw('restricted', { allow: [] }), write: rw('restricted', { allow: [], ask: ['/work/b/ask.txt'] }), network: net('deny') },
+      }],
+      toolBindings: [binding('dsh.fs', 'write', { read: rw('all'), write: rw('restricted', { allow: ['/work/b/other.txt'] }), network: net('deny') })],
+    })
+    const member = compiled(doc)
+    const writeTool = tool(0, doc)
+    const effective = compileEffectiveIo(member, writeTool, invocationFor(member, writeTool))
+    expect(effective.ok).toBe(true)
+    if (!effective.ok) return
+    expect(effective.value.write.ask).toEqual([])
+    expect(matchLocator(effective.value.write, '/work/b/ask.txt')).toBe('deny')
   })
 
   it('approvedOnce is NOT an input to the policy compiler (no widening channel exists)', () => {
