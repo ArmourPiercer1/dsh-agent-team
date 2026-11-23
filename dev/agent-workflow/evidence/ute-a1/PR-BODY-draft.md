@@ -7,13 +7,13 @@ named in the same row or section.
 
 | field | value |
 | --- | --- |
-| **Head measured for every number below** | `97d7d7c8d1bb0410dac9dedac77dee97143851bf` (round 89; the round-86 audit head `c29da52d3` is 5 commits behind — rounds 87/88 landed product, test and evidence work) |
+| **Head measured for every number below** | `d322b17aab360a76c4a3292ad7faff6c5d0d15a5` (round 95; earlier sections that name `97d7d7c8d` / `c29da52d3` keep their own round's numbers and are labelled as such) |
 | **Base** | `master @ a19d1df01` (frozen A0, PR #821) |
 | **PR state** | **DRAFT**, `state=OPEN`, never merged (`gh pr view 822 --json isDraft,state,headRefOid`) |
 | **Record class** | every live claim is `DEV-LIVE` (a real host boot, **not a gate**); no capability row is PRODUCT-PROVEN |
 | **Read first** | `dev/agent-workflow/evidence/ute-a1/D-ACCEPTANCE-REPORT.md` (the reviewable report, with **§10 = the authoritative open-gap list**) and `dev/agent-workflow/evidence/ute-a1/CANDIDATE-AUDIT.md` (the round-86 adversarial audit: corrections, capability table, fresh gate block, verdict) |
 | **How to review** | (1) read the audit's corrections table first — it lists every number the report used to get wrong; (2) re-run the gate block in §"Verification on this HEAD" (single commands, ~8 min with the census) and diff the verdict lines; (3) for any capability row, follow its `file:line`/evidence path and check it says what the row claims; (4) treat every `DEV-LIVE` row as unproven for acceptance purposes; (5) read `D-ACCEPTANCE-REPORT.md` §10 before forming a view — the two round-87/88 seams and the four rulings they need are there; (6) do **not** mark this PR ready or merge it — that is the owner's act. |
-| **Gate status at this head** | local: all required gates green, including `ci-pr-gate --full --census-captures 2` = **PASS 10/10** (275.7 s). Hosted: `pr-gate`, `ci-fast`, `ci-security`, `ci-product`, `synthesize-merge-tree`, `candidate-protection` green; **`ci-integration` FAILURE** on leg `tinf-instruments` (no named failing assertion; not reproduced locally — see "Open gaps" G10); `ci-census` **SKIPPED (draft)**; `ci-required` **RED for `ci-integration:failure,ci-census:skipped`**; `pr-settlement-gate` red until the round-89 settlement comment. On the docs-only follow-up head `d1506acd1` the same hosted job set re-ran with **`ci-integration` SUCCESS**, so the `97d7d7c8d` abort was transient; `ci-required` remains red there only for the draft census skip. |
+| **Gate status at this head** | **Round 95 / `d322b17aa`:** local `ci-pr-gate --full --census-captures 2` = **PASS 10/10** (275.4 s); bound vitest `ci-security` 222 / `ci-integration` 238; UTE G1 argv 89/89; the hosted verdicts below belong to the round-89 head and are re-queried after this push. Earlier round-89 local status: all required gates green, including `ci-pr-gate --full --census-captures 2` = **PASS 10/10** (275.7 s). Hosted: `pr-gate`, `ci-fast`, `ci-security`, `ci-product`, `synthesize-merge-tree`, `candidate-protection` green; **`ci-integration` FAILURE** on leg `tinf-instruments` (no named failing assertion; not reproduced locally — see "Open gaps" G10); `ci-census` **SKIPPED (draft)**; `ci-required` **RED for `ci-integration:failure,ci-census:skipped`**; `pr-settlement-gate` red until the round-89 settlement comment. On the docs-only follow-up head `d1506acd1` the same hosted job set re-ran with **`ci-integration` SUCCESS**, so the `97d7d7c8d` abort was transient; `ci-required` remains red there only for the draft census skip. |
 
 ## What this candidate is (one paragraph)
 
@@ -28,11 +28,40 @@ with its own code and the ruled status `unsupported-by-product-ruling` (round 92
 this generation by owner ruling, a scope reduction recorded in `ADR-ptc-unsupported.md`, not a blocker); the S6 management plane is
 restored (round 74) and serves work delivery (round 83); Alpha.6's formal routing is implemented
 (round 84) while its **live routed wake is REFUTED (round 87)** on two named Team-side seams, and the
-`ask`-disposition execution path has **no production consumer (BL-30, round 88)**. **D** adds live
+`ask`-disposition execution path had **no production consumer through round 94 (BL-30, round 88)**; since round 95 it **executes for `write`/`writeText` only** (the R3 ApprovedAskReceipt authority is wired into the production mount and proven on two agreeing live boots), while every other tool/operation keeps the fail-closed R4 refusal. **D** adds live
 `dsh web` evidence: **fourteen** judges PROVEN, the previously refuted three (`d3:persistent-subprocess`,
 `d2:revocation`, `d:member-read-denied`) now PROVEN, four further round-87 probe judges PROVEN
 (enablement / Officer up / Officer binding / incoherent-row refusal) and one REFUTED (`d4:routed-wake`),
 and the 405 creation entrance gone (runtime creation since round 74).
+
+## Latest round (95) — the R3 receipt is WIRED and PROVEN LIVE for `write`
+
+The owner ruling `20261124-0151` approved R3 (the ApprovedAskReceipt) and kept R4 as the fail-closed
+interim. Round 95 closes R3's last gap: the production mount now passes the **real invocation binder**
+as the Provider's receipt authority, for `write`/`writeText` only.
+
+- **Wiring, no invariant moved.** `agent-bindings.mjs:1771-1790` supplies
+  `approvedAskAuthority: { binder: grantBinder }` only when the row's Control service is wired
+  (`grants !== undefined`); `a5sf-realm-row.mjs` → `mount.ts` → `install.ts:513,880` forward it to
+  `createMemberFsGuard(policy, undefined, authority)` on the member and binding-realm faces. Terminal
+  faces are untouched; a row without Control keeps the byte-identical fail-closed mount. The observer
+  wrapper (`guard-observability.ts:280-305`) now forwards the optional operation context verbatim — it
+  had dropped `writeText`'s content, refusing valid receipts with `RECEIPT_CONTENT_UNAVAILABLE`.
+- **Live proof, `probe-d4-routed-wake.mjs --boots 2` (DEV-LIVE, real rc.2 host, scripted model
+  only).** `d4:ask-execute` is **PROVEN on both boots**: a Member `write` with lane `ask` raises a real
+  durable Control request, the Leader allows it through the real control path, the one-shot grant is
+  consumed once, the Provider verifies the receipt for THAT execution and writes **27 real bytes**
+  (identical `sha256` both boots), settlement `COMPLETED`. Negatives: approval **denied** ⇒ zero bytes,
+  `REFUSED`/`not-started`; **Stop** through the public `session/cancel` while pending ⇒ zero bytes,
+  `REFUSED`/`not-started`. Two-boot agreement `agreeing=true, differing=[]`.
+- **`d4:routed-wake` stays REFUTED, deliberately.** The ordinary ask still carries no approval CASE,
+  so the product router selects no Officer; R3 is not routing evidence and `C-alpha6` stays MECHANISM.
+- **Counts.** `ute-vnext-a1` unchanged (`228 tests / 225 pass / 3 skipped`, same leg digest); catalog
+  unchanged (`785 / 38 uncollected / 14 excluded`); bound vitest `ci-security 218 → 222` (four new
+  arms), `ci-integration 238`; UTE G1 argv `89/89`. No new scannable file ⇒ no p4t6 delta.
+- **Not proven.** Only `write`/`writeText`; `editText`/`patchText`/`deleteFile`/`moveFile`, subprocess
+  and every other tool keep R4. No row is PRODUCT-PROVEN (DEV-LIVE is a record, not a gate). Real-model
+  interleaving is not measured.
 
 ## What this branch is
 
