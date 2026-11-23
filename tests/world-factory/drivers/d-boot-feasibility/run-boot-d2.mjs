@@ -201,10 +201,14 @@ const LEADER_TOOL_ALLOW = Object.freeze(['bash', 'read', 'write', 'edit', 'read_
 const LEADER_DENY_SAFE = Object.freeze(['todo_write'])
 const TEAM_TOOL_NAMES = Object.freeze(['team_delegate', 'team_archive_member', 'team_follow_up', 'team_collect', 'team_list_members', 'team_grant_permission', 'team_revoke_permission'])
 
+// The driver's FULL case set. Round 83 added the delivery judge, so the selection is
+// the whole set again — a subset run must name its `arms` in the run record, and this
+// driver has none to name.
 const SELECTED_CASES = Object.freeze([
   'd2:multi-member-concurrency',
   'd2:revocation',
   'd2:stop',
+  'd2:remote-delivery',
 ])
 
 // Facts the judges read. Set once per boot from the composed rows / fixtures /

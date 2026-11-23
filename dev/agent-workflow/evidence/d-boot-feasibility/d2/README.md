@@ -15,8 +15,9 @@
 REQUIRED clause demanded that the durable overlay WIDEN authority (revoke the deny ⇒ the previously
 admitted call must be refused, with a new compiled generation in the fact). The contract forbids that
 (`overlay-decision.mjs:9`, `admission-port.mjs:498-521`, `permission-mutation.ts:435-436`), so the judge
-was measuring a capability the product must never have. All three judges are now **PROVEN on both
-boots**, and `overall=PASS` (exit 0) is the driver's own result — not a weakened one.
+was measuring a capability the product must never have. All four judges (round 83 added the delivery
+judge) are now **PROVEN on both boots**, and `overall=PASS` (exit 0) is the driver's own result — not a
+weakened one. The driver runs its FULL declared case set (`selected=4 / totalCases=4`, `subset=false`).
 
 ## Verdicts
 

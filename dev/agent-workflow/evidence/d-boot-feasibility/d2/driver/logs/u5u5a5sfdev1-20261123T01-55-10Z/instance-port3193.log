@@ -1,4 +1,0 @@
-[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
-dsh web: http://127.0.0.1:3193/?token=6bemr7s9lKB2qKsPIkfpJ-Ct3NDWvVzgbUjMThqWdj4
-[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
-a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
