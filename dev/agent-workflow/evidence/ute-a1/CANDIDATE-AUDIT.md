@@ -1,5 +1,12 @@
 # CANDIDATE-AUDIT — adversarial audit of the D acceptance candidate (round 86)
 
+> **Superseded in part by round 89 (`2026-11-23`).** This audit measured at `c29da52d3`. Rounds 87/88 then
+> added two measured facts it could not know: **`d4:routed-wake` is REFUTED** (Alpha.6 has no case-bearing
+> ordinary-ask producer) and **BL-30 means a granted `ask` still cannot execute in production**. The
+> authoritative open-gap register is now `D-ACCEPTANCE-REPORT.md` **§10** (G1–G10), and the corrections
+> made in round 89 are listed in its **§11**. Nothing in this file is deleted; its §1 "blocking reasons"
+> gains those two items, and its §6 register's items 13/14.
+
 **Worktree:** `.worktrees/vnext-a1-cut` · **Branch:** `vnext/a1-cut` · **HEAD audited:**
 `c29da52d31ba52088eb58622b4858803031d060d` · **Base:** `a19d1df01` (frozen A0, PR #821, on `master`)
 **Auditor role:** sole writer, sole adversarial gate before PR #822 is offered for review.

@@ -11131,3 +11131,35 @@ So a Member can ASK, be GRANTED, and still not run the granted call in productio
 decisions: (a) flip the ask to `guarded` (loses the Stop-cancels-a-pending-ask law as currently pinned), or (b) give
 the OS/provider plane a read port onto the centre's already-enforced per-call decision. Nothing was auto-approved,
 no invariant was bent, and the level stays MECHANISM.
+
+## Round 89 (2026-11-23) — documentation integrity at `97d7d7c8d`: the newest gaps are now IN the candidate report
+
+Rounds 87/88 landed measured facts that the round-86 report and PR body did not carry. This round re-measured
+every asserted number at `97d7d7c8d` (5 commits after `c29da52d3`) and corrected 19 claims; no product source,
+test assertion, skip, negative control or evidence file was edited to fit a claim.
+
+Folded in, with `file:line` evidence: (1) **`d4:routed-wake` REFUTED** on two agreeing D4 boots — the durable
+ordinary ask carries no `approvalCaseId`/`legOrdinal`, `alpha6/root-router.ts:209` returns `null`; the two seams
+are Team-side (no case-bearing ask producer; BL-30 has no ask consumer), NOT upstream. (2) **BL-30's live
+consequence** — a Member can ASK, be GRANTED, and still not run the granted call (inline allow is never a guard
+token, `control/service.ts:4155-4165`/`:4289`; grant spent at `admission-port.mjs:770-784`; provider refuses
+`IO_ASK_REQUIRES_APPROVAL`). (3) Rounds 83/84/85 levels re-verified unchanged (S6 `work-delivery`; Alpha.6 formal
+routing MECHANISM; PTC `CORE_SEAM_BLOCKER` on the worker OS profile).
+
+New **§10 open-gap register** (G1–G10) in `D-ACCEPTANCE-REPORT.md`, reflected in `PR-BODY-draft.md`, with the four
+owner rulings the new seams need (R1 ask producer; R2 guarded coupling; R3 OS-plane decision read port; R4 keep the
+refusal). `CAPABILITY-MATRIX-C.md` annotates C-tools / C-subprocess / C-alpha6 — **no upgrade anywhere**.
+
+Worst five corrections: refuted routed wake was written "unproven"; a grant was implicitly assumed executable;
+scope block 5 commits stale (205→210 commits, 3,377→3,476 files, +241,087→+249,967); hosted CI was called "green
+except the census skip" while **`ci-integration` FAILED** at `97d7d7c8d`; `ci-pr-gate`/census numbers stale
+(274.7→275.7 s, 7,414→7,416 lines).
+
+Gates at `97d7d7c8d` (verbatim in the `ute-a1` evidence set and this session's logs): leg `ute-vnext-a1` 211 cases
+/ 209 pass + 2 pre-existing skips, exit 0; catalog 785 / collected 733 / excluded 14 / uncollected 38 (bounds
+41/7); ute-cut-closure, ute-p0-assets, docs-sync (193 docs, 0 findings), place-dist-glue (30), eb3-ci-required
+(10/0), bound vitest 216, migrated 238/238, UTE G1 89/89, `ci-pr-gate --full --census-captures 2` PASS 10/10
+(275.7 s; census 2 captures, identical identity sets, 599 files / 7,416 lines vs 626 / 7,936), negative controls
+35/35. Hosted at this HEAD: six layers green, `ci-integration` FAILURE on `tinf-instruments` (no named failing
+assertion; **same leg green locally**), `ci-census` skipped (draft), `ci-required` red for both — carried as G10,
+not explained away. PR #822 stays DRAFT/OPEN/unmerged.

@@ -1,18 +1,25 @@
 # D acceptance report — UTE vNext A1 cut + centre (candidate)
 
 **Worktree:** `.worktrees/vnext-a1-cut` · **Branch:** `vnext/a1-cut` ·
-**HEAD measured for every number below (round 86 audit):**
-`c29da52d31ba52088eb58622b4858803031d060d` (this audit's own docs-only commit sits on top of it and
-changes no code or gate result; the round-86 settlement comment names the final head) · **Base for the
-cut:** `a19d1df01` (frozen A0, PR #821) · **Record class of everything below:** in-process `MECHANISM` +
-`DEV-LIVE`. Never candidate evidence, never a gate.
+**HEAD measured for every number below (round 89):**
+`97d7d7c8d1bb0410dac9dedac77dee97143851bf` · **Base for the cut:** `a19d1df01` (frozen A0, PR #821) ·
+**Record class of everything below:** in-process `MECHANISM` + `DEV-LIVE`. Never candidate evidence,
+never a gate.
 
-> **Round 86 adversarial audit — read `CANDIDATE-AUDIT.md` with this report.** It re-measured every number
-> here at `c29da52d3`, corrected 34 factual claims (the round-70 scope block, the capability levels for
-> C4/C6/C8/C9/C11/C13/C14b/C18, the stale `admission.ts`/`root.ts`/`agent-bindings.mjs` line citations that
-> round 85's edit shifted, and the four stale owner-decision entries), and records the **READY-FOR-REVIEW /
-> not-ready-to-merge** verdict plus the hosted `ci-required` draft-state red. Where this report and the
-> audit disagree, the audit is the later measurement.
+> **Round 89 documentation-integrity round — read this block with `CANDIDATE-AUDIT.md`.** The round-86
+> audit measured at `c29da52d3`; rounds 87 (the D4 live probe) and 88 (the BL-30 boundary measurement)
+> then landed **5 commits** of NEW measured facts (`git rev-list --count c29da52d3..HEAD` = **5**). This
+> revision re-measured every number the report and the PR body assert — scope counts, entry-file line
+> counts, all ten local gates, the bound vitest/migrated/UTE-G1 legs, and the hosted verdicts — and folds
+> in the two new in-repo seams. What changed materially: (a) the scope block (§1) is re-measured at this
+> HEAD; (b) **`d4:routed-wake` is REFUTED on a live boot** and the two Team-side seams behind it are now
+> named with `file:line` evidence (§6.5, new **§10**); (c) the live consequence of BL-30 — *a Member can
+> ASK, be GRANTED, and still not run the granted call in production* — is stated in the C5/C6/C7 rows
+> (§2.2) and **§10**; (d) **hosted `ci-integration` is FAILURE at this HEAD** (leg `tinf-instruments`;
+> `EB3-REQUIRED fail layers=6 green=4 nongreen=ci-integration:failure,ci-census:skipped`), so the old
+> "six layer jobs green" claim no longer holds. The hosted red is NOT reproduced by the same leg locally
+> (§9.4) and is carried as an open item in §10, not papered over. Nothing is upgraded anywhere; the
+> corrections total **19** (worst five listed in §11).
 
 This is the single reviewable document for the candidate. It is written to be audited line by line:
 every product claim carries a `file:line` or an evidence path, and every row that is not proven says
@@ -20,11 +27,14 @@ what would prove it.
 
 > **Read this first, it is the conclusion.** The candidate implements **A1 + B + C** and carries **live
 > D evidence** for the items listed in §3. It is **not a completed product acceptance**. **Round 76
-> closed the last REFUTED judge**: `d3:persistent-subprocess` is **PROVEN** in two agreeing DEV-LIVE
-> boots (a persistent, OS-confined shell across two turns, with the in-lane write succeeding and the
-> out-of-lane write refused by the kernel). Several product-entry gaps remain unreachable, and **no
+> closed the last REFUTED D-driver judge**: `d3:persistent-subprocess` is **PROVEN** in two agreeing
+> DEV-LIVE boots (a persistent, OS-confined shell across two turns, with the in-lane write succeeding and
+> the out-of-lane write refused by the kernel). **Round 87 then REFUTED one D4 probe judge**
+> (`d4:routed-wake`) — a blocker measurement, not a driver acceptance — because the product's own durable
+> ask carries no Alpha.6 case (§6.5/§10 G1). Several product-entry gaps remain unreachable, and **no
 > capability row is PRODUCT-PROVEN** (`CAPABILITY-MATRIX-C.md:71-74`) because a DEV-LIVE boot is not a
-> gate. §6 lists the remaining limits; §7 states the verdict without rounding up.
+> gate. §6 lists the remaining limits; **§10 is the complete open-gap register**; §7 states the verdict
+> without rounding up.
 
 > **Round 66 addendum (C11).** Three node:test arms were added after the HEAD measurement in §1:
 > `ADM-107`…`ADM-109` prove the **Team-owned** projection (`projection/**`) is preserved in the new
@@ -75,21 +85,20 @@ what would prove it.
 
 ## 1. HEAD, branch, and scope facts
 
-Round 70 measured the table below; **round 86 re-measured every row at `c29da52d3`** (the round-70 values
-are superseded: the branch grew by 61 commits and the cut closed another 1,734 file paths, all of it the
-rounds 71–85 product and evidence work). The audit's docs-only commits change no code, so they add to
-`git rev-list --count` without changing any other number below. Citation convention: a path
+Round 70 measured the table below; **round 89 re-measured every row at `97d7d7c8d`** (the round-86
+values are superseded: the branch grew from 205 to 210 commits and from 3,377 to 3,476 file paths, all
+of it the rounds 87–88 product, test and evidence work). Citation convention: a path
 containing `/` is repo-root-relative; a bare filename in a row or section is shorthand for the full path
 named in that same row/section (the reviewable set uses this to keep the tables readable).
 
 | fact | value | how measured |
 | --- | --- | --- |
-| HEAD sha (measurement commit) | `c29da52d31ba52088eb58622b4858803031d060d` | `git rev-parse HEAD` at the start of the audit |
+| HEAD sha (measurement commit) | `97d7d7c8d1bb0410dac9dedac77dee97143851bf` | `git rev-parse HEAD` |
 | branch | `vnext/a1-cut` | `git rev-parse --abbrev-ref HEAD` |
-| commits since A0 `a19d1df01` | **205** | `git rev-list --count a19d1df01..HEAD` |
+| commits since A0 `a19d1df01` | **210** | `git rev-list --count a19d1df01..HEAD` |
 | working tree at measurement start | clean | `git status --porcelain` (empty) |
-| diff vs A0 | **3,377** files changed, **+241,087 / −160,719** | `git diff --shortstat a19d1df01..HEAD` |
-| file-status counts vs A0 | **2,548 A · 616 D · 210 M · 2 R094 · 1 R095** | `git diff --name-status a19d1df01..HEAD \| awk '{print $1}' \| sort \| uniq -c` (git warns that exhaustive rename detection was skipped; the rename counts are a lower bound) |
+| diff vs A0 | **3,476** files changed, **+249,967 / −160,719** | `git diff --shortstat a19d1df01..HEAD` |
+| file-status counts vs A0 | **2,646 A · 616 D · 211 M · 2 R094 · 1 R095** | `git diff --name-status a19d1df01..HEAD \| awk '{print $1}' \| sort \| uniq -c` (git warns that exhaustive rename detection was skipped; the rename counts are a lower bound) |
 | entry files | `agent-bindings.mjs` **4,967** lines · `root.ts` **5,239** lines | `wc -l` on `packages/runtime/src/plugin/vnext/{agent-bindings.mjs,root.ts}` |
 | `master` containment | `git merge-base --is-ancestor HEAD origin/master` → **false** | `origin/master` = `a19d1df01`, the A0 PR #821 |
 
@@ -181,9 +190,9 @@ Status vocabulary — these are not interchangeable:
 | **C2** | member create / resume / archive | **preserve** | MECHANISM. `ADM-92` creates through `team_create_member` and installs the **member's own** centre at its bind; `ADM-93` archives through `team_archive_member` (production step ports: quiesce → settle-then-archive → `release-residency`), and the next call is `ADMISSION_MEMBER_CLOSED`. **DEV-LIVE (create only):** the D3 delegate produced a real `member-activated` effect with `instanceId`/`childSessionId` (`d3:work-delivery`, §15) | `packages/runtime/test/vnext-admission.test.mjs`; `D-BOOT-FEASIBILITY.md` §15; `dev/agent-workflow/evidence/d-boot-feasibility/d3/README.md` | a live **archive** and a live **resume** on a booted host. Archive's live path currently refuses **earlier**, at the durable lifecycle gate (`LIFECYCLE_ADMISSION_CLOSED` / `memberResumeRefusal`) — `CAPABILITY-MATRIX-C.md:61-64`. Resume is not measured live at all |
 | **C3** | work delegation + delivery receipts | **preserve** | **DEV-LIVE PROVEN** (`d3:work-delivery`, two agreeing boots). `team_delegate` → `effect.kind=member-activated`, prompt delivered **verbatim** as the Member's first user message, final text and `memberResult.body` both exactly `DBOOT_D3_DELIVERED_UNIT_ALPHA`; `team_collect` returns the terminal `succeeded` entry, **byte-identical when collected again after a SIGKILL cold restart**; the unit is on disk; every member call fact is in the member's own ledger. `ADM-94/95` carry the in-process positive and negative | `D-BOOT-FEASIBILITY.md:618-628`; `dev/agent-workflow/evidence/d-boot-feasibility/d3/README.md`; `packages/runtime/test/vnext-admission.test.mjs` | a **real-model** interleaving (the current model is the product's scripted mock, §6.7) and a delivery driven at a product entrance rather than the driver's boot-bound team |
 | **C4** | Blueprint binding + identity generation | **preserve** (KEEP module) | MECHANISM. `ADM-26` maps a compiled member onto a binding by reference, never by re-interpretation; `TB-1…TB-6` pin the durable-row resolution and the four typed refusal reasons with **no** legacy degradation. Live: the round-60 path-3 boot binds a v4 blueprint at boot and reaches a governed Member (`CAPABILITY-MATRIX-C.md:137-141`) | `packages/runtime/test/vnext-admission.test.mjs`; `packages/runtime/test/vnext-template-binding.test.mjs`; `CAPABILITY-MATRIX-C.md:137-141` | an identity generated for a member **created at runtime** on a governed row — **round 74 now has the runtime Team/Leader identity** (`team.create` → `createAndStartTeam`); a runtime-created **Member** (`member.create` is SERVED as `work-delivery` since round 83 but has **no live proof** — §9.5) and a real-model identity are still unproven |
-| **C5** | Control: ask / grant / deny / consume | **preserve** (KEEP module), fed by the three contracts | MECHANISM. `ADM-46…ADM-55` cover wiring, deny, expired, fault, the **real** `ControlService` (one request → one durable allow → one-shot spend), a real service deny, generation drift, incomplete identity, and the supply-chain pin. Live: `d2:stop` parked a Member turn at a durable `admission-ask` Control request `status=pending` and **stopped** it through the public `session/cancel` RPC — a Stop, not an approval (no decision row is granted; the live record stops at the pending request and the `ADMISSION_STOPPED` fact) | `packages/runtime/test/vnext-admission.test.mjs`; `D-BOOT-FEASIBILITY.md:483-493` | a live **approval** (leader allows) and a live **consume** of the one-shot grant. Today the live ask is only exercised in its Stop terminal. The product *does* install the grant binder and the durable approval port when the row has a `controlServiceRef` (`agent-bindings.mjs:692-710`); a row without one still refuses asks as `ADMISSION_ASK_UNWIRED`, and no live approval/consume has been observed  **ROUND 88 measured the ASK CONSUMER boundary and did NOT wire it** (`bl-30-ask-consumer/README.md`): `resolveAskClassCall` (the designed consumer) consumes a durable allow only through the last-mile guard `guardOperation`, which by design never authorizes or consumes an INLINE allow (`control/service.ts:4155-4165`, `:4289`) — and the ONLY production ask producer writes exactly that coupling (`admission-port.mjs:163`, measured live in the round-87 D4 row `executionCoupling: 'inline'`). Two new arms pin it over the REAL `ControlService`: same admission-shaped scope, guarded ⇒ adapter accepts and consumes 1; inline ⇒ `guardOperation` `no-request`, adapter `APPROVAL_DENIED`, 0 consumptions. The one-shot grant is also already SPENT by the host tool guard before the body reaches the refusing Provider plane (`admission-port.mjs:770-784`; `provider-capabilities.ts:315`). So a granted `ask` still cannot execute, and the wire-up is an owner decision (flip the coupling and lose the Stop-cancels-the-ask law `ADM-57`, or give the OS plane a read port onto the centre's enforced decision) — not a wiring change. No product code changed. |
+| **C5** | Control: ask / grant / deny / consume | **preserve** (KEEP module), fed by the three contracts | MECHANISM. `ADM-46…ADM-55` cover wiring, deny, expired, fault, the **real** `ControlService` (one request → one durable allow → one-shot spend), a real service deny, generation drift, incomplete identity, and the supply-chain pin. Live: `d2:stop` parked a Member turn at a durable `admission-ask` Control request `status=pending` and **stopped** it through the public `session/cancel` RPC — a Stop, not an approval (no decision row is granted; the live record stops at the pending request and the `ADMISSION_STOPPED` fact) | `packages/runtime/test/vnext-admission.test.mjs`; `D-BOOT-FEASIBILITY.md:483-493` | a live **approval** (leader allows) and a live **consume** of the one-shot grant. Today the live ask is only exercised in its Stop terminal. The product *does* install the grant binder and the durable approval port when the row has a `controlServiceRef` (`agent-bindings.mjs:692-710`); a row without one still refuses asks as `ADMISSION_ASK_UNWIRED`, and no live approval/consume has been observed  **ROUND 88 measured the ASK CONSUMER boundary and did NOT wire it** (`bl-30-ask-consumer/README.md`): `resolveAskClassCall` (the designed consumer) consumes a durable allow only through the last-mile guard `guardOperation`, which by design never authorizes or consumes an INLINE allow (`control/service.ts:4155-4165`, `:4289`) — and the ONLY production ask producer writes exactly that coupling (`admission-port.mjs:163`, measured live in the round-87 D4 row `executionCoupling: 'inline'`). Two new arms pin it over the REAL `ControlService`: same admission-shaped scope, guarded ⇒ adapter accepts and consumes 1; inline ⇒ `guardOperation` `no-request`, adapter `APPROVAL_DENIED`, 0 consumptions. The one-shot grant is also already SPENT by the host tool guard before the body reaches the refusing Provider plane (`admission-port.mjs:770-784`; `provider-capabilities.ts:315`). So a granted `ask` still cannot execute, and the wire-up is an owner decision (flip the coupling and lose the Stop-cancels-the-ask law `ADM-57`, or give the OS plane a read port onto the centre's enforced decision) — not a wiring change. No product code changed. **CONSEQUENCE, stated plainly: a Member can ASK, be GRANTED, and still not run the granted call in production** — measured both couplings over the REAL `ControlService` (guarded ⇒ guard allows + 1 consumption + `resolveAskClassCall` ok; inline = the production coupling ⇒ `no-request` + `APPROVAL_DENIED` + 0 consumption rows) and observed live in the round-87 row. This is **open gap G2** in §10 and needs an owner ruling, not a test change. |
 | **C6** | Officer assignment + ReviewCapability routing | **preserve** (KEEP module) — *and* the contract's own rule: if Alpha.6 is not wired, "the corresponding approval and auto-wake paths must be **explicitly disabled**, never silently fall back" (`06-CAPABILITY-CONTRACT.md:95-98`) | **MECHANISM + the live REFUSAL shape.** (Round 86 audit: this cell opened with "REFUSED-BY-DESIGN … `centre-config.ts:73` rejects the opt-in on **every** row" — that was true through round 83 and is false since round 84: only an INCOHERENT row is refused.) `ADMISSION_ALPHA6_UNAVAILABLE` in two independent gates: `alpha6EnablementRefusal` (`centre-config.ts`) refuses each incoherent opt-in piece by piece and admits a coherent row (`root.ts:2508-2525` records either outcome through the same point) (`ADM-34`, `ADM-99`, `ADM-141`). **Live:** `d3:alpha6` **PROVEN** as the typed-refusal shape — no team root (`/__p6t6/state` 404), no decision, no wake intent. **ROUND 68:** the row's refusal is now RECORDED at the host entry through the product's own point (`host.ts` -> `createAlpha6RowRefusalHook` at the centre rule -> `createHostSurfaceRefusalPoint`): both live boots measured one `ADMISSION_ALPHA6_UNAVAILABLE` invocation-authority fact on `host.service` and a `REFUSED`/`not-started` settlement (`ADMITTED→REFUSED`) under the row's `centreStatePath`, while the same typed refusal and the same no-team-row boot outcome are unchanged. A row with no `centreStatePath` is still refused but unwritten (no durable directory). `ADM-116/117/118` carry the in-process shape. **ROUND 84 — THE FORMAL ROUTING IS IMPLEMENTED; the row is no longer unconditionally refused.** The pre-code determination (`ALPHA6-FORMAL-ROUTING.md`) found three missing pieces and **no `CORE_SEAM_BLOCKER`**: the routing AXIS (none is lawful and none is needed — a routing decision executes nothing, so no member I/O axis is invented for it); the WAKE (a bespoke `followup`/`steer` write is replaced by a governed DELIVERY: durable `team-review-wake-routed` intent → `SessionInputPort.submitAttributedInput` → `team-review-wake-delivered` confirmation, in the SAME TeamDomain ledger, with the SAME correlation token P6-T3 uses for `member.send`); the ENABLEMENT (`centre-config.ts#alpha6EnablementRefusal` admits a COHERENT row — authored v5 `reviewRouting.enabled`, non-empty `centreStatePath`, absolute `alpha6WakeIntentPath` — and refuses each incoherent one with its OWN typed piece code under the unchanged `ADMISSION_ALPHA6_UNAVAILABLE` prefix, so the recorded refusal still lands). The Officer's own `team_resolve_control` is admitted by the ONE centre on `team.control` under the OFFICER's binding, and the management plane never executes a tool during a wake. New arms: `ADM-141` (positive enablement + each piece refused AND recorded), `ADM-142` (officer route, nothing executed), `ADM-143` (intent + confirmation + machine attribution + zero executions), `ADM-144` (Officer's own call admitted under its binding), `ADM-146` (duplicate ⇒ ONE confirmation; unknown recipient ⇒ typed refusal, zero facts), plus `a6-pr4-review-wake-glue`, `a6-pr7-merged-wake-host` and `a6-root-wiring` (a PRODUCTION root boots a coherent Alpha.6 row). The refusal arms stay green (`ADM-34/85/99/116/117/118`; the D3 live `d3:alpha6` refusal). **Still NOT proven: a live host run of the ROUTED wake** — the D3 world's blueprint is v4 with a single worker member and no Officer/approval case, so it can express only the refusal side. **ROUND 87 measured the live answer (D4 probe, two agreeing DEV-LIVE boots):** a coherent v5 world with an Officer boots a real Team (`d4:enablement` PROVEN), the Officer comes up and ITS OWN call is admitted under ITS binding (`d4:officer-up` / `d4:officer-binding` PROVEN), and the refusal side is still PROVEN (`d4:refusal`) — but the routed wake is **REFUTED by the product itself**: the worker's authored `ask` lane mints a real durable `leader-approval` row with **no `approvalCaseId`/`legOrdinal`/`reviewAuthority`**, the product's own router answers `null` for it (`memberListCalls: 0`), zero `team-review-wake-*` facts and zero wake-intent files exist, the Officer is never woken, and the **Leader** receives the plain C1 ask. Two Team-side seams are missing and **neither is a `CORE_SEAM_BLOCKER`**: no live producer of a case-bearing ordinary ask (the only live leg producer is the envelope-mutation lane; the PA ask lane was deleted in `1617d5839`; `team_request_control`/the admission ask cannot carry a case), and no consumer for an `ask`-disposition call even after an allow (`IO_ASK_REQUIRES_APPROVAL`, "`resolveAskClassCall` has no production caller", BL-30). Claim stays MECHANISM | `D-BOOT-FEASIBILITY.md:629-643`; `dev/agent-workflow/evidence/d-boot-feasibility/d3/README.md`; **`dev/agent-workflow/evidence/d-boot-feasibility/d4/README.md`**; `dev/agent-workflow/evidence/ute-a1/ALPHA6-FORMAL-ROUTING.md`; `packages/runtime/test/vnext-admission.test.mjs`; `packages/runtime/src/plugin/vnext/review-wake-delivery.mjs` | a **live** routed review (an Officer approval case resolved through the mock model and the wake delivered at a boot); the live level remains the refusal shape (`CAPABILITY-MATRIX-C.md` C-alpha6), and round 87 shows the blocker is our own missing ask-case producer + BL-30, not an upstream seam |
-| **C7** | durable Wake intents + cold wake | **preserve** | MECHANISM, in-process only. `ADM-98` composes `createAlpha6RootWiring` directly, the ONE shared `createAlpha6RootRouter` takes a real `recipient` decision off a durable control row (Officer, `routeRole='officer'`), and the real `dispatchLatch` + `createFileWakeIntentDirectory` persist a row that a **fresh** reader sees naming exactly the routed reviewer | `packages/runtime/test/vnext-admission.test.mjs`; `packages/runtime/src/plugin/vnext/review-wake-delivery.mjs` | the same, reached at a **product entry**: ROUND 84 makes the wake a governed delivery and a coherent row BOOTS (`a6-root-wiring`, `a6-pr7-merged-wake-host`, `ADM-143`), so the machinery is now built at a real production root — what is still missing is a LIVE boot that carries an Officer approval case (§6.5) |
+| **C7** | durable Wake intents + cold wake | **preserve** | MECHANISM, in-process only. `ADM-98` composes `createAlpha6RootWiring` directly, the ONE shared `createAlpha6RootRouter` takes a real `recipient` decision off a durable control row (Officer, `routeRole='officer'`), and the real `dispatchLatch` + `createFileWakeIntentDirectory` persist a row that a **fresh** reader sees naming exactly the routed reviewer. **ROUND 87:** that in-process arm is still the ONLY place the intent is written from a routed case — on a real host the durable row the product actually mints carries no case, so `route()` returns `null` before any intent exists (`d4:routed-wake` REFUTED; `d4/runs/boot0{1,2}/route-probe.json`) | `packages/runtime/test/vnext-admission.test.mjs`; `packages/runtime/src/plugin/vnext/review-wake-delivery.mjs`; `dev/agent-workflow/evidence/d-boot-feasibility/d4/README.md` | the same, reached at a **product entry**: ROUND 84 makes the wake a governed delivery and a coherent row BOOTS (`a6-root-wiring`, `a6-pr7-merged-wake-host`, `ADM-143`), so the machinery is now built at a real production root — what is still missing is (i) a live producer of a CASE-bearing ordinary ask and (ii) a live boot that carries an Officer approval case (§6.5, §10 G1/G2) |
 | **C8** | Stop (sticky, durable, non-replaying) | **preserve** | MECHANISM + **DEV-LIVE PROVEN** (`d2:stop`, two boots). Stop is the host's own `exec.signal` — no second stop mechanism. `ADM-56…ADM-62` cover Stop before the body, while an ask is pending, after the approval and before the body, lifecycle close with a call in flight, and the product composition's own close. Live: `POST /api/session/cancel` → tool result `ADMISSION_STOPPED`, centre fact `refusalCode=ADMISSION_STOPPED`, settlement `REFUSED`/`dispatch=not-started` with **no** execution fact, never `UNKNOWN`; a second Member completed with zero stops. **ROUND 79 — the rc.5 PRE-DISPATCH case (B6):** rc.5 cancels a call before dispatch without entering the pipeline, so `tools/result` never fires and event-only observation recorded nothing. The centre now reads the host's own `ABORTED_BEFORE_DISPATCH` result at the executor completion boundary (`pre-dispatch-abort.mjs`; `batch.ts:271-280` → `index.ts:375-377`), writes the SAME canonical execution fact (`aborted`, `abortPhase:'pre-dispatch'`, product ExecutionId) through ONE ExecutionId-keyed dedupe map, records `Stop(pre-dispatch)` + `CANCELLED` when an admission record exists, and when none exists writes **no** settlement and REPORTS `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` (no fabrication: no fake allow, no fabricated `tools/result`). `SLICE-21`/`SLICE-30` GREEN on rc.5 AND rc.2 with unchanged assertions; `SLICE-37` pins the dedupe (both paths firing ⇒ one fact, zero settlement) | `packages/runtime/test/vnext-fs-slice.test.mjs` (SLICE-21/30/37); `packages/runtime/test/vnext-admission.test.mjs`; `D-BOOT-FEASIBILITY.md:483-493`; `dev/agent-workflow/evidence/d-boot-feasibility/d2/README.md`; `RC5-MIGRATION.md` §7 | Stop **under load** and a real Stop keypress; and the settlement-recheck cell, which is no longer open: the owner approved **Option A** in round 73 (`CONTRACT-CHANGE-REQUEST-settlement-recheck.md:51`; `ADM-119`: allow `gen-1` → durable deny `gen-2` → `REFUSED`/`not-started`). **Round 79 adds one:** the production `tools.execute` call site belongs to the host agent loop, so the pre-dispatch observer is exported and driven end to end in the slice composition but is NOT yet wired into a booted rc.5 member turn (`RC5-MIGRATION.md` §7.5) |
 | **C9** | remote entry (`s6-remote`, remote control surface) | **preserve** | **RESTORED as a GOVERNED MANAGEMENT CONTROL PLANE (round 74)** under owner ruling `docs/reviews/20261122-1536.txt` §3. The S6 plane is BUILT and INSTALLED on a centre-configured row; `POST /team-remote/team.create` mints a Team at runtime through `createAndStartTeam()` with the existing S6 Principal + TeamDomain/Control + creation/start gates. Commands are classified by ACTUAL EFFECT in ONE closed table (`s6-command-classification.ts`): control-plane reads/creation/management are served, and since round 83 `member.create` / `member.send` / `member.followup` are also served as the **`work-delivery`** class (`s6-command-classification.ts:125-130`) — a handover into the Member's own governed path that never executes a tool. Only the two ROOT commands whose effect is agent execution (`team.admitInitialWork`, `team.ensureRootLive`, `:111-112`) stay REFUSED with `ADMISSION_REMOTE_UNAVAILABLE` on `team.control` + durable fact + `REFUSED`/`not-started` settlement. `ADM-86` (rewritten) pins the closed table both ways, the no-default-allow rule, a served control read, a refused execution (zero ports), the durable shapes, and the unauthenticated principal refusal; E3 pins the real production root (`installed===true`, served read, five type-refused executions with facts). Live `d:remote-creation` (round 74, two boots): unauthenticated refused/mints no Team, `TEAM_REMOTE_FOREIGN_TEAM`, runtime create success, duplicate no second Team/no provider request. Live `d2:remote-delivery` (round 83, two boots, rc.2): `member.send` acknowledged with 0 admissions/0 executions at the acknowledgement, the delivered prompt then ran in the Member's own turn and its `allow` landed in the MEMBER's ledger ~113 ms later; unknown member, archived member, duplicate send (at-least-once, no operator-side execution), restore, and Stop during a delivered turn (`ADMISSION_STOPPED`) all measured on that row. LIMIT: **no live `member.create` / `member.followup`** (production-port + router-detach arms only, §9.5); per-DSH_HOME authenticated operator, NOT multi-user RBAC | `CAPABILITY-MATRIX-C.md` C-remote; `ESCALATION-centre-row-creation-entrance.md` RESOLUTION; `packages/runtime/test/vnext-admission.test.mjs` (`ADM-86`); `a3p4-pr4-production-entry-regression.test.ts` (E3); `D-BOOT-FEASIBILITY.md` §17 | a real-model drive through the remote entrance, and a user-level identity isolation claim (out of scope/not claimed) |
 | **C10** | MCP catalog + initial grant + live loss | **preserve** — "may land in C, but must never be enabled by default while unmanaged" (`06-CAPABILITY-CONTRACT.md:99`) | MECHANISM. `ADM-96` mounts the product's own real HTTP mini-MCP server through the **exact production call**, reads the tool off the model-visible surface, admits it on `net.mcp` with the **server** as locator, and the real body answers `pong:mounted`; `ADM-97` proves mounting ≠ permission, that a tool-level restriction narrows, and that a bare `mcp__` prefix is refused by name. `f15-mcp-live-loss` is green inside the 238-suite vitest population. Not enabled by default: the remote mount is `SKIPPED` on the centre row | `packages/runtime/test/vnext-admission.test.mjs`; `tests/checks/eb3-ute-migrated-suites.txt`; `D-BOOT-FEASIBILITY.md:171-222` | a **live mount at a host boot** (unknown at D: the row's remote mount is skipped) and a live server-loss observation. Also: the centre is **not mount-aware**, so a well-formed name for a never-mounted server is decided on the network axis alone (`ADM-97` step 5) |
@@ -199,12 +208,15 @@ Status vocabulary — these are not interchangeable:
 
 **Rows that are not proven, at a glance** (this is the honest subset a reviewer should carry forward):
 **C1/C4/C5/C6/C7/C10/C11/C15/C16** are MECHANISM at best (C6/C7's formal routing is implemented; their
-remaining gap is a LIVE routed wake, not a missing mechanism — §6.5; C11's host
-`sessionProjections.stateOf` half needs a live boot); **C2/C3/C8/C9/C12/C13/C14b** carry DEV-LIVE evidence
-(C2 create only, C9 the delivery boundary, C13 fs/subprocess only — **not** web) but are still not
-PRODUCT-PROVEN; **C13's PTC arm is REFUSED-BY-DESIGN** with a `CORE_SEAM_BLOCKER`. **C14/C17/C18 are
-DROPPED-AS-RULED** and are not coverage.
-**No cell above says PRODUCT-PROVEN, and none may be upgraded by narration.**
+remaining gap is a LIVE routed wake, not a missing mechanism — §6.5 — and **round 87 measured that gap as
+two in-repo seams**, not a missing abstract piece: no case-bearing ordinary-ask producer and no BL-30 ask
+consumer; C5's grant/consume half is narrower still — a granted `ask` does not execute in production;
+C11's host `sessionProjections.stateOf` half needs a live boot); **C2/C3/C8/C9/C12/C13/C14b** carry
+DEV-LIVE evidence (C2 create only, C9 the delivery boundary, C13 fs/subprocess only — **not** web) but are
+still not PRODUCT-PROVEN; **C13's PTC arm is REFUSED-BY-DESIGN** with a `CORE_SEAM_BLOCKER`. **C14/C17/C18
+are DROPPED-AS-RULED** and are not coverage.
+**No cell above says PRODUCT-PROVEN, and none may be upgraded by narration.** The complete open-gap list,
+with the owner decision each needs, is **§10**.
 
 ### 2.3 C14's dropped implementations, and where their safety invariants live now
 
@@ -394,10 +406,11 @@ allProven` is per driver).
 
 All eight commands were run fresh at this HEAD in this worktree. Pasted verbatim.
 
-> **Round 83 note.** The pastes below are the round-74/76 measurement and are kept as the historical
-> record. Round 83 re-ran every required gate at its own HEAD; the fresh outputs are in **§9** and are
-> the ones that apply to this candidate now (dispatch leg 206/204+2, catalog 785/38, closure/assets/docs
-> unchanged, placements 29, ci-required 10/0, bound vitest 216, migrated population 238, UTE G1 89/89).
+> **Round 89 note.** The pastes in §4 are the round-74/76 measurement and are kept as the historical
+> record. Every required gate was re-run at `97d7d7c8d`; the fresh outputs are in **§9.4** and are the ones
+> that apply to this candidate now (dispatch 211/209/0/2, catalog 785 collected / 38 uncollected / 14
+> excluded, closure/assets/docs unchanged, 30 placements, ci-required 10/0, bound vitest 216, migrated
+> population 238, UTE G1 89/89, `ci-pr-gate --full` 10/10).
 
 ### 4.1 `dispatch-tests --run --leg ute-vnext-a1`
 
@@ -679,7 +692,7 @@ call names, not every file a scan opens (`CAPABILITY-MATRIX-C.md:295-299`;
 `CONTRACT-CHANGE-REQUEST-search-face.md`). *Would prove it:* shape A — a search face with a subtree
 resource in the closed vocabulary, plus a durable deny that reaches it.
 
-### 6.5 Alpha.6: the refusal is recorded (round 68) AND the routed path is now implemented (round 84) — the LIVE routed wake is still unproven
+### 6.5 Alpha.6: the refusal is recorded (round 68), the routed path is implemented (round 84), and the LIVE routed wake is REFUTED (round 87)
 
 **Round 68** closed the recorded-fact gap at the host entry: `host.ts` runs
 `createAlpha6RowRefusalHook` (`vnext/row-refusal-entry.ts`) at the config rule, before the unchanged typed
@@ -875,8 +888,9 @@ evidenced; neither is conflated with the other.
 
 ### 6.14 Other measured-or-missing coverage
 
-**Round 86 audit: the still-open register is stated here in one place, so no open item is discoverable only
-by reading a cell.** The twelve items are: (1) the root-work async seam (`team.admitInitialWork` /
+**Still-open register (round 89: re-issued as §10, which is the authoritative list; this paragraph keeps the
+round-86 numbering so older citations still resolve).** The **fourteen** items are: (1) the root-work async
+seam (`team.admitInitialWork` /
 `team.ensureRootLive` refused; no enqueue-and-acknowledge seam exists); (2) no live `member.create` /
 `member.followup` (only `member.send` was driven); (3) PTC's worker OS-profile seam
 (`CORE_SEAM_BLOCKER`); (4) Alpha.6's **live routed wake** (the formal routing is implemented and the
@@ -887,8 +901,14 @@ operator is a **per-DSH_HOME authenticated human, not RBAC**, with no user-level
 **pre-dispatch Stop observer is not production-wired** (`RC5-MIGRATION.md:492-504`); (9) the realm-less
 admission ruling (code refuses today; the ruling decides the final answer); (10) search-face shape A (the
 durable overlay cannot deny a search); (11) the scripted mock model stands in for a real model;
-(12) the census population counts differ from the published baseline (identity set identical).
-`CANDIDATE-AUDIT.md` §6 carries the same register with what closes each one.
+(12) the census population counts differ from the published baseline (identity set identical);
+**(13, round 87) no live producer of a case-bearing ordinary ask** — the only live leg producer
+`requestApprovalLeg` serves the envelope-mutation lane, so every durable ordinary ask is case-less and
+`alpha6/root-router.ts:209` returns `null` (`d4:routed-wake` REFUTED); **(14, round 88) no consumer for an
+`ask`-disposition call (BL-30)** — `resolveAskClassCall` has no production caller and cannot be wired
+without an invariant/owner decision, so a granted `ask` still does not execute.
+`CANDIDATE-AUDIT.md` §6 carries the round-86 register with what closes each one; **§10 below supersedes it
+for the current HEAD.**
 
 - **No Stop under load, no revocation under load, no multi-agent load beyond two Members.** `d2:stop` is a
   timing race by nature; it reproduced in both boots, but two agreeing boots is not load.
@@ -971,7 +991,10 @@ rc.5" claim could be made for those three operations.
    the four contract directions, widening measured and refused), `d2:stop`,
    `d3:persistent-subprocess` (round 76: a persistent, OS-confined shell across two turns),
    `d3:crash-cold-recovery`, `d3:work-delivery`, `d3:alpha6` (as the typed-refusal shape). The P1–P5 obligations each have a green
-   assertion, a negative control, and a live carrier (§3).
+   assertion, a negative control, and a live carrier (§3). **Round 87 adds four more PROVEN live probe
+   judges** — `d4:enablement`, `d4:officer-up`, `d4:officer-binding`, `d4:refusal` — over a coherent v5
+   world, and **one REFUTED** (`d4:routed-wake`). The D4 probe is a blocker measurement, not a driver
+   acceptance; it upgrades no row and its REFUTED judge is carried in §6.5/§10, not hidden.
 3. **It is NOT a completed product acceptance**, and the refuted items are named rather than rounded up:
    - **`d3:persistent-subprocess` is no longer refuted (round 76).** The governed preset mounts the
      persistent shell beside the one-shot baseline, the world declares the execution authorization, and
@@ -982,7 +1005,12 @@ rc.5" claim could be made for those three operations.
    - **Runtime team creation is RESOLVED, not a gap** (round 74): the governed management plane is live
      and `d:remote-creation` is PROVEN on two boots (§6.2). The remaining limit is scope, not existence:
      per-DSH_HOME operator, not RBAC. This moves no C row to PRODUCT-PROVEN (the model is still a mock).
-   - **Alpha.6 is unreachable at a host entry**, and its routed path is unproven there (§6.5).
+   - **Alpha.6's ENABLEMENT is no longer the gap; the ROUTED WAKE is REFUTED live (round 87).** A
+     coherent v5 row boots, the Officer is up and its own calls are admitted under its own binding — but
+     the product's own durable ordinary ask carries no case, `alpha6/root-router.ts:209` returns `null`,
+     and the Leader receives the plain C1 ask (`d4:routed-wake` REFUTED). The blocker is two Team-side
+     seams, **not** an upstream seam (§6.5, §10 G1/G2) — and the second one means **a granted `ask`
+     still does not execute in production** (BL-30).
    - **The search face is lane-only governance** — a durable overlay rule cannot deny it (§6.4).
    - **No row is PRODUCT-PROVEN**, and the model is a **scripted mock** (§6.1, §6.7).
    - **C11 (state projections)** has mechanism arms for its Team-owned projection (`ADM-107`…`ADM-109`,
@@ -1021,11 +1049,11 @@ A box a reviewer can tick against this HEAD. Every line names the check and wher
 
 | # | check | state | where to verify |
 | --- | --- | --- | --- |
-| 1 | **Branch and base** | `vnext/a1-cut`, measurement commit `c29da52d31ba52088eb58622b4858803031d060d` (+ this docs-only audit's commit), base `a19d1df01` (frozen A0, PR #821, `master`) | `git rev-parse HEAD`; §1 |
+| 1 | **Branch and base** | `vnext/a1-cut`, measurement commit `97d7d7c8d1bb0410dac9dedac77dee97143851bf` (round 89), base `a19d1df01` (frozen A0, PR #821, `master`) | `git rev-parse HEAD`; §1 |
 | 2 | **No auto-merge** | PR #822 is **draft**, base **`master`**, state **OPEN**; the engine may sync the body but must never mark it ready or merge it. **Merging is the OWNER's act** — not the engine's, not this branch's | `gh pr view 822 --json isDraft,baseRefName,state` → `{"baseRefName":"master","isDraft":true,"state":"OPEN"}` |
-| 3 | **Gates green (local)** | every required command passes at this HEAD (dispatch 211/209/0/2; catalog 785 collected / 38 uncollected / 14 excluded; closure four zeros with `references=3`; assets 37/180/69,512; docs-sync 0 findings; 30 placements; CI-required 10/0; CI-security bound vitest 216; migrated layer 238/238; `ci-pr-gate --full --census-captures 2` 10/10; UTE G1 89/89). **Hosted `ci-required` is RED at this HEAD solely because `ci-census` is skipped on a draft PR** | §4.1–§4.8, §9.4; `round86-ci-pr-gate.log` |
-| 4 | **Refuted / unreachable items listed** | `d3:persistent-subprocess` (round 76: PROVEN in two agreeing DEV-LIVE boots — a persistent OS-confined shell across two turns; its `ask`/`deny` arms and a gated status remain unproven), Alpha.6 routed path unreachable, search face lane-only, provider channel unreachable on the LIVE path (in-process only), widening beyond the ceiling impossible by design. **Runtime creation is no longer on this list** (round 74 RESOLVED, `d:remote-creation` PROVEN) | §3.2, §6.2–§6.5, §6.6, §6.13, §7 |
-| 5 | **Owner decisions listed** | **two remain open rulings** (realm-less admission; search-face shape A); the other four are resolved or implemented (process lane: `bash`/PTY live, PTC seam-blocked; runtime creation; settlement recheck; Alpha.6 formal routing — live wake still unproven) | `OWNER-DECISIONS.md` (round-86 correction block), §9.5 |
+| 3 | **Gates green (local)** | every required command passes at this HEAD (dispatch 211/209/0/2; catalog 785 collected / 38 uncollected / 14 excluded; closure four zeros with `references=3`; assets 37/180/69,512; docs-sync 0 findings; 30 placements; CI-required 10/0; CI-security bound vitest 216; migrated layer 238/238; `ci-pr-gate --full --census-captures 2` 10/10; UTE G1 89/89). **Hosted is NOT all-green at this HEAD: `ci-integration` FAILED and `ci-census` was skipped; `ci-required` is red for both reasons** (§9.4, §10 G9) | §4.1–§4.8, §9.4; `round86-ci-pr-gate.log` (round-86 block) and the §9.4 block (round 89) |
+| 4 | **Refuted / unreachable items listed** | `d3:persistent-subprocess` (round 76: PROVEN in two agreeing DEV-LIVE boots — a persistent OS-confined shell across two turns; its `ask`/`deny` arms and a gated status remain unproven), **`d4:routed-wake` REFUTED (round 87)** with the two in-repo seams named, search face lane-only, provider channel unreachable on the LIVE path (in-process only), widening beyond the ceiling impossible by design. **Runtime creation is no longer on this list** (round 74 RESOLVED, `d:remote-creation` PROVEN) | §3.2, §6.2–§6.5, §6.6, §6.13, §7, §10 |
+| 5 | **Owner decisions listed** | **two remain open rulings** (realm-less admission; search-face shape A), the PTC upstream seam, **plus four rulings the two round-87/88 seams need** (one Alpha.6 ask-producer decision; three BL-30 routes: guarded coupling, an OS-plane decision read port, or accepting the refusal). The other four older items are resolved or implemented (process lane: `bash`/PTY live, PTC seam-blocked; runtime creation; settlement recheck; Alpha.6 formal routing — live routed wake REFUTED) | `OWNER-DECISIONS.md` (round-86 correction block + round-89 addendum), §9.5, §10 |
 | 6 | **Host untouched** | pinned host `639ed015397290b3745d163aafe02ffee4aa3f84`, porcelain empty; CORE PATCH BUDGET = 0 with no upstream patch | §5.1–§5.3 |
 | 7 | **No PRODUCT-PROVEN row** | by design at this stage: `DEV-LIVE` boots are not gates | §2.1, §6.1 |
 
@@ -1119,7 +1147,12 @@ $ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
   DISCOVERED_AND_COLLECTED 733
   EXCLUDED_WITH_REASON     14
   UNCOLLECTED              38
+  by runner: node=146 none=7 vitest=632
 DSH-TEST-CATALOG tests=785 digest=sha256:da8a452d65130a3a7f62ef90b549a5289909e689e1ff619c4b3e0c45d5f5ed32 refused=0 findings=0
+
+$ node scripts/docs-sync.mjs --check
+docs:sync --check: docs=193 notes=4 plans=152(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof
 
 $ node scripts/ute-cut-closure.mjs --check
 UTE-CUT-CLOSURE pass deleted=148 references=3 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 retiredSurfaces=12 placements=self findings=0
@@ -1151,14 +1184,23 @@ $ node --test --test-force-exit --test-timeout=480000 --test-reporter=spec \
 ℹ fail 0
 ```
 
-`docs-sync --check` (0 findings), `ci-pr-gate --full --census-captures 2` (**PASS 10/10**, 274.7 s, census 2
-captures with identical identity sets), the PR settlement gate (green after the round-86 comment) and the
-hosted verdicts are recorded in the **round-86** settlement comment on PR #822 (the comment is the living
-record). Hosted at `c29da52d3`: `pr-gate`, `ci-fast`, `ci-integration`, `ci-security`, `ci-product`,
-`synthesize-merge-tree`, `candidate-protection` **success**; `ci-census` **skipped (draft)**;
-`ci-required` **failure — sole cause `ci-census:skipped`**; `pr-settlement-gate` failure until the
-round-86 comment. That hosted red is the draft's state, not a product red; only the owner marking the PR
-ready runs the census.
+`ci-pr-gate --full --census-captures 2` (**PASS 10/10**, 275.7 s at `97d7d7c8d` (an earlier same-HEAD run measured 285.5 s; the verdict was identical); 2 captures, identical
+identity sets, captured **599 files / 7,416 lines** vs the baseline-declared 626 / 7,936 — the counts moved
+by the round-88 arms, the identity set did not). The PR settlement gate and the hosted verdicts are
+recorded in the **round-89** settlement comment on PR #822 (the comment is the living record).
+
+**Hosted at `97d7d7c8d` (queried this round; this supersedes the `c29da52d3` set pasted in round 86):**
+`pr-gate`, `ci-fast`, `ci-security`, `ci-product`, `synthesize-merge-tree`, `candidate-protection`
+**success**; `ci-census` **skipped (draft)**; **`ci-integration` FAILURE** — leg `tinf-instruments`,
+`EB3-REQUIRED` grading `fail layers=6 green=4 nongreen=ci-integration:failure,ci-census:skipped` — and
+`ci-required` / `ci-required-deferred` failure for exactly those two non-green layers;
+`pr-settlement-gate` failure until the round-89 comment. **The `ci-integration` red is not claimed as
+"solely the census skip" any more.** Its job log (run `45136105108`, job `137562782742`) names **no
+failing assertion**: the leg's output ends mid-line at `D17` with no `DSH-TEST-DISPATCH` token, i.e. the
+node process aborted. The same leg is **GREEN locally** (51 suites, `exit=0`, 334.3 s,
+`sha256:6954daa63c627bfe8968b1221dadf58b2e6fcfdd8a562c39d3a7a51f6c49d556`), so the hosted red is **not
+reproduced** here; it is carried as open item **G9** in §10, not explained away.
+Hosted evidence: check-run API for `97d7d7c8d` (2026-11-23T08:07–08:10Z).
 
 ### 9.5 NOT proven in round 83
 
@@ -1172,3 +1214,99 @@ ready runs the census.
   timestamps, not from a real provider's scheduling.
 - No PRODUCT-PROVEN row moves: every live claim here is DEV-LIVE.
 
+### 9.6 What rounds 87–88 added to this section (and what they did not)
+
+- **Round 87 (D4 probe, two agreeing boots):** a coherent v5 Alpha.6 world **boosts**, the Officer is up
+  and its own binding admits its calls, and incoherent rows are refused by name — but the product's own
+  durable ordinary ask is **case-less**, so `alpha6/root-router.ts:209` returns `null` and
+  `d4:routed-wake` is **REFUTED**. Four judges PROVEN, one REFUTED; this adds no PRODUCT-PROVEN row.
+- **Round 88 (BL-30 boundary):** the ask-consumer wire-up was attempted and **STOPPED** with the
+  invariant measured over the real `ControlService`: the only production ask producer hard-codes
+  `executionCoupling:'inline'` (`admission-port.mjs:163`), an inline durable allow is never a guard token
+  (`control/service.ts:4155-4165`, `:4289`), and the one-shot grant is already spent at the host tool
+  guard (`admission-port.mjs:770-784`). Two new arms in the seam's own suite (25/25 pass); **no product
+  source was changed**. Consequence: a Member can ASK, be GRANTED, and still not run the granted call.
+- **Neither round re-ran a boot for `member.create`/`followup` or the rc.5 pre-dispatch observer**, so
+  those two gaps are unchanged (§10 G4/G5).
+
+
+---
+
+## 10. OPEN GAPS — the round-89 register (every still-open item, with the owner decision it needs)
+
+This section is the authoritative open-gap list at `97d7d7c8d`. It **adds** the two round-87/88 seams to
+the round-86 register (§6.14) and restates the older items so that no gap is discoverable only by reading
+a cell. Nothing here is a TODO the engine may close by itself; each row that says **owner decision** is a
+ruling, and the two seam rows are explicitly **not** upstream patches (`CORE PATCH BUDGET = 0`).
+
+| id | open gap (measured, not inferred) | evidence (`file:line` / artefact) | what closes it |
+| --- | --- | --- | --- |
+| **G1** | **Alpha.6 has no case-bearing ordinary-ask producer (Team-side seam, NOT upstream).** `requestApprovalLeg` is only called for `envelope-mutation`; the ordinary `ask` lane does not call it and is explicitly excluded by `isDelegableOrdinaryToolAsk`, which needs `kind:'leader-approval'`, `reviewAuthority:'leader'`, an `operationFingerprint`, an `authorityScope` and a non-null `operationTool`. So the only live ordinary ask is **case-less**, `root-router.ts:209` returns `null`, and no wake intent is ever written. `d4:routed-wake` is **REFUTED** on two agreeing boots. | `dev/agent-workflow/evidence/d-boot-feasibility/d4/README.md` §4.2; `d4/runs/boot0{1,2}/control-row-durable.json` (no `approvalCaseId`/`legOrdinal`), `route-probe.json` (`null`, 0 member reads); `packages/runtime/alpha6/root-router.ts:209`; `packages/runtime/review-router/policy.ts:68-75`; `packages/runtime/src/plugin/vnext/admission-port.mjs:158-165` | **Owner decision R1** (below) — commission the Alpha.6-aware case-forming ask lane, or accept that the routed wake stays unproven this generation |
+| **G2** | **BL-30: no production consumer for an `ask`-disposition call, and it cannot be wired without an invariant change.** The only production ask producer hard-codes `executionCoupling:'inline'`; an inline durable allow is never a guard token (`guardOperation` `no-request`); the one-shot grant is already spent at the host tool guard before the Provider plane runs; and `resolveAskClassCall` has no production caller, so the confined provider refuses `IO_ASK_REQUIRES_APPROVAL`. **Consequence: a Member can ASK, be GRANTED, and still not run the granted call in production.** | `dev/agent-workflow/evidence/bl-30-ask-consumer/README.md` §1–§3; `packages/runtime/src/plugin/vnext/admission-port.mjs:76-79`, `:163`, `:770-784`; `packages/runtime/control/service.ts:4155-4165`, `:4289-4291`; `packages/runtime/member-io-policy/src/provider-capabilities.ts:196-210`, `:315`; `d4/runs/boot01/wake-measurement.json#workerWrite.result`; measured arms `packages/runtime/test/a5sf-approval-takeover.test.ts` (25/25) | **Owner decision R2/R3/R4** (below) |
+| **G3** | **PTC (`run_code`) is refused with `CORE_SEAM_BLOCKER` on the worker's OS profile.** Three of its four parts hold (nested calls, Control escalation, Stop); part (a) — the worker's OS confinement is not the member's compiled profile — needs a per-execution policy seam upstream, which this repo may not patch. | `PTC-FOUR-PART-FINDING.md`; `packages/runtime/src/plugin/vnext/admission.ts:421-423`; report §6.3 | upstream/owner acceptance of the `CORE_SEAM_BLOCKER` shape — not product work here |
+| **G4** | **Two S6 root-work commands stay refused** on the management plane: `team.admitInitialWork`, `team.ensureRootLive`. No async enqueue-and-acknowledge root-work seam exists, and none was invented. | `packages/runtime/src/plugin/s6-command-classification.ts:111-112`; report §9.5; `d3:work-delivery` (landed=0 for root) | a new governed root-work delivery seam (product work) or an explicit owner ruling to keep them out of scope |
+| **G5** | **The rc.5 pre-dispatch-abort observer is not wired into a booted production turn.** The rc.5 additions have mechanism arms and no production pre-dispatch wiring, so a Stop between admission and dispatch is not live-evidenced on rc.5. | `RC5-MIGRATION.md:492-504`; `packages/runtime/src/plugin/vnext/pre-dispatch-abort.mjs` (present, mechanism-only) | production wiring plus a live boot; owner ruling not needed, product work needed |
+| **G6** | **No live evidence for `member.create` / `member.followup`.** Only `member.send` was driven through the real S6 API on two deterministic boots (plus production-port/router-detach arms for the other two). | report §9.3, §9.5; `dev/agent-workflow/evidence/d-boot-feasibility/d2/README.md` | extend the D2 driver's case set and re-boot (product instrumentation, no product semantic change) |
+| **G7** | **Five ENV-LIMITED census arms are never counted as PASS.** Their guarantee is implemented and proven on a host that offers the physical capability; this runner does not (`unshare`/`CLONE_NEWUSER`), so the only admissible evidence here is the product's fail-closed refusal. | `ENV-LIMITED-CAPABILITY-20261123.md`; `CAPABILITY-MATRIX-C.md` round-82 section (`DSH-TEST-DISPATCH-ENV-LIMITED count=5 proven=0 env_blocks=3 fail_closed_controls=2`) | a runner/host that provisions the namespaces; not a product change |
+| **G8** | **The operator is a per-DSH_HOME authenticated human, not RBAC.** Every management-plane claim is scoped to that operator; no multi-user isolation, no per-user authority, no tenant boundary is claimed. | `CAPABILITY-MATRIX-C.md` C-work row; report §6.2, §9.5 | owner decision on whether RBAC is in scope for a later stage |
+| **G9** | **The model is the shipped scripted mock** (`packages/tools/harness/mock-deepseek.mjs`) in every live boot. Timing claims are measured from durable fact timestamps, not from a real provider's scheduling; no real-model interleaving is proven. | report §6.7; `CAPABILITY-MATRIX-C.md` round-63 section | a real-model live round; no owner ruling needed, a measurement is needed |
+| **G10** | **Hosted CI is NOT all-green at `97d7d7c8d`.** `ci-integration` FAILED on leg `tinf-instruments`; its job log names no failing assertion and ends mid-line at `D17` with no `DSH-TEST-DISPATCH` token (abort), and the same leg is GREEN locally (51 suites, `exit=0`, 334.3 s). `ci-census` skipped (draft) and `ci-required` red for exactly `ci-integration:failure,ci-census:skipped`. | §9.4; run `45136105108`, jobs `137562782742` (integration) / `137563665337` (required); local `tinf-instruments` log in the round-89 session | a hosted re-run that reproduces or clears the abort; the cause is **unidentified**, and this report does not claim it is the census skip |
+
+### 10.1 The four owner rulings the two new seams need
+
+Neither seam is a `CORE_SEAM_BLOCKER`, and neither can be closed by re-enabling an ungoverned plane. The
+four decisions are:
+
+1. **R1 — Alpha.6 ask producer (G1).** Commission the Alpha.6-aware ordinary-ask lane: the admission `ask`
+   path must open the durable request through `requestApprovalLeg` with `authorityScope`,
+   `operationFingerprint` and `requestedEffect`, i.e. make an ordinary tool ask a first-class Alpha.6 case.
+   *Cost:* a new admission ask shape; the current case-less `admission-ask` rows remain compatible.
+   *Alternative:* rule that the live routed wake is out of scope for this generation and keep
+   `d4:routed-wake` REFUTED as the disclosed state. Either way the report's level does not move.
+2. **R2 — BL-30 route (a): flip the production ask coupling to `guarded`.** One approval would then have
+   TWO one-shot paths (the binder grant and `guardOperation`'s `control-allow-consumed`) and a Stop would
+   stop abandoning the pending ask (`ADM-57`, the round-62 live Stop arm), because `inlineAbortCascade`
+   gates on `inline`. *Cost:* two authorities over one decision; a governance level change, stated openly.
+3. **R3 — BL-30 route (d): let the OS/Provider plane read the ONE decision the centre already enforced.**
+   The admission point publishes the resolved disposition it already writes into its `invocation-authority`
+   fact (`decision: allow`, `laneDecision: ask`), and the confined provider narrows its ask on that
+   decision only. *Cost:* a new cross-plane read port; the OS plane stops being an independent refusal and
+   becomes a reader of the centre's decision (an admission-duty shape change).
+4. **R4 — BL-30 status quo: keep the refusal.** Rule that an `ask`-disposition call does not execute in
+   this generation, and carry `IO_ASK_REQUIRES_APPROVAL` as the intended level. *Cost:* none to safety;
+   the capability stays at its honest "refused, no consumer" level, and BL-33's consumption half stays
+   blocked.
+
+Routes (b) (substitute a different `AskApprovalAuthority`) and (c) (mint a second guarded row) are **not**
+offered as decisions: the product's own contract refuses both (`approval-takeover.ts:63-68`; "one call
+site" / single consumer).
+
+---
+
+## 11. Corrections made in the round-89 pass
+
+**19 claims were corrected or re-measured** (the instruction was to fix the claim, never the evidence; no
+evidence file, test, skip or A0 artefact was edited). The worst five:
+
+1. **`d4:routed-wake` was carried as "unproven" while the round-87 evidence says REFUTED.** Corrected in
+   §2.2 C7, §6.14 (item 13), §7, §9.6 and §10 G1 — with the two named seams and the `root-router.ts:209`
+   reason.
+2. **The report implied a live grant could execute.** Round 88 measured that **a granted `ask` still cannot
+   execute in production** (inline coupling; grant spent at the host guard; no consumer). Corrected in §2.2
+   C5, §7 and §10 G2.
+3. **The scope block was 5 commits stale**: 205→**210** commits, 3,377→**3,476** files,
+   +241,087→**+249,967**, `2,548 A · 210 M`→**`2,646 A · 211 M`** (§1).
+4. **Hosted CI was described as "six layer jobs green; red solely because the census is skipped."** At this
+   HEAD `ci-integration` FAILED independently (`EB3-REQUIRED fail layers=6 green=4
+   nongreen=ci-integration:failure,ci-census:skipped`), and the failure is not reproduced locally.
+   Corrected in §9.4, §8 row 3 and §10 G10.
+5. **`ci-pr-gate` and the census numbers were stale** (274.7 s→**275.7 s**; two same-HEAD runs: 275.7 / 285.5; census 599f/**7,414**l→
+   **7,416**l from the round-88 arms; 10/10 unchanged, identity set unchanged) — §9.4.
+
+The other corrections (documentation-only; not every one is a claim-level change): §1.1 closure line gains
+`retiredSurfaces=12 placements=self`; §4's round-83 note no longer cites 206/204 and 29 placements; §4.2
+gains the `by runner` line and §4/§9.4 gain the docs-sync block; §2.2 C5/C7 consequence text; §6.14
+register renumbered 12→14 and pointed at §10; §7 adds the four round-87 PROVEN judges and one REFUTED;
+§8 rows 1/3/4/5 re-stated for this HEAD; §9.5/§9.6 split; PR body HEAD/gate/limits blocks (the PR body's
+own count is in its round-89 block); and the four
+owner-decision items in `OWNER-DECISIONS.md` now carry the round-89 addendum.

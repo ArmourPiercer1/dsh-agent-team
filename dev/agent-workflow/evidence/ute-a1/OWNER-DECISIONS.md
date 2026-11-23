@@ -27,6 +27,25 @@ history and the option analysis.
 
 ---
 
+## ROUND 89 ADDENDUM — four rulings the two new in-repo seams need
+
+Rounds 87/88 measured two seams that are **Team-side, not upstream** (`D-ACCEPTANCE-REPORT.md` §10
+G1/G2). They are not wiring bugs and not `CORE_SEAM_BLOCKER`s; each is a product/owner decision.
+
+| ruling | question | options (with cost) | evidence |
+| --- | --- | --- | --- |
+| **R1** | **Alpha.6 case-bearing ask producer** — should the ordinary `ask` lane open a durable Alpha.6 review case? | **Yes:** make the admission ask call `requestApprovalLeg` with `authorityScope`/`operationFingerprint`/`requestedEffect` (new ask shape; routed wake becomes reachable). **No:** accept `d4:routed-wake` REFUTED for this generation (level unchanged, limitation disclosed) | `d-boot-feasibility/d4/README.md` §4.2; `alpha6/root-router.ts:209`; `review-router/policy.ts:68-75`; `admission-port.mjs:158-165` |
+| **R2** | **BL-30 route (a)** — flip the production ask coupling to `guarded`? | Gains a guard-consumable approval; **cost:** two one-shot paths over one decision, and the Stop cascade stops abandoning a pending ask (`ADM-57`, round-62 live Stop) | `bl-30-ask-consumer/README.md` §3; `control/service.ts:4155-4165`, `:4289`; `admission-port.mjs:76-79` |
+| **R3** | **BL-30 route (d)** — let the OS/Provider plane read the ONE decision the centre enforced? | Preserves inline coupling and Stop; **cost:** a new cross-plane read port — the OS plane becomes a reader of the centre's per-call decision (admission-duty shape change) | same; `provider-capabilities.ts:196-210`, `:315` |
+| **R4** | **BL-30 status quo** — keep the refusal for this generation? | No safety cost; an `ask`-disposition call does not execute, `IO_ASK_REQUIRES_APPROVAL` is the intended level, BL-33's consumption half stays blocked | same; measured live in `d4/runs/boot01/wake-measurement.json` |
+
+Routes (b) substitute a different `AskApprovalAuthority` and (c) mint a second guarded row are **not**
+options: the contract refuses both (`approval-takeover.ts:63-68`; one call site / single consumer).
+**Until one of R1–R4 is ruled, no row moves and no product source is changed.** The two older rulings
+(items 4 and 5 above) remain open and are unaffected by this addendum.
+
+---
+
 ## 1. Process lane — `bash`, PTY, `run_code` (C-subprocess / C-pty / C-ptc)
 
 **Measured (round 63, live host):** `bash` on a governed Member is refused `ADMISSION_AXIS_UNSUPPORTED`

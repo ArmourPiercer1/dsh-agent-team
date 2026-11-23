@@ -7,13 +7,13 @@ named in the same row or section.
 
 | field | value |
 | --- | --- |
-| **Head measured for every number below** | `c29da52d31ba52088eb58622b4858803031d060d` (round 86). This body's own docs-only commit sits on top and changes no code or gate result; the round-86 settlement comment names the final 40-hex head. |
+| **Head measured for every number below** | `97d7d7c8d1bb0410dac9dedac77dee97143851bf` (round 89; the round-86 audit head `c29da52d3` is 5 commits behind — rounds 87/88 landed product, test and evidence work) |
 | **Base** | `master @ a19d1df01` (frozen A0, PR #821) |
 | **PR state** | **DRAFT**, `state=OPEN`, never merged (`gh pr view 822 --json isDraft,state,headRefOid`) |
 | **Record class** | every live claim is `DEV-LIVE` (a real host boot, **not a gate**); no capability row is PRODUCT-PROVEN |
-| **Read first** | `dev/agent-workflow/evidence/ute-a1/D-ACCEPTANCE-REPORT.md` (the reviewable report) and `dev/agent-workflow/evidence/ute-a1/CANDIDATE-AUDIT.md` (the round-86 adversarial audit: corrections, capability table, fresh gate block, verdict) |
-| **How to review** | (1) read the audit's corrections table first — it lists every number the report used to get wrong; (2) re-run the gate block in the audit §8 (single commands, ~7 min with the census) and diff the verdict lines; (3) for any capability row, follow its `file:line`/evidence path and check it says what the row claims; (4) treat every `DEV-LIVE` row as unproven for acceptance purposes; (5) do **not** mark this PR ready or merge it — that is the owner's act. |
-| **Gate status at this head** | local: all required gates green, including `ci-pr-gate --full --census-captures 2` = **PASS 10/10**. Hosted: `pr-gate`, `ci-fast`, `ci-integration`, `ci-security`, `ci-product`, `synthesize-merge-tree`, `candidate-protection` green; `ci-census` **SKIPPED (draft)**; `ci-required` **RED solely because of that skip**; `pr-settlement-gate` red until the round-86 settlement comment. |
+| **Read first** | `dev/agent-workflow/evidence/ute-a1/D-ACCEPTANCE-REPORT.md` (the reviewable report, with **§10 = the authoritative open-gap list**) and `dev/agent-workflow/evidence/ute-a1/CANDIDATE-AUDIT.md` (the round-86 adversarial audit: corrections, capability table, fresh gate block, verdict) |
+| **How to review** | (1) read the audit's corrections table first — it lists every number the report used to get wrong; (2) re-run the gate block in §"Verification on this HEAD" (single commands, ~8 min with the census) and diff the verdict lines; (3) for any capability row, follow its `file:line`/evidence path and check it says what the row claims; (4) treat every `DEV-LIVE` row as unproven for acceptance purposes; (5) read `D-ACCEPTANCE-REPORT.md` §10 before forming a view — the two round-87/88 seams and the four rulings they need are there; (6) do **not** mark this PR ready or merge it — that is the owner's act. |
+| **Gate status at this head** | local: all required gates green, including `ci-pr-gate --full --census-captures 2` = **PASS 10/10** (275.7 s). Hosted: `pr-gate`, `ci-fast`, `ci-security`, `ci-product`, `synthesize-merge-tree`, `candidate-protection` green; **`ci-integration` FAILURE** on leg `tinf-instruments` (no named failing assertion; not reproduced locally — see "Open gaps" G10); `ci-census` **SKIPPED (draft)**; `ci-required` **RED for `ci-integration:failure,ci-census:skipped`**; `pr-settlement-gate` red until the round-89 settlement comment. |
 
 ## What this candidate is (one paragraph)
 
@@ -26,9 +26,12 @@ crash recovery that never replays, and a probe ladder over unmodified host tools
 19 contract rows — 15 team tools, member lifecycle, work delivery, a real MCP mount — and refuses PTC
 with its own code and a `CORE_SEAM_BLOCKER` on the worker OS profile; the S6 management plane is
 restored (round 74) and serves work delivery (round 83); Alpha.6's formal routing is implemented
-(round 84) while its live routed wake is unproven. **D** adds live `dsh web` evidence: **fourteen**
-judges PROVEN, the previously refuted three (`d3:persistent-subprocess`, `d2:revocation`,
-`d:member-read-denied`) now PROVEN, and the 405 creation entrance gone (runtime creation since round 74).
+(round 84) while its **live routed wake is REFUTED (round 87)** on two named Team-side seams, and the
+`ask`-disposition execution path has **no production consumer (BL-30, round 88)**. **D** adds live
+`dsh web` evidence: **fourteen** judges PROVEN, the previously refuted three (`d3:persistent-subprocess`,
+`d2:revocation`, `d:member-read-denied`) now PROVEN, four further round-87 probe judges PROVEN
+(enablement / Officer up / Officer binding / incoherent-row refusal) and one REFUTED (`d4:routed-wake`),
+and the 405 creation entrance gone (runtime creation since round 74).
 
 ## What this branch is
 
@@ -67,10 +70,10 @@ resolved and one open** (round 86 audit corrected this section, which still desc
   out-of-vocabulary face, the compiled lane judges it); **shape A, a search face the overlay can deny, is
   still open** — this one needs a ruling.
 
-## Owner decisions needed (two rulings; the rest is decided or blocked on an upstream seam)
+## Owner decisions needed (two older rulings + PTC's upstream seam + four rulings the new seams need)
 
-`dev/agent-workflow/evidence/ute-a1/OWNER-DECISIONS.md` carries a round-86 correction block; its historical
-text still describes states from rounds 59–68. Current state:
+`dev/agent-workflow/evidence/ute-a1/OWNER-DECISIONS.md` carries a round-86 correction block and a
+**round-89 addendum**; its historical text still describes states from rounds 59–68. Current state:
 
 1. **PTC (`run_code`) only** — `bash`/PTY are no longer refused (round 76, live-proven). PTC is refused
    with a `CORE_SEAM_BLOCKER` on the **worker's OS profile**; the owner may accept the refusal for this
@@ -79,8 +82,32 @@ text still describes states from rounds 59–68. Current state:
 3. **settlement recheck** — **answered** (Option A, round 73); no action.
 4. **realm-less admission** — one sentence: is `MEMBER_CENTRE_UNWIRED` the final answer?
 5. **search face** — one sentence: is lane-only governance final (shape B), or is shape A wanted?
-6. **Alpha.6** — formal routing **implemented** (round 84); the remaining gap is a **live routed wake**,
-   not a ruling (unless the owner wants to rule that a record-only approval fact is adjudication).
+6. **Alpha.6** — formal routing **implemented** (round 84); round 87 measured the remaining gap as a
+   **live routed wake that the product's own router REFUTES** on a case-less ordinary ask. Two Team-side
+   seams, not an upstream seam: no case-bearing ask producer (G1) and BL-30's missing ask consumer (G2).
+7. **R1** — commission the Alpha.6-aware case-forming ask lane (G1), or accept the routed wake stays
+   unproven this generation.
+8. **R2 / R3 / R4** — BL-30: flip the production ask to `guarded` (R2, loses Stop-cancels-the-ask),
+   give the OS plane a read port onto the centre's enforced decision (R3), or keep the refusal (R4).
+   **Until one is ruled, a Member can ASK, be GRANTED, and still not run the granted call.**
+
+## Open gaps at this HEAD (round 89) — the honest list, with owner decisions
+
+The authoritative version is `D-ACCEPTANCE-REPORT.md` **§10** (G1–G10 with `file:line` evidence). In
+short, none of these is closed, and none may be narrated closed:
+
+| gap | measured state | needs |
+| --- | --- | --- |
+| **G1 Alpha.6 case-bearing ask producer** (Team-side, NOT upstream) | `requestApprovalLeg` only serves `envelope-mutation`; the ordinary ask is case-less, so `alpha6/root-router.ts:209` returns `null` and `d4:routed-wake` is REFUTED on 2/2 agreeing boots | **R1** (owner) |
+| **G2 BL-30 ask consumer** (Team-side, NOT upstream) | production ask is `inline`; inline allow is never a guard token (`control/service.ts:4155-4165`, `:4289`); the grant is spent at the host guard (`admission-port.mjs:770-784`); `resolveAskClassCall` has no production caller, so `IO_ASK_REQUIRES_APPROVAL` (`provider-capabilities.ts:315`). **A Member can ASK, be GRANTED, and still not run the granted call.** Product source unchanged; test arms only (25/25) | **R2/R3/R4** (owner) |
+| **G3 PTC upstream seam** | `run_code` refused `CORE_SEAM_BLOCKER`; 3 of 4 parts hold, worker OS profile does not | accept or pursue upstream seam |
+| **G4 root-work commands** | `team.admitInitialWork` / `team.ensureRootLive` refused (`s6-command-classification.ts:111-112`); no async root-work seam | product work / scope ruling |
+| **G5 rc.5 pre-dispatch-abort wiring** | observer module present, not wired into a booted rc.5 production turn (`RC5-MIGRATION.md:492-504`) | product wiring + live boot |
+| **G6 `member.create` / `member.followup` live evidence** | only `member.send` was driven through the real S6 API over two boots | extend D2 cases and re-boot |
+| **G7 ENV-LIMITED census arms** | five arms, `count=5 proven=0 env_blocks=3 fail_closed_controls=2`; never PASS | a runner that provisions namespaces |
+| **G8 operator model** | per-DSH_HOME authenticated human, **not RBAC**; no user isolation claimed (C-work) | scope ruling |
+| **G9 scripted model** | every live boot used `packages/tools/harness/mock-deepseek.mjs`; timing from durable facts, not a real scheduler | a real-model live round |
+| **G10 hosted `ci-integration` red** | FAILURE at `97d7d7c8d` on leg `tinf-instruments`; log names no failing assertion, ends mid-line at D17 with no dispatch token; **same leg GREEN locally** (51 suites, exit 0, 334.3 s) | hosted re-run / cause identification — **not** claimed as the census skip |
 
 ## D acceptance report
 
@@ -89,9 +116,10 @@ The single reviewable document for this candidate is
 verbatim from `docs/plans/memo/ute-p0-20261121/06-CAPABILITY-CONTRACT.md`), the HEAD/scope facts, the
 P1–P5 ladder with its live judges, all eight required-CI lines, the host-authority statement, and the
 limits. Its verdict: **A1+B+C implemented with live D evidence for the listed items, not a completed
-product acceptance** — no PRODUCT-PROVEN row, PTC refused on a named upstream seam, two open owner
-rulings, and the known-open register in §6.14 are named there. (Round 86: the three judges this paragraph
-used to call REFUTED are PROVEN, and the 405 creation entrance was removed in round 74.)
+product acceptance** — no PRODUCT-PROVEN row, PTC refused on a named upstream seam, two older open owner
+rulings plus the four the round-87/88 seams need, and the complete open-gap register in **§10** (G1–G10).
+(Round 86: the three judges this paragraph used to call REFUTED are PROVEN, and the 405 creation entrance
+was removed in round 74. Round 89: `d4:routed-wake` is REFUTED and the ask/execution gap is measured.)
 
 ## The 15 migrated capability suites were first RUN, not assumed (rounds 30-32)
 
@@ -316,7 +344,9 @@ control row through the ONE policy; the wake is a governed **delivery** — `tea
 → `SessionInputPort.submitAttributedInput` → `team-review-wake-delivered` confirmation; the Officer's
 approval is `team_resolve_control` under the Officer's own binding). A coherent row is admitted; each
 incoherent piece is refused *and recorded* by its own typed piece code. Arms `ADM-141`…`ADM-146`. The
-**live routed wake** is still unproven (`ALPHA6-FORMAL-ROUTING.md`).
+**live routed wake** was **REFUTED in round 87** on two agreeing D4 boots — the product's durable ordinary
+ask carries no `approvalCaseId`/`legOrdinal`, so `alpha6/root-router.ts:209` returns `null`; see the
+round-87/89 blocks above and `D-ACCEPTANCE-REPORT.md` §6.5/§10 G1.
 
 ## D stage, first live acceptance: the Provider-OS boundary now holds on a real host (round 61)
 
@@ -384,37 +414,39 @@ in the product composition, not the mechanism — which is the useful part of th
 
 ## Verification on this HEAD
 
-Measured at `c29da52d31ba52088eb58622b4858803031d060d` (round 86; every command re-run fresh in this
-worktree, full transcripts in `CANDIDATE-AUDIT.md` §8 and
-`dev/agent-workflow/evidence/ute-a1/round86-*.log`). The audit's docs-only commit on top changes none of
-these results:
+Measured at `97d7d7c8d1bb0410dac9dedac77dee97143851bf` (round 89; every command re-run fresh in this
+worktree, full transcript in the round-89 session log; the round-86 audit's block is in
+`CANDIDATE-AUDIT.md` §8). Local gates are green; **hosted is not all-green** (see G10):
 
 | gate | result |
 | --- | --- |
 | `dispatch-tests --run --leg ute-vnext-a1` | `suites=7 files=7` · `tests=211 pass=209 fail=0 skipped=2` · `exit=0` · `set=sha256:edd4f1c4…` (the 2 disclosed skips are ADM-68 bash / ADM-69 run_code) |
-| `test-catalog --max-uncollected 41 --max-excluded 7` | `tests=785` · collected 733 · excluded 14 · **uncollected 38** (3 under the 41 ceiling) · `refused=0 findings=0` |
+| `test-catalog --max-uncollected 41 --max-excluded 7` | `tests=785` · collected 733 · excluded 14 · **uncollected 38** (3 under the 41 ceiling) · `refused=0 findings=0` · by runner `node=146 none=7 vitest=632` |
 | `ute-p0-assets --check` | `pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 cut=cut(148/148)` |
 | `ute-cut-closure --check` | `pass deleted=148 references=3 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 retiredSurfaces=12 placements=self findings=0` |
-| `ute-a1-window --check` | `pass branch=vnext/a1-cut red=0/0 cut=(148/52)` |
+| `ute-a1-window --check` | `pass branch=vnext/a1-cut red=0/0 cut=(148/52)` findings=0 |
 | `eb3-ci-required` | `pass workflows=10 findings=0` |
 | `docs-sync --check` | `docs=193 notes=4 plans=152(0 declaring) findings=0 blocking=0 contracts=20` |
 | `place-dist-glue` | `done (30 placement(s))` |
 | `eb3-security-run --layer ci-security` (bound vitest leg) | `verdict=PASS suites=14 files=14 describes=61 passed=216 failed=0` |
 | `eb3-security-run --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt` | `verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0` |
 | `node --test` (the UTE G1 nine-file argv) | `tests 89 pass 89 fail 0 skipped 0` |
-| `ci-pr-gate --full --census-captures 2` | **`DSH-CI-VERDICT pass pass=10 fail=0 skip=0 legs=10 refused=0`** (274.7 s; census 2 captures, identical identity sets, 599 files / 7,414 lines vs the published 626 / 7,936 — counts are context, the identity set is the verdict) |
+| `ci-pr-gate --full --census-captures 2` | **`DSH-CI-VERDICT pass pass=10 fail=0 skip=0 legs=10 refused=0`** (275.7 s; census 2 captures, identical identity sets, **599 files / 7,416 lines** vs the published 626 / 7,936 — counts are context, the identity set is the verdict) |
 | `eb3-ci-negative-controls` | `35/35 control(s) behaved as required` |
 
-`git rev-list --count a19d1df01..HEAD` = **205**; `git diff --shortstat a19d1df01..HEAD` = **3,377 files
-changed, +241,087 / −160,719** (2,548 A · 616 D · 210 M · 2 R094 · 1 R095; rename counts are a lower bound
+`git rev-list --count a19d1df01..HEAD` = **210**; `git diff --shortstat a19d1df01..HEAD` = **3,476 files
+changed, +249,967 / −160,719** (2,646 A · 616 D · 211 M · 2 R094 · 1 R095; rename counts are a lower bound
 because git skipped exhaustive rename detection). Entry files: `agent-bindings.mjs` **4,967** lines,
-`root.ts` **5,239** lines.
+`root.ts` **5,239** lines (unchanged by rounds 87/88).
 
-**Hosted verdicts at this head (`gh`):** `pr-gate`, `ci-fast`, `ci-integration`, `ci-security`,
-`ci-product`, `synthesize-merge-tree`, `candidate-protection` **success**; `ci-census` **skipped** (draft);
-`ci-required` **failure — sole cause `ci-census:skipped`**; `pr-settlement-gate` failure until the
-round-86 settlement comment. The hosted red is the draft's own state — `ci-required` treats a skip as not
-green by design — and only the owner marking the PR ready runs the census.
+**Hosted verdicts at `97d7d7c8d` (queried this round):** `pr-gate`, `ci-fast`, `ci-security`, `ci-product`,
+`synthesize-merge-tree`, `candidate-protection` **success**; `ci-census` **skipped** (draft);
+**`ci-integration` FAILURE** (`EB3-REQUIRED fail layers=6 green=4
+nongreen=ci-integration:failure,ci-census:skipped`); `ci-required` / `ci-required-deferred` **failure** for
+those two layers; `pr-settlement-gate` failure until the round-89 settlement comment. The `ci-integration`
+red is **not** explained by the census skip: its job log (run `45136105108`, job `137562782742`) names no
+failing assertion and ends mid-line at `D17` with no `DSH-TEST-DISPATCH` token, while the same leg is
+**GREEN locally** (51 suites, `exit=0`, 334.3 s). It is open item **G10**, not a green claim.
 
 ## Limits stated plainly (not claims)
 
@@ -426,16 +458,28 @@ green by design — and only the owner marking the PR ready runs the census.
 - `host.service` capabilities (Goal/Todo, Team Skill, Subagent) are bound and recorded, but their I/O
   is the **host's** — a skill file read by the host skill service is outside the member's fs ceiling.
   This is a limit, not a confinement claim.
-- **Ask is wired but no live approval is measured.** The product installs the grant binder and the
-  durable Control approval port when the row has a `controlServiceRef`
-  (`agent-bindings.mjs:692-710`); a row without one still refuses asks as `ADMISSION_ASK_UNWIRED`.
-  What is missing at D is a live leader-approves → one-shot-consumed observation: the only live ask is
-  `d2:stop`, which parks at the pending request and then stops it.
-- Local environment at this audit: `tsc` and vitest **are** available and ran (`ci-pr-gate`'s typecheck
-  and the bound vitest legs are green); no product boot was run for this audit — all live claims are the
-  earlier rounds' DEV-LIVE records. The pinned rc.2 host is built; the rc.5 host is present but not
-  installed (see `NEXT-HOST-RC5-FEASIBILITY.md`). (The round-70 sentence "no `tsc`, no vitest" is no longer
-  true of this worktree.)
+- **Ask is wired — and a granted ask still does not execute in production (BL-30, round 88).** The
+  product installs the grant binder and the durable Control approval port when the row has a
+  `controlServiceRef` (`agent-bindings.mjs:692-710`); a row without one refuses asks as
+  `ADMISSION_ASK_UNWIRED`. Round 88 measured the consumer boundary over the real `ControlService`: the
+  only production producer writes `executionCoupling:'inline'` (`admission-port.mjs:163`), an inline
+  allow is never a guard token (`control/service.ts:4155-4165`, `:4289-4291`), the one-shot grant is
+  already spent at the host tool guard (`admission-port.mjs:770-784`), and the confined provider then
+  refuses `IO_ASK_REQUIRES_APPROVAL` (`provider-capabilities.ts:315`). The live ask is still only
+  `d2:stop` (parks at the pending request, then stops it). **A Member can ASK, be GRANTED, and still not
+  run the granted call.**
+- **Alpha.6's routed wake is REFUTED live (round 87), not merely unproven.** A coherent v5 row boots and
+  the Officer is up, but the product's own durable ordinary ask carries no `approvalCaseId`/`legOrdinal`,
+  so `alpha6/root-router.ts:209` returns `null`, the Officer is never woken, and the Leader gets the plain
+  C1 ask. Two Team-side seams (G1/G2), never an upstream one.
+- **Hosted CI is not all-green at this HEAD** (G10): `ci-integration` failed on a leg that is green
+  locally, and `ci-required` is red for that failure plus the draft census skip. Nothing here claims
+  otherwise.
+- Local environment at round 89: `tsc` and vitest **are** available and ran (`ci-pr-gate`'s typecheck
+  and the bound vitest legs are green); no product boot was run for this documentation round — all live
+  claims are the earlier rounds' DEV-LIVE records (rounds 87/88 changed test/evidence only). The pinned
+  rc.2 host is built; the rc.5 host is present but not installed (see `NEXT-HOST-RC5-FEASIBILITY.md`).
+  (The round-70 sentence "no `tsc`, no vitest" is no longer true of this worktree.)
 - The two giant files are being decomposed by ownership, not by line count; `agent-bindings.mjs` is
   **4,967** lines and `root.ts` is **5,239** lines today (the round-70 body said 4,780 for
   `agent-bindings.mjs`), and the progress table is append-only in `DECOMPOSITION-PLAN.md`.
@@ -444,8 +488,9 @@ green by design — and only the owner marking the PR ready runs the census.
 
 **This PR is not merged and must not be auto-merged. No release, no deploy, no version bump, no tag.
 `master` and `stable` are untouched.** PR #822 is `DRAFT`; only the owner marks it ready and merges.
-No capability row is PRODUCT-PROVEN, PTC carries a `CORE_SEAM_BLOCKER`, and two owner rulings are open —
-so even after review this candidate is **not** a completed product acceptance.
+No capability row is PRODUCT-PROVEN, PTC carries a `CORE_SEAM_BLOCKER`, `d4:routed-wake` is REFUTED and
+BL-30 leaves a granted `ask` unable to execute, and six owner rulings are open (two older + four for the
+new seams) — so even after review this candidate is **not** a completed product acceptance.
 
 ## Round 83 — work DELIVERY on the management plane (the round-74 refusal narrowed)
 
@@ -480,3 +525,27 @@ is the scripted mock; the operator is a per-DSH_HOME authenticated human, not RB
 `d-boot-feasibility/d2/driver.log`); it was added after the rc.5 acceptance run, so the rc.5 column for
 that judge is **not recorded** — 13 of the 14 judges ran on rc.5. The report's §3.2 now says so.
 
+
+## Round 89 — documentation integrity: what the report now carries (and what it refuses to round up)
+
+This body and `D-ACCEPTANCE-REPORT.md` were re-measured at `97d7d7c8d` after rounds 87/88. Three things
+changed in substance, and none of them is an upgrade:
+
+1. **`d4:routed-wake` is REFUTED, with the blocker located in this repo, not upstream.** The round-87 D4
+   probe booted a coherent v5 Alpha.6 world twice (enablement, Officer up, Officer's own binding and the
+   incoherent-row refusal all PROVEN) and measured the product's own router answering `null` because the
+   durable ordinary ask carries no case identity (`alpha6/root-router.ts:209`). Two Team-side seams:
+   no case-bearing ask producer (G1), no BL-30 ask consumer (G2).
+2. **A Member can ASK, be GRANTED, and still not run the granted call.** Round 88 measured both couplings
+   over the real `ControlService` (guarded ⇒ guard allows + 1 consumption + `resolveAskClassCall` ok;
+   inline = production ⇒ `no-request` + `APPROVAL_DENIED` + 0 consumption rows) and changed **no product
+   source** (two new arms, 25/25). The wire-up is one of owner rulings R2/R3/R4.
+3. **Hosted CI is not all-green at this HEAD.** `ci-integration` failed on `tinf-instruments` while the
+   same leg is green locally; `ci-required` is red for that plus the draft census skip. Carried as G10
+   with the job ids, not as a green claim.
+
+**Corrections in this round: 19** (full list in `D-ACCEPTANCE-REPORT.md` §11; worst five: the refuted
+routed wake, the implied executable grant, the 5-commit-stale scope block, the false "green except the
+census skip" hosted claim, and the stale `ci-pr-gate`/census numbers). **Evidence unchanged**: no product
+source, test assertion, skip, negative control, A0 artefact or evidence file was edited to fit a claim;
+documentation-only commits.
