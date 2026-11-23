@@ -12,17 +12,20 @@
  *    not by a member binding, so there is no lane (and no binding) for the centre to judge;
  *  - Alpha.6 review routing decides WHO may review WHOM from the trusted review facts; it is a
  *    governance decision that precedes any tool call and has no I/O locator;
- *  - a PTC escalation asks the HOST sandbox to widen the process execution domain, and the surviving
- *    escalation row mints its own one-shot grants outside the centre; `run_code` also spawns a WORKER
- *    whose nested tool calls, escalation and Stop are not shown to pass this centre (round 75).
+ *  - a PTC escalation asks the HOST sandbox to widen the process execution domain; `run_code` also
+ *    spawns a WORKER whose OS profile is not the member's compiled one (round 85 four-part finding).
  *
  * ROUND 74 UPDATE (owner ruling `docs/reviews/20261122-1536.txt` §3). For S6 the unit of refusal
  * moved from the SURFACE to the COMMAND: the plane is the product's only runtime team-creation
  * entrance, so a centre row now builds it as a governed control plane and refuses only the commands
  * whose actual effect is agent execution (`s6-command-classification.ts`). The `remote` entry below
- * therefore describes the refused SUBSET. PTC is unchanged (round 75 re-justified it on the missing
- * worker/nested/escalation/Stop proof rather than on a missing process lane, because process execution
- * authority is now a real declaration).
+ * therefore describes the refused SUBSET. ROUND 85 re-measured PTC in the order the round named:
+ * nested calls DO re-enter the host tool pipeline on the member agent's scope, the escalation DOES go
+ * through ControlService (durable ask + one-shot grant), and Stop DOES abort the run controller, its
+ * nested dispatches and the Node child. The one part that fails is the WORKER's OS profile: PTC
+ * resolves its `SandboxExecutionPolicy` from the HOST session, not from the member's compiled
+ * read/write lanes, and skips confinement under `danger-full-access`. The refusal is narrowed to that
+ * part; see `dev/agent-workflow/evidence/ute-a1/PTC-FOUR-PART-FINDING.md`.
  *
  * ROUND 84 UPDATE. The Alpha.6 entry is no longer "the capability cannot be judged at all". What round
  * 55 measured — that the routing decision had no centre join and no durable record — is closed by
@@ -102,7 +105,14 @@ export const HOST_SURFACE_REFUSALS = Object.freeze({
     code: 'ADMISSION_PTC_UNAVAILABLE',
     axis: 'process.exec',
     subject: 'PTC escalation',
-    missing: 'allowing `run_code` requires proving its WORKER process, its NESTED tool calls, its escalation path and its Stop all pass this same centre; none of those four is demonstrated, and the surviving escalation row (createPtcEscalationRouter) mints its own one-shot grants outside the centre, so admitting it would be a second execution authority',
+    // ROUND 85 — the four parts were measured, not assumed: nested calls, Control escalation and Stop
+    // hold; the WORKER's OS profile does not. PTC resolves its policy from the HOST session
+    // (core/tools/src/index.ts:948-951 -> sandbox-policy:164-169), which carries only
+    // {mode, workspaceRoot}; the member's compiled read/write ruleset cannot be expressed in it, and
+    // `danger-full-access` skips confinement entirely (ptc-runtime-node/src/index.ts:224). The
+    // declared `confined-subprocess` executor is the realm face PTC never uses. `missing` stays under
+    // the settlement reason bound (512 chars) so the refusal is RECORDED, not merely thrown.
+    missing: 'the WORKER process: PTC resolves its OS policy from the HOST session (core/tools/src/index.ts:948-951), not the member\'s compiled read/write lanes, and skips confinement under danger-full-access (ptc-runtime-node/src/index.ts:224); the declared confined-subprocess executor is the realm face PTC never uses. Nested calls, Control escalation and Stop hold (PTC-FOUR-PART-FINDING.md); needed: a per-execution policy seam.',
   }),
 })
 

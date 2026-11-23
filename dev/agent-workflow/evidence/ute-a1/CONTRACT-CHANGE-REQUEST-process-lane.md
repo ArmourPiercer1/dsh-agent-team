@@ -78,7 +78,9 @@ policy. Likewise `shellClass` is an install-spec fact about the composition, not
   declares nothing is refused `ADMISSION_EXECUTION_UNAUTHORIZED` (measured live in D3 boot2).
 - `C-pty`: same authority; the governed PTY face additionally refuses an owner the host registry
   does not hold (`OWNER_NOT_LIVE`), which is proven in `SLICE-33`.
-- `C-ptc`: still **UNAVAILABLE BY RULING** on the missing four-part proof.
+- `C-ptc`: still **UNAVAILABLE**, now for ONE measured part (round 85): nested calls, Control escalation
+  and Stop hold; the WORKER's OS profile is the HOST session policy, not the member's compiled lanes
+  (`CORE_SEAM_BLOCKER`, per-execution policy seam — `PTC-FOUR-PART-FINDING.md`).
 - No product row can silently run a shell: absence is a typed refusal, the body never starts, and
   the settlement is `REFUSED/not-started`.
 

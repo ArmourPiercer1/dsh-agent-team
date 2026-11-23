@@ -33,9 +33,14 @@
  * native search tool, so a search call is admitted on the `fs.read` lane and never requires bash
  * execution authority.
  *
- * PTC (`run_code`) stays refused. Allowing `run_code` would be safe only if its worker, nested tool
- * calls, escalation and Stop all passed the same governance; that proof does not exist this round,
- * so the call is refused before the body with its own code rather than admitted on faith.
+ * PTC (`run_code`) stays refused, for ONE measured part (round 85): nested calls re-enter this
+ * pipeline on the member agent's scope, the escalation goes through ControlService with a durable ask
+ * and a one-shot grant, and Stop aborts the run controller and the Node child. The WORKER's OS
+ * profile is not the member's compiled one — PTC resolves its `SandboxExecutionPolicy` from the HOST
+ * session (only `{mode, workspaceRoot}`), so the member's read/write ruleset cannot be carried, and
+ * `danger-full-access` skips confinement. That is a `CORE_SEAM_BLOCKER`, so the call is refused
+ * before the body with its own code rather than admitted on faith. See
+ * `dev/agent-workflow/evidence/ute-a1/PTC-FOUR-PART-FINDING.md`.
  *
  * THE UNWIRED RULE, AS CODE. `admit` refuses when the binding is absent, when the tool has no
  * declared axis, or when the arguments carry no locator the axis can be judged on. A controlled
@@ -227,15 +232,25 @@ export function admit(input) {
     }
     // C7 (PTC escalation) — EXPLICITLY UNAVAILABLE, and named as itself. `run_code` executes on the
     // process axis; the escalation that would widen it is the surviving host row
-    // (`createPtcEscalationRouter`), whose one-shot grants are minted outside the centre. Refusing the
-    // TOOL before the body is what makes the escalation path unreachable: an escalation is only ever
-    // asked for a call that reached execution, and this call never does.
+    // (`createPtcEscalationRouter`). Refusing the TOOL before the body is what makes the escalation
+    // path unreachable: an escalation is only ever asked for a call that reached execution, and this
+    // call never does.
     //
-    // WHY STILL REFUSED AFTER PROCESS-AUTHORITY ROUND 75: proving `run_code` safe requires showing its
-    // WORKER process, every NESTED tool call it makes, its escalation path and its Stop all pass this
-    // same governance. None of those four is demonstrated this round, so allowing the tool because
-    // `run_code` carries an `authorization: allow` would be admitting a second, unproven execution
-    // authority. It keeps its own code so the missing proof stays individually identifiable.
+    // ROUND 85 — THE FOUR PARTS WERE MEASURED IN ORDER (evidence:
+    // dev/agent-workflow/evidence/ute-a1/PTC-FOUR-PART-FINDING.md). (b) Nested calls re-enter the
+    // registry scheduler on `scopeTarget(exec.agent)` and therefore this centre (ptc.ts:538-625,
+    // core/tools/index.ts:1504-1508). (c) `approveEscalation` asks through the `approval/request`
+    // waterfall, and the row opens a durable ControlService request + one-shot grant
+    // (escalation.ts:171-226, user-approval/index.ts:270-285, ptc-escalation-row.mjs:334-465).
+    // (d) Stop follows `exec.signal` -> `runController` -> the runtime signal -> `handle.terminate()`
+    // (ptc.ts:412-414/:553-554/:697-705, ptc-runtime-node:153-201). (a) FAILS: the worker is a real
+    // OS-confined Node child, but its policy is the HOST session's `{mode, workspaceRoot}`
+    // (core/tools/index.ts:948-951 -> sandbox-policy:164-169), not the member's compiled read/write
+    // ruleset; `SandboxExecutionPolicy` cannot express per-path lanes (sandbox/index.ts:40-53), and
+    // `danger-full-access` skips confinement entirely (ptc-runtime-node/index.ts:224). The declared
+    // `confined-subprocess` executor is the realm face PTC never uses, so admitting `run_code` would
+    // execute under a policy nobody authorized. A `CORE_SEAM_BLOCKER`: the tool keeps its own code so
+    // the single failing part stays individually identifiable.
     if (toolName === 'run_code') {
         return refuse(HOST_SURFACE_REFUSALS.ptc.code, `tool ${JSON.stringify(toolName)} is the PTC entry: ${HOST_SURFACE_REFUSALS.ptc.missing}`);
     }

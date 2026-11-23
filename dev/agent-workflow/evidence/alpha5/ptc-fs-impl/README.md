@@ -447,3 +447,27 @@ to \"workspace-write\" requires approval, but no approval channel is available",
 "outcome":"threw"} obsDelta=["a5ptc: member-revoked root=…"]`（真归档触发 dispose→行注销
 见证）+ `FACE2 remount=200/{"…glob…no Team Tool Binding…"} rmSeenByRow=false
 rmOutcome={"…ok":false…}`（residency 翻回真后 durable oracle 仍拒路由，零耐久请求零写）。
+
+## ROUND 85 STATUS (2026-11-23) — the escalation half is measured; the worker's OS profile is the blocker
+
+The escalation row documented above is now part of the round-85 four-part measurement for PTC
+(`run_code`) governance (`dev/agent-workflow/evidence/ute-a1/PTC-FOUR-PART-FINDING.md`):
+
+- **(c) escalation HOLDS.** `approveEscalation` (pinned `packages/sandbox/sandbox/src/escalation.ts:171-226`)
+  asks `ctx.approval.request` with `escalate sandbox to <mode>: …`; the approval service dispatches the
+  `approval/request` waterfall (`packages/interaction/user-approval/src/index.ts:270-285`); this row
+  opens a DURABLE ControlService request and awaits the decision (`requestControl` /
+  `awaitControlDecision`), mints exactly ONE one-shot grant on `decision === 'allow'`, and consumes it
+  once. Deny/cancel/unavailable mint nothing. The five negative controls remain where they are
+  (`packages/runtime/test/a5ptc-escalation-row.test.ts`).
+- **(b) nested calls HOLD** — the `run_code` binding re-enters the registry scheduler on the member
+  agent's scope, so nested calls meet the same `tools/pre-execute` admission point.
+- **(d) Stop HOLDS** — `exec.signal` aborts the run controller, every nested dispatch and the Node
+  child; the centre settles `CANCELLED`.
+- **(a) the WORKER's OS profile FAILS.** PTC resolves its `SandboxExecutionPolicy` from the HOST
+  session (`core/tools/src/index.ts:948-951` → `sandbox-policy/src/index.ts:164-169`), which carries
+  only `{mode, workspaceRoot}`; the member's compiled read/write ruleset cannot be expressed, and
+  `danger-full-access` skips confinement (`ptc-runtime-node/src/index.ts:224`). This is the
+  `CORE_SEAM_BLOCKER` that keeps `run_code` refused; the refusal text was narrowed to name exactly
+  this part. The row's grant is the escalation decision, not a centre execution grant — it must not be
+  described as one.

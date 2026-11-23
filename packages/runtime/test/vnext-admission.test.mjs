@@ -129,9 +129,11 @@ test('ADM-18 — the SUBPROCESS family is EXPLICITLY unavailable when no tool-le
     assert.equal(decision.kind, 'deny', `${toolName} must not be admitted while no execution authorization exists`)
     assert.equal(decision.code, 'ADMISSION_EXECUTION_UNAUTHORIZED')
   }
-  // C7 (round 55): `run_code` is the PTC entry and PTC is a DIFFERENT absence from "a shell with no
-  // execution authorization" — the escalation row would be a second execution authority even if the
-  // tool were authorized. It therefore carries its own code; collapsing the two made both unreviewable.
+  // C7 (round 55, re-measured round 85): `run_code` is the PTC entry and its refusal is a DIFFERENT
+  // absence from "a shell with no execution authorization". The failing part is the WORKER's OS
+  // profile (host session policy, not the member's compiled lanes), not a second escalation authority
+  // — nested calls, Control escalation and Stop were measured as passing the same governance. It
+  // therefore keeps its own code; collapsing the two made both unreviewable.
   const ptc = call('run_code', { command: 'ls' })
   assert.equal(ptc.kind, 'deny')
   assert.equal(ptc.code, 'ADMISSION_PTC_UNAVAILABLE')
@@ -3363,7 +3365,9 @@ test('ADM-87 — C-ptc is EXPLICITLY UNAVAILABLE at the ONE centre: run_code is 
   assert.equal(fact.refusalCode, 'ADMISSION_PTC_UNAVAILABLE')
   assert.equal(fact.axis, 'process.exec')
   assert.match(String(fact.reason), /PTC entry/u)
-  assert.match(String(fact.reason), /second execution authority/u, 'the reason names the escalation row, not just the missing lane')
+  assert.match(String(fact.reason), /WORKER process/u, 'the reason names the ONE measured failing part')
+  assert.match(String(fact.reason), /per-execution policy seam/u, 'the reason names the seam the worker needs')
+  assert.doesNotMatch(String(fact.reason), /second execution authority/u, 'the old four-part absence is narrowed: it was measured, not assumed')
 
   // SETTLEMENT: REFUSED, not-started, never UNKNOWN (the body provably never ran).
   const settled = world.store.read(world.executionIdOf(exec))

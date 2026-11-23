@@ -48,8 +48,10 @@
  *   tool-level EXECUTION authorization (`toolBindings[].authorization` + `execution.executionBoundary`)
  *   carried into the compiled per-tool answer. This world's compiled answer declares NO tool binding
  *   for `bash`, so the centre refuses `process.exec` with `ADMISSION_EXECUTION_UNAUTHORIZED` (and the
- *   PTC entry `run_code` with its own `ADMISSION_PTC_UNAVAILABLE`, which names the missing
- *   worker/nested/escalation/Stop proof). The positive control is no longer contract-blocked; it needs
+ *   PTC entry `run_code` with its own `ADMISSION_PTC_UNAVAILABLE`, narrowed in round 85 to the ONE
+ *   measured failing part: the worker's OS policy is the host session's, not the member's compiled
+ *   read/write lanes (nested calls, Control escalation and Stop were measured as passing the same
+ *   governance; see `PTC-FOUR-PART-FINDING.md`)). The positive control is no longer contract-blocked; it needs
  *   a world whose blueprint declares the binding (proven in `vnext-admission.test.mjs` ADM-125+).
  *   Fabricating that declaration here — or granting it from the write lane — would be a SECOND
  *   decision authority, which this round forbids. The NEGATIVE control for both rungs IS proven below
@@ -131,7 +133,7 @@ const LADDER = Object.freeze([
 /** The two rungs whose POSITIVE control the compiled answer cannot carry today (see the header). */
 const POSITIVE_BLOCKED = Object.freeze({
   bash: 'execution-authority-not-declared-in-this-world: the compiled answer carries no toolBindings[] entry for bash, so there is no tool-level authorization to admit it (round 75 admission now keys on that declaration, not on a path lane)',
-  run_code: 'ptc-proof-missing: run_code needs its worker, nested tool calls, escalation and Stop all shown to pass the same centre; that proof does not exist this round',
+  run_code: 'ptc-worker-os-profile: run_code\'s worker resolves its sandbox policy from the HOST session, not the member\'s compiled read/write lanes (round 85; nested calls, Control escalation and Stop measured as holding)',
 })
 
 // ---------------------------------------------------------------- host gate (declared, not guessed)
@@ -751,7 +753,7 @@ arm('ADM-68 — BASH positive: NOT RUN in this world (no compiled execution auth
   t.skip(`BASH positive control NOT RUN (${POSITIVE_BLOCKED.bash}); the positive control on a declared world is ADM-125, the negative IS proven (ADM-75)`)
 })
 
-arm('ADM-69 — RUN_CODE positive: NOT RUN (the PTC worker/nested/escalation/Stop proof does not exist) — disclosed, never a pass', (t) => {
+arm('ADM-69 — RUN_CODE positive: NOT RUN (the PTC worker\'s OS profile is the HOST session policy, not the member ceiling) — disclosed, never a pass', (t) => {
   const world = inLane
   assert.notEqual(world.definitionOf('run_code'), undefined, 'the host registry\'s reserved transport IS registered: the block is the missing PTC governance proof')
   assert.equal(world.binding.process, undefined)
@@ -885,7 +887,7 @@ arm('ADM-75 — BASH negative: with no compiled execution authorization, a shell
   negativeLog.push('bash')
 })
 
-arm('ADM-76 — RUN_CODE negative: PTC stays refused before the body with zero side effects, for its own missing proof', async () => {
+arm('ADM-76 — RUN_CODE negative: PTC stays refused before the body with zero side effects, for the worker\'s OS-profile seam', async () => {
   const world = outOfLane
   const callId = 'ladder-neg-run-code'
   const before = { spawn: world.spawnCalls(), confine: world.confineCalls() }
@@ -896,8 +898,9 @@ arm('ADM-76 — RUN_CODE negative: PTC stays refused before the body with zero s
   assert.equal(admission.toolName, 'run_code')
   assert.equal(admission.axis, 'process.exec')
   assert.equal(admission.decision, 'deny')
-  assert.equal(admission.refusalCode, 'ADMISSION_PTC_UNAVAILABLE', 'the PTC entry names its own absence (missing worker/nested/escalation/Stop proof)')
-  assert.match(String(admission.reason ?? ''), /second execution authority/u)
+  assert.equal(admission.refusalCode, 'ADMISSION_PTC_UNAVAILABLE', 'the PTC entry names its own absence (the worker\'s OS profile)')
+  assert.match(String(admission.reason ?? ''), /WORKER process/u, 'the reason names the ONE measured failing part')
+  assert.match(String(admission.reason ?? ''), /per-execution policy seam/u, 'the reason names the seam the worker needs')
   assert.equal(execution.outcome, 'admission-refusal')
   assert.equal(world.settlementOf(callId)?.state, 'REFUSED')
   assert.equal(world.spawnCalls(), before.spawn, 'a refused run_code must not start a worker or a process')

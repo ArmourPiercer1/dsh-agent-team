@@ -2211,9 +2211,11 @@ layer 1 = admission on declared read intents, layer 2 = the Landlock profile; th
 in-lane `grep` is admitted while the same binding's `bash` is DENIED, and that an out-of-lane `grep`
 is `LANE_DENY`.
 
-**PTC stays refused for its own, smaller reason** (`admission.ts:405-407`, `ADMISSION_PTC_UNAVAILABLE`):
-the missing proof is the WORKER process, its NESTED tool calls, its escalation path and its Stop all
-passing this same centre. The code and the reason text are distinct from the shell's.
+**PTC stays refused for one measured reason** (`admission.ts:405-407`, `ADMISSION_PTC_UNAVAILABLE`):
+round 85 measured nested calls, Control escalation and Stop as passing the same governance; the
+WORKER's OS profile is not — PTC resolves its policy from the HOST session, not the member's compiled
+read/write lanes, and `danger-full-access` skips confinement. The code and the reason text are
+distinct from the shell's; see the round-85 section below and `PTC-FOUR-PART-FINDING.md`.
 
 **Arms (population 238 vitest unchanged; the node leg went 188 → 194):**
 
@@ -2238,10 +2240,11 @@ The product-correct swap — `dsh-tool-bash-persistent` with `backendType: a5sf-
 `toolBindings[]` entry — changes the model-visible `bash` parameter surface for every governed
 deployment and is left to its own composition round. `crash` / `work` / `alpha6` stay PROVEN.
 
-**Not proven / not claimed:** a live persistent shell (REFUTED above); PTC's four-part governance
-proof; kernel enforcement from an in-process arm; any remote executor (`delegated-remote` is refused
-rather than run locally); a `authorization: deny` honoured for non-process tools in the realm
-projection (unchanged limitation).
+**Not proven / not claimed:** a live persistent shell (REFUTED above); a live governed PTC run (round
+85 measures the four parts structurally: three hold, the worker OS profile is blocked); kernel
+enforcement from an in-process arm; any remote executor (`delegated-remote` is refused rather than run
+locally); a `authorization: deny` honoured for non-process tools in the realm projection (unchanged
+limitation).
 
 ## Round 76 (governed persistent shell) — the last REFUTED judge is PROVEN
 
@@ -2767,3 +2770,38 @@ only the refusal side. No cell is upgraded to PRODUCT-PROVEN.
 | `ute-vnext-a1` node leg | 129 tests in `vnext-admission` | 134 (129 + 5 new arms) | +ADM-141/142/143/144/146 |
 | migrated vitest population | 238 | 238 (unchanged count) | `a6-pr4` gained two arms in place; `a6-pr7`/`a6-root-wiring` adapted to the governed delivery (stronger: recipient identity is now real) |
 | `test-catalog` | — | unchanged file population | no new test FILE; two arms added to an existing one |
+
+
+## Round 85 (2026-11-23) — PTC four-part re-measurement: three hold, the WORKER OS profile is a CORE_SEAM_BLOCKER
+
+**Task.** Round 75 refused `run_code` on a four-part missing proof (worker process, nested tool calls,
+escalation path, Stop). Round 85 re-opened it as a SEPARATE mechanism (review `20261122-2305 §4.3`),
+measured each part in order, and either implemented the governed path or narrowed the refusal to the
+part(s) that fail. The finding, with file:line evidence, is
+`dev/agent-workflow/evidence/ute-a1/PTC-FOUR-PART-FINDING.md` (written before any product edit).
+
+**Measured status.**
+
+| part | status | decisive evidence (pinned host) |
+| --- | --- | --- |
+| (a) worker process | **FAILS** | `core/tools/src/index.ts:948-951` resolves the PTC policy from `ctx.get('sandboxPolicy').resolve({session})`; `sandbox-policy/src/index.ts:164-169` returns only `{mode, session.header.cwd}`; `sandbox/src/index.ts:40-53` has no per-path rules; `ptc-runtime-node/src/index.ts:224` skips `confine` under `danger-full-access`. The declared `confined-subprocess` executor (the realm face) never runs this worker. |
+| (b) nested calls | **HOLDS** | `ptc.ts:538-625` builds `${callId}:ptc:${n}` with `agent: exec.agent` and calls the registry scheduler; `core/tools/src/index.ts:1504-1508` dispatches `tools/pre-execute` on `scopeTarget(exec.agent)`, i.e. the same agent context where `installAdmissionPoint` listens. |
+| (c) escalation | **HOLDS** | `escalation.ts:171-226` asks `ctx.approval.request` with `escalate sandbox to <mode>: …`; `user-approval/src/index.ts:270-285` runs the `approval/request` waterfall; `ptc-escalation-row.mjs:334-465` opens a ControlService durable request, awaits the decision, and mints/consumes exactly ONE one-shot grant (nothing on a non-allow). |
+| (d) Stop | **HOLDS** | `ptc.ts:412-414` maps `exec.signal` → `runController`; `:553-554`/`:697-705` pass that signal to nested calls and the runtime; `ptc-runtime-node:153-201` terminates the child; `execution-facts.mjs` maps `signal.aborted` to `aborted`, settlement `CANCELLED`. |
+
+**Decision.** Refuse; `CORE_SEAM_BLOCKER` on (a). The refusal text in `host-surface-refusal.mjs` /
+`admission.ts` is narrowed to the worker's OS profile and names the needed seam: a per-execution
+`SandboxExecutionPolicy` (per-path rules, not only `{mode, workspaceRoot}`) supplied by the governing
+layer, or execution through the declared `confined-subprocess` executor. `run_code` stays refused
+before the body with `ADMISSION_PTC_UNAVAILABLE`, fact `deny` on `process.exec`, settlement
+`REFUSED`/`not-started`, zero worker spawn/confine.
+
+**Arms / gates.** `ADM-87`/`ADM-88`/`ADM-76` were re-stated, not weakened, to the narrowed reason
+(`WORKER process` + `per-execution policy seam`; the old `second execution authority` phrase is gone).
+Vitest population stays 238; the node leg count is unchanged. Gate blocks for this HEAD are in the
+round-85 settlement comment on PR #822.
+
+**NOT proven.** No live governed `run_code` run, so no live nested-call/Stop arm; the durable facts do
+not yet project `rootCallId`/`parentCallId` (product work, not a host seam); the worker's OS
+enforcement was not measured on this kernel (the finding is about the WRONG policy, not about a broken
+sandbox). No upstream patch was attempted.

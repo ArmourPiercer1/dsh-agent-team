@@ -33,9 +33,14 @@
  * native search tool, so a search call is admitted on the `fs.read` lane and never requires bash
  * execution authority.
  *
- * PTC (`run_code`) stays refused. Allowing `run_code` would be safe only if its worker, nested tool
- * calls, escalation and Stop all passed the same governance; that proof does not exist this round,
- * so the call is refused before the body with its own code rather than admitted on faith.
+ * PTC (`run_code`) stays refused, for ONE measured part (round 85): nested calls re-enter this
+ * pipeline on the member agent's scope, the escalation goes through ControlService with a durable ask
+ * and a one-shot grant, and Stop aborts the run controller and the Node child. The WORKER's OS
+ * profile is not the member's compiled one — PTC resolves its `SandboxExecutionPolicy` from the HOST
+ * session (only `{mode, workspaceRoot}`), so the member's read/write ruleset cannot be carried, and
+ * `danger-full-access` skips confinement. That is a `CORE_SEAM_BLOCKER`, so the call is refused
+ * before the body with its own code rather than admitted on faith. See
+ * `dev/agent-workflow/evidence/ute-a1/PTC-FOUR-PART-FINDING.md`.
  *
  * THE UNWIRED RULE, AS CODE. `admit` refuses when the binding is absent, when the tool has no
  * declared axis, or when the arguments carry no locator the axis can be judged on. A controlled
