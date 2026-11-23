@@ -1,0 +1,13 @@
+{
+  "schema": "dist-placements/1",
+  "family": "round93-alpha6-ask-case",
+  "summary": "Round 93 (R1, owner ruling on review 20261124-0151 §1): one NEW module, packages/runtime/src/plugin/vnext/alpha6-ask-case.mjs, is imported by the glue (agent-bindings.mjs) at module scope and by admission-port.mjs's caller, so tsc never emits it and the shipped `files: [\"dist\"]` install face would fail with ERR_MODULE_NOT_FOUND the first time the glue loads - the GLUE-6 RED-A class recorded in 010/240/250/260. It must ride the byte-identical dist mirror.",
+  "note": "ORDER: agent-bindings.mjs (the glue) stays PLACEMENTS[0] in 010; this entry uses prefix 270 so it sorts after 260-ute-a1-decomposition and moves no existing entry. The file is NEW (not a move), so the gate D src-vs-dist drift comparison holds only after `place-dist-glue` copies it; every pre-existing entry is untouched.",
+  "placements": [
+    {
+      "src": "packages/runtime/src/plugin/vnext/alpha6-ask-case.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/alpha6-ask-case.mjs",
+      "note": "R1: the closed qualification rule (ALPHA6-ORDINARY-CASE-Q) + the frozen ApprovalCaseIdentityInput assembler that hands the EXISTING requestApprovalLeg its arguments. Imported by the glue at module load; it executes nothing and adds no axis."
+    }
+  ]
+}

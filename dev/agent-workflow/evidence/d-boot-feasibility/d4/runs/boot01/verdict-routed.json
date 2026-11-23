@@ -13,9 +13,9 @@
       "detail": "approvalCaseId=null legOrdinal=null reviewAuthority=null"
     },
     {
-      "id": "product-router-declines-the-durable-row",
-      "ok": true,
-      "detail": "createAlpha6RootRouter.route()=null memberListCalls=0 error=null"
+      "id": "product-router-selects-the-officer",
+      "ok": false,
+      "detail": "createAlpha6RootRouter.route()=null expectedOfficerInstanceId=\"inst-1crltnl0089j\" memberListCalls=0 error=null"
     },
     {
       "id": "wake-intent-fact-routed",
@@ -43,8 +43,8 @@
       "detail": "wake facts=0; no wake ⇒ no machine input to attribute"
     },
     {
-      "id": "leader-received-the-plain-c1-ask",
-      "ok": true,
+      "id": "no-plain-c1-ask-to-the-leader",
+      "ok": false,
       "detail": "leader notification=\"[team-control requestId=ctrl-1xxrzo21k29yc31rawhls0qn]\\nA Team member operation is waiting for Leader approval.\\n\\nrequestId: ctrl-1xxrzo21k29yc31rawhls0qn\\nrequester: inst-0ty67u70r99a\\nsubject: instance inst-0ty67u70r99a\\ntarget: inst-0ty67u70r99a\\ntool: write\\nsummary: admission ask: write (fs.write \\\"/ho\""
     },
     {
@@ -55,10 +55,12 @@
   ],
   "failing": [
     "row-carries-approval-case",
+    "product-router-selects-the-officer",
     "wake-intent-fact-routed",
     "wake-confirmed-delivered",
     "wake-intent-file-written",
     "officer-woken-in-its-session",
-    "wake-has-machine-attribution"
+    "wake-has-machine-attribution",
+    "no-plain-c1-ask-to-the-leader"
   ]
 }

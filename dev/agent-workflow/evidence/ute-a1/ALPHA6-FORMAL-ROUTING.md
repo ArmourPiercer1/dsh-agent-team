@@ -214,3 +214,127 @@ change is needed; both seams are our own product's tracked work. **Level stays M
 routed wake remains UNPROVEN, now by measurement. Duplicate-route (ONE wake) and
 Sticky-Stop-not-cleared-by-machine-input stay unreachable with it, and their in-process arms
 (`ADM-143`, `ADM-146`) are unchanged.
+
+---
+
+## ROUND 93 (2026-11-23) — R1: the case producer. The MISSING SEAM #1 above is closed, and the ruled rule is CLOSED
+
+Owner ruling (review `20261124-0151` §1, R1 = APPROVED): **Alpha.6 must create a real approval CASE
+for ordinary asks that qualify, so the EXISTING router can select the Officer and the wake can be
+delivered — with the EXISTING `requestApprovalLeg`, no new ask producer and no new UTE I/O axis.**
+
+### R1-A. THE CLOSED QUALIFICATION RULE `ALPHA6-ORDINARY-CASE-Q`
+
+Stated before the code, shipped as a frozen declaration (`ALPHA6_ORDINARY_CASE_RULE` in
+`packages/runtime/src/plugin/vnext/alpha6-ask-case.mjs`), and enforced by that module alone. An
+admission `ask` is converted into an Alpha.6 case **iff all five hold**:
+
+| id | clause | why it is the clause |
+| --- | --- | --- |
+| `enabled` | `config.alpha6ReviewRouting === true` on the row | the row's own opt-in; a row that asked for Alpha.6 already refused at boot if its composition were incoherent (`ADMISSION_ALPHA6_ROUTING_REQUIRED` / `_CENTRE_REQUIRED` / `_WAKE_INTENT_PATH_REQUIRED`) |
+| `Q1` | **DECLARED TOOL BINDING** — the executing tool has a compiled `toolBindings[]` entry on THIS Member, i.e. the Blueprint AUTHOR declared `<owner>/<name>` an operation for this Member, and the compiled binding carries its `definitionIdentity` (the compiler's `bindingIdentity`) | the case identity must freeze the TRUSTED ToolDefinition identity; with no declaration there IS none, and the ruling forbids inventing one to make the router answer |
+| `Q2` | **CANONICAL OPERATION IDENTITY** — `canonicalizeOperation` (the A2 core, the ONE canonicalizer) produces the opaque resource key and the exact `sha256:` impact fingerprint from the call's own arguments through the Member's own fs seam | an ask the case vocabulary cannot express is not a case; the lawful Leader/Human path stands |
+| `Q3` | **LEADER RUNG** — `routeOperationApproval` answers `approval-required` with `requiredAuthority: 'leader'`; on a Team not on the v3 documents that is the FROZEN legacy routing (`isLeader ? user-approval : leader-approval`) ⇒ `leader` for a Member operation. Any other arm (`direct`, `authority-undetermined`, or a rung ABOVE the Leader) does not qualify | **this is the clause that keeps Alpha.6 from silently WIDENING Officer authority**: an operation the documents reserve to a Human never becomes an Officer case |
+| `Q4` | **THE SHARED PREDICATE** — `isDelegableOrdinaryToolAsk` accepts the frozen facts (operation case, no mutation fingerprint, not a fixed Leader/Human category, per-effect rungs inside `{member, leader}`) | the router and the ReviewCapability evaluator already read exactly this predicate; a second eligibility rule would be a second policy |
+
+**A qualification failure is NEVER a refusal.** If any of the five fails, the ask keeps the byte-identical
+plain `requestControl` path it has today (a case-less `leader-approval` row the Leader is notified on).
+**The distinct case — an ask that HAS qualified but whose required identity cannot be sourced — is a TYPED
+REFUSAL** naming the missing member (`ADMISSION_ALPHA6_CASE_IDENTITY_INCOMPLETE`, `field` in the
+reason). That is the ruling's *"reject/refuse if any required field cannot be sourced — never default"*,
+and it is why the module contains no `??`/`||` fallback on any identity member.
+
+### R1-B. THE FROZEN IDENTITY, member by member (all from trusted facts)
+
+| identity member | trusted source |
+| --- | --- |
+| `operationFingerprint` | `canonicalizeOperation` over the call's own arguments + the Member's fs seam |
+| `authorityScope` | the same canonicalization: `{operationClass: tool, matcher:{kind:'exact', resource:<opaque key>}}`; the shell class narrows by `{kind:'fingerprint', resource:<sha256 command fingerprint>}` (RULING 4) |
+| `requestedEffect` | `allow` — the closed effect that means "may this run" |
+| `operationToolOwner` / `operationToolName` | the compiled `toolBindings[]` coordinate (`bindingIdentity`, split on the LAST `/` — the compiler's own format, the same split `approval-takeover.toolNameOf` performs) |
+| ToolDefinition identity | the SAME compiled binding's `definitionIdentity` |
+| blueprint content hash + revision | the durable TeamSession's frozen Blueprint |
+| policy generation | the compiled Member binding (`binding.policyGeneration`) |
+| requesting Member identity | the compiled binding: instance id + template id + instance generation (+ owning team root) |
+| call correlation id | the admission call's own `admission:<callId>` |
+| authority generation | `createAlpha6AuthorityGenerationReader(permissionOverlay)` — a READ durable number, never a sentinel |
+
+### R1-C. The call site (the ONLY ask producer, unchanged)
+
+`packages/runtime/src/plugin/vnext/admission-port.mjs:221` —
+`createControlApprovalPort` now takes an optional lazy `alpha6CaseOf` and, when a case comes back,
+calls the **EXISTING** `ControlService.requestApprovalLeg` (control/service.ts:5607) instead of
+`requestControl`; the wait still goes through the ONE bridge (`awaitControlDecision`) on the SAME
+requestId, with `executionCoupling: 'inline'` unchanged. The producer itself is
+`packages/runtime/src/plugin/vnext/alpha6-ask-case.mjs` (`caseFor`, `:216`), wired once in the glue at
+`packages/runtime/src/plugin/vnext/agent-bindings.mjs:626` and ONLY when all four trusted readers exist
+(`agent-bindings.mjs:614-631`); `src/plugin/host.ts` forwards the SAME single authority-ceiling reader
+the root uses (`host.ts:2400`, `:2625`).
+
+Two facts that make the wiring honest rather than convenient:
+
+- **an unwired producer is the pre-round product, byte for byte** — and it stays unwired when the row
+  has no authority-ceiling reader, because guessing the FROZEN legacy rung on a Team that IS on the v3
+  documents would widen Officer authority (the exact direction Q3 exists to prevent);
+- **the scope rides `reviewPayload.authorityScope`** — the slot `alpha6/root-router.ts:69-74` ALREADY
+  reads (it is where the deleted PA bridge wrote it). The strict PA-manifest parser requires its own
+  `schema`, so this payload is never mistaken for a manifest (`paManifestPresent` stays false; the
+  per-effect rungs stay the frozen array).
+
+**Requested-but-NOT-added (deliberate):** no `review-routing` axis, no new ask producer, no second
+authority, no provider-side consumption (R3), no default for any missing field.
+
+### R1-D. THE LIVE D4 MEASUREMENT — `d4:routed-wake` stays REFUTED, now for a measured THIRD reason (G11)
+
+Instrument: `tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs` (two agreeing
+DEV-LIVE boots, rc.2 host `639ed015…`, `--plan` OK). The world is left in the **PRODUCTION shape** (the
+ordinary ask is the worker's CEILING lane; no declared `toolBindings[]`), because that is what production
+can express today. **The judge was AMENDED, disclosed in the clauses:** the two clauses that asserted the
+DEFECT are now requirement-shaped — `product-router-selects-the-officer` (route must be a `recipient`,
+`routeRole: officer`, naming the durable Officer instance) replaces `product-router-declines-the-durable-row`,
+and `no-plain-c1-ask-to-the-leader` (the case-less `[team-control … Leader approval` must be ABSENT)
+replaces `leader-received-the-plain-c1-ask`. Every other clause is untouched, and no clause was deleted or
+made vacuous. The router probe now serves the boot's REAL durable member view instead of a hard-coded `[]`
+(an empty view could only ever prove the pre-fix refusal).
+
+**Measured result (boots=1 and boots=2, agreeing):** `d4:enablement`, `d4:officer-up`,
+`d4:officer-binding`, `d4:refusal` **PROVEN**; **`d4:routed-wake` = REFUTED**, failing clauses
+`row-carries-approval-case`, `product-router-selects-the-officer`, `wake-intent-fact-routed`,
+`wake-confirmed-delivered`, `wake-intent-file-written`, `officer-woken-in-its-session`,
+`wake-has-machine-attribution`, `no-plain-c1-ask-to-the-leader`. The durable row is still case-less
+(`approvalCaseId: null`), `createAlpha6RootRouter.route()` answers `null`, zero `team-review-wake-*` facts,
+zero wake-intent files, the Officer is never woken, and the Leader receives the plain C1 ask.
+
+**WHY — the ruling's own no-fabrication clause, measured in both directions:**
+
+1. **Ask-only world (the default):** the ask exists on the Member's CEILING lane, so there is **no
+   TRUSTED ToolBinding coordinate** anywhere in the compiled answer (`compiledFor(...)` answers
+   `{members}` only; `perTool` is empty). `ALPHA6-ORDINARY-CASE-Q` Q1 therefore refuses the conversion —
+   correctly, because the ruling forbids inventing the ToolDefinition identity — and the plain Leader path
+   is preserved. **This is the arm the judge measures.**
+2. **Declared-binding world (`D4_BINDING_WORLD=1`):** the coordinate exists (`dsh.fs/write`,
+   `toolBindingIdentity` frozen through `centre-install.mjs`), but the Alpha.5 compiler **collapses the
+   ask**: `compileEffectiveIo(ceiling, restriction, {approvedOnce:false})` turns any `ask` path into an
+   EMPTY (deny) lane. Measured over three declarations: ceiling ask + restriction ask ⇒ empty; ceiling
+   allow + restriction ask ⇒ empty; ceiling allow + restriction allow ⇒ allow. The live call is then
+   refused by the tool's own compiled lane — `LANE_DENY: fs.write "…/worker-ask.txt" is outside the
+   tool's compiled fs.write lane` — and **no control row is written at all** (`control-request-recorded`
+   count 0, census otherwise healthy). `authorization: 'ask'` on the declaration does not help: for the
+   `fs.read`/`fs.write` axes the admission judges `perTool[tool].write`, not the disposition.
+
+**So finding `G11` is now a first-class, measured gap:** *in a live v5 world an ordinary `ask` and a
+trusted `ToolBinding` are MUTUALLY EXCLUSIVE.* One of them has to gain a representation: either the
+binding-lane compiler must carry `ask` (an Alpha.5 semantic decision — "does a declared tool's hard io
+face admit an unresolved ask path?"), or the centre must be able to project a trusted ToolDefinition
+coordinate for a tool that was never declared (a second authoring source — the thing Q1 exists to
+prevent). **Neither is R1, and neither is done here.** It is a Team-side gap exactly like `G1`/`G2`, not
+an upstream one; no patch, no private API, no host change is needed to close it, only a ruling on which
+representation is the real one.
+
+**What this round therefore establishes, and what it does not.** R1 makes the case producer REAL and the
+routing decision TESTABLE over the real ports (`ADM-149`, `ADM-150`), and it keeps every non-qualifying ask
+on the lawful plain path (`ADM-151`) with a typed refusal when a required identity member cannot be sourced
+(`ADM-152`) and self-review still refused (`ADM-153`). It does **not** make the live routed wake reachable:
+that needs `G11` (a representation ruling) and then `R3`/`G2` (a provider consumer for an approved `ask`)
+before an approved call can execute. Level: **MECHANISM+** — the case and the route are proven in-process
+over the product's own services, and the live routed wake is REFUTED by measurement, not by inference.

@@ -38,12 +38,19 @@
  *      an `invocation-authority` allow for ITS callId with ITS instanceId.
  *   4. `d4:routed-wake` — a worker call that the authored lane marks `ask`
  *      creates the durable control row the management plane notifies on. The
- *      probe records the row's REAL shape (no approvalCaseId / legOrdinal /
- *      reviewAuthority), the recipient the product actually wakes, and whether
- *      any `team-review-wake-routed` / `team-review-wake-delivered` fact or
- *      wake-intent file exists. A case-less row is the measured verdict: the
- *      route cannot be taken and the wake is NOT delivered through the governed
- *      delivery — never reported as a pass.
+ *      probe records the row's REAL shape (round 93: whether it carries
+ *      `approvalCaseId` / `legOrdinal` / `reviewAuthority`), the recipient the
+ *      product actually wakes, and whether any `team-review-wake-routed` /
+ *      `team-review-wake-delivered` fact or wake-intent file exists. ROUND 93
+ *      AMENDED THE JUDGE (disclosed in the clauses): the two clauses that
+ *      asserted the DEFECT (`route() === null`, "the Leader received the plain
+ *      ask") now assert the REQUIREMENT (the product's router selects the
+ *      Officer instance, and the plain case-less ask is ABSENT). Nothing else
+ *      is relaxed. The world is the PRODUCTION shape by default (the ask on the
+ *      Member ceiling, no declared `toolBindings[]`); `D4_BINDING_WORLD=1`
+ *      reaches the declared-binding arm that measures finding G3 — an ask and a
+ *      trusted ToolBinding are mutually exclusive today, because the Alpha.5
+ *      compiler's hard intersection collapses an `ask` path to an EMPTY lane.
  *   5. `d4:refusal` — a second, negative boot: the SAME v5 document with the
  *      wake-intent path REMOVED is refused by the closed enablement rule and
  *      the refusal is recorded through the product's own host-surface point.
@@ -116,6 +123,10 @@ const MK_WRK = 'DBOOT_D4_DELEGATE_WORKER'
 const DONE_WRK = 'DBOOT_D4_WORKER_DELEGATED'
 const MK_RESOLVE = 'DBOOT_D4_RESOLVE_ASK'
 const DONE_RESOLVE = 'DBOOT_D4_RESOLVE_DONE'
+const D4_BINDING_WORLD = process.env['D4_BINDING_WORLD'] ?? ''
+const BASELINE_TOOL_FS = join(REPO_ROOT, 'tests', 'deepseek-harness-test-use', 'packages', 'fs', 'tool-fs', 'lib', 'index.js')
+if (!existsSync(BASELINE_TOOL_FS)) throw new Error(`the pinned host tool-fs module must exist (${BASELINE_TOOL_FS})`)
+
 const TOK_OFF = 'dboot-d4-officer-work'
 const TOK_WRK = 'dboot-d4-worker-work'
 const DONE_OFFICER_TURN = 'DBOOT_D4_OFFICER_TURN_DONE'
@@ -267,6 +278,31 @@ function v5Doc({ blueprintId, dirs }) {
     permissionMutationEnvelope: { rules: [] },
     teamHardEnvelope: { rules: [] },
     metadata: {},
+    // R1 (round 93, owner ruling on review 20261124-0151 §1) — THE G3 EXPERIMENT ARM, OFF BY DEFAULT.
+    //
+    // R1's case identity must freeze a TRUSTED ToolBinding coordinate, so the ruling's world would have
+    // to declare the operation tool. Authoring that declaration is a WORLD change, and the default world
+    // is left in the PRODUCTION shape (the ask on the Member's ceiling lane, no declared binding) so the
+    // judge measures what production can actually express. The declared-binding world is reachable with
+    // `D4_BINDING_WORLD=1` and is the measurement that produced finding G3: with a declared binding the
+    // Alpha.5 compiler's hard intersection (`compileEffectiveIo(…, {approvedOnce:false})`) collapses an
+    // `ask` path to an EMPTY lane, so the tool becomes deny-all and NO ask reaches the Control plane
+    // (`wake-measurement.json` → `workerWrite.result` = `LANE_DENY: … outside the tool's compiled
+    // fs.write lane`). An ask and a trusted ToolBinding are therefore MUTUALLY EXCLUSIVE in a live v5
+    // world today — the third Team-side seam this round names, and NOT something R1 may paper over.
+    ...(D4_BINDING_WORLD === '1'
+      ? {
+          toolBindings: [
+            {
+              owner: 'dsh.fs',
+              name: 'write',
+              authorization: 'allow',
+              io: { read: lane([dirs.dir]), write: lane([dirs.dir]), network: { mode: 'allow' } },
+              execution: { implementationOrigin: 'dsh-native', executionBoundary: 'trusted-host' },
+            },
+          ],
+        }
+      : {}),
     memberIoCeilings: [
       { templateId: 'officer', io: { read: lane([dirs.dir]), write: lane([dirs.dir]), network: { mode: 'allow' } } },
       // THE DECLARED ORDINARY ASK: the worker's write lane ASKs for its own
@@ -330,7 +366,11 @@ function composedRows({ home, mainYaml, alpha6 }) {
     a5sfEvidencePath: join(home, 'a5sf-consult.jsonl'),
     mcpServers: [],
     mcpServer: null,
-    a5sfNativeToolModules: [],
+    // THE TOOL MODULE THE DECLARED BINDING IS MOUNTED FROM (round 93). A Team-scoped
+    // `toolBindings[]` entry names a tool; the realm can only shadow a name it can mount, so a
+    // world that DECLARES the operation tool must also mount the module that provides it. This is
+    // the pinned host `tool-fs` package (read-only, from the pristine test tree), not a product mock.
+    a5sfNativeToolModules: D4_BINDING_WORLD === '1' ? [BASELINE_TOOL_FS] : [],
     ...(alpha6.enabled
       ? {
           alpha6ReviewRouting: true,
@@ -727,9 +767,20 @@ function judgeRoutedWake({ durableRow, routeProbe, wakeFacts, wakeIntentFiles, o
       // without it `route()` answers null and the notifier takes the case-less
       // Leader branch, so no Alpha.6 route can exist for this row.
       { id: 'row-carries-approval-case', ok: typeof row?.approvalCaseId === 'string' && row.approvalCaseId.length > 0 && typeof row?.legOrdinal === 'number', detail: `approvalCaseId=${JSON.stringify(row?.approvalCaseId ?? null)} legOrdinal=${JSON.stringify(row?.legOrdinal ?? null)} reviewAuthority=${JSON.stringify(row?.reviewAuthority ?? null)}` },
-      // THE PRODUCT'S OWN ROUTER, evaluated in-process on the durable row it
-      // just wrote: null means the ONE policy declines to route it at all.
-      { id: 'product-router-declines-the-durable-row', ok: routeProbe?.route === null, detail: `createAlpha6RootRouter.route()=${JSON.stringify(routeProbe?.route ?? null)} memberListCalls=${String(routeProbe?.memberListCalls)} error=${String(routeProbe?.error ?? null)}` },
+      // THE PRODUCT'S OWN ROUTER, evaluated in-process on the durable row it just wrote.
+      // JUDGE AMENDMENT (round 93, disclosed): before R1 this clause asserted `route === null` — it
+      // ENCODED THE GAP (a case-less row is unroutable). The ruled requirement is the opposite, so the
+      // clause now asserts the ROUTED outcome instead. It is a STRICTER clause, not a weaker one: the
+      // route must be a recipient, must be the Officer role, and must name the Officer instance the
+      // durable member view carries. The other eight clauses are untouched.
+      {
+        id: 'product-router-selects-the-officer',
+        ok: routeProbe?.route?.kind === 'recipient'
+          && routeProbe?.route?.target?.routeRole === 'officer'
+          && typeof routeProbe?.route?.target?.instanceId === 'string'
+          && routeProbe.route.target.instanceId === String(routeProbe?.officerInstanceId ?? ''),
+        detail: `createAlpha6RootRouter.route()=${JSON.stringify(routeProbe?.route ?? null)} expectedOfficerInstanceId=${JSON.stringify(routeProbe?.officerInstanceId ?? null)} memberListCalls=${String(routeProbe?.memberListCalls)} error=${String(routeProbe?.error ?? null)}`,
+      },
       { id: 'wake-intent-fact-routed', ok: wakeFacts.some((entry) => entry.factType === 'team-review-wake-routed'), detail: `wake facts=${JSON.stringify(wakeFacts.map((w) => w.factType))}` },
       { id: 'wake-confirmed-delivered', ok: wakeFacts.some((entry) => entry.factType === 'team-review-wake-delivered'), detail: `wake facts=${JSON.stringify(wakeFacts.map((w) => w.factType))}` },
       { id: 'wake-intent-file-written', ok: wakeIntentFiles.length > 0, detail: `intent files=${JSON.stringify(wakeIntentFiles)}` },
@@ -738,8 +789,10 @@ function judgeRoutedWake({ durableRow, routeProbe, wakeFacts, wakeIntentFiles, o
       // wakes there is no input to attribute: the clause is NOT_REACHED, and it
       // stays a failing clause because the judge's proposition is not met.
       { id: 'wake-has-machine-attribution', ok: wakeFacts.length > 0 && wakeFacts.every((entry) => entry?.payload?.source === 'plugin:dsh-agent-team'), detail: `wake facts=${String(wakeFacts.length)}; no wake ⇒ no machine input to attribute` },
-      // THE MEASURED BRANCH: the plain C1 ask reached the LEADER instead.
-      { id: 'leader-received-the-plain-c1-ask', ok: String(leaderNotificationText).includes('[team-control') && String(leaderNotificationText).includes('Leader approval'), detail: `leader notification=${JSON.stringify(String(leaderNotificationText).slice(0, 300))}` },
+      // THE BRANCH INVERTS WITH THE ROUTE (JUDGE AMENDMENT, same disclosure as above): a case that
+      // routes to the Officer must NOT also be handed to the Leader as a plain C1 ask. Asserting the
+      // ABSENCE is the clause that catches a "both paths fired" implementation.
+      { id: 'no-plain-c1-ask-to-the-leader', ok: !String(leaderNotificationText).includes('[team-control'), detail: `leader notification=${JSON.stringify(String(leaderNotificationText).slice(0, 300))}` },
       { id: 'no-review-wake-to-the-leader', ok: !String(leaderTranscript?.userText ?? '').includes('[team-review-wake'), detail: `leader got a review wake=${String(String(leaderTranscript?.userText ?? '').includes('[team-review-wake'))}` },
     ],
   )
@@ -950,6 +1003,11 @@ async function probeOnce({ index, head, grant }) {
     }
     const promptTurn = async (marker, tag) => {
       const res = await apiPrompt(origin, cookie, ROOT, marker, tag)
+      // DIAGNOSTIC (kept): the turn's own answer text, redacted, so a delegation that the Leader could
+      // not complete is visible in the boot artefacts instead of only as a timeout.
+      try {
+        writeFileSync(join(bootDir, `prompt-${tag}.json`), `${JSON.stringify({ status: res?.status ?? null, body: redact(JSON.stringify(res?.body ?? null)) }, null, 2)}\n`)
+      } catch { /* diagnostic only */ }
       log(`[boot${String(index)}] prompt(${tag}) status=${String(res?.status)}`)
       if (res?.status !== 200) throw new Error(`session/prompt(${tag}) failed: status=${String(res?.status)} body=${redact(JSON.stringify(res?.body ?? null)).slice(0, 500)}`)
     }
@@ -1087,6 +1145,11 @@ async function probeOnce({ index, head, grant }) {
       const parsed = parseAlpha6Routing(mainBlueprintYaml({ dirs }))
       if (parsed === null) throw new Error('the v5 policy did not parse for the router probe')
       let memberListCalls = 0
+      // THE REAL DURABLE MEMBER VIEW. The pre-R1 probe answered `[]` on purpose: with a case-less row
+      // the router refuses BEFORE the officer query, so an empty view could not change the verdict.
+      // A routed verdict needs the product's own member snapshot, so the probe now serves the SAME
+      // members `/__p6t6/state` serves (no invented rows: the officer row below came from the boot).
+      const memberSnapshot = membersOf(await readState(origin, cookie))
       const router = createAlpha6RootRouter({
         rootSessionId: ROOT,
         routing: parsed.routing,
@@ -1102,13 +1165,13 @@ async function probeOnce({ index, head, grant }) {
           }),
         },
         members: {
-          list: async () => { memberListCalls += 1; return [] },
-          get: async () => { memberListCalls += 1; return undefined },
+          list: async () => { memberListCalls += 1; return memberSnapshot },
+          get: async (_rootSessionId, instanceId) => { memberListCalls += 1; return memberSnapshot.find((m) => String(m?.instanceId ?? '') === String(instanceId)) },
         },
         fixedLeaderOrHumanCategory: () => false,
       })
       const route = await router.route(String(ids.pendingRequestId))
-      routeProbe = { route, memberListCalls }
+      routeProbe = { route, memberListCalls, officerInstanceId: String(officerRow?.instanceId ?? '') }
     } catch (error) {
       routeProbe = { route: 'ERROR', memberListCalls: 0, error: String(error?.message ?? error) }
     }

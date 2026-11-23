@@ -3119,3 +3119,37 @@ deleting it would remove a second-authority control the ruling explicitly preser
 **Not proven / not claimed.** No governed PTC positive is claimed. PTC is verified ONLY as
 `run_code → typed refusal → zero worker execution → REFUSED/not-started`. The revisit path is an upstream
 per-execution policy seam with the acceptance criteria in `ADR-ptc-unsupported.md` §7.
+
+---
+
+## ROUND 93 — the Alpha.6 CASE PRODUCER (R1), and the five arms that pin it
+
+Owner ruling: review `20261124-0151` §1 (R1 = APPROVED). The ask→case conversion is implemented in
+`packages/runtime/src/plugin/vnext/alpha6-ask-case.mjs` (the closed rule `ALPHA6-ORDINARY-CASE-Q`) and
+consumed by the EXISTING ask port (`admission-port.mjs`, calling `ControlService.requestApprovalLeg`) —
+**no new ask producer, no new UTE I/O axis, no new admission duty.**
+
+**Arms added to `packages/runtime/test/vnext-admission.test.mjs` (the `ute-vnext-a1` leg).**
+
+| arm | what it proves over the REAL ports |
+| --- | --- |
+| `ADM-149` | A QUALIFYING ask (declared `toolBindings` coordinate + canonicalizable call + Leader rung + the shared predicate) creates a REAL durable Alpha.6 **case**: `case-…`, `legOrdinal: 1`, `executionCoupling:'inline'`, `reviewPayload.authorityScope`, `operationToolDefinitionIdentity:'dsh.fs/write'`, `perEffectRequiredAuthorities:['leader']`, one pending request, zero decisions; aborting the wait is `ADMISSION_APPROVAL_WAIT_ABORTED` and leaves the leg pending. |
+| `ADM-150` | The PRODUCT's own `createAlpha6RootRouter` selects the **Officer** for that durable row, and the round-84 governed delivery (`dispatchLatch` + the file wake-intent directory) writes the intent + confirmation and wakes the Officer's session; the leg stays pending. |
+| `ADM-151` | A NON-qualifying ask (same world, tool NOT declared in `toolBindings`, ceiling `ask` on `read`) keeps the **plain** `leader-approval` path byte-identically: no case, no `reviewPayload`, no `approvalCaseId`, `ordinaryAsk: null`. |
+| `ADM-152` | An ask that qualified up to the requesting Member's identity but whose `templateId` cannot be sourced is a **typed refusal** (`ADMISSION_ALPHA6_CASE_IDENTITY_INCOMPLETE`, naming `requesting-member-identity`) with **zero** durable rows written — never a defaulted identity. |
+| `ADM-153` | The Officer's OWN operation is never routed to the Officer (self-review refusal kept). |
+
+`ADM-54`'s static witness was updated (the port now constructs with `controlOf` + an optional lazy
+`alpha6CaseOf`; the pin asserts exactly ONE construction and the unchanged `controlOf` first key), so the
+glue-shape guarantee is kept rather than loosened.
+
+**Counts that moved.** `ute-vnext-a1`: `tests 215 → 220`, `pass 212 → 217`, `skipped 3 → 3`
+(no new skip; the five arms all RUN). File set unchanged (7 files) so the leg digest is unchanged
+(`sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975`). Catalog KIND unchanged
+(no test file added).
+
+**Not proven / not claimed.** (1) `d4:routed-wake` stays **REFUTED** live, for a NEWLY measured reason
+`G11` — a live v5 world cannot carry BOTH an ordinary `ask` and a trusted `ToolBinding`; see
+`ALPHA6-FORMAL-ROUTING.md` §R1-D. (2) **R3 is untouched**: even after an allow, the provider still
+refuses the `ask`-disposition call (`BL-30` / `IO_ASK_REQUIRES_APPROVAL`), so the grant→execute half is
+still not reachable. The in-process arms prove the CASE and the ROUTE, not an executed body.

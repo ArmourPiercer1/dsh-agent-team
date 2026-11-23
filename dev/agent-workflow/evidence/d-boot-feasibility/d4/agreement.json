@@ -4,75 +4,87 @@
     {
       "key": "overall",
       "values": [
+        "\"BLOCKED\"",
         "\"BLOCKED\""
       ]
     },
     {
       "key": "enablement",
       "values": [
+        "\"PROVEN\"",
         "\"PROVEN\""
       ]
     },
     {
       "key": "officerUp",
       "values": [
+        "\"PROVEN\"",
         "\"PROVEN\""
       ]
     },
     {
       "key": "officerBinding",
       "values": [
+        "\"PROVEN\"",
         "\"PROVEN\""
       ]
     },
     {
       "key": "routedWake",
       "values": [
+        "\"REFUTED\"",
         "\"REFUTED\""
       ]
     },
     {
       "key": "refusal",
       "values": [
+        "\"PROVEN\"",
         "\"PROVEN\""
       ]
     },
     {
       "key": "askAppeared",
       "values": [
+        "true",
         "true"
       ]
     },
     {
       "key": "pendingRequestId",
       "values": [
+        "\"ctrl-1xxrzo21k29yc31rawhls0qn\"",
         "\"ctrl-1xxrzo21k29yc31rawhls0qn\""
       ]
     },
     {
       "key": "wakeFacts",
       "values": [
+        "0",
         "0"
       ]
     },
     {
       "key": "wakeIntentFiles",
       "values": [
+        "0",
         "0"
       ]
     },
     {
       "key": "reviewWakeHits",
       "values": [
+        "0",
         "0"
       ]
     },
     {
       "key": "officerAllowFacts",
       "values": [
+        "1",
         "1"
       ]
     }
   ],
-  "text": "TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)\nfact                              boot1                               \noverall                              \"BLOCKED\"                           \nenablement                           \"PROVEN\"                            \nofficerUp                            \"PROVEN\"                            \nofficerBinding                       \"PROVEN\"                            \nroutedWake                           \"REFUTED\"                           \nrefusal                              \"PROVEN\"                            \naskAppeared                          true                                \npendingRequestId                     \"ctrl-1xxrzo21k29yc31rawhls0qn\"     \nwakeFacts                            0                                   \nwakeIntentFiles                      0                                   \nreviewWakeHits                       0                                   \nofficerAllowFacts                    1                                   \n\nagreeing=true differing=[]"
+  "text": "TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)\nfact                              boot1                               boot2                               \noverall                              \"BLOCKED\"                            \"BLOCKED\"                           \nenablement                           \"PROVEN\"                             \"PROVEN\"                            \nofficerUp                            \"PROVEN\"                             \"PROVEN\"                            \nofficerBinding                       \"PROVEN\"                             \"PROVEN\"                            \nroutedWake                           \"REFUTED\"                            \"REFUTED\"                           \nrefusal                              \"PROVEN\"                             \"PROVEN\"                            \naskAppeared                          true                                 true                                \npendingRequestId                     \"ctrl-1xxrzo21k29yc31rawhls0qn\"      \"ctrl-1xxrzo21k29yc31rawhls0qn\"     \nwakeFacts                            0                                    0                                   \nwakeIntentFiles                      0                                    0                                   \nreviewWakeHits                       0                                    0                                   \nofficerAllowFacts                    1                                    1                                   \n\nagreeing=true differing=[]"
 }

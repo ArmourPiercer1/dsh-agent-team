@@ -2,7 +2,7 @@
   "requestId": "ctrl-1xxrzo21k29yc31rawhls0qn",
   "durable": {
     "fact": {
-      "createdAt": "2026-11-23T10:20:07.130Z",
+      "createdAt": "2026-11-23T20:00:24.960Z",
       "factType": "control-request-recorded",
       "payload": {
         "actionName": "admission-ask",
@@ -51,7 +51,7 @@
   },
   "ledger": [
     {
-      "createdAt": "2026-11-23T10:20:06.013Z",
+      "createdAt": "2026-11-23T20:00:23.713Z",
       "factType": "provision-member-instance",
       "operationId": "op-1wlvk2s0nuqxzv1w97gvi0g2",
       "payload": {
@@ -59,18 +59,18 @@
         "label": "dboot-d4-officer",
         "rootSessionId": "session-dboot-d4-root",
         "templateId": "officer",
-        "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-17-42Z/workspace"
+        "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T19-58-00Z/workspace"
       },
       "rootSessionId": "session-dboot-d4-root",
       "schemaVersion": 2,
       "sequence": 1
     },
     {
-      "createdAt": "2026-11-23T10:20:06.040Z",
+      "createdAt": "2026-11-23T20:00:23.737Z",
       "factType": "team-work-admitted",
       "payload": {
         "action": "delegate",
-        "at": "2026-11-23T10:20:06.034Z",
+        "at": "2026-11-23T20:00:23.732Z",
         "caller": {
           "instanceId": "inst-leader",
           "kind": "instance",
@@ -89,7 +89,7 @@
       "sequence": 2
     },
     {
-      "createdAt": "2026-11-23T10:20:06.050Z",
+      "createdAt": "2026-11-23T20:00:23.747Z",
       "factType": "activity-interval-opened",
       "payload": {
         "correlation": "dboot-d4-delegate-officer",
@@ -107,7 +107,7 @@
       "sequence": 3
     },
     {
-      "createdAt": "2026-11-23T10:20:06.395Z",
+      "createdAt": "2026-11-23T20:00:24.185Z",
       "factType": "activity-interval-closed",
       "payload": {
         "correlation": "dboot-d4-delegate-officer",
@@ -124,11 +124,11 @@
       "sequence": 4
     },
     {
-      "createdAt": "2026-11-23T10:20:06.420Z",
+      "createdAt": "2026-11-23T20:00:24.209Z",
       "factType": "member-lifecycle-changed",
       "payload": {
         "action": "delegate",
-        "at": "2026-11-23T10:20:06.415Z",
+        "at": "2026-11-23T20:00:24.205Z",
         "caller": {
           "instanceId": "inst-leader",
           "kind": "instance",
@@ -150,7 +150,7 @@
       "sequence": 5
     },
     {
-      "createdAt": "2026-11-23T10:20:06.922Z",
+      "createdAt": "2026-11-23T20:00:24.708Z",
       "factType": "provision-member-instance",
       "operationId": "op-0uah5681rvsznr1mhkbxu1oo",
       "payload": {
@@ -158,18 +158,18 @@
         "label": "dboot-d4-worker",
         "rootSessionId": "session-dboot-d4-root",
         "templateId": "worker",
-        "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-17-42Z/workspace"
+        "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T19-58-00Z/workspace"
       },
       "rootSessionId": "session-dboot-d4-root",
       "schemaVersion": 2,
       "sequence": 6
     },
     {
-      "createdAt": "2026-11-23T10:20:06.947Z",
+      "createdAt": "2026-11-23T20:00:24.732Z",
       "factType": "team-work-admitted",
       "payload": {
         "action": "delegate",
-        "at": "2026-11-23T10:20:06.942Z",
+        "at": "2026-11-23T20:00:24.727Z",
         "caller": {
           "instanceId": "inst-leader",
           "kind": "instance",
@@ -188,7 +188,7 @@
       "sequence": 7
     },
     {
-      "createdAt": "2026-11-23T10:20:06.957Z",
+      "createdAt": "2026-11-23T20:00:24.742Z",
       "factType": "activity-interval-opened",
       "payload": {
         "correlation": "dboot-d4-delegate-worker",
@@ -206,7 +206,7 @@
       "sequence": 8
     },
     {
-      "createdAt": "2026-11-23T10:20:07.130Z",
+      "createdAt": "2026-11-23T20:00:24.960Z",
       "factType": "control-request-recorded",
       "payload": {
         "actionName": "admission-ask",

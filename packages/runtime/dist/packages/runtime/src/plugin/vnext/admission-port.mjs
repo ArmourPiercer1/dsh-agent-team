@@ -61,6 +61,15 @@ export const ADMISSION_STOPPED = 'ADMISSION_STOPPED'
 export const ADMISSION_MEMBER_CLOSED = 'ADMISSION_MEMBER_CLOSED'
 
 /**
+ * R1 (owner ruling, review `20261124-0151` §1). The refusal code of an ask that QUALIFIED for
+ * Alpha.6 review but whose case leg could not be opened by the ONE leg writer. It is its own code
+ * because "the case could not be recorded" is not the ask being denied, not a lane rule and not a
+ * fault of the approval wait: an ask that qualified may neither be downgraded to a case-less Leader
+ * row (that would silently change its route) nor be given a defaulted identity.
+ */
+export const ADMISSION_ALPHA6_CASE_LEG_REFUSED = 'ADMISSION_ALPHA6_CASE_LEG_REFUSED'
+
+/**
  * The PRODUCT's approval authority, over the durable Control plane.
  *
  * WHAT IT IS: the adapter that turns ONE lane `ask` into a durable Control request, waits for the
@@ -89,6 +98,14 @@ export const ADMISSION_MEMBER_CLOSED = 'ADMISSION_MEMBER_CLOSED'
  * @param {(record: object) => (void|Promise<void>)} [input.onRequested] - observation hook invoked
  *   with the durable request row BEFORE the wait begins (the row exists at this point). A throw is a
  *   refusal, not a warning: an approval nobody could observe is not one this port will spend.
+ * @param {() => ({caseFor: (input: object) => Promise<object>}|undefined)} [input.alpha6CaseOf] - R1
+ *   (owner ruling, review `20261124-0151` §1): the Alpha.6 CASE PRODUCER, read LAZILY per request.
+ *   When it is wired AND the ask qualifies under the closed rule, this port opens the durable
+ *   case/leg through the EXISTING `ControlService.requestApprovalLeg` instead of a case-less
+ *   `requestControl` row — that is the only difference, and it is what lets the existing router pick
+ *   the Officer. Absent = the pre-round behaviour, byte for byte. A `plain` verdict keeps the lawful
+ *   Leader/Human path; a `refused` verdict is a TYPED REFUSAL of an ask that HAD qualified (the
+ *   producer never defaults a missing identity member to make a case).
  * @returns {{request: (input: object) => Promise<object>}} the approval port.
  */
 export function createControlApprovalPort ({
@@ -97,6 +114,7 @@ export function createControlApprovalPort ({
   kind = 'leader-approval',
   actionName = 'admission-ask',
   onRequested,
+  alpha6CaseOf,
 } = {}) {
   if (typeof controlOf !== 'function') {
     throw new AdmissionPortError('CONTROL_ACCESSOR_MISSING', 'the approval port needs a lazy control accessor; capturing the service at install time would freeze a reference the product fills later')
@@ -112,6 +130,8 @@ export function createControlApprovalPort ({
      * @param {string} input.callId - the host call id (the correlation's basis).
      * @param {string} input.toolName - the tool the ask covers.
      * @param {string} [input.laneReason] - the lane's own reason, carried as the request summary.
+     * @param {unknown} [input.arguments] - the call's own parsed arguments (the trusted basis of the
+     *   canonical operation identity when an Alpha.6 case producer is wired; unused otherwise).
      * @param {AbortSignal} [input.signal] - the CALL's own abort signal (the host's `exec.signal`).
      *   It is forwarded to the ONE wait bridge (`awaitControlDecision`), whose coupling-aware cascade
      *   durably ABANDONS an inline pending request and rejects typed when the signal aborts. That is
@@ -120,7 +140,7 @@ export function createControlApprovalPort ({
      * @returns {Promise<{ok: true, approval: {approvalId: string, policyRevision: string}} |
      *   {ok: false, code: string, reason: string}>}
      */
-    async request ({ binding, callId, toolName, laneReason, signal } = {}) {
+    async request ({ binding, callId, toolName, laneReason, arguments: callArguments, signal } = {}) {
       const service = controlOf()
       if (
         service === undefined || service === null ||
@@ -150,24 +170,93 @@ export function createControlApprovalPort ({
         }
       }
       const correlation = `${ADMISSION_CONTROL_CORRELATION_PREFIX}:${String(callId)}`
+      const summary = `admission ask: ${String(toolName)}${typeof laneReason === 'string' && laneReason !== '' ? ` (${laneReason})` : ''}`
+      // R1 — THE CASE, WHEN THE ASK QUALIFIES. One producer, read lazily: an unwired row, an ask that
+      // does not qualify, or an Alpha.6-disabled row all answer `plain` and fall through to the
+      // UNCHANGED `requestControl` path below. A `refused` verdict is a typed refusal: an ask that had
+      // qualified may not be downgraded to a case-less Leader row (that would be the silent route
+      // change the ruling forbids), and it may not be given a defaulted identity either.
+      let caseLeg
+      if (typeof alpha6CaseOf === 'function') {
+        const producer = alpha6CaseOf()
+        if (producer !== undefined && producer !== null && typeof producer.caseFor === 'function') {
+          let verdict
+          try {
+            verdict = await producer.caseFor({
+              binding,
+              callId,
+              toolName,
+              arguments: callArguments,
+              correlation,
+              actionName,
+              summary,
+            })
+          } catch (error) {
+            return {
+              ok: false,
+              code: 'ADMISSION_APPROVAL_REQUEST_FAULT',
+              reason: `the Alpha.6 case producer faulted for ${JSON.stringify(String(callId))} (${String(error?.message ?? error)}); a fault is a refusal, never a case-less downgrade`,
+            }
+          }
+          if (verdict !== undefined && verdict !== null && verdict.kind === 'refused') {
+            return { ok: false, code: String(verdict.code), reason: String(verdict.reason) }
+          }
+          if (verdict !== undefined && verdict !== null && verdict.kind === 'case') caseLeg = verdict.leg
+        }
+      }
       let record
-      try {
-        record = await service.requestControl({
-          rootSessionId,
-          caller: { kind: 'instance', instanceId },
-          kind,
-          targetInstanceId: instanceId,
-          actionName,
-          ...(typeof toolName === 'string' && toolName !== '' ? { toolName } : {}),
-          correlation,
-          executionCoupling: 'inline',
-          summary: `admission ask: ${String(toolName)}${typeof laneReason === 'string' && laneReason !== '' ? ` (${laneReason})` : ''}`,
-        })
-      } catch (error) {
-        return {
-          ok: false,
-          code: 'ADMISSION_APPROVAL_REQUEST_FAULT',
-          reason: `the durable control request could not be written (${String(error?.message ?? error)}); a call whose approval cannot be recorded is refused`,
+      if (caseLeg !== undefined) {
+        // THE EXISTING LEG WRITER (`ControlService.requestApprovalLeg`, control/service.ts). It is the
+        // ONLY case producer the product has: this call adds no writer, no second authority and no new
+        // axis — it hands the ONE writer a frozen identity another reviewer can inspect.
+        if (typeof service.requestApprovalLeg !== 'function') {
+          return {
+            ok: false,
+            code: ADMISSION_ALPHA6_CASE_LEG_REFUSED,
+            reason: 'this ControlService exposes no requestApprovalLeg; an ask that qualified for Alpha.6 review cannot be recorded as a case-less row either',
+          }
+        }
+        let outcome
+        try {
+          outcome = await service.requestApprovalLeg({
+            rootSessionId,
+            caller: { kind: 'instance', instanceId },
+            ...caseLeg,
+          })
+        } catch (error) {
+          return {
+            ok: false,
+            code: ADMISSION_ALPHA6_CASE_LEG_REFUSED,
+            reason: `the Alpha.6 case leg could not be written (${String(error?.message ?? error)}); a case whose first leg is unreadable is refused`,
+          }
+        }
+        if (outcome === undefined || outcome === null || outcome.kind !== 'leg' || outcome.leg === undefined || outcome.leg === null) {
+          return {
+            ok: false,
+            code: ADMISSION_ALPHA6_CASE_LEG_REFUSED,
+            reason: `the case leg writer answered ${JSON.stringify(outcome?.kind ?? null)} instead of a leg; an approval case nobody can address is refused`,
+          }
+        }
+        record = outcome.leg
+      } else {
+        try {
+          record = await service.requestControl({
+            rootSessionId,
+            caller: { kind: 'instance', instanceId },
+            kind,
+            targetInstanceId: instanceId,
+            actionName,
+            ...(typeof toolName === 'string' && toolName !== '' ? { toolName } : {}),
+            correlation,
+            executionCoupling: 'inline',
+            summary,
+          })
+        } catch (error) {
+          return {
+            ok: false,
+            code: 'ADMISSION_APPROVAL_REQUEST_FAULT',
+            reason: `the durable control request could not be written (${String(error?.message ?? error)}); a call whose approval cannot be recorded is refused`,
+          }
         }
       }
       if (typeof onRequested === 'function') {

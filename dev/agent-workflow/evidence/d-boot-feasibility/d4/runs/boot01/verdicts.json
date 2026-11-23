@@ -16,7 +16,7 @@
       {
         "id": "team-session-served",
         "ok": true,
-        "detail": "teamSession={\"rootSessionId\":\"session-dboot-d4-root\",\"blueprintId\":\"team.dboot.d4.v5\",\"revision\":\"1\",\"contentHash\":\"sha256:ca9ca0a091aa70526ecc796e117dce81b906a69776fb64b72c59501f6170e46b\",\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-17-42Z/workspace\",\"createdAt\":\"2026-11-23T10:20:05.226Z\",\"generation\":11}"
+        "detail": "teamSession={\"rootSessionId\":\"session-dboot-d4-root\",\"blueprintId\":\"team.dboot.d4.v5\",\"revision\":\"1\",\"contentHash\":\"sha256:ca9ca0a091aa70526ecc796e117dce81b906a69776fb64b72c59501f6170e46b\",\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T19-58-00Z/workspace\",\"createdAt\":\"2026-11-23T20:00:22.051Z\",\"generation\":11}"
       },
       {
         "id": "no-alpha6-refusal-in-host-log",
@@ -100,9 +100,9 @@
         "detail": "approvalCaseId=null legOrdinal=null reviewAuthority=null"
       },
       {
-        "id": "product-router-declines-the-durable-row",
-        "ok": true,
-        "detail": "createAlpha6RootRouter.route()=null memberListCalls=0 error=null"
+        "id": "product-router-selects-the-officer",
+        "ok": false,
+        "detail": "createAlpha6RootRouter.route()=null expectedOfficerInstanceId=\"inst-1crltnl0089j\" memberListCalls=0 error=null"
       },
       {
         "id": "wake-intent-fact-routed",
@@ -130,8 +130,8 @@
         "detail": "wake facts=0; no wake ⇒ no machine input to attribute"
       },
       {
-        "id": "leader-received-the-plain-c1-ask",
-        "ok": true,
+        "id": "no-plain-c1-ask-to-the-leader",
+        "ok": false,
         "detail": "leader notification=\"[team-control requestId=ctrl-1xxrzo21k29yc31rawhls0qn]\\nA Team member operation is waiting for Leader approval.\\n\\nrequestId: ctrl-1xxrzo21k29yc31rawhls0qn\\nrequester: inst-0ty67u70r99a\\nsubject: instance inst-0ty67u70r99a\\ntarget: inst-0ty67u70r99a\\ntool: write\\nsummary: admission ask: write (fs.write \\\"/ho\""
       },
       {
@@ -142,11 +142,13 @@
     ],
     "failing": [
       "row-carries-approval-case",
+      "product-router-selects-the-officer",
       "wake-intent-fact-routed",
       "wake-confirmed-delivered",
       "wake-intent-file-written",
       "officer-woken-in-its-session",
-      "wake-has-machine-attribution"
+      "wake-has-machine-attribution",
+      "no-plain-c1-ask-to-the-leader"
     ]
   },
   "refusal": {
@@ -161,7 +163,7 @@
       {
         "id": "refusal-recorded",
         "ok": true,
-        "detail": "deny facts=[{\"refusalCode\":\"ADMISSION_ALPHA6_UNAVAILABLE\",\"axis\":\"host.service\",\"callId\":\"alpha6:75bd66f6-c801-4f5f-ac00-04a9d84518c0:0\"}]"
+        "detail": "deny facts=[{\"refusalCode\":\"ADMISSION_ALPHA6_UNAVAILABLE\",\"axis\":\"host.service\",\"callId\":\"alpha6:bbe38626-6884-4254-a659-57ed8fc2f823:0\"}]"
       },
       {
         "id": "refusal-is-not-a-route",

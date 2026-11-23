@@ -383,6 +383,15 @@ import { mountGovernedNativeToolModules } from './realm-lane.mjs'
 // together below; the centre refuses an ask that has only one of them.
 import { createInvocationBinder } from '../../../member-io-policy/src/invocation.js'
 import { createControlApprovalPort } from './admission-port.mjs'
+// R1 (owner ruling, review `20261124-0151` §1): the ONE qualification + identity assembler that lets
+// a qualifying ordinary ask open a REAL Alpha.6 case through the existing leg writer. It executes
+// nothing, produces no ask of its own and defaults no identity member.
+import { createAlpha6AskCasePort } from './alpha6-ask-case.mjs'
+// The production authority-ceiling adapter (the SAME one the mutation lane reads) so the case's rung
+// comes from the ONE walk over the Team's own documents, never from a second reader.
+import { createOperationApprovalFactsReader } from '../../../operation-permission/index.js'
+// A5-M1: the durable permission overlay is the ONE authority-generation authority.
+import { createAlpha6AuthorityGenerationReader } from '../../../alpha6/authority-generation.js'
 // E3 (round 49): the durable overlay supplier for the centre's admission port. It can only REMOVE
 // authority, and it reads the SAME `permissionOverlay` port the mutation lane appends through.
 import { createOverlayDecisionProvider } from './overlay-decision.mjs'
@@ -555,7 +564,7 @@ export function createAgentBindings(deps) {
   // ensureLiveAgent rollback / writer-conflict waits are skipped — the
   // pre-C1 behavior, so no pre-C1 test double breaks wholesale). The
   // production host ALWAYS passes the fence (guide §4.3: "生产 host 必须传").
-  const { agents, sessionPersistence, domain, config, teamToolsRef, controlServiceRef, agentPresets, resolveBoundBlueprint, permissionOverlay, activationFence, policyReaderRef, resolvePersonaSubstrate, a5sfRealmProvider, resolveMemberMount, fsBackend, agentDefaultModel } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, controlServiceRef, agentPresets, resolveBoundBlueprint, permissionOverlay, permissionAuthorityCeiling, activationFence, policyReaderRef, resolvePersonaSubstrate, a5sfRealmProvider, resolveMemberMount, fsBackend, agentDefaultModel } = deps
 
   // ── B (the ask path): THE ONE grant binder + THE ONE durable approval authority ─────────────
   //
@@ -585,9 +594,59 @@ export function createAgentBindings(deps) {
     return { teamId, memberInstanceId, templateId, instanceGeneration: binding.instanceGeneration }
   }
   const grants = controlServiceRef === undefined ? undefined : { binder: grantBinder, memberOf: memberOfBinding }
+
+  // ── R1 (owner ruling, review `20261124-0151` §1): THE ALPHA.6 CASE PRODUCER ─────────────────
+  //
+  // Round 84 proved the wake DELIVERY and round 92 measured the remaining gap: no ordinary ask ever
+  // carried an approval CASE, so `alpha6/root-router.ts` answered `null` and no Officer could be
+  // selected. This assembles the case identity for the asks the authored policy makes reviewable and
+  // hands it to the EXISTING leg writer — the same `ControlService.requestApprovalLeg` the mutation
+  // lane uses. It is wired ONLY when all four trusted readers exist:
+  //
+  //  · `config.alpha6ReviewRouting === true` — the row's own Alpha.6 enablement (a row that asked for
+  //    Alpha.6 already refused at boot if its composition were incoherent);
+  //  · the authority-ceiling reader (`permissionAuthorityCeiling`) — the ONE production adapter the
+  //    mutation lane reads. WITHOUT it the producer stays UNWIRED rather than guessing the frozen
+  //    legacy rung: a Team that IS on the v3 documents must never have its Human-reserved operation
+  //    routed as an Officer case just because this row could not read the ceiling;
+  //  · the durable TeamSession repository (the frozen Blueprint identity);
+  //  · the host fs seam (the canonical operation identity).
+  //
+  // An unwired producer is the pre-round behaviour, byte for byte, and `alpha6CaseOf()` is read
+  // LAZILY per request so a test/factory world that supplies nothing keeps the plain `requestControl`
+  // path and its own ASK_UNWIRED/approval codes unchanged.
+  const alpha6AskCase = (() => {
+    if (config?.alpha6ReviewRouting !== true) return undefined
+    if (permissionAuthorityCeiling === undefined || permissionAuthorityCeiling === null) return undefined
+    if (typeof fsBackend !== 'function') return undefined
+    const teamSessions = domain?.repositories?.teamSessions
+    if (teamSessions === undefined || teamSessions === null || typeof teamSessions.get !== 'function') return undefined
+    const operationFacts = createOperationApprovalFactsReader({ ceiling: permissionAuthorityCeiling })
+    const generationReader = createAlpha6AuthorityGenerationReader(permissionOverlay)
+    return createAlpha6AskCasePort({
+      enabled: true,
+      blueprintOf: (teamRoot) => {
+        const session = teamSessions.get(teamRoot)
+        const blueprint = session?.blueprint
+        if (blueprint === undefined || blueprint === null) return undefined
+        return { contentHash: blueprint.contentHash, revision: blueprint.revision }
+      },
+      authorityGenerationOf: (identity) => generationReader(identity),
+      // The Member install's own facts: this producer only ever runs on a MEMBER centre, so the
+      // beneficiary IS the member instance and `actingAsLeader` is structurally false.
+      ceilingOf: (teamSessionId, memberInstanceId) => operationFacts({ teamSessionId, memberInstanceId, actingAsLeader: false }),
+      // The per-call fs seam (host: the lazy strict `ctx.get('fs')`). Resolution always carries the
+      // Member's own workspace as `cwd`, so one service still canonicalizes per Member.
+      fsOf: () => fsBackend(),
+    })
+  })()
+
   const approvals = controlServiceRef === undefined
     ? undefined
-    : createControlApprovalPort({ controlOf: () => controlServiceRef.current })
+    : createControlApprovalPort({
+        controlOf: () => controlServiceRef.current,
+        ...(alpha6AskCase === undefined ? {} : { alpha6CaseOf: () => alpha6AskCase }),
+      })
 
   // ── A5-M1 (root ruling on the generation seam): THE ONE authority-generation
   // reader. Every consumer of the durable permission overlay's generation calls

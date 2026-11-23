@@ -561,3 +561,57 @@ routed wake, the implied executable grant, the 5-commit-stale scope block, the f
 census skip" hosted claim, and the stale `ci-pr-gate`/census numbers). **Evidence unchanged**: no product
 source, test assertion, skip, negative control, A0 artefact or evidence file was edited to fit a claim;
 documentation-only commits.
+
+## Round 93 — R1: the Alpha.6 case producer (the G1 seam is closed; the live wake is still REFUTED, for a NEW measured reason)
+
+Owner ruling: review `20261124-0151` §1, **R1 = APPROVED**. Scope discipline was part of the ruling and is
+part of the diff: **the EXISTING `ControlService.requestApprovalLeg` is the only leg writer, no new ask
+producer and no new UTE I/O axis were added, and no identity member is ever defaulted.**
+
+**What now exists (product code).**
+
+- `packages/runtime/src/plugin/vnext/alpha6-ask-case.mjs` — the CLOSED qualification rule
+  `ALPHA6-ORDINARY-CASE-Q` (`enabled` · **Q1** declared ToolBinding · **Q2** canonical operation identity ·
+  **Q3** Leader rung · **Q4** the shared delegable predicate) and the case builder that freezes
+  `operationFingerprint`, `authorityScope`, `requestedEffect`, `operationToolOwner/Name` + the trusted
+  ToolDefinition identity, the Blueprint content hash, the policy generation, the requesting Member
+  identity and the call correlation id — every member read from a trusted source.
+- `admission-port.mjs` — a qualifying ask is opened as a real case through `requestApprovalLeg`; a
+  non-qualifying ask keeps the **byte-identical plain path**; an ask whose required identity cannot be
+  sourced is a typed refusal (`ADMISSION_ALPHA6_CASE_IDENTITY_INCOMPLETE`, field named) with zero rows
+  written. The wait still goes through the ONE bridge (`awaitControlDecision`) on the same requestId.
+- `centre-install.mjs` / `agent-bindings.mjs` / `host.ts` — the trusted ToolBinding coordinate is passed
+  through from the compiled binding (never re-derived), and the SAME single authority-ceiling reader the
+  root uses is forwarded to the producer. The producer is wired ONLY when the row opted in **and** the
+  reader exists: an unwired producer is the pre-round product, and defaulting the frozen legacy rung on a
+  v3 Team would widen Officer authority.
+
+**Arms (ute-vnext-a1, all over the real `ControlService` / router / latch):** `ADM-149` qualifying ask ⇒
+durable case (`case-…`, `legOrdinal:1`, `reviewPayload.authorityScope`,
+`operationToolDefinitionIdentity:'dsh.fs/write'`, `perEffectRequiredAuthorities:['leader']`, one pending
+request, zero decisions); `ADM-150` the product's own router selects the **Officer** and the round-84
+governed delivery writes intent + confirmation and wakes the Officer session; `ADM-151` non-qualifying ask
+⇒ no case, plain `leader-approval`, `ordinaryAsk:null`; `ADM-152` unsourceable identity ⇒ typed refusal,
+zero rows; `ADM-153` the Officer's own operation is never self-reviewed. `ADM-54`'s static witness was
+updated (one construction, unchanged `controlOf` first key), not loosened.
+
+**The live D4 judge: still REFUTED — and the judge was amended in the open, in the strict direction.**
+The two clauses that ASSERTED the defect (`route() === null`, "the Leader received the plain ask") now
+assert the REQUIREMENT (the router must select the existing Officer instance; the plain case-less ask must
+be ABSENT); the router probe now serves the boot's real durable member view instead of a hard-coded `[]`.
+Nothing else was relaxed. Two agreeing boots report `enablement` / `officer-up` / `officer-binding` /
+`refusal` **PROVEN** and `routed-wake` **REFUTED** at `row-carries-approval-case`,
+`product-router-selects-the-officer`, the four wake clauses and `no-plain-c1-ask-to-the-leader`.
+
+**Why — the new finding (`G11`), measured in both directions.** R1's case identity needs a **trusted
+ToolBinding**; only a declared `toolBindings[]` entry provides one. But the Alpha.5 binding-lane compiler
+(`compileEffectiveIo(…, {approvedOnce:false})`) collapses ANY `ask` path to an **empty deny lane**: the
+production-shaped world (ask on the Member ceiling) has no ToolBinding at all, and the declared-binding
+world (`D4_BINDING_WORLD=1`) denies the call with `LANE_DENY … outside the tool's compiled fs.write lane`
+and writes **no control row**. So the ask and the ToolBinding are **mutually exclusive in a live v5 world
+today** — a Team-side gap, not upstream, and explicitly NOT papered over with a fabricated ToolBinding or a
+defaulted authority scope. `G11` is carried in `D-ACCEPTANCE-REPORT.md` §10 with the ruling it needs.
+
+**Not proven (stated, not implied).** `R3`/`G2` (BL-30) is untouched: after an allow the provider still
+refuses an `ask`-disposition call (`IO_ASK_REQUIRES_APPROVAL`), so the granted call still cannot execute.
+The live routed wake is not reached (`G11`). C-alpha6 stays **MECHANISM**; no capability row moves up.

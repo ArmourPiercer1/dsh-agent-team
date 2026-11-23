@@ -197,4 +197,9 @@ OFFENDING packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts :: 
 # earlier in the file. Those arms author NO blueprint document: the v5 literal belongs to the
 # pre-existing C-alpha6 fixture, unchanged in content. Re-recorded from the gate's own
 # `verify-blueprint-version-clean.mjs` report, not by hand-guessing an offset.
-OFFENDING packages/runtime/test/vnext-admission.test.mjs :: L4641=v5
+#   - vnext-admission.test.mjs moved L4641 -> L4645 and gained a SECOND identity (L7699) because round 93 (R1)
+#     edited ADM-54's glue witness above the C-alpha6 fixture (+4 lines) and appended the five R1 arms with
+#     their OWN v5 fixture (the C93 world) at the end of the file. Same fixture identity, same vocabulary,
+#     nothing added or resolved: the SECOND line is the new arm block's own document, recorded by path so a
+#     reviewer can see it is a test fixture and not product blueprint content.
+OFFENDING packages/runtime/test/vnext-admission.test.mjs :: L4645=v5, L7699=v5

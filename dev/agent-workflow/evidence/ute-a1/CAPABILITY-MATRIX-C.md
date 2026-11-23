@@ -656,3 +656,18 @@ stated level or is narrowed**; nothing is upgraded, and no row becomes PRODUCT-P
 **Explicit non-claim.** Nothing in this section moves a row up. The only movement available to a reviewer
 is **down or annotated**, and the two new seams are carried as open gaps `G1`/`G2` with the owner rulings
 `R1`–`R4` in `D-ACCEPTANCE-REPORT.md` §10 and `OWNER-DECISIONS.md` (round-89 addendum).
+
+## ROUND 93 ANNOTATION — C-alpha6 after R1: the case producer is REAL, the LIVE routed wake is still REFUTED (new reason G11)
+
+An **annotation**, not a re-grade. `C-alpha6` **stays MECHANISM** for the live routed wake, and the
+mechanism half is now stronger than the row above records.
+
+| row | what round 93 changed | level effect |
+| --- | --- | --- |
+| **C-alpha6** | **R1 landed.** An ordinary ask that satisfies the CLOSED rule `ALPHA6-ORDINARY-CASE-Q` (enabled · declared ToolBinding · canonical operation identity · Leader rung · the shared delegable predicate) is converted into a REAL durable Alpha.6 case through the EXISTING `ControlService.requestApprovalLeg`, and the EXISTING router + round-84 governed delivery then select and wake the Officer — proven in-process over the real `ControlService`/router/latch (`ADM-149`, `ADM-150`). Non-qualifying asks keep the byte-identical plain Leader path (`ADM-151`), an unsourceable identity member is a TYPED refusal naming the field (`ADM-152`), and the Officer's own call is still never self-reviewed (`ADM-153`). | **MECHANISM (unchanged) for the LIVE cell** — `d4:routed-wake` is REFUTED on two agreeing boots, now for a NEWLY measured reason: a live v5 world cannot carry BOTH an ordinary `ask` and a trusted `ToolBinding` (`G11`), because the Alpha.5 binding-lane compiler collapses an `ask` path to an empty (deny) lane. R1 is NOT the blocker and no clause was weakened to hide it. |
+| **C-tools / C-subprocess / C-member** | Unchanged by round 93: the producer adds no ITE axis, no admission duty, no provider consumer, so the `ask→grant→execute` boundary those rows annotate (`BL-30`) is exactly as it was. | **Unchanged.** |
+
+**Explicit non-claim.** No row moves up. The two facts a reviewer may now rely on are (a) the CASE and the
+ROUTE are product-real and pinned by five arms, and (b) the live routed wake still does not happen, for a
+reason that is measured, named (`G11`), Team-side, and not papered over with a fabricated ToolBinding or a
+defaulted authority scope. `R3` (`BL-30`) remains open: an approved `ask` call still cannot execute.

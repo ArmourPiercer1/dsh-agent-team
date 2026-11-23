@@ -65,6 +65,14 @@ export function bindingFromCompiledMember ({ member, bindings, agentId, sessionI
       read: effective.read,
       write: effective.write,
       ...(effective.network === undefined || effective.network === null ? {} : { network: effective.network.access }),
+      // R1 (review `20261124-0151` §1): the TRUSTED ToolBinding coordinate this Member's declaration
+      // carries (`<authoringOwner>/<toolName>` — the compiler's own `bindingIdentity`). It is passed
+      // through, never re-derived and never invented: an ask on a tool with NO declared binding has no
+      // trusted ToolDefinition identity to freeze, which is exactly why the Alpha.6 case producer
+      // treats its absence as "not a case" rather than defaulting one.
+      ...(typeof binding.toolBindingIdentity === 'string' && binding.toolBindingIdentity !== ''
+        ? { toolBindingIdentity: binding.toolBindingIdentity }
+        : {}),
       // EXECUTION authority, passed through from the SAME compiled binding. Absent is absent: the
       // admission point refuses a process-class call with no compiled authorization, never allow.
       ...(binding.authorization === undefined ? {} : { authorization: binding.authorization }),

@@ -1604,6 +1604,10 @@ export async function apply(ctx, config) {
                 { teamSessionId: rowConfig.rootSessionId, memberInstanceId: LEADER_INSTANCE_ID },
             ],
         });
+        // R1 (review `20261124-0151` §1): the ONE v3 authority-ceiling CONTEXT reader, built once over the
+        // facts above and shared by BOTH consumers — the root's operation-recheck adapter and the Alpha.6
+        // case producer the glue receives below. One reader, one answer.
+        const permissionAuthorityCeiling = createAuthorityCeilingReader({ facts: permissionFacts });
         // A4-PR6 §6.A — the governance-warning service (Ruling PR6-H: THIN —
         // no new bound-Blueprint resolution, no new canonicalizer, no member
         // addressing). The gate's question is TEAM-level: the Leader expansion
@@ -1786,6 +1790,12 @@ export async function apply(ctx, config) {
             // lanes read) for the PA call-level facts adapter's overlay generation,
             // + the ONE facts object for its ceiling readers (untyped mjs glue).
             permissionOverlay,
+            // R1 (owner ruling, review `20261124-0151` §1): the SAME single v3
+            // authority-ceiling context reader the root receives, so a QUALIFYING
+            // ordinary ask can freeze its case identity from the Team's own authority
+            // documents. Without it the Alpha.6 case producer stays unwired and the
+            // plain Leader/Human path is untouched.
+            permissionAuthorityCeiling,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             permissionAuthorityFacts: permissionFacts,
             // C1 (restart-recovery, guide §4.3): the Team session-activation fence
@@ -2275,7 +2285,7 @@ export async function apply(ctx, config) {
             // A4-PR2 lane C: the v3 authority-ceiling context reader (ADR A5-12). The v3 decision
             // itself is NOT made here — this line injects the reader that makes it, from the
             // SAME bound-Blueprint resolution every other permission fact is read through.
-            permissionAuthorityCeiling: createAuthorityCeilingReader({ facts: permissionFacts }),
+            permissionAuthorityCeiling,
             // A4-PR6 §6.A — the ONE governance-warning port, forwarded verbatim to
             // the s6 start gate (root.ts adds zero logic; the service is assembled
             // above, next to the facts it reads through).

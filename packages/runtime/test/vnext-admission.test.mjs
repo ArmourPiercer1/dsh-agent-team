@@ -674,7 +674,7 @@ test('ADM-34 — the centre\'s config rules are checkable without booting the ho
     alpha6ReviewRouting: true,
     centreStatePath: '/srv/centre',
     alpha6WakeIntentPath: '/srv/centre/wake-intents',
-    blueprintSource: cAlpha6Source(),
+    blueprintSource: c93Source(),
   }), undefined)
   // The path itself is validated even when Alpha.6 is off.
   assert.match(String(centreConfigViolation({ centreStatePath: 42 })), /non-empty string/u)
@@ -1688,7 +1688,11 @@ test('ADM-54 — the PRODUCT composition supplies the ask path: member-execution
   const { readFileSync } = await import('node:fs')
   const glue = readFileSync(new URL('../src/plugin/vnext/agent-bindings.mjs', import.meta.url), 'utf8')
   assert.match(glue, /const \{ agents, sessionPersistence, domain, config, teamToolsRef, controlServiceRef,/u, 'the glue must read the Control ref the host fills')
-  assert.match(glue, /createControlApprovalPort\(\{ controlOf: \(\) => controlServiceRef\.current \}\)/u, 'the approval authority is the durable Control service, read lazily')
+  // R1 (round 93) extended the SAME call with the Alpha.6 case producer, so this witness pins the two
+  // facts it exists for — the SAME lazy Control ref and the SAME single constructor — rather than one
+  // exact line: the port is the durable service, read lazily, and nothing else creates it.
+  assert.match(glue, /createControlApprovalPort\(\{\n\s*controlOf: \(\) => controlServiceRef\.current,/u, 'the approval authority is the durable Control service, read lazily')
+  assert.equal((glue.match(/createControlApprovalPort\(/gu) ?? []).length, 1, 'exactly ONE approval port is constructed in the glue')
   assert.match(glue, /\.\.\.\(grants === undefined \? \{\} : \{ grants \}\),\n\s*\.\.\.\(approvals === undefined \? \{\} : \{ approvals \}\),/u, 'both ports ride the ONE installMemberExecution call')
   assert.match(glue, /from '\.\.\/\.\.\/\.\.\/member-io-policy\/src\/invocation\.js'/u, 'the binder is the PRODUCT binder, not a local re-implementation')
 })
@@ -4713,7 +4717,7 @@ test('ADM-98 — C-alpha6 positive: on the only row shape where Alpha.6 is reach
   // (1) THE OPT-IN, through the PRODUCT's one assembly. A row that did not configure the centre is the
   //     only row shape on which Alpha.6 is reachable; here it composes, naming the Officer template.
   const wiring = createAlpha6RootWiring(true, () => ({
-    blueprintSource: cAlpha6Source(),
+    blueprintSource: c93Source(),
     rootSessionId: ROOT,
     leaderTemplateId: 'leader',
     members,
@@ -7415,7 +7419,7 @@ test('ADM-141 — Alpha.6 enablement: a coherent row is ADMITTED, and each incoh
     alpha6ReviewRouting: true,
     centreStatePath: '/srv/centre',
     alpha6WakeIntentPath: '/srv/centre/wake-intents',
-    blueprintSource: cAlpha6Source(),
+    blueprintSource: c93Source(),
   }
   // (1) THE POSITIVE PATH the round-55 rule never had: the SAME opt-in that used to be refused on every
   //     row is admitted once the three pieces agree. Off stays a no-op; absent stays legal.
@@ -7662,4 +7666,457 @@ test('ADM-146 — a duplicate wake converges on ONE confirmation, and an unrevie
   )
   assert.equal(ledger.list().length, before, 'a refusal to wake leaves no fact behind (nothing was decided to deliver)')
   assert.equal(submissions.length, 1, 'and delivers nothing')
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ROUND 93 — R1 (owner ruling, review `20261124-0151` §1): AN ORDINARY ASK BECOMES A REAL CASE.
+//
+// Round 84 proved the wake DELIVERY; round 92 measured why it could never fire for an ordinary ask:
+// the centre's ask path wrote a case-less `leader-approval` row, `alpha6/root-router.ts` answered
+// `null` for it, and no Officer could be selected. These arms prove the R1 half over the REAL ports
+// (the real `ControlService`, the real centre approval port, the real router, the round-84 governed
+// delivery), and they prove the NEGATIVE half just as hard:
+//
+//   ADM-149  qualifying ask  — the real port opens a durable CASE through the EXISTING
+//                              `requestApprovalLeg`; the frozen identity is the trusted one; the ask
+//                              still settles through the ONE wait bridge; ZERO tool executions.
+//   ADM-150  router + wake   — the real router selects the OFFICER from that durable case and the
+//                              round-84 delivery wakes exactly that Member (intent + confirmation).
+//   ADM-151  non-qualifying  — a tool with no declared ToolBinding keeps the plain Leader/Human path:
+//                              no case, no Officer, unchanged route (the ruling's "must not widen").
+//   ADM-152  missing field   — an ask that DID qualify but lacks a required identity member is a TYPED
+//                              refusal with NO case and NO plain row (never a defaulted case).
+//   ADM-153  self-review     — the SAME case shape is still refused for the Officer's own ask (the
+//                              existing ReviewCapability rule, untouched by this round).
+
+/**
+ * The C93 world's Blueprint: the P6T2 template shape PLUS the two facts these arms need — the WORKER's
+ * own `request-control` envelope (the ONE leg writer enforces the caller's envelope, exactly as the
+ * plain ask path does) and an Alpha.6 `reviewRouting` block naming a dedicated `officer`.
+ */
+const c93Source = () => [
+  '---',
+  'schemaVersion: 5',
+  'blueprintId: C93-ALPHA6',
+  'revision: "1"',
+  'leader: { templateId: leader, persona: Lead the C93 team. }',
+  'members:',
+  '  - templateId: worker',
+  '    persona: Do the C93 work.',
+  '  - templateId: officer',
+  '    persona: Review ordinary asks.',
+  'requirements: []',
+  'memberEnvelopes:',
+  '  - templateId: worker',
+  '    envelope:',
+  '      allow:',
+  '        - request-control',
+  '        - send-message',
+  '        - report-progress',
+  '      deny: []',
+  '  - templateId: officer',
+  '    envelope:',
+  '      allow:',
+  '        - request-control',
+  '        - resolve-control',
+  '      deny: []',
+  'policyStates:',
+  '  - id: default',
+  '    description: The C93 default state.',
+  'permissionMutationEnvelope: { rules: [] }',
+  'teamHardEnvelope: { rules: [] }',
+  'teamEnvelope:',
+  '  allow:',
+  '    - request-control',
+  '    - resolve-control',
+  '    - send-message',
+  '    - report-progress',
+  '  deny: []',
+  'metadata: {}',
+  'reviewRouting:',
+  '  enabled: true',
+  '  officerTemplateId: officer',
+  '  ordinaryToolApprovals:',
+  '    default: officer',
+  '    leaderExceptions: []',
+  '  whenOfficerUnavailable: hold',
+  '---',
+  '',
+].join('\n')
+
+/** The trusted per-tool declaration a Member's compiled ToolBindings project (R1's Q1 face). */
+const c93Binding = (instanceId, overrides = {}) => ({
+  // The owning TeamSession root comes from the WORLD, never a literal: the case identity is frozen
+  // from that session's own Blueprint.
+  agentId: instanceId,
+  instanceId,
+  sessionId: overrides.root ?? 'session-p6t2-root',
+  instanceGeneration: 0,
+  owner: overrides.root ?? 'session-p6t2-root',
+  templateId: 'worker',
+  policyGeneration: 'gen-1',
+  workspaceRoot: '/work',
+  read: { mode: 'restricted', allow: ['/work/member'], ask: [], deny: [] },
+  write: { mode: 'restricted', allow: ['/work/member'], ask: ['file:/work/member/a.txt'], deny: [] },
+  perTool: {
+    write: {
+      read: { mode: 'restricted', allow: ['/work/member'], ask: [], deny: [] },
+      write: { mode: 'restricted', allow: ['/work/member'], ask: ['file:/work/member/a.txt'], deny: [] },
+      // THE TRUSTED COORDINATE: exactly what `centre-install.mjs` now projects from the compiled
+      // `toolBindings[]` entry (`<authoringOwner>/<toolName>`).
+      toolBindingIdentity: 'dsh.fs/write',
+      authorization: 'allow',
+      execution: { implementationOrigin: 'dsh-native', executionBoundary: 'trusted-host' },
+    },
+  },
+  definitionSource: 'realm',
+  ...overrides,
+})
+
+/** The A2 resolver double: a stable opaque key per path, resolved under the Member's own workspace. */
+const c93Fs = () => ({
+  // Absolute inputs keep their absolute key; a relative one is resolved under the Member's own cwd.
+  resolve: async (path, options) => {
+    const raw = String(path)
+    const cwd = String(options?.cwd ?? '')
+    return {
+      targetKey: `file:${raw.startsWith('/') ? raw : `${cwd}/${raw}`}`,
+      displayPath: raw,
+    }
+  },
+})
+
+/**
+ * Build the R1 world ONCE per arm: a real TeamDomain (the p6t2 fixture is the durable repository the
+ * product ships), the real ControlService over it, and the real case producer + approval port.
+ */
+const c93World = async (label, options = {}) => {
+  const { createP6T2World, P6T2_ROOT: worldRoot, P6T2_NOW: worldNow } = await import('./p6t2-helpers.ts')
+  const { destroyP6T1World } = await import('./p6t1-helpers.ts')
+  const { scratchDir, destroyDir } = await import('../../testkit/fault-injection/file-seam.mjs')
+  const { createControlService } = await import('../control/index.ts')
+  const { createControlApprovalPort } = await import('../src/plugin/vnext/admission-port.mjs')
+  const { createAlpha6AskCasePort } = await import('../src/plugin/vnext/alpha6-ask-case.mjs')
+  // The scratch dir is DETERMINISTIC per label, so a killed run must not poison the next one.
+  destroyDir(scratchDir(label))
+  const world = await createP6T2World(label, ['leader', 'worker'], { blueprintSource: c93Source() })
+  const destroy = async () => { await destroyP6T1World(world); destroyDir(scratchDir(label)) }
+  const root = String(worldRoot)
+  const control = createControlService({
+    teamDomain: world.domain,
+    // The leg writer resolves the BOUND blueprint through the catalog, so the world's own catalog is
+    // what makes the case's blueprint identity real rather than a stub.
+    blueprintCatalog: world.catalog,
+    externalPolicyFacts: world.ports.externalPolicyFacts,
+    now: () => worldNow,
+  })
+  const teamSessions = world.domain.repositories.teamSessions
+  const casePort = createAlpha6AskCasePort({
+    enabled: options.enabled ?? true,
+    blueprintOf: (teamRoot) => {
+      const session = teamSessions.get(teamRoot)
+      const blueprint = session?.blueprint
+      return blueprint === undefined ? undefined : { contentHash: blueprint.contentHash, revision: blueprint.revision }
+    },
+    // No durable overlay row in this world: the legal generation 0 (a number, read, not a sentinel).
+    authorityGenerationOf: async () => 0,
+    // No v3 authority documents: the FROZEN legacy routing, whose Member-operation rung is the Leader.
+    ceilingOf: options.ceilingOf ?? (async () => undefined),
+    fsOf: () => c93Fs(),
+  })
+  const approvals = createControlApprovalPort({ controlOf: () => control, alpha6CaseOf: options.wireProducer === false ? undefined : () => casePort })
+  return { world, root, control, approvals, casePort, destroy }
+}
+
+/** Run one ask until its durable row exists, then stop: the wait is REAL, so the abort is the stop. */
+const c93Ask = async ({ approvals, binding, callId, toolName, args, signal }) => {
+  let outcome
+  const pending = approvals.request({ binding, callId, toolName, arguments: args, laneReason: 'write ask', ...(signal === undefined ? {} : { signal }) })
+  pending.then((value) => { outcome = value }).catch(() => {})
+  return { pending, outcomeOf: () => outcome }
+}
+
+test('ADM-149 — a QUALIFYING ordinary ask opens a durable Alpha.6 CASE through the existing leg writer, and still settles through the ONE wait bridge', async (t) => {
+  const { control, root, approvals, destroy } = await c93World('adm149')
+  t.after(destroy)
+  const binding = c93Binding('inst-p6t2seedw01', { root })
+  const abort = new AbortController()
+  const { pending, outcomeOf } = await c93Ask({
+    approvals,
+    binding,
+    callId: 'call-adm149-write',
+    toolName: 'write',
+    args: { file_path: '/work/member/a.txt', content: 'hello' },
+    signal: abort.signal,
+  })
+  // The durable row is written before the wait begins, so polling the REAL control state is the
+  // product's own liveness path (never a sleep on a promise).
+  let leg
+  for (let attempt = 0; attempt < 200 && leg === undefined; attempt += 1) {
+    const state = await control.readControlState(root)
+    leg = state.requests.find((request) => request.correlation === 'admission:call-adm149-write')
+    if (leg === undefined) await new Promise((resolve) => setTimeout(resolve, 5))
+  }
+  assert.ok(leg !== undefined, `the ask path must write a durable control row (liveness through the ONE service); outcome: ${JSON.stringify(outcomeOf())}`)
+  // (1) THE CASE. A row without `approvalCaseId` + `legOrdinal` is invisible to the router, which was
+  //     the measured gap: this is the clause that decides whether an Officer can ever be selected.
+  assert.equal(typeof leg.approvalCaseId, 'string')
+  assert.match(leg.approvalCaseId, /^case-/u)
+  assert.equal(leg.legOrdinal, 1)
+  assert.equal(leg.kind, 'leader-approval')
+  assert.equal(leg.reviewAuthority, 'leader')
+  assert.equal(leg.status, 'pending')
+  assert.equal(leg.executionCoupling, 'inline', 'the leg IS the invocation continuation: the wait polls this id')
+  // (2) THE FROZEN IDENTITY — every member from a trusted fact, none defaulted.
+  assert.match(String(leg.operationFingerprint), /^sha256:[0-9a-f]{64}$/u)
+  assert.deepEqual(leg.reviewPayload?.authorityScope, { operationClass: 'write', matcher: { kind: 'exact', resource: 'file:/work/member/a.txt' } }, 'the scope rides the SAME payload slot the existing router reads')
+  assert.equal(leg.requestedEffect, 'allow')
+  assert.equal(leg.beneficiaryAuthority, 'member')
+  assert.equal(leg.operationToolOwner, 'dsh.fs')
+  assert.equal(leg.operationToolName, 'write')
+  assert.equal(leg.operationToolDefinitionIdentity, 'dsh.fs/write')
+  assert.equal(leg.operationOwnerTemplateId, 'worker')
+  assert.equal(leg.authorityGeneration, 0)
+  assert.match(String(leg.blueprintContentHash), /^sha256:[0-9a-f]{64}$/u)
+  assert.equal(leg.blueprintRevision, '1')
+  assert.deepEqual(leg.perEffectRequiredAuthorities, ['leader'])
+  assert.equal(leg.subject.kind, 'instance')
+  assert.equal(leg.subject.instanceId, 'inst-p6t2seedw01')
+  // (3) ZERO EXECUTIONS: the management plane routed an ASK, it did not run the call. The durable
+  //     state holds one PENDING request and NOT ONE decision.
+  const state = await control.readControlState(root)
+  assert.equal(state.requests.length, 1)
+  assert.equal(state.requests[0].status, 'pending')
+  assert.equal((state.decisions ?? []).length, 0, 'routing an ask writes no decision — only the reviewer does')
+  // (4) THE ONE WAIT BRIDGE still owns the settlement: a Stop aborts the wait and durably ABANDONS the
+  //     inline leg (the coupling is unchanged by this round).
+  abort.abort()
+  const settled = await pending
+  assert.equal(settled.ok, false)
+  assert.ok(['ADMISSION_APPROVAL_WAIT_ABORTED', 'ADMISSION_APPROVAL_ABANDONED'].includes(settled.code), `unexpected settle code ${settled.code}`)
+})
+
+test('ADM-150 — the REAL router selects the OFFICER from that durable case, and round-84 delivery wakes exactly that Member', async (t) => {
+  const { mkdtempSync, readFileSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  const { createAlpha6RootWiring } = await import('../alpha6/root-composition.ts')
+  const { createAlpha6RootRouter } = await import('../alpha6/root-router.ts')
+  const { createAlpha6CategoryLookup } = await import('../alpha6/assigned-officer-facts.ts')
+  const { createFileWakeIntentDirectory } = await import('../alpha6/wake-intent-directory.ts')
+  const { dispatchLatch, createLatchCoordinator, latchKeyFor } = await import('../alpha6/wake-dispatch.ts')
+
+  const { control, root, approvals, destroy } = await c93World('adm150')
+  t.after(destroy)
+  const binding = c93Binding('inst-p6t2seedw01', { root })
+  const abort = new AbortController()
+  const { pending } = await c93Ask({
+    approvals,
+    binding,
+    callId: 'call-adm150-write',
+    toolName: 'write',
+    args: { file_path: '/work/member/a.txt', content: 'hello' },
+    signal: abort.signal,
+  })
+  let leg
+  for (let attempt = 0; attempt < 200 && leg === undefined; attempt += 1) {
+    const state = await control.readControlState(root)
+    leg = state.requests.find((request) => request.correlation === 'admission:call-adm150-write')
+    if (leg === undefined) await new Promise((resolve) => setTimeout(resolve, 5))
+  }
+  assert.ok(leg !== undefined)
+
+  const OFFICER = 'inst-c93-officer'
+  const OFFICER_SESSION = 'session-child-c93-officer'
+  const LEADER = 'inst-c93-leader'
+  const officerRow = { instanceId: OFFICER, rootSessionId: root, templateId: 'officer', childSessionId: OFFICER_SESSION, lifecycle: 'RUNNING' }
+  const leaderRow = { instanceId: LEADER, rootSessionId: root, templateId: 'leader', childSessionId: 'session-child-c93-leader', lifecycle: 'RUNNING' }
+  const members = {
+    get: (rootSessionId, instanceId) => (rootSessionId === root ? [officerRow, leaderRow].find((row) => row.instanceId === instanceId) : undefined),
+    list: (rootSessionId) => (rootSessionId === root ? [officerRow, leaderRow] : []),
+  }
+  // The DURABLE control reader is the real service's — the leg came from `requestApprovalLeg`, so the
+  // router sees the case this round actually wrote, not a hand-built row.
+  const wiring = createAlpha6RootWiring(true, () => ({
+    blueprintSource: c93Source(),
+    rootSessionId: root,
+    leaderTemplateId: 'leader',
+    members,
+    control: { readControlState: (rootSessionId) => control.readControlState(rootSessionId) },
+  }))
+  assert.equal(wiring.mode, 'alpha6')
+  const router = createAlpha6RootRouter({
+    rootSessionId: root,
+    routing: wiring.routing,
+    leaderTemplateId: 'leader',
+    routingForRoot: wiring.routingForRoot,
+    control: { readControlState: (rootSessionId) => control.readControlState(rootSessionId) },
+    members: { list: members.list },
+    fixedLeaderOrHumanCategory: ({ kind, rootSessionId, routing }) => createAlpha6CategoryLookup()({
+      rootSessionId: rootSessionId ?? root,
+      leg: { kind },
+      routing: routing ?? wiring.routing,
+    }),
+  })
+  const route = await router.route(leg.requestId, root)
+  assert.notEqual(route, null, 'a case-carrying leg is ROUTABLE — the R1 ruling restored exactly this')
+  assert.equal(route.kind, 'recipient')
+  assert.deepEqual(route.target, { kind: 'instance', instanceId: OFFICER, templateId: 'officer', routeRole: 'officer' })
+  assert.equal(route.currentLegId, leg.requestId)
+
+  // THE ONE GOVERNED DELIVERY (round 84): the intent is durable, the wake names the routed Officer, and
+  // a fresh directory object reads the confirmation back from DISK.
+  const dir = mkdtempSync(join(tmpdir(), 'adm148-alpha6-'))
+  const intents = createFileWakeIntentDirectory(dir)
+  const wake = {
+    reviewerInstanceId: route.target.instanceId,
+    targetSessionId: OFFICER_SESSION,
+    templateId: route.target.templateId,
+    routeRole: route.target.routeRole,
+    currentLegIds: [leg.requestId],
+  }
+  const key = latchKeyFor(wake, root, 3)
+  const delivered = []
+  const dispatched = await dispatchLatch({
+    plan: { wakes: [wake], humanLegIds: [], held: [] },
+    rootSessionId: root,
+    sessionGeneration: 3,
+    coordinators: [createLatchCoordinator(key)],
+    intent: intents.forKey(key),
+    deliver: async (delivery, targetSessionId) => { delivered.push({ delivery, targetSessionId }) },
+  })
+  assert.deepEqual(dispatched.failures, [])
+  assert.equal(delivered.length, 1, 'exactly one wake, to the reviewer the routing decision chose')
+  assert.equal(delivered[0].targetSessionId, OFFICER_SESSION)
+  const reread = createFileWakeIntentDirectory(dir)
+  const rows = await reread.list()
+  assert.equal(rows.length, 1)
+  assert.equal(rows[0].key.reviewerInstanceId, OFFICER)
+  assert.equal(rows[0].status, 'accepted')
+  assert.match(readFileSync(reread.pathFor(key), 'utf8'), new RegExp(OFFICER), 'the durable wake row is a real file')
+  // The wake is a ROUTING delivery: the case is still PENDING and no tool ran.
+  const after = await control.readControlState(root)
+  assert.equal(after.requests[0].status, 'pending')
+  abort.abort()
+  await pending
+})
+
+test('ADM-151 — a NON-qualifying ask keeps the plain Leader/Human path: NO case, NO Officer, unchanged behaviour', async (t) => {
+  const { control, root, approvals, destroy } = await c93World('adm149')
+  t.after(destroy)
+  // `read` has NO declared `toolBindings[]` entry on this Member — the ruling's "only asks that qualify
+  // are converted". The plain path must be byte-identical to the pre-round product.
+  const binding = c93Binding('inst-p6t2seedw01', { root, perTool: {} })
+  const abort = new AbortController()
+  const { pending } = await c93Ask({
+    approvals,
+    binding,
+    callId: 'call-adm151-read',
+    toolName: 'read',
+    args: { file_path: '/work/member/a.txt' },
+    signal: abort.signal,
+  })
+  let row
+  for (let attempt = 0; attempt < 200 && row === undefined; attempt += 1) {
+    const state = await control.readControlState(root)
+    row = state.requests.find((request) => request.correlation === 'admission:call-adm151-read')
+    if (row === undefined) await new Promise((resolve) => setTimeout(resolve, 5))
+  }
+  assert.ok(row !== undefined, 'the ask still reaches the Control plane (it is not dropped)')
+  assert.equal(row.approvalCaseId, undefined, 'no case is invented for an undeclared tool')
+  assert.equal(row.legOrdinal, undefined)
+  assert.equal(row.kind, 'leader-approval', 'the lawful Leader/Human carrier is unchanged')
+  abort.abort()
+  const settled = await pending
+  assert.equal(settled.ok, false)
+
+  // And the router — handed THAT row — answers nothing, exactly as before: an ask nobody delegated stays
+  // with the Leader. (The route is a projection; it executes nothing either way.)
+  const { routeReview } = await import('../review-router/router.ts')
+  const { blueprintReviewPolicyFrom } = await import('../review-router/policy.ts')
+  const policy = blueprintReviewPolicyFrom({
+    enabled: true,
+    officerTemplateId: 'officer',
+    ordinaryToolApprovals: { default: 'officer', leaderExceptions: [] },
+    whenOfficerUnavailable: 'hold',
+  })
+  assert.ok(policy !== null)
+  const route = routeReview(Object.freeze({
+    policy,
+    currentLeg: Object.freeze({ ...row, status: 'pending', hasLegalResolver: true, fixedLeaderCategory: false, requiresHuman: false, ordinaryAsk: null }),
+    currentOfficer: Object.freeze({ status: 'active', instanceId: 'inst-c93-officer', templateId: 'officer' }),
+    leader: Object.freeze({ instanceId: 'inst-c93-leader', templateId: 'leader' }),
+    transfer: null,
+  }))
+  assert.notEqual(route.kind, 'recipient', 'a case-less ask is never routed to the Officer')
+})
+
+test('ADM-152 — an ask that qualified but lacks a required identity member is a TYPED refusal: no case, no plain row, no default', async (t) => {
+  const { control, root, approvals, destroy } = await c93World('adm150')
+  t.after(destroy)
+  // The binding names no Member template — a required member of the frozen identity. The ruling is
+  // explicit: refuse, never default a missing field to make the router return an Officer.
+  const binding = c93Binding('inst-p6t2seedw01', { root, templateId: '' })
+  const outcome = await approvals.request({
+    binding,
+    callId: 'call-adm150-write',
+    toolName: 'write',
+    arguments: { file_path: '/work/member/a.txt', content: 'hello' },
+    laneReason: 'write ask',
+  })
+  assert.equal(outcome.ok, false)
+  assert.equal(outcome.code, 'ADMISSION_ALPHA6_CASE_IDENTITY_INCOMPLETE')
+  assert.match(outcome.reason, /requesting-member-identity/u, 'the refusal NAMES the member it could not source')
+  assert.match(outcome.reason, /no default is invented/u)
+  // NOTHING was written: not a fabricated case, and not a downgraded plain row either.
+  const state = await control.readControlState(root)
+  assert.equal(state.requests.length, 0, 'a half-identified ask must write nothing at all')
+})
+
+test('ADM-153 — the SAME case shape is still refused for the Officer asking about its own operation (self-review stays refused)', async () => {
+  const { routeReview } = await import('../review-router/router.ts')
+  const { blueprintReviewPolicyFrom } = await import('../review-router/policy.ts')
+  const policy = blueprintReviewPolicyFrom({
+    enabled: true,
+    officerTemplateId: 'officer',
+    ordinaryToolApprovals: { default: 'officer', leaderExceptions: [] },
+    whenOfficerUnavailable: 'hold',
+  })
+  assert.ok(policy !== null)
+  // A case leg whose SUBJECT is the Officer itself. The frozen ordinary-ask facts are the ones ADM-149
+  // produced (same fields); only the reviewer identity coincides with the requester.
+  const leg = Object.freeze({
+    requestId: 'ctrl-adm151-leg',
+    status: 'pending',
+    kind: 'leader-approval',
+    reviewAuthority: 'leader',
+    operationOwnerTemplateId: 'officer',
+    ordinaryAsk: Object.freeze({
+      kind: 'leader-approval',
+      reviewAuthority: 'leader',
+      requestedEffect: 'allow',
+      operationFingerprint: 'sha256:adm151',
+      mutationProposalFingerprint: null,
+      authorityScope: Object.freeze({ operationClass: 'write', matcher: { kind: 'exact', resource: 'file:/work/member/a.txt' } }),
+      operationTool: Object.freeze({ owner: 'dsh.fs', name: 'write' }),
+      perEffectRequiredAuthorities: Object.freeze(['leader']),
+      fixedLeaderOrHumanCategory: false,
+    }),
+    requiresHuman: false,
+    hasLegalResolver: true,
+    fixedLeaderCategory: false,
+  })
+  const route = routeReview(Object.freeze({
+    policy,
+    currentLeg: leg,
+    // The Officer that would be woken IS the operation's owner: the existing ReviewCapability rule must
+    // keep refusing that (never self-review), and the ask falls back to the Leader.
+    currentOfficer: Object.freeze({ status: 'active', instanceId: 'inst-c93-officer', templateId: 'officer' }),
+    leader: Object.freeze({ instanceId: 'inst-c93-leader', templateId: 'leader' }),
+    operationOwner: Object.freeze({ instanceId: 'inst-c93-officer' }),
+    transfer: null,
+  }))
+  assert.notEqual(route.kind, 'no-work')
+  assert.equal(route.target?.routeRole === 'officer', false, `the Officer must never review its own operation (route: ${JSON.stringify(route)})`)
+  assert.ok(['leader', undefined].includes(route.target?.routeRole), `unexpected route ${JSON.stringify(route)}`)
 })
