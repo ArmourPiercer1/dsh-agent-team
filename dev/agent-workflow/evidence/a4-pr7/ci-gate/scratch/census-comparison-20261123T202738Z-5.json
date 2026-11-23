@@ -1,0 +1,49 @@
+{
+  "head": "228d7270651bff5d7fc0f58b4004845dec83ce8d",
+  "baseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md",
+  "baselineIds": [],
+  "reports": [
+    {
+      "jsonPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/census/census-20261123T202738Z-5-1.json",
+      "files": 599,
+      "legs": 7416,
+      "ids": [
+        "TEST packages/runtime/test/a6-pr2a-lane-hygiene.test.ts::a6-pr2a lane hygiene is in the shared typecheck face and has no production importer"
+      ]
+    },
+    {
+      "jsonPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/census/census-20261123T202738Z-5-2.json",
+      "files": 599,
+      "legs": 7416,
+      "ids": [
+        "TEST packages/runtime/test/a6-pr2a-lane-hygiene.test.ts::a6-pr2a lane hygiene is in the shared typecheck face and has no production importer"
+      ]
+    }
+  ],
+  "comparison": {
+    "verdict": "fail",
+    "setIdentical": false,
+    "countsMoved": true,
+    "added": [
+      "TEST packages/runtime/test/a6-pr2a-lane-hygiene.test.ts::a6-pr2a lane hygiene is in the shared typecheck face and has no production importer"
+    ],
+    "newReds": [
+      "TEST packages/runtime/test/a6-pr2a-lane-hygiene.test.ts::a6-pr2a lane hygiene is in the shared typecheck face and has no production importer"
+    ],
+    "newCollections": [],
+    "escalations": [],
+    "resolved": [],
+    "totals": {
+      "files": 599,
+      "legs": 7416,
+      "declared": {
+        "files": 626,
+        "legs": 7936
+      },
+      "moved": true,
+      "capturesAgree": "2 captures, identical identity sets",
+      "captured": "599f/7416l, 599f/7416l",
+      "totalsNote": "captured 599f/7416l, 599f/7416l vs baseline-declared 626 / 7936"
+    }
+  }
+}

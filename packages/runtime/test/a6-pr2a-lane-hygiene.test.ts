@@ -58,7 +58,17 @@ describe('a6-pr2a lane hygiene', () => {
     // A6-PR2b is the first production consumer: the Control chain imports
     // the capability evaluator. PR2a's own law (no third consumer surface)
     // remains, so only the control service/types are exempted.
-    expect(offenders.filter((f) => !f.startsWith('packages/runtime/control/'))).toEqual([])
+    //
+    // ROUND 93 (R1, owner ruling on review `20261124-0151` §1) — ONE reviewed exemption, disclosed.
+    // The Alpha.6 case producer must decide ordinary-ask ELIGIBILITY with the SAME predicate the router
+    // and this evaluator use (`isDelegableOrdinaryToolAsk`); a local copy would be a second eligibility
+    // rule, which the review-router's own policy header forbids. Its import is routed through THIS lane
+    // (the re-export in `review-authority/index.ts`) precisely so the review-ROUTER pin
+    // (`a6-pr1-lane-hygiene.test.ts`) keeps its stricter "no root/plugin path imports the pure lane"
+    // law, untouched. The exemption is EXACTLY one path: no glob, no prefix, no other consumer, and the
+    // rest of the law (no I/O, no clock, no service/PA/second ledger) is asserted below unchanged.
+    const R1_CASE_PRODUCER = 'packages/runtime/src/plugin/vnext/alpha6-ask-case.mjs'
+    expect(offenders.filter((f) => !f.startsWith('packages/runtime/control/') && f !== R1_CASE_PRODUCER)).toEqual([])
   })
 
   it('has no I/O, clock, service, PA or second-ledger import', () => {
