@@ -4,6 +4,56 @@
 <!-- ROUND 109 — THE CURRENT ACCEPTANCE STATUS. Read this before anything else. -->
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
+## ROUND 113 — the C1–C18 sign-off and the adversarial security review (counts; no capability row moves)
+
+Review `20261125-0058` Stage C. Two independent documents were produced this round, both evidence-bound
+and both stricter than this report's historical prose:
+
+- **[`C1-C18-SIGNOFF.md`](C1-C18-SIGNOFF.md)** — one row per item of
+  `docs/plans/memo/ute-p0-20261121/06-CAPABILITY-CONTRACT.md` (the authoritative 19-row list: C1–C18 plus
+  the contract's C14b split row; C13 is further split into its base faces and its two ruled-out arms, so the
+  table has **21 sign-off rows**), with capability, contract requirement, evidence (test ids /
+  run records / live judges + paths), level, limitation, and required-vs-candidate gate status.
+- **[`SECURITY-REVIEW-20261125.md`](SECURITY-REVIEW-20261125.md)** — an adversarial audit of Admission,
+  Provider/OS boundary, Settlement, Control and Stop: the claimed invariants, an attempted break for each
+  (code reading + throwaway probes + existing arms), and findings with `file:line` and severity. **No fix
+  is included**, by instruction.
+
+**Counts over the 21 sign-off rows (this is the number to quote):**
+
+| level | count | rows |
+| --- | --- | --- |
+| **MECHANISM** | **7** | C1, C4, C7, C10, C11, C15, C16 |
+| **DEV-LIVE** | **8** | C2, C3, C5, C6, C8, C9, C12, C13 (base faces) |
+| **ENV-LIMITED** | **1** | C14b (network-deny on the hosted runner; the other invariants it names are DEV-LIVE) |
+| **UNSUPPORTED BY PRODUCT RULING** | **5** | C13 (PTC arm), C13 (per-call process-ask arm), C14, C17, C18 |
+| **NOT PROVEN** | **0** | — |
+| **PRODUCT-PROVEN** | **0** | — (no row claims it) |
+
+Folded back to the contract's own granularity (18 numbered criteria + C14b = 19 rows): 7 MECHANISM,
+8 DEV-LIVE, 1 ENV-LIMITED, 3 UNSUPPORTED (C13 contains both ruled-out arms, plus C14/C17/C18), 0 NOT
+PROVEN. The two ruled-out arms are the owner decisions already recorded in this report (PTC:
+`ADR-ptc-unsupported.md`; process `ask`: `SCOPE-subprocess-ask.md`), not gaps.
+
+**Corrections this round (do not read the old rows instead):**
+
+- §2.2's **C6/C7 rows below are stale**: they say the live routed wake is "not proven" / "a remaining gap".
+  The routed sub-judges have been PROVEN on both hosts since round 87's machine artifacts
+  (`d-boot-feasibility/d4/results.json`, candidate `verdict.json`), while the d4 area's own `README.md`
+  still prints REFUTED. **F-1** (stale README) and **F-2** (stale §2.2 rows) are recorded in
+  `C1-C18-SIGNOFF.md` §6. The sign-off rows C6 = DEV-LIVE and C7 = MECHANISM (cold-wake half only) are the
+  measured values.
+- **No row is upgraded** by the candidate gate. It is `knownNonRequired`; a green there is DEV-LIVE at most.
+
+**Security findings (not fixed):** SEC-01 the admission-ledger append has no `fsync`
+(`fact-ledger.mjs:126`; process-crash durable, machine-crash not), SEC-02 the stale d4 README inverts the
+routed-wake verdict, SEC-03 host-capability tools have no managed I/O lane, SEC-04 ungoverned rows are
+outside every invariant. **No managed Admission / Provider-OS / Settlement / Control / Stop invariant was
+found BROKEN at this head.**
+
+Gate block for this head: `round113/` (all green; `ci-pr-gate --full --census-captures 2` included) — see
+the PR body's round-113 row for the pasted numbers.
+
 ## ROUND 111 — REAL-MODEL acceptance: the probe answered ENV-LIMITED; the harness is complete
 
 Review `20261125-0058` Stage B, second item: *every booted-host proof so far uses a scripted model; a
