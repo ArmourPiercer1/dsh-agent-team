@@ -3368,3 +3368,57 @@ gate exercises this row, and `V@B=yes` requires one. (2) Only `write`/`writeText
 receipt; subprocess/PTY and `apply_patch` remain R4. (3) The duplicate-route attempt itself leaves no
 durable fact; the judge proves convergence (one wake) and records the two product call sites. (4) The
 scripted model is the only double.
+
+## Round 98 (2026-11-24) — the two older owner rulings implemented: realmless Option B + the Shape-B search negative control
+
+**Owner ruling `docs/reviews/20261124-0151.txt` §4. No level moved; no population deleted; no assertion
+weakened.** This round implements the two rulings that had been carried as open decisions and supplies
+the negative control the search ruling explicitly required.
+
+### Realmless admission = OPTION B, on the MOUNT RESULT (not the declaration)
+
+- **Bug closed (placement, not policy):** the round-35 `MEMBER_CENTRE_UNWIRED` check ran BEFORE the mount
+  attempt and only asked whether the row DECLARED a realm source. A governed row that declared one but
+  whose provider compiled no realm for this template (`compiledFor → undefined`; a v4 template outside
+  `memberIoCeilings`) slipped past it and ran with no centre. `memberAdmissionGate`
+  (`packages/runtime/src/plugin/vnext/centre-config.ts`) now runs AFTER `mountMemberA5sfRealm` on
+  `a5sfMountedRealm`, before `installMemberExecution`, the preset mount, the deny lane and every tool
+  body. The typed code stays `MEMBER_CENTRE_UNWIRED` (justified in `OWNER-DECISIONS.md`: the ruling
+  allowed `ADMISSION_PROVIDER_UNCONFINED`, but the string is not in a closed refusal table and renaming
+  would buy wording, not enforcement).
+- **The ungoverned path is reported, not invented away:** a row without `centreStatePath` keeps DSH's own
+  permission model and the live bindings answer
+  `admissionModeOf(sessionId) → { mode: 'ungoverned', uteProtected: false }`, with one
+  `UTE-GOVERNANCE ungoverned` observation. It is never reported as UTE-protected.
+- **Arms:** `ADM-44` (pure rule) + `ADM-44b` in `packages/runtime/test/vnext-admission.test.mjs`:
+  governed+unconfined ⇒ typed refusal, zero files under the centre state dir; governed+realm ⇒
+  `{mode:'governed', uteProtected:true}`; ungoverned ⇒ allowed and reported ungoverned; source-placement
+  pin that the gate reads the MOUNT RESULT and runs before the preset/tool surface.
+
+### Search face = Shape B declared; the parent-allow / child-deny recursive control is GREEN
+
+`SLICE-39` (`packages/runtime/test/vnext-fs-slice.test.mjs`) is the required control over the REAL search
+tool paths (`@deepseek-ai/dsh-tool-fs-search` + the real confined P1-07 provider):
+
+1. **POSITIVE CONTROL:** parent allowed, NO child deny — `grep` returns the protected child's token
+   (`secret.txt`), proving the child is reachable without the deny.
+2. **NEGATIVE:** same parent allowed, child DENIED — `grep` returns an error with **no token and not even
+   the child path**; the error is the confined launch refusal. The centre's fact is `decision=allow` for
+   the ROOT (Shape B judges the root) and the execution fact is `failed`; the protected file is
+   unchanged.
+
+**Why it passes (and why that is not root-only checking):** `grep`/`glob` spawn the packaged ripgrep
+through the Member realm's confined `subprocess` face; that face compiles the effective lane once with
+`compileExecutionProfile`. Landlock is additive, so a deny nested inside an allowed subtree is
+`PATH_NESTED_DENY_UNEXPRESSIBLE` and `createConfinedSubprocessClass` remembers the refusal — every spawn
+from that realm is refused before a process exists. The dangerous scope is **FORBIDDEN wholesale**, not
+filtered, and this is a stronger answer than "forbid only this search root".
+
+**Limits (stated, not softened):** Shape B is the declared support level and is **NOT full dynamic
+permission governance** — a durable Overlay deny aimed at ordinary file reads does not deny `grep`/`glob`
+(`overlayOutcome=no-opinion`). The nested-deny answer is a refusal of the whole confined process face for
+that realm (a shell on the same realm is refused too), not per-file carving; Shape A (a subtree search
+face in the closed vocabulary) remains the only shape that can express a nested deny precisely.
+
+**Not proven:** a boot-level AgentSetup arm for the realmless refusal (in-process rule + source placement
+only); any PRODUCT-PROVEN status (no bound executable gate exercises these rows; the level is MECHANISM).

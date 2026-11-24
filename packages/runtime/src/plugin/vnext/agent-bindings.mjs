@@ -253,6 +253,11 @@
  *   getConsumptionState(sessionId)      (the per-session state or undefined)
  *   resolveConsumptionViews(sessionId)  (the PURE consumption-view derivation)
  *   observations                        (string[]; noteworthy async observations)
+ *   admissionModeOf(sessionId)          (the governance REPORT: `{ mode: 'governed' | 'ungoverned',
+ *                                        uteProtected }`, or undefined for a non-member session.
+ *                                        OWNER RULING 20261124-0151 §Realmless: an ungoverned member is
+ *                                        allowed on DSH's own permission model but is ALWAYS reported
+ *                                        ungoverned/uteProtected=false — never as UTE-protected)
  *   governanceAuthority(asSessionId)    (operator | member | undefined)
  *   dropResidency(sessionId)            (-> {dropped, disposeError?})
  *   close()                             (idempotent dispose of every owned side effect)
@@ -372,7 +377,7 @@ import {
   mountMemberA5sfRealm,
 } from '../live/a5sf-realm-row.mjs'
 import { freshCreateHintAdmits } from './bind-path.mjs'
-import { memberCentreUnwiredViolation } from './centre-config.js'
+import { memberAdmissionGate } from './centre-config.js'
 // C (2026-11-21): the ONE centre composition point + its durable sinks.
 import { installMemberExecution } from './member-execution.mjs'
 // SHAPE A (round 61): a governed member's native modules are mounted into its realm BY DEFAULT,
@@ -757,6 +762,8 @@ export function createAgentBindings(deps) {
   let callCounter = 0
   /** @type {string[]} noteworthy async observations (e.g. whenIdle quirks). */
   const observations = []
+  /** sessionId → the admission report (governed/ungoverned + uteProtected) the product exposes. */
+  const admissionModes = new Map()
   /**
    * @type {Map<string, object>} per-session durable consumption state, keyed
    * by session id: `{ instanceId, ref, modelView, mcpViews (the
@@ -1760,13 +1767,6 @@ export function createAgentBindings(deps) {
       // The mounted realm, hoisted so the POST-DENY native attach below can reach it. The attach may
       // not live inside this block: the deny lane runs later, and route-C N5 pins the order.
       let a5sfMountedRealm
-      // A governed member without a realm is REFUSED, not left unmediated (round 35). The rule is narrow:
-      // it fires only when the row asked for the centre (centreStatePath) and no realm was mounted, so a
-      // row that never configured the centre is unchanged.
-      if (sessionId !== teamRoot && !(a5sfRowConfig !== undefined && a5sfRealmProvider !== undefined)) {
-        const unwired = memberCentreUnwiredViolation(config, { instanceId, mountedRealm: false })
-        if (unwired !== undefined) throw new Error(`agent-bindings: ${unwired}`)
-      }
       if (a5sfRowConfig !== undefined && a5sfRealmProvider !== undefined && sessionId !== teamRoot) {
         const a5sfRealm = await mountMemberA5sfRealm({
           root: agentCtx,
@@ -1862,6 +1862,28 @@ export function createAgentBindings(deps) {
             onNativeDispose: (entry) => nativeMountDisposers.push(entry),
             observe: (message) => observations.push(message),
           })
+        }
+      }
+      // OWNER RULING 20261124-0151 §Realmless = OPTION B (round 98). The check runs AFTER the mount
+      // attempt, on the MOUNT RESULT, not on the declaration: a row that declares a realm source but
+      // whose provider compiles no realm for this template used to slip past the round-35 pre-check and
+      // run with no centre at all. A governed member with no confined provider is REFUSED here, before
+      // `installMemberExecution`, the preset mount, the deny lane and every tool body — so the refusal
+      // has zero admission facts, zero settlements and zero executions (the AgentSetup rejection rolls
+      // the unpublished agent back).
+      //
+      // The same gate produces the REPORT for the ungoverned path: a row that never configured
+      // `centreStatePath` is allowed to keep DSH's own permission model, and the live bindings expose
+      // it as `{ mode: 'ungoverned', uteProtected: false }` (plus one observation). Writing no label
+      // would let a reader assume the run was UTE-protected; it never was.
+      if (sessionId !== teamRoot) {
+        const admission = memberAdmissionGate(config, { instanceId, mountedRealm: a5sfMountedRealm !== undefined })
+        admissionModes.set(sessionId, Object.freeze({ mode: admission.mode, uteProtected: admission.uteProtected }))
+        if (admission.refusal !== undefined) throw new Error(`agent-bindings: ${admission.refusal}`)
+        if (admission.mode === 'ungoverned') {
+          observations.push(
+            `UTE-GOVERNANCE ungoverned: member ${JSON.stringify(instanceId)} runs under DSH's own permission model (the row sets no centreStatePath) — uteProtected=false; this member produces no UTE admission fact or settlement and must never be reported as UTE-protected`,
+          )
         }
       }
       toolDisposers.push(installModelSelection(agentCtx, ref))
@@ -4275,6 +4297,10 @@ export function createAgentBindings(deps) {
       return true
     },
     observations,
+    // The governance REPORT (owner ruling 20261124-0151 §Realmless): every bound member answers its
+    // admission mode and whether UTE actually protects its calls. A session that was never bound (or
+    // the root, which is not a UTE-admitted member) answers `undefined` — never an inferred "governed".
+    admissionModeOf: (sessionId) => admissionModes.get(String(sessionId)),
     governanceAuthority,
     dropResidency,
     close,

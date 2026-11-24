@@ -34,6 +34,35 @@ restored (round 74) and serves work delivery (round 83); Alpha.6's formal routin
 (enablement / Officer up / Officer binding / incoherent-row refusal) and one REFUTED (`d4:routed-wake`),
 and the 405 creation entrance gone (runtime creation since round 74).
 
+## Latest round (98) — the two older owner rulings implemented (realmless Option B, Shape B + the search negative control)
+
+Owner ruling `docs/reviews/20261124-0151.txt` §4, recorded as DECIDED in `OWNER-DECISIONS.md`.
+
+- **Realmless admission = OPTION B.** A governed Member with no enforceable confined provider is
+  **REFUSED** with the typed, stable `MEMBER_CENTRE_UNWIRED` (the ruling allowed
+  `ADMISSION_PROVIDER_UNCONFINED`; kept because the existing string is the identifier ADM-44/readers
+  already use and is not in a closed refusal table — the reason prose states the accurate semantics).
+  The round-98 fix moves the gate onto the **mount result**, closing the case where a row declared a
+  realm source but the provider compiled none. An ungoverned row (no `centreStatePath`) keeps DSH's own
+  permission model but is **reported** `{ mode: 'ungoverned', uteProtected: false }`
+  (`admissionModeOf`, plus a `UTE-GOVERNANCE ungoverned` observation) and is never reported as
+  UTE-protected. Arms: `ADM-44`, `ADM-44b` (typed refusal + zero files; governed+mounted ⇒ protected;
+  ungoverned ⇒ allowed + reported; placement pinned to the mount result).
+- **Search = Shape B is the declared support level, and it is NOT full dynamic permission governance.**
+  A durable Overlay deny aimed at ordinary file reads does **not** deny `grep`/`glob`; the Overlay
+  returns `no-opinion` outside its vocabulary and the compiled lane alone judges the search. The
+  ruling's required negative control is GREEN over the REAL search tool paths (`SLICE-39`): parent
+  ALLOWED + child DENIED ⇒ the recursive `grep` returns an error with **no match and no byte of the
+  protected child** (not even its path), because the confined subprocess face compiles the effective
+  lane once and Landlock cannot express a nested deny (`PATH_NESTED_DENY_UNEXPRESSIBLE`) — the spawn is
+  refused before any process. Positive control (no child deny) DOES return the child's token, so the
+  pair is falsifiable; the centre's fact is `decision=allow` for the ROOT, proving the arm is not a
+  root-only check. The dangerous scope is **forbidden wholesale**, not filtered; Shape A remains the
+  only shape that can express a nested deny precisely.
+- **Levels unchanged / not proven:** both arms are MECHANISM (in-process, pinned host); there is no
+  booted AgentSetup arm for the realmless refusal, no PRODUCT-PROVEN row, and no claim that Shape B is
+  dynamic permission governance.
+
 ## Latest round (95) — the R3 receipt is WIRED and PROVEN LIVE for `write`
 
 The owner ruling `20261124-0151` approved R3 (the ApprovedAskReceipt) and kept R4 as the fail-closed
@@ -127,7 +156,7 @@ subprocess face as the next step.
 No capability row in `dev/agent-workflow/evidence/ute-a1/CAPABILITY-MATRIX-C.md` is PRODUCT-PROVEN
 (the matrix's own rule, `CAPABILITY-MATRIX-C.md:71-74`): the D boots below are `DEV-LIVE` records, not
 gates. Closing that is step D, not this PR. The three contract requests it once raised are **two
-resolved and one open** (round 86 audit corrected this section, which still described all three as open):
+resolved (the search one is now DECIDED by the round-98 owner ruling, not open)** (round 86 audit corrected this section, which still described all three as open):
 
 - `CONTRACT-CHANGE-REQUEST-process-lane.md` — **RESOLVED / SUPERSEDED** (round 75 + owner ruling §1). The
   v4 grammar already carried the declaration; the projection dropped it. `bash`/PTY are live-proven
@@ -137,11 +166,16 @@ resolved and one open** (round 86 audit corrected this section, which still desc
 - `CONTRACT-CHANGE-REQUEST-settlement-recheck.md` — **RESOLVED, owner Option A (round 73)**: a durable
   deny is the legal state for "admitted as allow, then refused before the body"; `ADM-119` is the
   positive. The store's own Stop shape is `Stop + CANCELLED`, never a fabricated allow/UNKNOWN.
-- `CONTRACT-CHANGE-REQUEST-search-face.md` — shape B is implemented (the durable overlay abstains on an
-  out-of-vocabulary face, the compiled lane judges it); **shape A, a search face the overlay can deny, is
-  still open** — this one needs a ruling.
+- `CONTRACT-CHANGE-REQUEST-search-face.md` — **DECIDED (round 98, owner ruling `docs/reviews/20261124-0151.txt`
+  §Search): Shape B is the declared support level for this generation, and it is NOT full dynamic
+  permission governance.** The durable Overlay abstains (`no-opinion`) on a face outside its vocabulary,
+  so an Overlay deny aimed at ordinary file reads does not deny `grep`/`glob`; the compiled lane alone
+  judges the search. The required parent-allow/child-deny recursive negative control is GREEN
+  (`SLICE-39`): the confined provider refuses the inexpressible scope before any process, so no child byte
+  is read or returned. Shape A (a subtree search face the overlay can deny) remains future work, not a
+  delivered capability.
 
-## Owner decisions needed (two older rulings + four rulings the new seams need; PTC is RULED)
+## Owner decisions (the two older rulings are now DECIDED at round 98; four rulings the new seams need remain; PTC is RULED)
 
 `dev/agent-workflow/evidence/ute-a1/OWNER-DECISIONS.md` carries a round-86 correction block and a
 **round-89 addendum**; its historical text still describes states from rounds 59–68. Current state:
@@ -154,8 +188,13 @@ resolved and one open** (round 86 audit corrected this section, which still desc
    markers (asserted), and the refusal negative controls are kept — not deleted tests.
 2. **runtime team creation** — **answered and implemented** (round 74); `team.create` is served.
 3. **settlement recheck** — **answered** (Option A, round 73); no action.
-4. **realm-less admission** — one sentence: is `MEMBER_CENTRE_UNWIRED` the final answer?
-5. **search face** — one sentence: is lane-only governance final (shape B), or is shape A wanted?
+4. **realm-less admission — DECIDED (round 98): OPTION B.** A governed Member with no enforceable
+   confined provider is REFUSED (`MEMBER_CENTRE_UNWIRED`, kept; see `OWNER-DECISIONS.md` for the naming
+   justification). An ungoverned row (no `centreStatePath`) keeps DSH's own permission model but is
+   REPORTED `ungoverned`/`uteProtected:false` and is never reported as UTE-protected. Arms `ADM-44`/`ADM-44b`.
+5. **search face — DECIDED (round 98): SHAPE B is the declared support level, NOT full dynamic permission
+   governance.** An Overlay deny on ordinary file reads does not deny `grep`/`glob`; the recursive
+   parent-allow/child-deny control is GREEN (`SLICE-39`); shape A stays future work.
 6. **Alpha.6** — formal routing **implemented** (round 84); round 87 measured the remaining gap as a
    **live routed wake that the product's own router REFUTES** on a case-less ordinary ask. Two Team-side
    seams, not an upstream seam: no case-bearing ask producer (G1) and BL-30's missing ask consumer (G2).
@@ -222,10 +261,11 @@ exemption this project forbids. The one red was fixed in rounds 48-50 and the le
    consulted it per call through a pre-execute adapter; the cut retired the adapter with the execution
    route, so the centre judges only the COMPILED binding lanes and a `grantInstance` deny persisted after
    bind changes nothing at execution time.
-2. **Admission was conditional on the realm.** A member with `centreStatePath` but no confined-provider
-   realm ran unmediated and unreported. Fixed for the rows that ASKED (they are now refused with
-   `MEMBER_CENTRE_UNWIRED`); rows that never asked remain outside the centre and face the owner ruling in
-   `ESCALATION-realmless-admission.md` (admit against the compiled ceiling vs refuse).
+2. **Admission was conditional on the realm — CLOSED BY THE ROUND-98 RULING (Option B).** A governed
+   member with no confined provider is REFUSED with `MEMBER_CENTRE_UNWIRED`; the round-98 placement fix
+   now runs the gate on the MOUNT RESULT, so a row that declared a realm source but compiled none is
+   covered too. A row that never asked is not silently "governed": it keeps DSH's own permission model and
+   is REPORTED `ungoverned`/`uteProtected:false` (`admissionModeOf`), never as UTE-protected.
 
 ## E3 is GREEN, and the migrated suites are a Required leg (rounds 48-50)
 
@@ -473,8 +513,13 @@ Live, two agreeing boots: the same `grep` is now `decision=allow`, `overlayOutco
 `completed`, real match returned; the fact is byte-identical after a SIGKILL cold restart. ADM-103..106 pin the
 four directions (covered+deny, covered fault, out-of-vocabulary in lane, out-of-vocabulary out of lane).
 
-Residual stated plainly: the durable overlay still cannot DENY a search (the lane ceiling is its whole
-governance); shape A (a subtree search face in the vocabulary) remains open.
+Residual stated plainly (round 98 restatement): **Shape B is the declared support level for this
+generation, NOT full dynamic permission governance.** A durable overlay rule still cannot DENY
+`grep`/`glob` (the lane ceiling is their whole governance); the Overlay returns `no-opinion` for faces
+outside its vocabulary. The recursive parent-allow/child-deny control over the real search paths is GREEN
+(`SLICE-39`): the confined face cannot express a nested deny, so it refuses the spawn before any process
+(no match, no child byte) — the dangerous scope is forbidden, not root-checked. Shape A (a subtree search
+face in the vocabulary) remains future work.
 
 ## The adversarial centre review (round 28)
 

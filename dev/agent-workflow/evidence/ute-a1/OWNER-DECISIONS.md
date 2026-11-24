@@ -19,12 +19,63 @@ history and the option analysis.
 | 1 process lane (`bash`/PTY/PTC) | **bash/PTY resolved and live-proven** — the shipped preset DOES mount `@deepseek-ai/dsh-tool-bash-persistent` (`cordis.patch.yml:363-368`), `io.process` is no longer needed (process authority is a compiled tool-level `execution` declaration, `admission.ts:424-466`), and `d3:persistent-subprocess` is PROVEN in two agreeing boots (round 76). **PTC: CLOSED BY OWNER RULING (round 92)** — `docs/reviews/20261124-0151.txt` §PTC formally rules PTC / `run_code` NOT SUPPORTED this generation (amendment `ADR-ptc-unsupported.md`). It is no longer a `CORE_SEAM_BLOCKER` and no longer an open owner ask: the refusal is the supported behaviour, typed, with status `unsupported-by-product-ruling` and zero worker. The "shipped preset never mounts the persistent shell", "`d3` stays REFUTED" and "PTC's upstream seam is an open decision" sentences below are FALSE at this HEAD. | `OWNER-DECISIONS.md` §1 (historical); `ADR-ptc-unsupported.md`; `PTC-FOUR-PART-FINDING.md` (the measured basis); report §6.3 |
 | 2 runtime team creation (405) | **RESOLVED (round 74)** — the S6 management plane is built/installed and `team.create` mints a Team at runtime; the "cannot create a team at runtime / 405" section below is history. | `ESCALATION-centre-row-creation-entrance.md`; report §6.2 |
 | 3 settlement recheck | **RESOLVED (round 73, owner Option A)** — the "cannot be produced without widening the settlement state machine" text below is superseded; `ADM-119` is the positive. | `CONTRACT-CHANGE-REQUEST-settlement-recheck.md:51` |
-| 4 realm-less admission | **OPEN** — the ruling is still wanted; the code refuses (`MEMBER_CENTRE_UNWIRED`, `ADM-44`). | `ESCALATION-realmless-admission.md` |
-| 5 search-face governance depth | **OPEN** — shape B shipped; shape A (overlay can deny a search) is the open ruling. | `CONTRACT-CHANGE-REQUEST-search-face.md` |
+| 4 realm-less admission | **DECIDED (round 98, owner ruling `docs/reviews/20261124-0151.txt` §Realmless) = OPTION B** — a governed member with no enforceable confined provider is REFUSED (`MEMBER_CENTRE_UNWIRED`, `ADM-44`/`ADM-44b`); an ungoverned row is allowed under DSH's own model but reported `ungoverned`/`uteProtected:false`. | `ESCALATION-realmless-admission.md`; §4 below |
+| 5 search-face governance depth | **DECIDED (round 98, owner ruling §Search) = SHAPE B is the declared support level, NOT full dynamic permission governance** — an Overlay deny on ordinary file reads does not deny `grep`/`glob` (`no-opinion`); the parent-allow/child-deny recursive negative control is GREEN (`SLICE-39`); Shape A remains future work. | `CONTRACT-CHANGE-REQUEST-search-face.md`; §5 below |
 | 6 Alpha.6 routing | **IMPLEMENTED (round 84)** — formal routing is a join on existing surfaces (no new axis, no `CORE_SEAM_BLOCKER`); a coherent row is admitted, incoherent pieces are refused and recorded. The "config gate refuses the opt-in on every row / routed path unreachable" text below is superseded; the remaining gap is a **live routed wake**, not a ruling. | `ALPHA6-FORMAL-ROUTING.md`; report §6.5 |
 
 **So the owner is asked for two rulings (items 4 and 5)** — the PTC upstream-seam ask was ANSWERED by the
 round-92 owner ruling (NOT SUPPORTED this generation; `ADR-ptc-unsupported.md`) — not six.
+
+---
+
+## ROUND 98 (2026-11-24) — the two older rulings are DECIDED and IMPLEMENTED
+
+**Owner ruling: `docs/reviews/20261124-0151.txt` §4 ("另外两项较早的裁决").** Both are recorded here as
+decided, with the exact scope the ruling gave them.
+
+### Ruling 1 — Realmless admission: **OPTION B (refuse)**
+
+A governed Team Member with **no enforceable confined provider** is **REFUSED**. Rationale (the owner's):
+even if Admission has already taken an ALLOW against the compiled ceiling, the access upper bound cannot
+be claimed if the Provider that actually executes is not bound by that ceiling.
+
+- **Typed refusal: `MEMBER_CENTRE_UNWIRED`** (kept). The ruling allowed `ADMISSION_PROVIDER_UNCONFINED`
+  as the more accurate name; the decision is to KEEP the existing code because it is the identifier
+  ADM-44, the D report and the escalation already use, it is not a member of the closed
+  `AdmissionRefusalCode`/`HOST_SURFACE_REFUSALS` vocabulary, and renaming an established refusal buys
+  wording, not enforcement. The message states the accurate semantics.
+- **The ungoverned path is NOT refused, but must be labelled.** A host run mode with Team governance not
+  enabled (no `centreStatePath`) may keep DSH's own permission model; it is reported as
+  `mode: 'ungoverned'`, `uteProtected: false` (`admissionModeOf`, plus one observation) and is **never**
+  reported as UTE-protected.
+- **Implementation (round 98):** the round-35 check ran before the mount attempt and only asked whether
+  the row DECLARED a realm source; a row declaring one whose provider compiled no realm
+  (`compiledFor → undefined`) slipped past it. `memberAdmissionGate` now runs on the MOUNT RESULT, after
+  `mountMemberA5sfRealm` and before `installMemberExecution`/the preset mount/any tool body. Arms
+  `ADM-44`, `ADM-44b` (governed+unconfined ⇒ typed refusal + zero files; ungoverned ⇒ allowed + reported
+  ungoverned; placement pinned).
+
+### Ruling 2 — Search face: **Shape B is the DECLARED support level for this generation**
+
+Shape B is the support level, and it is **NOT full dynamic permission governance**: a durable Overlay
+deny aimed at ordinary file reads does **NOT** automatically deny `grep`/`glob`; the Overlay returns
+`no-opinion` for tools outside its vocabulary, and the compiled FS Read Lane alone judges the search.
+
+- **Required negative control (owner):** allow a parent directory but DENY a child, and prove a recursive
+  search does not read or return the protected child's contents. If the Provider/OS limits cannot
+  guarantee that, forbid the dangerous search scope or escalate to Shape A — **do not merely check the
+  root path passed to `grep`.**
+- **Round-98 result: the dangerous scope is FORBIDDEN, and the control is GREEN (`SLICE-39`).** The real
+  `grep` module runs through the real confined `subprocess` face; the face compiles the effective lane
+  once (`compileExecutionProfile`), Landlock has no negative rule, so a nested deny is
+  `PATH_NESTED_DENY_UNEXPRESSIBLE` and every spawn from that realm is refused before a process exists.
+  Positive control (no child deny) returns the child's token; negative (child deny) returns no match and
+  no child byte, not even the child path; the centre still records `decision=allow` for the ROOT, so the
+  control cannot pass by root-checking alone.
+- **Limit disclosed:** this is a wholesale refusal of the confined process face for that realm (a shell
+  on the same realm is refused too), not per-file carving. Shape A (a search face with a subtree resource
+  in the closed vocabulary) is the only shape that can express a nested deny precisely; it is future
+  work, not delivered here.
 
 ---
 

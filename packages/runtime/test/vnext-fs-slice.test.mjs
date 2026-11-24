@@ -91,10 +91,10 @@ const IDENTITY = Object.freeze({
   instanceGeneration: 1,
 })
 
-const lane = (allow) => Object.freeze({ mode: 'restricted', allow: Object.freeze([...allow]), ask: Object.freeze([]), deny: Object.freeze([]) })
+const lane = (allow, deny = [], ask = []) => Object.freeze({ mode: 'restricted', allow: Object.freeze([...allow]), ask: Object.freeze([...ask]), deny: Object.freeze([...deny]) })
 
 /** Build one world. `mountRealm: false` is the negative control, not a second composition. */
-async function buildWorld ({ mountRealm, dir, admission, durable, askPath, observation, approvalMode = 'allowed-once', search = false, web = false, webNetwork = 'allow', webTestEndpoints, bash = false, revokeAfterDecision = false }) {
+async function buildWorld ({ mountRealm, dir, admission, durable, askPath, observation, approvalMode = 'allowed-once', search = false, web = false, webNetwork = 'allow', webTestEndpoints, bash = false, revokeAfterDecision = false, nestedDeny, subprocessNetwork = 'deny' }) {
   const seams = await loadFsContractSeams(REPO_ROOT, HOST_MODE)
   const { Context, ToolRuntime, SystemPrompt, LocalFileSystem, NativeToolExecutor, createScope, bindScopeParent, nativeToolModules, row } = seams
 
@@ -106,6 +106,12 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
   const outsideFile = join(outside, 'secret.txt')
   writeFileSync(insideFile, 'alpha beta\n', 'utf8')
   writeFileSync(outsideFile, 'SECRET-NOT-FOR-MEMBER\n', 'utf8')
+  // The recursive-search negative control's protected child: a REAL subtree under an ALLOWED parent
+  // whose own lane disposition is DENY.
+  if (nestedDeny !== undefined) {
+    mkdirSync(nestedDeny, { recursive: true })
+    writeFileSync(join(nestedDeny, 'secret.txt'), 'PROTECTED-CHILD-TOKEN-4c1f\n', 'utf8')
+  }
 
   const root = new Context()
   await root.plugin(SystemPrompt)
@@ -170,24 +176,30 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
   // product's P1-07 OS provider. Nothing here decides policy or launches a process by hand.
   let subprocessFace
   if (search || bash) {
-    const teamSandbox = await import(pathToFileURL(join(REPO_ROOT, 'packages/runtime/team-sandbox/src/index.ts')).href)
+    // The composition does not pre-validate a lane it cannot express: the PRODUCT is what must
+    // refuse it (`createConfinedSubprocessClass` compiles the effective lane once and remembers the
+    // refusal). The world therefore only preflights the ordinary lane; the nested-deny world hands
+    // the inexpressible lane to that real class, which is the path this arm grades.
+    if (nestedDeny === undefined) {
+      const teamSandbox = await import(pathToFileURL(join(REPO_ROOT, 'packages/runtime/team-sandbox/src/index.ts')).href)
       const profile = teamSandbox.compileExecutionProfile({
-      memberIdentity: IDENTITY.memberInstanceId,
-      revision: 'rev-vnext-slice',
-      read: lane(askPath === undefined ? [inside] : [inside, askPath]),
-      write: lane([inside]),
-      network: Object.freeze({ access: 'deny' }),
-    })
-    if (!profile.ok) throw new Error(`the slice profile must compile: ${profile.code} ${profile.detail}`)
+        memberIdentity: IDENTITY.memberInstanceId,
+        revision: 'rev-vnext-slice',
+        read: lane(askPath === undefined ? [inside] : [inside, askPath]),
+        write: lane([inside]),
+        network: Object.freeze({ access: subprocessNetwork }),
+      })
+      if (!profile.ok) throw new Error(`the slice profile must compile: ${profile.code} ${profile.detail}`)
+    }
     subprocessFace = {
       effective: {
         memberIdentity: IDENTITY.memberInstanceId,
         toolBindingIdentity: 'member-subprocess',
         invocationId: 'member-subprocess-face',
         policyRevision: 'rev-vnext-slice',
-        read: lane(askPath === undefined ? [inside] : [inside, askPath]),
+        read: lane(askPath === undefined ? [inside] : [inside, askPath], nestedDeny === undefined ? [] : [nestedDeny]),
         write: lane([inside]),
-        network: Object.freeze({ access: 'deny' }),
+        network: Object.freeze({ access: subprocessNetwork }),
       },
       // The product provider, built through the capability helper: without the documented probe
       // override this is the production constructor unchanged; with it, the capability-absent path
@@ -296,7 +308,7 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
                 revision: 'rev-vnext-slice',
                 // The realm's physical lane must cover an ask subtree the centre can approve;
                 // otherwise an approved call is unexecutable (the provider cannot ask).
-                read: lane(askPath === undefined ? [inside] : [inside, askPath]),
+                read: lane(askPath === undefined ? [inside] : [inside, askPath], nestedDeny === undefined ? [] : [nestedDeny]),
                 write: lane([inside]),
                 network: Object.freeze({ access: 'allow' }),
               }),
@@ -1135,6 +1147,90 @@ test('SLICE-28 — rung 4: grep runs confined inside the ceiling and is refused 
   } finally {
     await world.dispose()
   }
+})
+
+test('SLICE-39 — parent ALLOW + child DENY: a recursive search cannot read or return the protected child', async (t) => {
+  // OWNER RULING `docs/reviews/20261124-0151.txt` §Search (2026-11-24): the required negative control
+  // is "allow a parent directory but DENY a child, and prove a recursive search does not read or return
+  // the protected child's contents". Shape B (the declared support level) keeps `grep`/`glob` on the
+  // compiled FS Read Lane and lets the durable Overlay abstain (`no-opinion`) for them; this arm tests
+  // the LANE, over the REAL search tool module and the REAL confined provider, not a root-path check.
+  //
+  // THE MECHANISM, measured rather than asserted: `grep`/`glob` spawn the packaged ripgrep through the
+  // Member realm's confined `subprocess` face. That face compiles the effective lane ONCE with
+  // `compileExecutionProfile`; Landlock has no negative rules, so a deny NESTED inside an allowed
+  // subtree is INEXPRESSIBLE (`PATH_NESTED_DENY_UNEXPRESSIBLE`) and every spawn from that realm is
+  // refused before a process exists. The dangerous scope is therefore FORBIDDEN, not filtered.
+  //
+  // The pair is the evidence: the control world (same parent, same tool, same pattern, NO child deny)
+  // DOES return the child's token; the negative world (child deny) returns a typed launch refusal and
+  // never the token. Without the control, the failure below could be an environment artifact.
+  const TOKEN = 'PROTECTED-CHILD-TOKEN-4c1f'
+  const { compileExecutionProfile } = await import('../team-sandbox/src/profile.ts')
+
+  // (0) The lane is ONE deniable rule, and the OS profile compiler names exactly why it cannot express it.
+  const nested = compileExecutionProfile({
+    read: lane(['/parent'], ['/parent/protected']),
+    write: lane(['/parent']),
+    network: { access: 'allow' },
+  })
+  assert.equal(nested.ok, false)
+  assert.equal(nested.code, 'PATH_NESTED_DENY_UNEXPRESSIBLE', 'the OS layer has no negative rule; the product must refuse, not widen')
+
+  // (1) CONTROL: parent allowed, no child deny — the recursive search really does reach the child.
+  const control = await buildWorld({
+    mountRealm: true,
+    dir: join(dir, 'search-child-control'),
+    admission: 'bound',
+    search: true,
+    subprocessNetwork: 'allow',
+  })
+  try {
+    assert.equal(control.mountRefusal, undefined, `the control composition must mount: ${control.mountRefusal?.message ?? ''}`)
+    const child = join(control.inside, 'protected')
+    mkdirSync(child, { recursive: true })
+    writeFileSync(join(child, 'secret.txt'), `${TOKEN}\n`, 'utf8')
+    const found = await control.dispatch('grep', { pattern: TOKEN, path: control.inside }, 'grep-child-control')
+    assert.equal(found.isError, false, `the control search must run and match: ${found.text}`)
+    assert.match(String(found.text), new RegExp(TOKEN, 'u'), 'the control proves the child is reachable without the deny')
+    assert.match(String(found.text), /secret\.txt/u, 'the match names the protected child file')
+  } finally {
+    await control.dispose()
+  }
+
+  // (2) NEGATIVE: the SAME parent is allowed and the child is denied. The search is refused before any
+  //     ripgrep process; its result carries no match and no byte of the child.
+  const denied = await buildWorld({
+    mountRealm: true,
+    dir: join(dir, 'search-child-denied'),
+    admission: 'bound',
+    search: true,
+    subprocessNetwork: 'allow',
+    nestedDeny: join(dir, 'search-child-denied', 'inside', 'protected'),
+  })
+  try {
+    assert.equal(denied.mountRefusal, undefined, 'the realm and the search tool mount; the refusal is the provider profile, not a mount gap')
+    const refused = await denied.dispatch('grep', { pattern: TOKEN, path: denied.inside }, 'grep-child-denied')
+    assert.equal(refused.isError, true, `a search under a nested deny must be refused: ${refused.text}`)
+    assert.doesNotMatch(String(refused.text), new RegExp(TOKEN, 'u'), 'the protected child\'s bytes must never appear in the result')
+    assert.doesNotMatch(String(refused.text), /secret\.txt/u, 'not even the child path may be returned')
+    assert.match(String(refused.text), /ripgrep launch failed/u, 'the refusal is the confined spawn being refused, before ripgrep exists')
+    // The CENTRE admitted the ROOT (path=parent is in-lane); what refused the search is the provider's
+    // OS-profile compile, which is exactly the "judge the traversal, not only the root" requirement.
+    const facts = denied.facts()
+    assert.equal(facts.length, 1)
+    assert.equal(facts[0].toolName, 'grep')
+    assert.equal(facts[0].decision, 'allow', 'the lane allows the ROOT; the provider layer is what forbids the dangerous scope')
+    const executions = denied.executions()
+    assert.equal(executions.length, 1)
+    assert.equal(executions[0].toolName, 'grep')
+    assert.equal(executions[0].outcome, 'failed', 'no search result was produced')
+    // And no child byte reached the world: the tool result is the only readout, and the file is unchanged.
+    assert.equal(readFileSync(join(denied.inside, 'protected', 'secret.txt'), 'utf8').trim(), TOKEN, 'the protected file exists and was not modified (no read side effect either)')
+  } finally {
+    await denied.dispose()
+  }
+  t.diagnostic(`SLICE-39: parent allow + child deny => grep refused before spawn; token ${TOKEN} never returned`)
 })
 
 test('SLICE-29 — settlement at the host: one record per call, and a refusal is its own terminal state', async () => {

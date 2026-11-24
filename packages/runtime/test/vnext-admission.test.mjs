@@ -1161,6 +1161,69 @@ test('ADM-44 — a row that asked for the centre cannot run unmediated', async (
   assert.equal(memberCentreUnwiredViolation({ centreStatePath: 7 }, { instanceId: 'inst-9', mountedRealm: false }), undefined)
 })
 
+test('ADM-44b — REALMLESS OPTION B: governed+unconfined is refused typed, ungoverned is allowed but reported', async () => {
+  // OWNER RULING `docs/reviews/20261124-0151.txt` §Realmless (2026-11-24) = OPTION B. An admission
+  // ALLOW taken against the compiled ceiling cannot claim the access bound when the provider that
+  // executes the call is not itself bound by that ceiling, so a governed member with no confined
+  // provider is REFUSED. The complementary half is a REPORT, not silence: a row that never asked for
+  // the centre may keep DSH's own permission model, but it must be labelled ungoverned and must never
+  // be reported as UTE-protected.
+  const { memberAdmissionGate, memberAdmissionMode } = await import('../src/plugin/vnext/centre-config.ts')
+  const { mkdtempSync, readdirSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  const state = mkdtempSync(join(tmpdir(), 'adm-44b-'))
+  const governed = { centreStatePath: state }
+
+  // (1) GOVERNED + UNCONFINED ⇒ TYPED REFUSAL, ZERO EFFECTS.
+  const refused = memberAdmissionGate(governed, { instanceId: 'inst-44b', mountedRealm: false })
+  assert.equal(refused.mode, 'governed')
+  assert.equal(refused.uteProtected, false, 'a governed member with no provider must never report UTE protection')
+  assert.match(String(refused.refusal), /MEMBER_CENTRE_UNWIRED/u)
+  assert.match(String(refused.refusal), /no confined-provider realm/u)
+  assert.match(String(refused.refusal), /inst-44b/u)
+  // The gate is PURE and runs before `installMemberExecution`: it created no fact file, no settlement
+  // directory and no ledger — the strongest available in-process statement of "zero effects".
+  assert.deepEqual(readdirSync(state), [], 'the refusal writes nothing: no admission fact, no settlement, no effect')
+
+  // (2) NEGATIVE CONTROL: the same governed member WITH a realm is protected and not refused.
+  const mounted = memberAdmissionGate(governed, { instanceId: 'inst-44b', mountedRealm: true })
+  assert.deepEqual(mounted, { mode: 'governed', uteProtected: true })
+
+  // (3) UNGOVERNED ⇒ ALLOWED, but the REPORT says exactly that — never UTE-protected.
+  const ungoverned = { }
+  assert.equal(memberAdmissionMode(ungoverned), 'ungoverned')
+  const report = memberAdmissionGate(ungoverned, { instanceId: 'inst-44b', mountedRealm: false })
+  assert.equal(report.refusal, undefined, "the ungoverned row keeps DSH's own permission model: no refusal is invented")
+  assert.deepEqual(report, { mode: 'ungoverned', uteProtected: false })
+
+  // (4) THE PLACEMENT IS PART OF THE RULE, not an accident of the closure. The gate must run AFTER the
+  // mount attempt (so a declared source that compiles NO realm is covered) and BEFORE the centre, the
+  // preset mount or any tool body (so the refusal can have no effect).
+  const { readFileSync } = await import('node:fs')
+  const source = readFileSync(new URL('../src/plugin/vnext/agent-bindings.mjs', import.meta.url), 'utf8')
+  const realmMount = source.indexOf('await mountMemberA5sfRealm({')
+  const gate = source.indexOf('memberAdmissionGate(config, { instanceId, mountedRealm: a5sfMountedRealm !== undefined })')
+  const memberExecution = source.indexOf('await installMemberExecution({')
+  const presetMount = source.indexOf('await presets.mount(agentCtx,')
+  assert.notEqual(realmMount, -1)
+  assert.notEqual(gate, -1, 'the mount result must be handed to the ONE gate')
+  assert.equal(realmMount < gate, true, 'the gate reads the MOUNT RESULT, so a declared-but-uncompiled realm is refused too')
+  // `installMemberExecution` is syntactically INSIDE `if (a5sfRealm !== undefined)`, so a no-realm member
+  // never reaches the centre even though the call site appears above the gate in source order. Both
+  // facts are asserted rather than one index comparison that would mistake nesting for execution.
+  const realmGuard = source.indexOf('if (a5sfRealm !== undefined) {')
+  assert.notEqual(realmGuard, -1)
+  assert.equal(realmGuard < memberExecution, true, 'the centre composition only exists behind a mounted realm')
+  assert.equal(source.includes('mountedRealm: false }'), false, 'the gate must not be fed the DECLARATION as if it were the mount result')
+  assert.equal(gate < presetMount, true, 'refuse before any preset/tool surface exists')
+  // The ungoverned label is a REPORT surface, not a comment: the bindings publish it and the
+  // observation names uteProtected=false.
+  assert.match(source, /admissionModeOf: \(sessionId\) => admissionModes.get\(String\(sessionId\)\)/u)
+  assert.match(source, /UTE-GOVERNANCE ungoverned/u)
+  assert.match(source, /uteProtected=false/u)
+})
+
 test('ADM-45 — the durable overlay can only REMOVE authority, and a fault is a refusal (E3 plumbing)', async () => {
   // The retired entry enforced the Alpha.4 durable plane through a pre-execute adapter that the A1 cut
   // retired WITH the execution route, so a grantInstance deny persisted after the member was bound had no

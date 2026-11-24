@@ -84,6 +84,19 @@ was never asked) and never an overlay fault.
 `CAPABILITY-MATRIX-C.md` ("Round 64"). The crash judge's in-flight call stays the `edit`; the `grep` is now the
 admitted search probe before it.
 
+## Round 98 — DECIDED: shape B is the declared support level (not full dynamic permission governance)
+
+**Owner ruling `docs/reviews/20261124-0151.txt` §Search (2026-11-24).** Shape B is the support level for
+this generation, with the limitation stated plainly: a durable Overlay deny aimed at ordinary file reads
+does **not** automatically deny `grep`/`glob`; the Overlay returns `no-opinion` for tools outside its
+vocabulary, and the compiled FS Read Lane alone judges the search. The ruling's required negative control
+(parent ALLOW, child DENY, recursive search must not read/return the child) is GREEN over the real search
+paths — `SLICE-39` — because the confined `subprocess` face compiles the effective lane once and Landlock
+cannot express a nested deny (`PATH_NESTED_DENY_UNEXPRESSIBLE`), so the spawn is refused before a process
+exists: no match and no child byte. This is a wholesale refusal of the dangerous scope, not a root-path
+check. **Shape A remains future work** (a subtree search face in the closed vocabulary) and is the only
+shape that can express a nested deny precisely.
+
 ## Residual (what shape B does NOT buy)
 
 - **The search face is governed by the LANE only.** A durable overlay rule cannot restrict `grep`/`glob` (or

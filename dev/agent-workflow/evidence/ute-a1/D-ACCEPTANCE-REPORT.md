@@ -713,17 +713,37 @@ Round 75 replaced the path-lane question with an EXECUTION-authority question (o
 are in-process only; no Windows deployment (the persistent row is disabled on win32); the durable shell
 state is shell-local across two turns, not a tmux/Processo env proof.
 
-### 6.4 The search face is lane-only governance
+### 6.4 The search face — **Shape B is the DECLARED SUPPORT LEVEL, and it is NOT full dynamic permission governance**
 
-Shape B is implemented and measured live (round 64): the durable overlay has **no opinion** on a face
-outside its closed vocabulary, so an in-lane `grep` is admitted and runs
-(`decision=allow`, `overlayOutcome=no-opinion`, execution fact `completed`, a real match at
-`team-b/corpus/huge-7.txt`), while an out-of-lane `grep` is `LANE_DENY`. The **residual** is the point:
-**a durable overlay rule cannot deny `grep`/`glob` (or `web_fetch`, …)** — those faces are outside the
-vocabulary, so the lane ceiling is their entire governance. The centre also judges the **search root** the
-call names, not every file a scan opens (`CAPABILITY-MATRIX-C.md:295-299`;
-`CONTRACT-CHANGE-REQUEST-search-face.md`). *Would prove it:* shape A — a search face with a subtree
-resource in the closed vocabulary, plus a durable deny that reaches it.
+**Owner ruling `docs/reviews/20261124-0151.txt` §Search (2026-11-24): Shape B is the support level for
+this generation**, with the limitation stated plainly: **a durable Overlay deny aimed at ordinary file
+reads does NOT automatically deny `grep`/`glob`.** The Overlay returns `no-opinion` for tools outside its
+closed vocabulary, so the compiled FS Read Lane alone judges the search call. That is accepted as a
+staged implementation only because the safety claim is explicit, not because it is equivalent to Shape A.
+Full cross-tool dynamic revocation (an Overlay deny that reaches a search) is **Shape A's scope, not
+something Shape B delivers**.
+
+Measured live (round 64): an in-lane `grep` is admitted and runs (`decision=allow`,
+`overlayOutcome=no-opinion`, execution fact `completed`, a real match at `team-b/corpus/huge-7.txt`),
+while an out-of-lane `grep` is `LANE_DENY`.
+
+**The required negative control is now GREEN over the REAL search tool paths (round 98, `SLICE-39`).**
+The ruling requires "allow a parent directory but DENY a child, and prove a recursive search does not
+read or return the protected child's contents"; checking only the root passed to `grep` is explicitly
+not enough. The arm builds the parent-allow/child-deny lane, and the real `grep` module runs through the
+real confined `subprocess` face. That face compiles the effective lane once with
+`compileExecutionProfile`; Landlock has no negative rules, so the nested deny is INEXPRESSIBLE
+(`PATH_NESTED_DENY_UNEXPRESSIBLE`) and every spawn from that realm is refused before a process exists.
+Result: the recursive search returns an error, **no match and no byte of the protected child** (not even
+its path), while the POSITIVE CONTROL world without the child deny DOES return the child's token. The
+dangerous scope is therefore **FORBIDDEN**, not filtered — and it is forbidden because the traversal
+cannot be carved, not because the root looked safe. Shape A remains the only shape that can express a
+nested deny precisely.
+
+**Limits (not softened):** (1) a durable Overlay rule cannot deny `grep`/`glob` — the lane is the whole
+governance; (2) the centre judges the ROOT, and the provider's answer to a nested deny is a wholesale
+refusal of the confined process face for that realm (a shell on the same realm is refused too), not a
+per-file filter; (3) tests are MECHANISM (in-process, pinned host), not a booted product gate.
 
 ### 6.5 Alpha.6: the refusal is recorded (round 68), the routed path is implemented (round 84), and the LIVE routed wake is REFUTED (round 87)
 
@@ -844,21 +864,36 @@ the interleaving recorded rather than scripted.
   product's refusal order (`CAPABILITY-MATRIX-C.md:61-64`); `IO_READ_DENIED` is unreachable on the live
   path by design and is proven **in-process** (`ADM-100`).
 
-### 6.9 A realm-less member that asked for the centre is refused; one that never asked stays outside it
+### 6.9 A governed member with no confined provider is REFUSED (Option B); an ungoverned member is ALLOWED but REPORTED ungoverned
 
-The centre is installed only inside `if (a5sfRowConfig !== undefined && a5sfRealmProvider !== undefined)`
-(`agent-bindings.mjs:1972-1978`). **Correction (round 67):** an earlier draft of this section said a
-member with `centreStatePath` but no realm "runs unmediated and unreported". That was wrong and is
-corrected here, not softened: `memberCentreUnwiredViolation` (`centre-config.ts:36-49`, called at
-`agent-bindings.mjs:1972`) **refuses** exactly that member with `MEMBER_CENTRE_UNWIRED` (`ADM-44`),
-so it never runs a call. What remains outside the centre is the row that **never asked**
-(`centreStatePath` unset): it keeps the host's own mediation with no admission, no ledger and no
-settlement — unchanged behaviour by design, not a governance claim (and, per §2.3, the deleted
-`confined-*` shadows were mounted by the realm row, so such a row was never confined by them either).
-The open question is therefore not exposure of an asked-for member but whether a realm-less member
-should be *admitted* against the same compiled ceiling with an explicitly unconfined provider (option A
-of `ESCALATION-realmless-admission.md`, whose "What the code says" snippet predates the round-35
-refusal). *Would prove it:* that ruling, then a test in both directions.
+**Owner ruling `docs/reviews/20261124-0151.txt` §Realmless (2026-11-24): OPTION B.** A governed Team
+Member with NO enforceable confined provider is **REFUSED**, because an admission ALLOW taken against the
+compiled ceiling cannot claim the access bound when the provider that executes the call is not itself
+bound by that ceiling. The typed refusal is **`MEMBER_CENTRE_UNWIRED`** — kept deliberately: the ruling
+permitted the more accurate `ADMISSION_PROVIDER_UNCONFINED`, but the existing string is the identifier
+ADM-44 and every reader already carries, it is NOT part of the closed
+`AdmissionRefusalCode`/`HOST_SURFACE_REFUSALS` tables, and renaming would buy wording rather than
+enforcement. The refusal prose states the accurate semantics ("asked for governance ... no
+confined-provider realm").
+
+**Round 98 closes a placement hole.** The round-35 rule ran BEFORE the mount attempt and only asked
+whether the row DECLARED a realm source. A row that declared one but whose provider compiled no realm
+for this template (`compiledFor → undefined`; a v4 template outside `memberIoCeilings`) slipped past it
+and ran with no centre. `memberAdmissionGate` (`centre-config.ts`) now runs on the **mount result** after
+`mountMemberA5sfRealm` and before `installMemberExecution`, the preset mount, the deny lane and every
+tool body. The gate also produces the REPORT.
+
+**The ungoverned path is labelled, not implied.** A row that never configured `centreStatePath` keeps
+DSH's own permission model, but the live bindings report `{ mode: 'ungoverned', uteProtected: false }`
+(`admissionModeOf(sessionId)`) and one `UTE-GOVERNANCE ungoverned` observation. It is **never reported
+as UTE-protected**; it produces no UTE admission fact or settlement, and that absence is now explicit.
+
+**Arms:** `ADM-44` (the pure rule) and `ADM-44b` (governed+unconfined ⇒ typed refusal, zero files
+written; governed+realm ⇒ `uteProtected: true`; ungoverned ⇒ allowed + reported ungoverned; source pin
+that the gate reads the MOUNT RESULT and runs before any preset/tool surface). **What is NOT proven:** a
+full booted AgentSetup refusal arm; the gate is in-process and its placement is pinned by source order.
+Per §2.3, the deleted `confined-*` shadows were mounted by the realm row itself, so a never-asked row
+was never confined by them either.
 
 ### 6.10 "Admitted, then refused before the body" is now settled by an appended deny decision — but only in process
 
@@ -1123,7 +1158,7 @@ second server was started.
      and the Leader receives the plain C1 ask (`d4:routed-wake` REFUTED). The blocker is two Team-side
      seams, **not** an upstream seam (§6.5, §10 G1/G2) — and the second one means **a granted `ask`
      still does not execute in production** (BL-30).
-   - **The search face is lane-only governance** — a durable overlay rule cannot deny it (§6.4).
+   - **The search face is lane-only governance, by RULING** — Shape B is the declared support level for this generation; a durable overlay rule cannot deny `grep`/`glob`, and that is explicitly NOT full dynamic permission governance (§6.4). The required recursive parent-allow/child-deny control is GREEN (`SLICE-39`).
    - **No row is PRODUCT-PROVEN**, and the model is a **scripted mock** (§6.1, §6.7).
    - **C11 (state projections)** has mechanism arms for its Team-owned projection (`ADM-107`…`ADM-109`,
      round 66), but its host `sessionProjections.stateOf` half is unproven and needs a live boot (§2.2).
@@ -1165,7 +1200,8 @@ A box a reviewer can tick against this HEAD. Every line names the check and wher
 | 2 | **No auto-merge** | PR #822 is **draft**, base **`master`**, state **OPEN**; the engine may sync the body but must never mark it ready or merge it. **Merging is the OWNER's act** — not the engine's, not this branch's | `gh pr view 822 --json isDraft,baseRefName,state` → `{"baseRefName":"master","isDraft":true,"state":"OPEN"}` |
 | 3 | **Gates green (local)** | every required command passes at this HEAD (dispatch 215/212/0/3 — the third skip is the second ruled PTC marker, round 92; catalog 785 collected / 38 uncollected / 14 excluded; closure four zeros with `references=3`; assets 37/180/69,512; docs-sync 0 findings; 34 placements; CI-required 10/0; CI-security bound vitest 216; migrated layer 238/238; `ci-pr-gate --full --census-captures 2` 10/10; UTE G1 89/89). **Hosted is NOT all-green at this HEAD: `ci-integration` FAILED and `ci-census` was skipped; `ci-required` is red for both reasons** (§9.4, §10 G9) | §4.1–§4.8, §9.4; `round86-ci-pr-gate.log` (round-86 block) and the §9.4 block (round 89) |
 | 4 | **Refuted / unreachable items listed** | `d3:persistent-subprocess` (round 76: PROVEN in two agreeing DEV-LIVE boots — a persistent OS-confined shell across two turns; its `ask`/`deny` arms and a gated status remain unproven), **`d4:routed-wake` REFUTED (round 87)** with the two in-repo seams named, search face lane-only, provider channel unreachable on the LIVE path (in-process only), widening beyond the ceiling impossible by design. **Runtime creation is no longer on this list** (round 74 RESOLVED, `d:remote-creation` PROVEN) | §3.2, §6.2–§6.5, §6.6, §6.13, §7, §10 |
-| 5 | **Owner decisions listed** | **two remain open rulings** (realm-less admission; search-face shape A), **plus four rulings the two round-87/88 seams need** (one Alpha.6 ask-producer decision; three BL-30 routes: guarded coupling, an OS-plane decision read port, or accepting the refusal). **PTC is NO LONGER an open decision**: the owner RULED it unsupported this generation (round 92, `ADR-ptc-unsupported.md`), so the old "PTC upstream seam" ask is closed — PTC is a ruled scope reduction, not a blocker and not a pending feature. The other older items are resolved or implemented (process lane: `bash`/PTY live; runtime creation; settlement recheck; Alpha.6 formal routing — live routed wake REFUTED) | `OWNER-DECISIONS.md` (round-86 correction block + round-92 addendum), §9.5, §10, `ADR-ptc-unsupported.md` |
+| 4b | **The two older owner rulings are DECIDED and implemented (round 98)** | Realmless = **Option B** (governed+unconfined ⇒ typed `MEMBER_CENTRE_UNWIRED`; ungoverned ⇒ allowed but reported `ungoverned`/`uteProtected:false`; `ADM-44b`). Search = **Shape B is the declared support level, NOT full dynamic permission governance** — an Overlay deny on ordinary file reads does not deny `grep`/`glob`; the parent-allow/child-deny recursive negative control is GREEN (`SLICE-39`) because the confined provider forbids the inexpressible scope. Shape A remains future work | §6.4, §6.9; `OWNER-DECISIONS.md` round-98 block; `CAPABILITY-MATRIX-C.md` |
+| 5 | **Owner decisions listed** | **the two older rulings are now DECIDED (round 98: realmless = Option B, search = Shape B declared), leaving Shape A as future work, plus four rulings the two round-87/88 seams need** (one Alpha.6 ask-producer decision; three BL-30 routes: guarded coupling, an OS-plane decision read port, or accepting the refusal). **PTC is NO LONGER an open decision**: the owner RULED it unsupported this generation (round 92, `ADR-ptc-unsupported.md`), so the old "PTC upstream seam" ask is closed — PTC is a ruled scope reduction, not a blocker and not a pending feature. The other older items are resolved or implemented (process lane: `bash`/PTY live; runtime creation; settlement recheck; Alpha.6 formal routing — live routed wake REFUTED) | `OWNER-DECISIONS.md` (round-86 correction block + round-92 addendum), §9.5, §10, `ADR-ptc-unsupported.md` |
 | 6 | **Host untouched** | pinned host `639ed015397290b3745d163aafe02ffee4aa3f84`, porcelain empty; CORE PATCH BUDGET = 0 with no upstream patch | §5.1–§5.3 |
 | 7 | **No PRODUCT-PROVEN row** | by design at this stage: `DEV-LIVE` boots are not gates | §2.1, §6.1 |
 

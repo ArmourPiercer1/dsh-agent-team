@@ -205,4 +205,7 @@ OFFENDING packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts :: 
 #   - vnext-admission.test.mjs moved L4645 -> L4646 and L7699 -> L7700 because round 94 (R3 PoC) added ONE
 #     import line (`node:fs` namespace) at the top of the file; no blueprint document was authored, edited
 #     or resolved. Same two fixture identities, re-recorded from the gate's own report.
-OFFENDING packages/runtime/test/vnext-admission.test.mjs :: L4646=v5, L7700=v5
+#   - vnext-admission.test.mjs moved L4646 -> L4709 and L7700 -> L7763 because round 98 (realmless Option B)
+#     inserted ADM-44b (+63 lines) ABOVE both fixtures; the two v5 documents are byte-unchanged. Same two
+#     fixture identities, re-recorded from the gate's own report.
+OFFENDING packages/runtime/test/vnext-admission.test.mjs :: L4709=v5, L7763=v5

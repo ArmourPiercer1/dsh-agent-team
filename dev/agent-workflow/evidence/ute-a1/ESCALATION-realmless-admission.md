@@ -1,5 +1,13 @@
 # ESCALATION — a member without a confined-provider realm gets NO admission at all
 
+> **ROUND 98 — RULED AND IMPLEMENTED (OPTION B).** Owner ruling `docs/reviews/20261124-0151.txt` §Realmless
+> (2026-11-24) chooses **B: a governed Member with no enforceable confined provider is REFUSED**. The
+> refusal stays typed `MEMBER_CENTRE_UNWIRED` (the ruling allowed `ADMISSION_PROVIDER_UNCONFINED`; kept
+> because the string is the identifier ADM-44/readers already use and is not in a closed refusal table —
+> see `OWNER-DECISIONS.md`). Round 98 moved the gate onto the MOUNT RESULT so a row that declared a realm
+> source but compiled none is covered too, and labels the ungoverned path `ungoverned`/`uteProtected:false`.
+> The design question below is therefore closed in favour of B; the analysis is kept as history.
+>
 > **ROUND 67 CORRECTION — the "What the code says" section below is stale.** Round 35 added the narrow
 > refusal this document predates: a row that set `centreStatePath` and mounted no realm is **refused**
 > `MEMBER_CENTRE_UNWIRED` (`centre-config.ts:36-49`, called at `agent-bindings.mjs:1972`;
