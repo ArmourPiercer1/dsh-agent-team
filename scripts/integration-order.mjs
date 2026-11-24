@@ -57,7 +57,13 @@
  * mention `u5-run-record/1` and 440 parse as that schema — so the audit had hit BOUND HIT at 6000
  * candidates and again at 400 records, and `E5` ("the bound is not hit on this tree") was RED on
  * every PR since. maxCandidates 6000 → 8000 and maxRecords 400 → 600; the bound is never trimmed to
- * fit the tree and no committed evidence was deleted to fit the bound), each ≤ 512 KiB (over the cap:
+ * fit the tree and no committed evidence was deleted to fit the bound. RAISED AGAIN on 2026-11-24
+ * (Round 100) with this measurement: `git ls-tree` over the evidence root counts 8161 tracked
+ * `.json` at 954835b71 (already over 8000, but the audit never ran there — the earlier
+ * `EB3-RUN-MANIFEST` step failed first and masked `devex-diag`) and 8790 at 35af064f3, of which 516
+ * parse as `u5-run-record/1` (under the unchanged 600-record budget). maxCandidates 8000 → 12000;
+ * this is a capacity budget raised with a measurement, never an assertion weakened, and no
+ * committed evidence was trimmed to fit it), each ≤ 512 KiB (over the cap:
  * NOT GRADED by name and size, never read). Rows reported ≤ 40 per class; stdout ≤ 24 KiB; one
  * memoized git call per distinct SHA; no child process other than `git`.
  *
@@ -78,7 +84,7 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 // had therefore hit BOTH bounds (6000 candidates, then 400 records) and `devex-diag`'s `E5` — "the
 // bound is not hit on this tree" — was RED on every PR. Bounds are capacity budgets: raised with a
 // measurement, never trimmed by deleting committed evidence.
-export const BOUNDS = Object.freeze({ maxRecords: 600, maxCandidates: 8000, maxRecordBytes: 512 * 1024, perClass: 40, outputBytes: 24 * 1024 })
+export const BOUNDS = Object.freeze({ maxRecords: 600, maxCandidates: 12000, maxRecordBytes: 512 * 1024, perClass: 40, outputBytes: 24 * 1024 })
 const EVIDENCE_ROOT = 'dev/agent-workflow/evidence'
 const SCHEMA = 'u5-run-record/1'
 

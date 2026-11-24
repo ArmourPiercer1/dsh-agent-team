@@ -94,9 +94,24 @@ The refuted clause set is the same three fail-closed facts as round 99:
 | `eb3-run-manifest` (and `--new-since a19d1df01`, the CI base) | pass records=516 strict=144 incomplete=11 findings=0 |
 | `eb3-ci-negative-controls` | 35/35 controls behaved as required |
 | `ute-a1-window --check` | pass red=0/0 cut=(148/52) |
+| `dispatch-tests --run --leg devex-diag` | 44/44 pass (E4/E5 needed the capacity raise in §5.1) |
 
-`git diff 1ecb7ec3d <final head> -- . ':!dev/agent-workflow/evidence'` is EMPTY: the final commit
-adds only this directory's logs and the settlement comment, so every number above is that tree.
+### 5.1 The latent `devex-diag` red that the manifest repair uncovered
+
+With `EB3-RUN-MANIFEST` green, the hosted `ci-integration` continued past it for the first time in
+this PR and `devex-diag` turned out to be red on a CAPACITY bound, not on a product assertion:
+`BOUND HIT: 8790 committed .json under dev/agent-workflow/evidence > maxCandidates 8000`. The tree
+had already outgrown the bound before this round — `git ls-tree` counts 8161 evidence `.json` at
+954835b71 and 8707 at 750cec92b — but the leg never ran because the manifest step failed first.
+The audit's own BOUNDS header and `E5` say the remedy is to raise a capacity budget WITH a
+measurement, never to trim committed evidence, so `scripts/integration-order.mjs` raises
+`maxCandidates` 8000 → 12000 (measured: 8790 at 35af064f3, of which 516 parse as `u5-run-record/1`,
+under the unchanged `maxRecords` 600). No assertion was weakened: `E4`/`E5`/`E7` still prove the
+audit fails closed when a bound is hit, and `devex-diag` is 44/44 locally.
+
+`git diff 1ecb7ec3d <gate-verified head> -- . ':!dev/agent-workflow/evidence'` is EMPTY; that head
+and the final head differ only in this directory's logs and the settlement comment (the devex bound
+raise is inside the gate-verified head), so every number above is that tree.
 
 ## 6. Still open
 
