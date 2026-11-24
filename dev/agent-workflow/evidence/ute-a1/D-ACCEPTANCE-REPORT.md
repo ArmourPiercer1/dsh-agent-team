@@ -1353,7 +1353,7 @@ ruling, and the two seam rows are explicitly **not** upstream patches (`CORE PAT
 
 | id | open gap (measured, not inferred) | evidence (`file:line` / artefact) | what closes it |
 | --- | --- | --- | --- |
-| **G1** | **Alpha.6 has no case-bearing ordinary-ask producer (Team-side seam, NOT upstream).** `requestApprovalLeg` is only called for `envelope-mutation`; the ordinary `ask` lane does not call it and is explicitly excluded by `isDelegableOrdinaryToolAsk`, which needs `kind:'leader-approval'`, `reviewAuthority:'leader'`, an `operationFingerprint`, an `authorityScope` and a non-null `operationTool`. So the only live ordinary ask is **case-less**, `root-router.ts:209` returns `null`, and no wake intent is ever written. `d4:routed-wake` is **REFUTED** on two agreeing boots. | `dev/agent-workflow/evidence/d-boot-feasibility/d4/README.md` §4.2; `d4/runs/boot0{1,2}/control-row-durable.json` (no `approvalCaseId`/`legOrdinal`), `route-probe.json` (`null`, 0 member reads); `packages/runtime/alpha6/root-router.ts:209`; `packages/runtime/review-router/policy.ts:68-75`; `packages/runtime/src/plugin/vnext/admission-port.mjs:158-165` | **Owner decision R1** (below) — commission the Alpha.6-aware case-forming ask lane, or accept that the routed wake stays unproven this generation. **ROUND 93: R1 was ruled APPROVED and its PRODUCER IS LANDED** (`vnext/alpha6-ask-case.mjs`, five arms `ADM-149`…`ADM-153`, case through the EXISTING `requestApprovalLeg`). G1's *producer* half is therefore CLOSED; the LIVE routed wake is still REFUTED, now for a different and newly measured reason — see `G11` and §10.2 |
+| **G1** | **Alpha.6 has no case-bearing ordinary-ask producer (Team-side seam, NOT upstream).** `requestApprovalLeg` is only called for `envelope-mutation`; the ordinary `ask` lane does not call it and is explicitly excluded by `isDelegableOrdinaryToolAsk`, which needs `kind:'leader-approval'`, `reviewAuthority:'leader'`, an `operationFingerprint`, an `authorityScope` and a non-null `operationTool`. So the only live ordinary ask is **case-less**, `root-router.ts:209` returns `null`, and no wake intent is ever written. `d4:routed-wake` is **REFUTED** on two agreeing boots. | `dev/agent-workflow/evidence/d-boot-feasibility/d4/README.md` §4.2; `d4/runs/boot0{1,2}/control-row-durable.json` (no `approvalCaseId`/`legOrdinal`), `route-probe.json` (`null`, 0 member reads); `packages/runtime/alpha6/root-router.ts:209`; `packages/runtime/review-router/policy.ts:68-75`; `packages/runtime/src/plugin/vnext/admission-port.mjs:158-165` | **Owner decision R1** (below) — commission the Alpha.6-aware case-forming ask lane, or accept that the routed wake stays unproven this generation. **ROUND 93: R1 was ruled APPROVED and its PRODUCER IS LANDED** (`vnext/alpha6-ask-case.mjs`, five arms `ADM-149`…`ADM-153`, case through the EXISTING `requestApprovalLeg`). G1's *producer* half is therefore CLOSED; the LIVE routed wake is still REFUTED, now for a different and newly measured reason — see `G11` and §10.2  **ROUND 97 (2026-11-24) — G1 IS CLOSED IN FULL, LIVE.** The missing producer was wired in round 93 and the two blockers that kept the live routed wake REFUTED were removed in rounds 94 (G11 lane algebra) and 95/96 (R3 receipt). Round 97 booted the coherent v5 world twice (agreeing) and measured the WHOLE case path: `d4:case-created` (real durable case id + leg + frozen identity), `d4:router-officer` (the product router selects the unique lawful Officer; the self-ask control routes to the Leader), `d4:wake-delivered` (intent + correlated confirmation + machine attribution + ZERO management-plane executions), `d4:officer-decides` (the Officer is woken in its own session and its own `team_resolve_control` is admitted under its own binding), `d4:ask-executes-after-review` (the decision precedes the settlement and real bytes land), `d4:duplicate-route` (one wake for a duplicate route) and `d4:sticky-stop` (a machine wake does NOT clear a human Sticky Stop; only a human claim resumes). `d4:routed-wake` is PROVEN as their conjunction on two agreeing DEV-LIVE boots; the level is DEV-LIVE, not PRODUCT-PROVEN, because no executable gate binds it. Evidence: `d4/runs/boot0{1,2}/routed-judges.json` + `sticky-stop.json` + `duplicate-route.json`. |
 | **G2** | **BL-30: no production consumer for an `ask`-disposition call, and it cannot be wired without an invariant change.** The only production ask producer hard-codes `executionCoupling:'inline'`; an inline durable allow is never a guard token (`guardOperation` `no-request`); the one-shot grant is already spent at the host tool guard before the Provider plane runs; and `resolveAskClassCall` has no production caller, so the confined provider refuses `IO_ASK_REQUIRES_APPROVAL`. **Consequence: a Member can ASK, be GRANTED, and still not run the granted call in production.** | `dev/agent-workflow/evidence/bl-30-ask-consumer/README.md` §1–§3; `packages/runtime/src/plugin/vnext/admission-port.mjs:76-79`, `:163`, `:770-784`; `packages/runtime/control/service.ts:4155-4165`, `:4289-4291`; `packages/runtime/member-io-policy/src/provider-capabilities.ts:196-210`, `:315`; `d4/runs/boot01/wake-measurement.json#workerWrite.result`; measured arms `packages/runtime/test/a5sf-approval-takeover.test.ts` (25/25) | **ROUND 94: R3 WAS PO C'd AND IS PROVEN FOR `write` ONLY** — see the round-94 addendum below and `ADR-approved-ask-receipt.md`. **ROUND 95: CLOSED FOR `write` IN A BOOTED PRODUCT** — the real mount now passes the real binder as the Provider's authority (`agent-bindings.mjs:1771-1790` → `a5sf-realm-row.mjs` → `mount.ts` → `install.ts`), and the D4 live driver proves ask → real Control allow → one-shot consume → receipt verified → real bytes on disk → `COMPLETED`, plus deny and Stop negatives. Every other tool/operation still refuses exactly as this row states, so the gap is narrowed to `write`/`writeText`. **ROUND 96: EXTENDED TO EVERY FS MUTATION** — the same receipt now covers `editText`/`patchText`/`deleteFile`/`moveFile` with per-method scope binding (see the round-96 addendum), proven by `ADM-162`…`ADM-173` and a second live mutation (`d4:ask-execute-2`). The **subprocess/PTY face is explicitly NOT covered** (its authority is an OS `SandboxExecutionPolicy`, not a file lane) and stays R4; `apply_patch` stays unbound. |
 | **G3** | **PTC (`run_code`) is refused with `CORE_SEAM_BLOCKER` on the worker's OS profile.** Three of its four parts hold (nested calls, Control escalation, Stop); part (a) — the worker's OS confinement is not the member's compiled profile — needs a per-execution policy seam upstream, which this repo may not patch. | `PTC-FOUR-PART-FINDING.md`; `packages/runtime/src/plugin/vnext/admission.ts:421-423`; report §6.3 | upstream/owner acceptance of the `CORE_SEAM_BLOCKER` shape — not product work here |
 | **G4** | **Two S6 root-work commands stay refused** on the management plane: `team.admitInitialWork`, `team.ensureRootLive`. No async enqueue-and-acknowledge root-work seam exists, and none was invented. | `packages/runtime/src/plugin/s6-command-classification.ts:111-112`; report §9.5; `d3:work-delivery` (landed=0 for root) | a new governed root-work delivery seam (product work) or an explicit owner ruling to keep them out of scope |
@@ -1713,3 +1713,55 @@ and `apply_patch` remains unbound.
 unbound. (3) The four new methods' tool names are declared shapes, not shipped tools, so they are
 proven at the production composition point, not through a live model. (4) No row is PRODUCT-PROVEN.
 (5) Real-model interleaving remains unmeasured.
+
+## ROUND 97 ADDENDUM (2026-11-24) — the routed review wake is PROVEN LIVE end to end
+
+Round 95 wired the R3 receipt into the production mount; round 96 extended it to every FS mutation.
+Neither touched the Alpha.6 CASE path, which stayed REFUTED at its last live measurement. Round 97
+re-ran the D4 driver on a booted rc.2 host with a world that satisfies the closed qualification rule
+`ALPHA6-ORDINARY-CASE-Q` in ONE coherent row (declared `toolBindings[]` entry with `authorization:'ask'`,
+the pure-ask lane surviving the round-94 algebra, `reviewRouting.enabled` + `default:'officer'` + `hold`).
+
+**Two agreeing DEV-LIVE boots; `d4:routed-wake` = PROVEN as seven independent judges (40 clauses).**
+
+1. **`d4:case-created` (9 clauses).** The worker's `write` produced a durable `control-request-recorded`
+   carrying `approvalCaseId case-0dotsl405xthlb0lqsqo21tg`, `legOrdinal 1`, rung `leader`, a frozen
+   `operationFingerprint`, the exact `authorityScope` for the target path, coordinate `dsh.fs/write`,
+   blueprint hash/revision and `authorityGeneration 0` — read back from `storages/team_domain.json`.
+2. **`d4:router-officer` (4 clauses).** The product's own `createAlpha6RootRouter.route()` on that row
+   selects `inst-1crltnl0089j` `routeRole:'officer'`; exactly one active officer candidate exists; the
+   requester is not the reviewer; and the SELF-ASK control (same durable row, operation owner set to the
+   Officer) routes to the **Leader** with the product's own reason string. Self-review is refused.
+3. **`d4:wake-delivered` (6 clauses).** Exactly one `team-review-wake-routed` intent for the leg, one
+   `team-review-wake-delivered` confirmation correlated by `factSequence`, the input that landed in the
+   Officer's session is machine-attributed (`source.kind = plugin:dsh-agent-team`, never `user`), and no
+   settlement names the wake token — the management plane executed **zero** tools.
+4. **`d4:officer-decides` (5 clauses).** The Officer is woken in ITS OWN child session; its
+   `team_resolve_control` for the exact `requestId` is admitted under ITS binding (a durable
+   `invocation-authority` allow for its callId and instanceId in its centre ledger); its settlement is
+   `COMPLETED`; the Leader never resolved the leg.
+5. **`d4:ask-executes-after-review` (6 clauses).** The durable decision precedes the tool settlement; the
+   worker's result is not an error; the approved bytes are on the host filesystem (`29 bytes`,
+   `sha256:2b28991b…`); the admission allow is on the `ask` lane; settlement `COMPLETED`/`completed`.
+6. **`d4:duplicate-route` (5 clauses).** The second leg was routed by BOTH real route call sites (the
+   request-creation notifier and the reviewer turn/end re-collection) while still pending; exactly ONE
+   intent, ONE confirmation and ONE model-visible input exist. A duplicate route produces one wake.
+7. **`d4:sticky-stop` (5 clauses).** A real human `session/cancel` of a running Officer turn wrote the
+   Sticky Stop marker (`stopped-20765e07.json`). A third worker ask was then admitted and routed; the
+   marker survived the machine attempt, **zero** wake inputs reached the stopped Officer, and the delivery
+   was refused. An explicit HUMAN prompt cleared the marker; the held wake was delivered and the third
+   `write` executed (`COMPLETED`, 29 bytes). Machine wake ≠ human resume.
+
+**The eight pre-existing judges are unchanged and still PROVEN** (`d4:enablement`, `d4:officer-up`,
+`d4:officer-binding`, `d4:refusal`, `d4:ask-execute`, `d4:ask-execute-2`, `d4:ask-denied`,
+`d4:ask-stopped`), including the two negative live arms (deny → zero bytes, `REFUSED`/`not-started`;
+Stop-while-pending → `ADMISSION_STOPPED`, zero bytes).
+
+**Level.** `C-alpha6` moves to **DEV-LIVE**. It cannot be PRODUCT-PROVEN: this repository reserves
+`V@B=yes` for a capability exercised by a bound executable gate, and the D4 probe is a driver with its
+own evidence contract, not that gate. No gate was invented; the level is capped honestly.
+
+**Not proven / still open.** Only `write`/`writeText` carry the live R3 receipt (the other FS mutations
+are mechanism-level; subprocess/PTY and `apply_patch` refuse at R4). The model is scripted. The
+duplicate-route attempt itself leaves no durable fact — the judge proves convergence (one wake), and
+records the two product call sites that produced the attempt. No production code changed in round 97.

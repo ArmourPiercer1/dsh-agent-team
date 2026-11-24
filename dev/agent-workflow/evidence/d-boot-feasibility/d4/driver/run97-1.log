@@ -1,0 +1,32 @@
+[2026-11-24T00:39:07.515Z] archived previous runs -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T00-39-07-514Z
+[2026-11-24T00:39:07.555Z] host tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use HEAD=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=[]
+[2026-11-24T00:39:07.555Z] started 2026-11-24T00:39:07.471Z boots=1
+[2026-11-24T00:39:07.588Z] [boot1] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-24T00:39:07.589Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=a7a7f08ca1f54229780fecce2a43df73e4351bde
+[2026-11-24T00:39:07.630Z] blueprint main.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T00:39:07.633Z] [boot1] alpha6 config gate (positive): null
+[2026-11-24T00:41:32.398Z] [boot1] host ready on http://127.0.0.1:3195
+[2026-11-24T00:41:32.417Z] [boot1] prompt(d4disc) status=200
+[2026-11-24T00:41:32.618Z] [boot1] discovery answered (mock requests=2)
+[2026-11-24T00:41:32.624Z] [boot1] prompt(d4off) status=200
+[2026-11-24T00:41:33.425Z] [boot1] officer delegated
+[2026-11-24T00:41:33.458Z] [boot1] officer instance=inst-1crltnl0089j childSession=session-team-child-1d56dbb16a118ba3573db3c4b2641997
+[2026-11-24T00:41:33.963Z] [boot1] d4:officer-up=PROVEN d4:officer-binding=PROVEN
+[2026-11-24T00:41:33.971Z] [boot1] prompt(d4wrk) status=200
+[2026-11-24T00:41:34.372Z] [boot1] worker delegated
+[2026-11-24T00:41:34.389Z] [boot1] worker ask appeared=true requestId=ctrl-1gj3uni1eryvf919yqfxk0gt
+[2026-11-24T00:41:34.792Z] [boot1] officer resolve(first) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-1gj3uni1eryvf919yqfxk0gt","decision":"allow","decider":{"kind":"instance","instanceId":"inst-1crltnl0
+[2026-11-24T00:41:35.295Z] [boot1] d4:ask-execute=PROVEN failing=[]
+[2026-11-24T00:44:35.340Z] [boot1] second worker ask appeared=false requestId=null
+[2026-11-24T00:44:35.852Z] [boot1] d4:ask-execute-2=REFUTED failing=["second-control-request-raised","second-approved-through-real-control-path"]
+[2026-11-24T00:44:37.392Z] [boot1] PROBE FAILED: Error: the durable reader is not reading the TeamDomain ledger: control-request-recorded count=2 (observed 1), control-decision-recorded count=2 (observed 1) census={"provision-member-instance":2,"team-work-admitted":2,"activity-interval-opened":2,"activity-interval-closed":2,"member-lifecycle-changed":2,"control-request-recorded":2,"team-review-wake-routed":2,"team-review-wake-delivered":2,"control-decision-recorded":2}
+    at probeOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs:1682:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs:1963:18)
+[2026-11-24T00:44:37.554Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-24T00:44:37.931Z] host porcelain after: []
+[2026-11-24T00:44:37.933Z] TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)
+fact                              
+
+agreeing=true differing=[]
+[2026-11-24T00:44:37.933Z] RESULT evidence-complete=false allBooted=false blocked=false (1/1 boots; agreeing pair=true)

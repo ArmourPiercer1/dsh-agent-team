@@ -357,3 +357,60 @@ compiled lane is rebuilt. **This addendum does not re-run the boot**: `d4:routed
 its last measurement, and `C-alpha6` remains MECHANISM. The next live round must re-boot with the fixed
 compiler and then account for R3's Provider wiring (production wiring of the ApprovedAskReceipt authority
 is still absent, so a product turn still fails closed for every `ask`).
+
+---
+
+## ROUND 97 ADDENDUM (2026-11-24) — THE ROUTED WAKE IS PROVEN LIVE, END TO END
+
+**Level: DEV-LIVE.** A booted rc.2 host (`639ed015…`, HEAD `a7a7f08ca…`, two agreeing DEV-LIVE boots)
+takes a qualifying worker `ask` to the Officer's own decision and back to the worker's executed call.
+`d4:routed-wake` is **PROVEN** — not as one monolithic clause pair, but as the conjunction of seven
+independently measured judges (40 clauses total), each answered from durable bytes on disk.
+
+### The world that qualifies
+
+`ALPHA6-ORDINARY-CASE-Q` needs four conditions at once, and the round-95 G11 fix is what makes them
+coherent in ONE world: (1) the v5 row authors `reviewRouting.enabled = true` with
+`ordinaryToolApprovals.default = 'officer'` and `whenOfficerUnavailable: 'hold'`; (2) the worker's
+template declares the `dsh.fs/write` `toolBindings[]` entry with `authorization: 'ask'`; (3) the
+admission lane for the target path is `ask` on the declared binding; (4) the Alpha.5 compiler keeps
+that pure-ask lane an `ask` (round 94's `intersectPathRuleSets` fix) instead of collapsing it.
+
+### What each judge measured (boot 1; boot 2 identical)
+
+| judge | verdict | durable fact it rests on |
+| --- | --- | --- |
+| `d4:case-created` | PROVEN (9 clauses) | `control-request-recorded` seq 9: `approvalCaseId case-0dotsl405xthlb0lqsqo21tg`, `legOrdinal 1`, `reviewAuthority/requiredAuthorityAtCreation 'leader'`, frozen `operationFingerprint sha256:3c15e01d…`, `authorityScope {operationClass:'write', matcher:{kind:'exact'}}`, coordinate `dsh.fs/write`, `blueprintContentHash sha256:47c096399d0…`, `authorityGeneration 0`, `blueprintRevision '1'`; no decision at capture |
+| `d4:router-officer` | PROVEN (4 clauses) | the product's `createAlpha6RootRouter.route()` on that row answers `{kind:'recipient', target:{kind:'instance', instanceId:inst-1crltnl0089j, routeRole:'officer'}}`; exactly ONE active officer candidate; requester `inst-0ty67u70r99a` ≠ reviewer; the SELF-ASK control (same row, operation owner = the Officer) routes to the **Leader** (`reason: "actual OperationOwner is the Officer; self-ask routes to Leader"`) |
+| `d4:wake-delivered` | PROVEN (6 clauses) | one `team-review-wake-routed` intent (token `review-wake:…a6wake%3Av1%3A1%3A…`) naming the Officer's session, one correlated `team-review-wake-delivered` (`factSequence` = the intent's sequence), the Officer transcript's wake input source is `plugin:dsh-agent-team` (never `user`), and **0** settlements name the wake token (the management plane executed no tool) |
+| `d4:officer-decides` | PROVEN (5 clauses) | the Officer session (its OWN `session-team-child-1d56…`) contains the wake for the exact leg and its `team_resolve_control` call `call-d4-officer-resolve-<requestId>`; its centre ledger has the `invocation-authority` **allow** for that callId under **its** instanceId; its settlement is `COMPLETED`; the Leader transcript has no resolve for the leg |
+| `d4:ask-executes-after-review` | PROVEN (6 clauses) | the durable decision's `createdAt` precedes the settlement's terminal transition; the worker's `write` result is not an error; the file on the host filesystem holds exactly the approved bytes (`DBOOT_D4_WORKER_ASK_CALLED\n`, 29 bytes, `sha256:2b28991b…`); the admission allow sits on the `ask` lane; settlement `COMPLETED`/`completed` |
+| `d4:duplicate-route` | PROVEN (5 clauses) | for leg 2 — routed twice by the product's two real route call sites (the request-creation notifier and the reviewer `turn/end` re-collection, both before the officer settled it) — exactly one intent, one confirmation and ONE model-visible input exist (`intents=1 delivered=1 inputs=1`) |
+| `d4:sticky-stop` | PROVEN (5 clauses) | a REAL human `session/cancel` of a running Officer turn wrote `stopped-20765e07.json`; a THIRD worker ask was admitted and routed while stopped; the marker survived, **0** wake inputs reached the stopped Officer, the notifier's delivery was refused; an explicit HUMAN prompt cleared the marker, the held wake was then delivered, and the third `write` executed (`COMPLETED`, 29 bytes) |
+
+### The two laws that are now live, not just in-process
+
+1. **Duplicate route ⇒ ONE wake.** The product re-collects pending legs at every reviewer turn end
+   (`alpha6ReviewWakeTurnEnd`) and routes them through the same notifier; leg 2 was pending at the
+   end of the Officer's first wake turn, so the duplicate route attempt is real and its convergence
+   is measured (one intent, one confirmation, one input). In-process `ADM-146` said this; now a boot
+   says it.
+2. **Machine wake never clears a human Sticky Stop.** The marker is written only by the host's
+   `turn/end` + `aborted/user` mapping, and the machine input is refused by the `isMachine` arbiter.
+   The live arm above proves the marker outranks a routed wake, and that only a human claim resumes.
+
+### What is still NOT proven (stated plainly)
+
+- **PRODUCT-PROVEN is not reachable for a DEV-LIVE record.** `CAPABILITY-MATRIX-C` requires an
+  executable gate (a bound suite leg) for `V@B=yes`; the D4 probe is a driver, not that gate. The
+  cell therefore moves to **DEV-LIVE**, never to PRODUCT-PROVEN.
+- **Only `write`/`writeText`** have the R3 receipt; the subprocess/PTY face and `apply_patch` remain
+  unbound, and the DEV-LIVE grant is `devlive-fs-search-1`, world `u5a5sfdev1`.
+- The **scripted model** plays every turn; it is the only double. No control route, leg, fact or
+  identity is fabricated by the driver.
+- The duplicate-route *attempt* itself leaves no durable fact (the latch's convergence is silent);
+  the judge proves the CONVERGENCE (one wake) and records the two real call sites that produced it.
+
+**Production code changed in round 97: NONE.** The round was measurement-only: the probe's mock and
+judges were extended, and one measurement bug (a poll on a pending projection that missed a leg the
+Officer settled inside one interval) was fixed in the driver.

@@ -1,18 +1,24 @@
 TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)
 fact                              boot1                               boot2                               
-overall                              "BLOCKED"                            "BLOCKED"                           
+overall                              "PASS"                               "PASS"                              
 enablement                           "PROVEN"                             "PROVEN"                            
 officerUp                            "PROVEN"                             "PROVEN"                            
 officerBinding                       "PROVEN"                             "PROVEN"                            
-routedWake                           "REFUTED"                            "REFUTED"                           
+routedWake                           "PROVEN"                             "PROVEN"                            
+caseCreated                          "PROVEN"                             "PROVEN"                            
+routerOfficer                        "PROVEN"                             "PROVEN"                            
+wakeDelivered                        "PROVEN"                             "PROVEN"                            
+officerDecides                       "PROVEN"                             "PROVEN"                            
+askExecutesAfterReview               "PROVEN"                             "PROVEN"                            
+duplicateRoute                       "PROVEN"                             "PROVEN"                            
+stickyStop                           "PROVEN"                             "PROVEN"                            
 refusal                              "PROVEN"                             "PROVEN"                            
 askExecute                           "PROVEN"                             "PROVEN"                            
 askExecute2                          "PROVEN"                             "PROVEN"                            
 askDenied                            "PROVEN"                             "PROVEN"                            
 askStopped                           "PROVEN"                             "PROVEN"                            
 askAppeared                          true                                 true                                
-pendingRequestId                     "ctrl-1xxrzo21k29yc31rawhls0qn"      "ctrl-1xxrzo21k29yc31rawhls0qn"     
-wakeFacts                            0                                    0                                   
+wakeFacts                            6                                    6                                   
 wakeIntentFiles                      0                                    0                                   
 reviewWakeHits                       0                                    0                                   
 officerAllowFacts                    1                                    1                                   
@@ -26,5 +32,16 @@ askDeniedBytes                       null                                 null
 askDeniedSettlement                  "REFUSED"                            "REFUSED"                           
 askStoppedBytes                      null                                 null                                
 askStoppedSettlement                 "REFUSED"                            "REFUSED"                           
+legOrdinal                           1                                    1                                   
+routeKind                            "recipient"                          "recipient"                         
+routeRole                            "officer"                            "officer"                           
+selfAskRouteKind                     "recipient"                          "recipient"                         
+selfAskRouteRole                     "leader"                             "leader"                            
+routedWakes                          3                                    3                                   
+deliveredWakes                       3                                    3                                   
+managementExecutions                 0                                    0                                   
+officerResolveSettlement             "COMPLETED"                          "COMPLETED"                         
+duplicateWakeInputs                  1                                    1                                   
+stickyStopMarkerCount                1                                    1                                   
 
 agreeing=true differing=[]

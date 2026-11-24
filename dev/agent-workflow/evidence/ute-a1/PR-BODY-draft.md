@@ -684,3 +684,44 @@ defaulted authority scope. `G11` is carried in `D-ACCEPTANCE-REPORT.md` §10 wit
 **Not proven (stated, not implied).** `R3`/`G2` (BL-30) is untouched: after an allow the provider still
 refuses an `ask`-disposition call (`IO_ASK_REQUIRES_APPROVAL`), so the granted call still cannot execute.
 The live routed wake is not reached (`G11`). C-alpha6 stays **MECHANISM**; no capability row moves up.
+
+---
+
+## ROUND 97 — `d4:routed-wake` is PROVEN LIVE (C-alpha6 → DEV-LIVE)
+
+Round 97 closes the live half of the Alpha.6 chain that rounds 93–96 left REFUTED. **No production code
+changed**: the D4 driver authored a world that satisfies the closed qualification rule in one coherent
+row, and the routed wake was measured as seven independent judges over durable bytes.
+
+**The live chain (two agreeing DEV-LIVE boots, rc.2 `639ed015…`, HEAD `a7a7f08ca…`).** A worker `write`
+whose lane is `ask` on the declared `dsh.fs/write` binding opens a real durable approval CASE
+(`case-…`, `legOrdinal 1`, frozen operation fingerprint, authority scope, tool coordinate, blueprint
+hash/revision). The product's `createAlpha6RootRouter` selects the unique lawful **Officer** (the
+self-ask control routes to the Leader, never the Officer). The governed delivery writes one
+`team-review-wake-routed` intent and one correlated `team-review-wake-delivered` confirmation; the
+Officer's own session receives a **machine-attributed** input (`source.kind = plugin:dsh-agent-team`),
+and the management plane executes **zero** tools. The Officer is woken in its own session and its own
+`team_resolve_control` is admitted under **its own binding** (durable `invocation-authority` allow,
+`COMPLETED` settlement). The worker's granted call then executes AFTER the decision — real bytes on the
+host filesystem (`29 bytes`, `sha256:2b28991b…`), settlement `COMPLETED`/`completed`.
+
+**The two laws are now live, not just in-process.**
+- **Duplicate route ⇒ one wake.** Leg 2 was routed by both real call sites (request-creation notifier and
+  reviewer `turn/end` re-collection) while still pending: exactly one intent, one confirmation and one
+  model-visible input exist.
+- **Machine wake ≠ human resume.** A real human `session/cancel` wrote the Sticky Stop marker; a third
+  worker ask was routed while the Officer was stopped and **zero** wake inputs reached it; the marker
+  survived the machine attempt and was cleared only by an explicit human prompt, after which the held
+  wake was delivered and the third `write` executed.
+
+**Level: DEV-LIVE, not PRODUCT-PROVEN.** `V@B=yes` requires a bound executable gate; the D4 driver is
+not one, and no gate was invented. The cell moves from MECHANISM to **DEV-LIVE**.
+
+**Eight pre-existing judges unchanged and PROVEN**; deny and Stop-while-pending still write zero bytes
+and settle `REFUSED`/`not-started`. The only driver change beyond the new judges/mock is a measurement
+fix: the second ask is now waited for on the durable ledger instead of the pending projection (the
+Officer can settle a leg inside one poll).
+
+**Not proven.** Only `write`/`writeText` carry the live R3 receipt; subprocess/PTY and `apply_patch`
+remain R4; the scripted model is the only double; the duplicate-route attempt itself leaves no durable
+fact (the judge proves convergence and records the two call sites).

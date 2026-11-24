@@ -4,8 +4,8 @@
     {
       "key": "overall",
       "values": [
-        "\"BLOCKED\"",
-        "\"BLOCKED\""
+        "\"PASS\"",
+        "\"PASS\""
       ]
     },
     {
@@ -32,8 +32,57 @@
     {
       "key": "routedWake",
       "values": [
-        "\"REFUTED\"",
-        "\"REFUTED\""
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "caseCreated",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "routerOfficer",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "wakeDelivered",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "officerDecides",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "askExecutesAfterReview",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "duplicateRoute",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "stickyStop",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
       ]
     },
     {
@@ -79,17 +128,10 @@
       ]
     },
     {
-      "key": "pendingRequestId",
-      "values": [
-        "\"ctrl-1xxrzo21k29yc31rawhls0qn\"",
-        "\"ctrl-1xxrzo21k29yc31rawhls0qn\""
-      ]
-    },
-    {
       "key": "wakeFacts",
       "values": [
-        "0",
-        "0"
+        "6",
+        "6"
       ]
     },
     {
@@ -182,7 +224,84 @@
         "\"REFUSED\"",
         "\"REFUSED\""
       ]
+    },
+    {
+      "key": "legOrdinal",
+      "values": [
+        "1",
+        "1"
+      ]
+    },
+    {
+      "key": "routeKind",
+      "values": [
+        "\"recipient\"",
+        "\"recipient\""
+      ]
+    },
+    {
+      "key": "routeRole",
+      "values": [
+        "\"officer\"",
+        "\"officer\""
+      ]
+    },
+    {
+      "key": "selfAskRouteKind",
+      "values": [
+        "\"recipient\"",
+        "\"recipient\""
+      ]
+    },
+    {
+      "key": "selfAskRouteRole",
+      "values": [
+        "\"leader\"",
+        "\"leader\""
+      ]
+    },
+    {
+      "key": "routedWakes",
+      "values": [
+        "3",
+        "3"
+      ]
+    },
+    {
+      "key": "deliveredWakes",
+      "values": [
+        "3",
+        "3"
+      ]
+    },
+    {
+      "key": "managementExecutions",
+      "values": [
+        "0",
+        "0"
+      ]
+    },
+    {
+      "key": "officerResolveSettlement",
+      "values": [
+        "\"COMPLETED\"",
+        "\"COMPLETED\""
+      ]
+    },
+    {
+      "key": "duplicateWakeInputs",
+      "values": [
+        "1",
+        "1"
+      ]
+    },
+    {
+      "key": "stickyStopMarkerCount",
+      "values": [
+        "1",
+        "1"
+      ]
     }
   ],
-  "text": "TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)\nfact                              boot1                               boot2                               \noverall                              \"BLOCKED\"                            \"BLOCKED\"                           \nenablement                           \"PROVEN\"                             \"PROVEN\"                            \nofficerUp                            \"PROVEN\"                             \"PROVEN\"                            \nofficerBinding                       \"PROVEN\"                             \"PROVEN\"                            \nroutedWake                           \"REFUTED\"                            \"REFUTED\"                           \nrefusal                              \"PROVEN\"                             \"PROVEN\"                            \naskExecute                           \"PROVEN\"                             \"PROVEN\"                            \naskExecute2                          \"PROVEN\"                             \"PROVEN\"                            \naskDenied                            \"PROVEN\"                             \"PROVEN\"                            \naskStopped                           \"PROVEN\"                             \"PROVEN\"                            \naskAppeared                          true                                 true                                \npendingRequestId                     \"ctrl-1xxrzo21k29yc31rawhls0qn\"      \"ctrl-1xxrzo21k29yc31rawhls0qn\"     \nwakeFacts                            0                                    0                                   \nwakeIntentFiles                      0                                    0                                   \nreviewWakeHits                       0                                    0                                   \nofficerAllowFacts                    1                                    1                                   \naskExecuteBytes                      27                                   27                                  \naskExecuteSha256                     \"ced10112e5b82a2b1b6bca1b85b1dff24   \"ced10112e5b82a2b1b6bca1b85b1dff24  \naskExecuteSettlement                 \"COMPLETED\"                          \"COMPLETED\"                         \naskExecute2Bytes                     29                                   29                                  \naskExecute2Sha256                    \"2d71ffdd499955a34ec86af1c25c00f83   \"2d71ffdd499955a34ec86af1c25c00f83  \naskExecute2Settlement                \"COMPLETED\"                          \"COMPLETED\"                         \naskDeniedBytes                       null                                 null                                \naskDeniedSettlement                  \"REFUSED\"                            \"REFUSED\"                           \naskStoppedBytes                      null                                 null                                \naskStoppedSettlement                 \"REFUSED\"                            \"REFUSED\"                           \n\nagreeing=true differing=[]"
+  "text": "TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)\nfact                              boot1                               boot2                               \noverall                              \"PASS\"                               \"PASS\"                              \nenablement                           \"PROVEN\"                             \"PROVEN\"                            \nofficerUp                            \"PROVEN\"                             \"PROVEN\"                            \nofficerBinding                       \"PROVEN\"                             \"PROVEN\"                            \nroutedWake                           \"PROVEN\"                             \"PROVEN\"                            \ncaseCreated                          \"PROVEN\"                             \"PROVEN\"                            \nrouterOfficer                        \"PROVEN\"                             \"PROVEN\"                            \nwakeDelivered                        \"PROVEN\"                             \"PROVEN\"                            \nofficerDecides                       \"PROVEN\"                             \"PROVEN\"                            \naskExecutesAfterReview               \"PROVEN\"                             \"PROVEN\"                            \nduplicateRoute                       \"PROVEN\"                             \"PROVEN\"                            \nstickyStop                           \"PROVEN\"                             \"PROVEN\"                            \nrefusal                              \"PROVEN\"                             \"PROVEN\"                            \naskExecute                           \"PROVEN\"                             \"PROVEN\"                            \naskExecute2                          \"PROVEN\"                             \"PROVEN\"                            \naskDenied                            \"PROVEN\"                             \"PROVEN\"                            \naskStopped                           \"PROVEN\"                             \"PROVEN\"                            \naskAppeared                          true                                 true                                \nwakeFacts                            6                                    6                                   \nwakeIntentFiles                      0                                    0                                   \nreviewWakeHits                       0                                    0                                   \nofficerAllowFacts                    1                                    1                                   \naskExecuteBytes                      27                                   27                                  \naskExecuteSha256                     \"ced10112e5b82a2b1b6bca1b85b1dff24   \"ced10112e5b82a2b1b6bca1b85b1dff24  \naskExecuteSettlement                 \"COMPLETED\"                          \"COMPLETED\"                         \naskExecute2Bytes                     29                                   29                                  \naskExecute2Sha256                    \"2d71ffdd499955a34ec86af1c25c00f83   \"2d71ffdd499955a34ec86af1c25c00f83  \naskExecute2Settlement                \"COMPLETED\"                          \"COMPLETED\"                         \naskDeniedBytes                       null                                 null                                \naskDeniedSettlement                  \"REFUSED\"                            \"REFUSED\"                           \naskStoppedBytes                      null                                 null                                \naskStoppedSettlement                 \"REFUSED\"                            \"REFUSED\"                           \nlegOrdinal                           1                                    1                                   \nrouteKind                            \"recipient\"                          \"recipient\"                         \nrouteRole                            \"officer\"                            \"officer\"                           \nselfAskRouteKind                     \"recipient\"                          \"recipient\"                         \nselfAskRouteRole                     \"leader\"                             \"leader\"                            \nroutedWakes                          3                                    3                                   \ndeliveredWakes                       3                                    3                                   \nmanagementExecutions                 0                                    0                                   \nofficerResolveSettlement             \"COMPLETED\"                          \"COMPLETED\"                         \nduplicateWakeInputs                  1                                    1                                   \nstickyStopMarkerCount                1                                    1                                   \n\nagreeing=true differing=[]"
 }

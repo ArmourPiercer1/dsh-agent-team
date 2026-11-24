@@ -1,0 +1,54 @@
+[2026-11-24T00:58:09.780Z] archived previous runs -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T00-58-09-780Z
+[2026-11-24T00:58:09.814Z] host tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use HEAD=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=[]
+[2026-11-24T00:58:09.814Z] started 2026-11-24T00:58:09.756Z boots=1
+[2026-11-24T00:58:09.846Z] [boot1] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-24T00:58:09.846Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=a7a7f08ca1f54229780fecce2a43df73e4351bde
+[2026-11-24T00:58:09.876Z] blueprint main.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T00:58:09.879Z] [boot1] alpha6 config gate (positive): null
+[2026-11-24T01:00:32.419Z] [boot1] host ready on http://127.0.0.1:3195
+[2026-11-24T01:00:32.440Z] [boot1] prompt(d4disc) status=200
+[2026-11-24T01:00:32.640Z] [boot1] discovery answered (mock requests=2)
+[2026-11-24T01:00:32.649Z] [boot1] prompt(d4off) status=200
+[2026-11-24T01:00:33.050Z] [boot1] officer delegated
+[2026-11-24T01:00:33.061Z] [boot1] officer instance=inst-1crltnl0089j childSession=session-team-child-1d56dbb16a118ba3573db3c4b2641997
+[2026-11-24T01:00:33.566Z] [boot1] d4:officer-up=PROVEN d4:officer-binding=PROVEN
+[2026-11-24T01:00:33.574Z] [boot1] prompt(d4wrk) status=200
+[2026-11-24T01:00:33.975Z] [boot1] worker delegated
+[2026-11-24T01:00:33.996Z] [boot1] worker ask appeared=true requestId=ctrl-0hq08k40vsbvif0e8zpru0zv
+[2026-11-24T01:00:34.400Z] [boot1] officer resolve(first) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-0hq08k40vsbvif0e8zpru0zv","decision":"allow","decider":{"kind":"instance","instanceId":"inst-1crltnl0
+[2026-11-24T01:00:34.903Z] [boot1] d4:ask-execute=PROVEN failing=[]
+[2026-11-24T01:00:34.903Z] [boot1] second worker ask appeared=true requestId=ctrl-0tsltiz05eyzg41rn77590v7
+[2026-11-24T01:00:34.906Z] [boot1] officer resolve(second) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-0tsltiz05eyzg41rn77590v7","decision":"allow","decider":{"kind":"instance","instanceId":"inst-1crltnl0
+[2026-11-24T01:00:35.410Z] [boot1] d4:ask-execute-2=PROVEN failing=[]
+[2026-11-24T01:00:35.735Z] [boot1] sticky: holdLanded=true hold=true cancelStatus=200 stopSeen=true markers=["stopped-20765e07.json"]
+[2026-11-24T01:00:38.044Z] [boot1] sticky: thirdAsk=true requestId=ctrl-0txyjt10zk8mei0o5evs3035 markersAfter=["stopped-20765e07.json"] wakeInputsWhileStopped=0
+[2026-11-24T01:00:38.456Z] [boot1] officer resolve(third) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-0txyjt10zk8mei0o5evs3035","decision":"allow","decider":{"kind":"instance","instanceId":"inst-1crltnl0
+[2026-11-24T01:00:38.458Z] [boot1] sticky: resumeCleared=true resolve3=true write3Settled=true
+[2026-11-24T01:00:38.461Z] [boot1] duplicate: intents=1 delivered=1 inputs=1
+[2026-11-24T01:00:39.989Z] [boot1] d4:case-created=PROVEN failing=[]
+[2026-11-24T01:00:39.989Z] [boot1] d4:router-officer=PROVEN failing=[]
+[2026-11-24T01:00:39.989Z] [boot1] d4:wake-delivered=PROVEN failing=[]
+[2026-11-24T01:00:39.989Z] [boot1] d4:officer-decides=PROVEN failing=[]
+[2026-11-24T01:00:39.989Z] [boot1] d4:ask-executes-after-review=PROVEN failing=[]
+[2026-11-24T01:00:39.989Z] [boot1] d4:duplicate-route=PROVEN failing=[]
+[2026-11-24T01:00:39.989Z] [boot1] d4:sticky-stop=PROVEN failing=[]
+[2026-11-24T01:00:39.989Z] [boot1] d4:routed-wake=PROVEN failing=[]
+[2026-11-24T01:00:39.992Z] blueprint incoherent.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting=null
+[2026-11-24T01:03:01.381Z] [boot1] d4:refusal=PROVEN failing=[]
+[2026-11-24T01:03:01.384Z] [boot1] d4:enablement=PROVEN failing=[]
+[2026-11-24T01:03:01.623Z] blueprint ask-denied.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T01:05:26.283Z] [boot1] d4:ask-denied=PROVEN failing=[]
+[2026-11-24T01:05:26.440Z] blueprint ask-stopped.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T01:07:53.136Z] [boot1] d4:ask-stopped=PROVEN failing=[]
+[2026-11-24T01:07:53.289Z] [boot1] negative dev-live slot released (released=true held=false)
+[2026-11-24T01:07:53.290Z] [boot1] PROBE FAILED: TypeError: Cannot read properties of null (reading 'home')
+    at probeOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs:2333:54)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs:2449:18)
+[2026-11-24T01:07:53.290Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-24T01:07:53.326Z] host porcelain after: []
+[2026-11-24T01:07:53.327Z] TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)
+fact                              
+
+agreeing=true differing=[]
+[2026-11-24T01:07:53.327Z] RESULT evidence-complete=false allBooted=false blocked=false (1/1 boots; agreeing pair=true)

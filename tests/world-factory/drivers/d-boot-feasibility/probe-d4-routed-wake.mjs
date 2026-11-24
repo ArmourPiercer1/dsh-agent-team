@@ -130,12 +130,17 @@ if (!existsSync(BASELINE_TOOL_FS)) throw new Error(`the pinned host tool-fs modu
 const TOK_OFF = 'dboot-d4-officer-work'
 const TOK_WRK = 'dboot-d4-worker-work'
 const DONE_OFFICER_TURN = 'DBOOT_D4_OFFICER_TURN_DONE'
+const DONE_OFFICER_WAKE_TURN = 'DBOOT_D4_OFFICER_WAKE_DONE'
 const DONE_WORKER_TURN = 'DBOOT_D4_WORKER_TURN_DONE'
 const CALL_OFF_READ = 'call-d4-officer-read'
 const CALL_WRK_WRITE = 'call-d4-worker-write'
 const CALL_WRK_WRITE2 = 'call-d4-worker-write-2'
 const CALL_RESOLVE2 = 'call-d4-leader-resolve-2'
 const CALL_RESOLVE = 'call-d4-leader-resolve'
+// ROUND 97 — the OFFICER's OWN decision calls. The call id NAMES the durable leg it decides, so a
+// second wake cannot be mistaken for the first one already answered (round 96's lesson: a suffix-style
+// marker was read as the older ask). The probe derives the same id from the durable requestId.
+const CALL_OFF_RESOLVE = (requestId) => `call-d4-officer-resolve-${String(requestId)}`
 // NOT a prefix of MK_RESOLVE: `lastLeaderMarkerText` returns the first DECLARED marker contained
 // in the prompt text, so a suffix-style name would be read as the older ask (measured: the second
 // resolve turn answered NO_PENDING because the mock matched MK_RESOLVE).
@@ -146,6 +151,16 @@ const WORKER_TEXT = 'DBOOT_D4_WORKER_ASK_CALLED'
 // The SECOND live mutation: a DIFFERENT approval writing DIFFERENT bytes. It proves the content
 // binding across two real approvals (each receipt covers its own sha256), not just one happy path.
 const WORKER_TEXT2 = 'DBOOT_D4_WORKER_ASK_CALLED_2'
+// ROUND 97 — Sticky Stop. A HUMAN prompt holds the Officer's turn open long enough for a REAL user
+// cancel to reach the host (the only producer of the Sticky Stop marker), and a THIRD worker ask is
+// raised while the Officer is stopped. The bytes of that third call are the resume's proof.
+const CALL_WRK_WRITE3 = 'call-d4-worker-write-3'
+const WORKER_TEXT3 = 'DBOOT_D4_WORKER_ASK_CALLED_3'
+const MK_HOLD = 'DBOOT_D4_OFFICER_HOLD'
+const MK_RESUME = 'DBOOT_D4_OFFICER_RESUME'
+const MK_WORK3 = 'DBOOT_D4_WORKER_THIRD_ASK'
+const HOLD_STEPS = 40
+const CALL_OFF_HOLD = (step) => `call-d4-officer-hold-${String(step)}`
 const CASE_ID = {
   enablement: 'd4:enablement',
   officerUp: 'd4:officer-up',
@@ -292,31 +307,36 @@ function v5Doc({ blueprintId, dirs }) {
     permissionMutationEnvelope: { rules: [] },
     teamHardEnvelope: { rules: [] },
     metadata: {},
-    // R1 (round 93, owner ruling on review 20261124-0151 §1) — THE G3 EXPERIMENT ARM, OFF BY DEFAULT.
+    // R1 (round 93, owner ruling on review 20261124-0151 §1) — THE DECLARED OPERATION TOOL.
     //
-    // R1's case identity must freeze a TRUSTED ToolBinding coordinate, so the ruling's world would have
-    // to declare the operation tool. Authoring that declaration is a WORLD change, and the default world
-    // is left in the PRODUCTION shape (the ask on the Member's ceiling lane, no declared binding) so the
-    // judge measures what production can actually express. The declared-binding world is reachable with
-    // `D4_BINDING_WORLD=1` and is the measurement that produced finding G3: with a declared binding the
-    // Alpha.5 compiler's hard intersection (`compileEffectiveIo(…, {approvedOnce:false})`) collapses an
-    // `ask` path to an EMPTY lane, so the tool becomes deny-all and NO ask reaches the Control plane
-    // (`wake-measurement.json` → `workerWrite.result` = `LANE_DENY: … outside the tool's compiled
-    // fs.write lane`). An ask and a trusted ToolBinding are therefore MUTUALLY EXCLUSIVE in a live v5
-    // world today — the third Team-side seam this round names, and NOT something R1 may paper over.
-    ...(D4_BINDING_WORLD === '1'
-      ? {
-          toolBindings: [
-            {
-              owner: 'dsh.fs',
-              name: 'write',
-              authorization: 'allow',
-              io: { read: lane([dirs.dir]), write: lane([dirs.dir]), network: { mode: 'allow' } },
-              execution: { implementationOrigin: 'dsh-native', executionBoundary: 'trusted-host' },
-            },
-          ],
-        }
-      : {}),
+    // R1's case identity must freeze a TRUSTED ToolBinding coordinate, so the world DECLARES the
+    // operation tool: `<owner>/<name>` = `dsh.fs/write`, with the disposition `ask` and a PURE-ASK write
+    // lane inside the worker's own workspace lane. That is the authoring shape a real Team uses when it
+    // wants a governed operation: the tool is declared (Q1), the lane is an ask (so the call is an
+    // ordinary ask), and the compiler's lane algebra keeps the ask (G11, fixed in round 94 —
+    // `intersectPathRuleSets` no longer collapses a pure-ask lane).
+    //
+    // ROUND 97: this declaration is the DEFAULT world, not an env-gated experiment. Round 93 measured
+    // that an ask and a declared ToolBinding were mutually exclusive because the compiler collapsed the
+    // ask to deny-all; round 94 fixed the lane algebra, and this round measures the resulting live
+    // `ask → case → Officer wake → decision → execute` chain.
+    toolBindings: [
+      {
+        owner: 'dsh.fs',
+        name: 'write',
+        // THE DECLARED DISPOSITION the task names: `ask`. It rides the compiled binding as the
+        // tool's authorization; the per-call lane disposition is the `write` lane below.
+        authorization: 'ask',
+        io: {
+          read: lane([dirs.dir]),
+          // PURE ask: nothing is pre-authorised, the worker's own lane is ask-gated. The intersection
+          // with the worker's ceiling (also a pure ask for the same lane) stays an ask.
+          write: lane([], [dirs.dir]),
+          network: { mode: 'allow' },
+        },
+        execution: { implementationOrigin: 'dsh-native', executionBoundary: 'trusted-host' },
+      },
+    ],
     memberIoCeilings: [
       { templateId: 'officer', io: { read: lane([dirs.dir]), write: lane([dirs.dir]), network: { mode: 'allow' } } },
       // THE DECLARED ORDINARY ASK: the worker's write lane ASKs for its own
@@ -384,7 +404,7 @@ function composedRows({ home, mainYaml, alpha6 }) {
     // `toolBindings[]` entry names a tool; the realm can only shadow a name it can mount, so a
     // world that DECLARES the operation tool must also mount the module that provides it. This is
     // the pinned host `tool-fs` package (read-only, from the pristine test tree), not a product mock.
-    a5sfNativeToolModules: D4_BINDING_WORLD === '1' ? [BASELINE_TOOL_FS] : [],
+    a5sfNativeToolModules: [BASELINE_TOOL_FS],
     ...(alpha6.enabled
       ? {
           alpha6ReviewRouting: true,
@@ -437,6 +457,39 @@ function lastLeaderMarkerText(record) {
 function isMemberRequest(record) {
   return memberTokenOf(record) !== null
 }
+/**
+ * The NEWEST product-delivered review wake in a transcript (round 97).
+ *
+ * A wake is an ordinary attributed input, so it lands as a `user` role message. After the mock's own
+ * tool call the loop appends the tool RESULT as a user-role message too, so scanning "the last user
+ * message" would miss the wake; scan newest-first for the wake's own token instead. Returns the wake
+ * text plus the requestIds it names (merged wakes name several).
+ */
+function lastReviewWake(record) {
+  const users = messagesOf(record).filter((m) => m?.role === 'user')
+  for (let i = users.length - 1; i >= 0; i -= 1) {
+    // `contentText` (not `textOf`) — the wake carries newlines and the model request holds content
+    // blocks, so a JSON-escaped scan would miss the `requestId` bullet line.
+    const text = contentText(users[i]?.content)
+    if (!text.includes('[team-review-wake')) continue
+    const requestIds = [...text.matchAll(/requestId[:=]\s*(?:-\s*)?([A-Za-z0-9_-]+)/gu)].map((match) => match[1])
+    return { text, requestIds: [...new Set(requestIds)] }
+  }
+  return null
+}
+/** Which review-wake legs this session has ALREADY answered (by the deterministic call id). */
+function resolvedWakeIds(record) {
+  const done = new Set()
+  for (const row of messagesOf(record)) {
+    if (!Array.isArray(row?.content)) continue
+    for (const block of row.content) {
+      if (block?.type !== 'tool_result' || block?.tool_use_id === undefined) continue
+      const match = /^call-d4-officer-resolve-(.+)$/u.exec(String(block.tool_use_id))
+      if (match !== null) done.add(match[1])
+    }
+  }
+  return done
+}
 function resultIdsOf(record) {
   const ids = new Set()
   for (const message of messagesOf(record)) {
@@ -479,6 +532,55 @@ function makeDecide({ paths, ids, resolveDecision = 'allow' }) {
   })
 
   return function decide({ req }) {
+    // ── ROUND 97: the OFFICER's wake turn ─────────────────────────────────────────────────────────
+    // The product delivers the routed review wake as attributed input into the Officer's OWN session.
+    // This is the only surface that can answer it, and the answer is the Officer's OWN
+    // `team_resolve_control` (admitted under ITS binding by the ONE centre). Each leg is decided with
+    // the EXACT requestId the wake names; a leg already answered is not answered twice.
+    // ROUND 97 — WHICH TURN IS THIS? A wake message and a human marker both live in the history
+    // forever, so neither "any wake exists" nor "the last user message" is the right test. The turn is
+    // decided by the NEWEST of the two: a marker appended after the newest wake makes this a human
+    // turn; a wake appended after the newest marker makes it a wake turn.
+    const users = messagesOf(req).filter((m) => m?.role === 'user')
+    const wakeIndex = (() => {
+      for (let index = users.length - 1; index >= 0; index -= 1) {
+        if (contentText(users[index]?.content).includes('[team-review-wake')) return index
+      }
+      return -1
+    })()
+    const markerIndex = (() => {
+      for (let index = users.length - 1; index >= 0; index -= 1) {
+        const text = contentText(users[index]?.content)
+        if ([MK_HOLD, MK_RESUME, MK_WORK3].some((marker) => text.includes(marker))) return index
+      }
+      return -1
+    })()
+    const wake = markerIndex > wakeIndex ? null : lastReviewWake(req)
+    if (wake !== null) {
+      const answered = resolvedWakeIds(req)
+      for (const requestId of wake.requestIds) {
+        if (answered.has(requestId)) continue
+        return resolveCall(CALL_OFF_RESOLVE(requestId), requestId)
+      }
+      return text(DONE_OFFICER_WAKE_TURN)
+    }
+    // ── ROUND 97: the HUMAN-driven turns used by the Sticky-Stop arm ─────────────────────────────
+    // A human prompt appended after the newest wake owns the turn. The hold turn issues one `read`
+    // per step so a real `session/cancel` can land mid-turn; the third worker ask is an ask.
+    const humanTurn = newestMarkerText(req, [MK_HOLD, MK_RESUME, MK_WORK3])
+    if (humanTurn === MK_HOLD) {
+      const seen = resultIdsOf(req)
+      for (let step = 1; step <= HOLD_STEPS; step += 1) {
+        const id = CALL_OFF_HOLD(step)
+        if (!seen.has(id)) return readCall(id, paths.officerFile)
+      }
+      return text('DBOOT_D4_OFFICER_HOLD_DONE')
+    }
+    if (humanTurn === MK_WORK3) {
+      const seen = resultIdsOf(req)
+      if (!seen.has(CALL_WRK_WRITE3)) return writeCall(CALL_WRK_WRITE3, paths.workerFile3, `${WORKER_TEXT3}\n`)
+      return text('DBOOT_D4_WORK3_DONE')
+    }
     const token = memberTokenOf(req)
     if (token !== null) {
       const seen = resultIdsOf(req)
@@ -593,6 +695,24 @@ function contentText(content) {
   if (Array.isArray(content)) return content.map((c) => (typeof c === 'string' ? c : String(c?.text ?? ''))).join('')
   return JSON.stringify(content ?? '')
 }
+/**
+ * The NEWEST human-turn marker in the conversation (round 97).
+ *
+ * The officer's session carries workspace/system-reminder user messages AFTER the human prompt, so
+ * "the last user message" is not the marker. Scan newest-first for a message carrying one of the
+ * declared markers — the same rule `lastLeaderMarkerText` uses for Leader turns. The FIRST marker
+ * found wins, so a later resume marker supersedes an earlier hold marker.
+ */
+function newestMarkerText(req, markers) {
+  const users = messagesOf(req).filter((m) => m?.role === 'user')
+  for (let index = users.length - 1; index >= 0; index -= 1) {
+    const text = contentText(users[index]?.content)
+    for (const marker of markers) {
+      if (text.includes(marker)) return marker
+    }
+  }
+  return ''
+}
 function readMemberTranscript(dshHome, sessionId) {
   const found = findSessionFile(dshHome, sessionId)
   if (found === null) return null
@@ -605,10 +725,17 @@ function readMemberTranscript(dshHome, sessionId) {
   const results = []
   const assistant = []
   const user = []
+  const userSources = []
   for (const row of lines) {
     const data = row?.data ?? row
     const type = row?.type ?? row?.kind ?? null
-    if (type === 'user/message') user.push(contentText((data?.message ?? data)?.content))
+    if (type === 'user/message') {
+      user.push(contentText((data?.message ?? data)?.content))
+      // ROUND 97 — the A56 machine-attribution surface: who PRODUCED this input. The review wake is
+      // delivered with the producer-owned `plugin:dsh-agent-team` source; a HUMAN input carries
+      // `kind:'user'`. This is the live witness the Sticky-Stop law reads.
+      userSources.push(String((data?.message ?? data)?.source?.kind ?? ''))
+    }
     if (type === 'assistant/message') {
       const t = contentText((data?.message ?? data)?.content)
       if (t.trim() !== '') assistant.push(t)
@@ -635,7 +762,7 @@ function readMemberTranscript(dshHome, sessionId) {
     try { args = JSON.parse(call.arguments) } catch { args = null }
     return { callId: call.callId, name: call.name, arguments: args, result: results.find((r) => String(r.callId) === String(call.callId)) ?? null }
   })
-  return { sessionId, file: found.file, header: found.header, lineCount: lines.length, user, calls: paired, assistant, finalAssistant: assistant.at(-1) ?? null }
+  return { sessionId, file: found.file, header: found.header, lineCount: lines.length, user, userSources, calls: paired, assistant, finalAssistant: assistant.at(-1) ?? null }
 }
 
 function centreDirOf(home) { return join(home, CENTRE_DIR) }
@@ -655,7 +782,29 @@ function settlementOf(home, instanceId, callId) {
     bodyOutcome: record?.observation?.bodyOutcome ?? null,
     dispatch: record?.observation?.dispatch ?? null,
     transitions: Array.isArray(record?.transitions) ? record.transitions.map((t) => t?.to ?? t) : [],
+    // The wall-clock the settlement reached its terminal state (the LAST transition's `at`), used by
+    // the ordering clause ("the granted call executed AFTER the review decision").
+    terminalAt: Array.isArray(record?.transitions) && record.transitions.length > 0
+      ? (record.transitions[record.transitions.length - 1]?.at ?? null)
+      : (record?.updatedAt ?? null),
   }
+}
+/**
+ * Every execution settlement under the home that NAMES a literal (round 97).
+ *
+ * Used for the "the management plane executes NO tool" clause: the delivery is a governed INPUT, so
+ * no settlement may exist that carries the wake's own token. A reader that finds nothing at all is
+ * controlled by the settlements the member calls DID write (the judges read those separately).
+ */
+function settlementsMentioning(home, needle) {
+  if (!nonEmpty(needle)) return []
+  const root = join(centreDirOf(home), 'settlement')
+  const hits = []
+  for (const entry of walkFiles(root)) {
+    if (!entry.name.endsWith('.settlement.json')) continue
+    try { if (readFileSync(entry.path, 'utf8').includes(needle)) hits.push(entry.path) } catch { /* unreadable is not a hit */ }
+  }
+  return hits
 }
 /** Read the REAL bytes the boot left on the host filesystem (outside the Member sandbox). */
 function fileEvidence(filePath) {
@@ -785,59 +934,204 @@ function judgeOfficerBinding({ member, facts, settlement }) {
     ],
   )
 }
-function judgeRoutedWake({ durableRow, routeProbe, wakeFacts, wakeIntentFiles, officerTranscript, leaderTranscript, leaderNotificationText }) {
+/**
+ * ROUND 97 — the routed-wake judges.
+ *
+ * Round 84 named the ONE missing piece as "the routed review wake reaching a real Host". Round 93's
+ * single monolithic `d4:routed-wake` judge encoded the pre-R1 gap and was REFUTED. Round 97 measures
+ * the finished chain as SEVEN independent propositions, each answerable from durable bytes on disk:
+ *
+ *   d4:case-created              the ask opened a REAL durable approval case (case id + leg), read back
+ *   d4:router-officer            the product router selects the unique lawful Officer (self-ask refused)
+ *   d4:wake-delivered            governed intent + confirmation + machine attribution, zero management
+ *                                tool executions
+ *   d4:officer-decides           the Officer is woken in ITS session and its own resolve is admitted
+ *                                under ITS binding
+ *   d4:ask-executes-after-review the worker's granted call executes AFTER the review decision
+ *   d4:duplicate-route           a duplicate route produces ONE wake
+ *   d4:sticky-stop               a machine-delivered wake does not clear a human Sticky Stop
+ *
+ * `d4:routed-wake` is the CONJUNCTION of all seven (see `judgeRoutedWake`), so the capability cell
+ * is PROVEN only when every clause is. None of the pre-existing judges is touched.
+ */
+const WAKE_MACHINE_SOURCE = 'plugin:dsh-agent-team'
+
+function nonEmpty(value) {
+  return typeof value === 'string' && value.trim().length > 0
+}
+
+function judgeCaseCreated({ durableRow, ledgerRows }) {
   const row = durableRow?.row ?? null
-  const rowShape = row === null ? null : {
-    requestId: row?.requestId ?? null,
-    kind: row?.kind ?? null,
-    actionName: row?.actionName ?? null,
-    targetInstanceId: row?.targetInstanceId ?? null,
-    toolName: row?.toolName ?? null,
-    summary: row?.summary ?? null,
-    approvalCaseId: row?.approvalCaseId ?? null,
-    legOrdinal: row?.legOrdinal ?? null,
-    reviewAuthority: row?.reviewAuthority ?? null,
-    operationFingerprint: row?.operationFingerprint ?? null,
-    requestedEffect: row?.requestedEffect ?? null,
-    blueprintContentHash: row?.blueprintContentHash ?? null,
-  }
-  const officerWoken = String(officerTranscript?.userText ?? '').includes('[team-review-wake')
+  const fact = durableRow?.fact ?? null
+  const scope = row?.reviewPayload?.authorityScope ?? row?.authorityScope ?? null
+  const decisionFacts = (ledgerRows ?? []).filter((entry) => entry?.factType === 'control-decision-recorded'
+    && String(entry?.payload?.requestId ?? '') === String(row?.requestId ?? ''))
   return verdictOf(
-    'the routed review decision is taken from the durable control row and the wake is DELIVERED through the governed delivery (team-review-wake-routed intent + team-review-wake-delivered confirmation, machine attribution), with the Officer woken in its own session',
+    'a qualifying ordinary admission ask opened a REAL durable Alpha.6 approval CASE (server-derived case id + leg ordinal + frozen operation/tool/blueprint identity), read back from the TeamDomain ledger on disk',
     [
-      { id: 'ordinary-tool-ask-created', ok: row !== null && row?.kind === 'leader-approval', detail: `durable row=${JSON.stringify(rowShape)}` },
-      // THE CASE IDENTITY IS THE ROUTE'S PRECONDITION (`alpha6/root-router.ts`):
-      // without it `route()` answers null and the notifier takes the case-less
-      // Leader branch, so no Alpha.6 route can exist for this row.
-      { id: 'row-carries-approval-case', ok: typeof row?.approvalCaseId === 'string' && row.approvalCaseId.length > 0 && typeof row?.legOrdinal === 'number', detail: `approvalCaseId=${JSON.stringify(row?.approvalCaseId ?? null)} legOrdinal=${JSON.stringify(row?.legOrdinal ?? null)} reviewAuthority=${JSON.stringify(row?.reviewAuthority ?? null)}` },
-      // THE PRODUCT'S OWN ROUTER, evaluated in-process on the durable row it just wrote.
-      // JUDGE AMENDMENT (round 93, disclosed): before R1 this clause asserted `route === null` — it
-      // ENCODED THE GAP (a case-less row is unroutable). The ruled requirement is the opposite, so the
-      // clause now asserts the ROUTED outcome instead. It is a STRICTER clause, not a weaker one: the
-      // route must be a recipient, must be the Officer role, and must name the Officer instance the
-      // durable member view carries. The other eight clauses are untouched.
+      { id: 'read-back-from-the-ledger', ok: fact !== null && fact?.factType === 'control-request-recorded' && Number.isInteger(fact?.sequence), detail: `factFile=${JSON.stringify(durableRow?.file ?? null)} sequence=${String(fact?.sequence ?? null)}` },
+      { id: 'durable-row-is-an-approval-ask', ok: row?.kind === 'leader-approval' && row?.actionName === 'admission-ask', detail: `kind=${JSON.stringify(row?.kind ?? null)} actionName=${JSON.stringify(row?.actionName ?? null)}` },
+      { id: 'approval-case-id-present', ok: nonEmpty(row?.approvalCaseId) && String(row.approvalCaseId).startsWith('case-'), detail: `approvalCaseId=${JSON.stringify(row?.approvalCaseId ?? null)}` },
+      { id: 'leg-ordinal-present', ok: Number.isInteger(row?.legOrdinal) && row.legOrdinal >= 1, detail: `legOrdinal=${JSON.stringify(row?.legOrdinal ?? null)}` },
+      { id: 'case-rung-is-the-leader', ok: row?.reviewAuthority === 'leader' && row?.requiredAuthorityAtCreation === 'leader', detail: `reviewAuthority=${JSON.stringify(row?.reviewAuthority ?? null)} requiredAuthorityAtCreation=${JSON.stringify(row?.requiredAuthorityAtCreation ?? null)}` },
       {
-        id: 'product-router-selects-the-officer',
-        ok: routeProbe?.route?.kind === 'recipient'
-          && routeProbe?.route?.target?.routeRole === 'officer'
-          && typeof routeProbe?.route?.target?.instanceId === 'string'
-          && routeProbe.route.target.instanceId === String(routeProbe?.officerInstanceId ?? ''),
-        detail: `createAlpha6RootRouter.route()=${JSON.stringify(routeProbe?.route ?? null)} expectedOfficerInstanceId=${JSON.stringify(routeProbe?.officerInstanceId ?? null)} memberListCalls=${String(routeProbe?.memberListCalls)} error=${String(routeProbe?.error ?? null)}`,
+        id: 'frozen-operation-identity',
+        ok: nonEmpty(row?.operationFingerprint) && String(row.operationFingerprint).startsWith('sha256:')
+          && row?.requestedEffect === 'allow'
+          && scope !== null && scope?.operationClass === 'write'
+          && scope?.matcher?.kind === 'exact' && nonEmpty(scope?.matcher?.resource),
+        detail: `operationFingerprint=${JSON.stringify(row?.operationFingerprint ?? null)} requestedEffect=${JSON.stringify(row?.requestedEffect ?? null)} authorityScope=${JSON.stringify(scope)}`,
       },
-      { id: 'wake-intent-fact-routed', ok: wakeFacts.some((entry) => entry.factType === 'team-review-wake-routed'), detail: `wake facts=${JSON.stringify(wakeFacts.map((w) => w.factType))}` },
-      { id: 'wake-confirmed-delivered', ok: wakeFacts.some((entry) => entry.factType === 'team-review-wake-delivered'), detail: `wake facts=${JSON.stringify(wakeFacts.map((w) => w.factType))}` },
-      { id: 'wake-intent-file-written', ok: wakeIntentFiles.length > 0, detail: `intent files=${JSON.stringify(wakeIntentFiles)}` },
-      { id: 'officer-woken-in-its-session', ok: officerWoken, detail: `officer user text=${JSON.stringify(String(officerTranscript?.userText ?? '').slice(0, 300))}` },
-      // The delivered wake would have to be a MACHINE input (A56). With zero
-      // wakes there is no input to attribute: the clause is NOT_REACHED, and it
-      // stays a failing clause because the judge's proposition is not met.
-      { id: 'wake-has-machine-attribution', ok: wakeFacts.length > 0 && wakeFacts.every((entry) => entry?.payload?.source === 'plugin:dsh-agent-team'), detail: `wake facts=${String(wakeFacts.length)}; no wake ⇒ no machine input to attribute` },
-      // THE BRANCH INVERTS WITH THE ROUTE (JUDGE AMENDMENT, same disclosure as above): a case that
-      // routes to the Officer must NOT also be handed to the Leader as a plain C1 ask. Asserting the
-      // ABSENCE is the clause that catches a "both paths fired" implementation.
-      { id: 'no-plain-c1-ask-to-the-leader', ok: !String(leaderNotificationText).includes('[team-control'), detail: `leader notification=${JSON.stringify(String(leaderNotificationText).slice(0, 300))}` },
-      { id: 'no-review-wake-to-the-leader', ok: !String(leaderTranscript?.userText ?? '').includes('[team-review-wake'), detail: `leader got a review wake=${String(String(leaderTranscript?.userText ?? '').includes('[team-review-wake'))}` },
+      { id: 'frozen-tool-coordinate', ok: row?.operationToolOwner === 'dsh.fs' && row?.operationToolName === 'write' && row?.operationToolDefinitionIdentity === 'dsh.fs/write', detail: `coordinate=${JSON.stringify([row?.operationToolOwner ?? null, row?.operationToolName ?? null, row?.operationToolDefinitionIdentity ?? null])}` },
+      { id: 'frozen-blueprint-and-generation', ok: nonEmpty(row?.blueprintContentHash) && String(row.blueprintContentHash).startsWith('sha256:') && nonEmpty(row?.blueprintRevision) && Number.isInteger(row?.authorityGeneration), detail: `blueprintContentHash=${JSON.stringify(row?.blueprintContentHash ?? null)} revision=${JSON.stringify(row?.blueprintRevision ?? null)} authorityGeneration=${JSON.stringify(row?.authorityGeneration ?? null)}` },
+      { id: 'case-has-no-decision-yet', ok: decisionFacts.length === 0, detail: `decision facts at capture time=${String(decisionFacts.length)}` },
     ],
+  )
+}
+
+function judgeRouterOfficer({ routeProbe, officerInstanceId, requesterInstanceId, officerCandidateCount }) {
+  const route = routeProbe?.route ?? null
+  const selfAsk = routeProbe?.selfAskRoute ?? null
+  const selfAskPicksOfficer = selfAsk?.kind === 'recipient'
+    && selfAsk?.target?.routeRole === 'officer'
+    && String(selfAsk?.target?.instanceId ?? '') === String(officerInstanceId ?? '')
+  return verdictOf(
+    'the product router selects the UNIQUE lawful Officer for the case leg, and a self-ask (the operation owner is the Officer) is never routed to that Officer',
+    [
+      {
+        id: 'route-is-the-officer-instance',
+        ok: route?.kind === 'recipient' && route?.target?.kind === 'instance'
+          && route?.target?.routeRole === 'officer'
+          && String(route?.target?.instanceId ?? '') === String(officerInstanceId ?? ''),
+        detail: `route=${JSON.stringify(route)} expectedOfficer=${JSON.stringify(officerInstanceId ?? null)} memberListCalls=${String(routeProbe?.memberListCalls)}`,
+      },
+      { id: 'exactly-one-lawful-officer', ok: Number(officerCandidateCount) === 1, detail: `active officer candidates=${JSON.stringify(officerCandidateCount ?? null)}` },
+      { id: 'requester-is-not-the-reviewer', ok: nonEmpty(requesterInstanceId) && String(requesterInstanceId) !== String(officerInstanceId ?? ''), detail: `requester=${JSON.stringify(requesterInstanceId ?? null)} officer=${JSON.stringify(officerInstanceId ?? null)}` },
+      { id: 'self-ask-never-routed-to-the-officer', ok: selfAskPicksOfficer === false && selfAsk !== null, detail: `self-ask route=${JSON.stringify(selfAsk ?? null)}` },
+    ],
+  )
+}
+
+function judgeWakeDelivered({ requestId, wakeFacts, officerTranscript, intentFiles, managementExecutions }) {
+  const routed = wakeFacts.filter((entry) => entry.factType === 'team-review-wake-routed'
+    && String(entry?.payload?.requestId ?? '') === String(requestId ?? ''))
+  const delivered = wakeFacts.filter((entry) => entry.factType === 'team-review-wake-delivered')
+  const token = routed.length === 1 ? String(routed[0]?.payload?.requestToken ?? '') : ''
+  const confirmed = token === '' ? [] : delivered.filter((entry) => String(entry?.payload?.requestToken ?? '') === token)
+  const correlation = routed.length === 1 && confirmed.length === 1
+    && Number(confirmed[0]?.payload?.factSequence) === Number(routed[0]?.sequence)
+  const wakeSources = (officerTranscript?.userSources ?? []).filter((_source, index) =>
+    String(officerTranscript?.user?.[index] ?? '').includes('[team-review-wake'))
+  return verdictOf(
+    'the routed review wake is DELIVERED through the governed delivery: exactly one durable `team-review-wake-routed` intent, one correlated `team-review-wake-delivered` confirmation, the input is machine-attributed (never human), and the management plane executed ZERO tools',
+    [
+      { id: 'one-routed-intent-for-the-leg', ok: routed.length === 1, detail: `routed facts for requestId=${JSON.stringify(requestId ?? null)}: ${JSON.stringify(wakeFacts.filter((e) => e.factType === 'team-review-wake-routed').map((e) => e?.payload?.requestId ?? null))}` },
+      { id: 'one-correlated-confirmation', ok: confirmed.length === 1 && correlation, detail: `requestToken=${JSON.stringify(token)} confirmations=${String(confirmed.length)} correlation=${String(correlation)}` },
+      { id: 'intent-names-the-officer-session', ok: routed.length === 1 && nonEmpty(routed[0]?.payload?.deliveredToSessionId) && routed[0]?.payload?.routeRole === 'officer', detail: `intent payload=${JSON.stringify(routed[0]?.payload ?? null)}` },
+      // The wake-INTENT directory row is a TRANSIENT queue entry: the latch clears it once the
+      // delivery is confirmed (the directory is empty after a successful wake, measured). The
+      // SURVIVING intent artifact is the durable `team-review-wake-routed` fact (clause 1); this
+      // clause pins its semantic shape instead of asserting a file that is correctly gone.
+      { id: 'intent-carries-the-review-action', ok: routed.length === 1 && routed[0]?.payload?.action === 'review-wake' && nonEmpty(routed[0]?.payload?.at), detail: `intent payload action=${JSON.stringify(routed[0]?.payload?.action ?? null)} at=${JSON.stringify(routed[0]?.payload?.at ?? null)} intentDirFiles=${JSON.stringify(intentFiles ?? [])}` },
+      { id: 'machine-attribution-not-human', ok: wakeSources.length > 0 && wakeSources.every((source) => source === WAKE_MACHINE_SOURCE), detail: `wake input sources=${JSON.stringify(wakeSources)} expected=${JSON.stringify(WAKE_MACHINE_SOURCE)}` },
+      { id: 'zero-management-plane-tool-executions', ok: Number(managementExecutions) === 0, detail: `settlements naming the wake token or the review-wake tool=${JSON.stringify(managementExecutions ?? null)}` },
+    ],
+  )
+}
+
+function judgeOfficerDecides({ requestId, officerTranscript, officerFacts, settlement, leaderTranscript, officerInstanceId }) {
+  const callId = CALL_OFF_RESOLVE(requestId)
+  const call = (officerTranscript?.calls ?? []).find((entry) => String(entry?.callId) === callId) ?? null
+  const allowed = (officerFacts ?? []).filter((fact) => fact?.kind === 'invocation-authority' && fact?.decision === 'allow')
+  const boundToItself = allowed.some((fact) => String(fact?.instanceId ?? fact?.agentId ?? '') === String(officerInstanceId ?? ''))
+  const leaderDecided = (leaderTranscript?.calls ?? []).some((entry) => String(entry?.name ?? '') === 'team_resolve_control'
+    && String(entry?.arguments?.requestId ?? '') === String(requestId ?? ''))
+  return verdictOf(
+    'the Officer is woken in ITS OWN session and its OWN `team_resolve_control` is admitted under ITS binding (a durable invocation-authority allow for its call, in its centre ledger), settling the case',
+    [
+      {
+        id: 'officer-woken-in-its-own-session',
+        ok: (officerTranscript?.userSources ?? []).some((source, index) => source === WAKE_MACHINE_SOURCE
+          && String(officerTranscript?.user?.[index] ?? '').includes('[team-review-wake')
+          && String(officerTranscript?.user?.[index] ?? '').includes(String(requestId ?? ''))),
+        detail: `officer session=${JSON.stringify(officerTranscript?.sessionId ?? null)} wake-for-this-leg=${String((officerTranscript?.user ?? []).some((text) => String(text).includes(String(requestId ?? '\u0000'))))}`,
+      },
+      { id: 'officer-issued-its-own-resolve', ok: call !== null && call?.name === 'team_resolve_control' && call?.result !== null && call?.result?.isError !== true, detail: `callId=${JSON.stringify(callId)} found=${String(call !== null)} result=${JSON.stringify(call?.result?.text?.slice(0, 300) ?? null)}` },
+      { id: 'resolve-admitted-under-its-own-binding', ok: allowed.length >= 1 && boundToItself, detail: `invocation-authority allow facts for ${JSON.stringify(callId)}=${JSON.stringify(allowed.map((f) => ({ instanceId: f.instanceId, axis: f.axis, decision: f.decision })))}` },
+      { id: 'settlement-completed', ok: settlement?.state === 'COMPLETED', detail: `settlement=${JSON.stringify({ state: settlement?.state ?? null, bodyOutcome: settlement?.bodyOutcome ?? null })}` },
+      { id: 'leader-did-not-decide', ok: leaderDecided === false, detail: `leader resolve calls for the leg=${String(leaderDecided)}` },
+    ],
+  )
+}
+
+function judgeAskExecutesAfterReview({ requestId, decisionFact, file, expectedBytes, facts, settlement, writeCall, reviewDecisionAt }) {
+  const decisionAt = reviewDecisionAt ?? decisionFact?.createdAt ?? null
+  const terminalAt = settlement?.terminalAt ?? null
+  const ordered = nonEmpty(decisionAt) && nonEmpty(terminalAt)
+    && Date.parse(String(terminalAt)) >= Date.parse(String(decisionAt))
+  const allow = (facts ?? []).find((fact) => fact?.kind === 'invocation-authority' && fact?.decision === 'allow') ?? null
+  return verdictOf(
+    'the worker\'s granted call EXECUTES AFTER the review decision: the durable decision precedes the tool settlement, the receipt let REAL bytes through, and the admission allow is on the ask lane',
+    [
+      { id: 'review-decision-is-durable', ok: nonEmpty(decisionFact?.payload?.requestId) && nonEmpty(decisionAt), detail: `decision fact=${JSON.stringify({ requestId: decisionFact?.payload?.requestId ?? null, decision: decisionFact?.payload?.decision ?? null, at: decisionAt })}` },
+      { id: 'decision-precedes-execution', ok: ordered, detail: `decisionAt=${JSON.stringify(decisionAt)} settlementTerminalAt=${JSON.stringify(terminalAt)}` },
+      { id: 'real-bytes-on-disk', ok: file?.exists === true && file?.content === expectedBytes && file?.bytes === Buffer.byteLength(expectedBytes), detail: `file=${JSON.stringify({ path: file?.path ?? null, exists: file?.exists ?? null, bytes: file?.bytes ?? null, sha256: file?.sha256 ?? null })} expectedBytes=${String(Buffer.byteLength(expectedBytes))}` },
+      { id: 'worker-tool-result-not-an-error', ok: writeCall?.result !== null && writeCall?.result !== undefined && writeCall?.result?.isError !== true, detail: `write result=${JSON.stringify(writeCall?.result?.text?.slice(0, 300) ?? null)}` },
+      { id: 'admission-allow-on-the-ask-lane', ok: allow !== null, detail: `allow fact=${JSON.stringify(allow === null ? null : { callId: allow.callId, axis: allow.axis, decision: allow.decision })}` },
+      { id: 'settlement-completed', ok: settlement?.state === 'COMPLETED' && settlement?.bodyOutcome === 'completed', detail: `settlement=${JSON.stringify({ state: settlement?.state ?? null, bodyOutcome: settlement?.bodyOutcome ?? null })}` },
+    ],
+  )
+}
+
+function judgeDuplicateRoute({ duplicate }) {
+  const d = duplicate ?? {}
+  return verdictOf(
+    'a duplicate route for the SAME leg produces exactly ONE wake: one delivery intent, one confirmation, one input accepted by the Officer session, and the duplicate attempt is reported as a convergent no-op (never a second model-visible wake)',
+    [
+      { id: 'duplicate-attempt-was-made', ok: d?.attempted === true, detail: `attempted=${String(d?.attempted)} via=${JSON.stringify(d?.via ?? null)}` },
+      { id: 'one-delivery-intent', ok: Number(d?.intentFacts) === 1, detail: `routed intent facts for the token=${JSON.stringify(d?.intentFacts ?? null)}` },
+      { id: 'one-confirmation', ok: Number(d?.deliveredFacts) === 1, detail: `delivered confirmation facts for the token=${JSON.stringify(d?.deliveredFacts ?? null)}` },
+      { id: 'one-model-visible-wake', ok: Number(d?.wakeInputs) === 1, detail: `wake inputs in the Officer session=${JSON.stringify(d?.wakeInputs ?? null)}` },
+      { id: 'duplicate-is-a-no-op', ok: d?.converged === true, detail: `converged=${String(d?.converged)} detail=${JSON.stringify(d?.detail ?? null)}` },
+    ],
+  )
+}
+
+function judgeStickyStop({ sticky }) {
+  const s = sticky ?? {}
+  return verdictOf(
+    'a machine-delivered review wake does NOT clear a HUMAN Sticky Stop: the stop marker survives a machine wake attempt, the stopped Officer receives NO wake input from it, and only an explicit human interaction resumes the latch',
+    [
+      { id: 'human-sticky-stop-marked', ok: s?.stoppedBefore === true, detail: `stop markers before the machine attempt=${JSON.stringify(s?.stoppedMarkersBefore ?? null)}` },
+      { id: 'machine-wake-attempted', ok: s?.machineAttempted === true, detail: `machine attempt=${JSON.stringify(s?.machineAttempt ?? null)}` },
+      { id: 'stop-survives-the-machine-wake', ok: s?.stoppedAfter === true, detail: `stop markers after the machine attempt=${JSON.stringify(s?.stoppedMarkersAfter ?? null)}` },
+      { id: 'no-wake-input-while-stopped', ok: Number(s?.wakeInputsWhileStopped) === 0, detail: `wake inputs between the stop and the human resume=${JSON.stringify(s?.wakeInputsWhileStopped ?? null)}` },
+      { id: 'human-resume-is-the-only-clear', ok: s?.humanResumeCleared === true, detail: `human resume cleared the marker=${JSON.stringify(s?.humanResume ?? null)}` },
+    ],
+  )
+}
+
+/**
+ * `d4:routed-wake` — the ROUND-84 CASE, as the conjunction of the seven measured propositions above.
+ * It is PROVEN only when every one of them is PROVEN; a single REFUTED sub-judge refutes the case.
+ */
+function judgeRoutedWake({ caseCreated, routerOfficer, wakeDelivered, officerDecides, askExecutesAfterReview, duplicateRoute, stickyStop }) {
+  const parts = [
+    ['d4:case-created', caseCreated],
+    ['d4:router-officer', routerOfficer],
+    ['d4:wake-delivered', wakeDelivered],
+    ['d4:officer-decides', officerDecides],
+    ['d4:ask-executes-after-review', askExecutesAfterReview],
+    ['d4:duplicate-route', duplicateRoute],
+    ['d4:sticky-stop', stickyStop],
+  ]
+  return verdictOf(
+    'the Alpha.6 ROUTED review wake reaches a real Host end to end: a qualifying worker ask opens a durable case, the product router selects the unique Officer, the governed wake reaches the Officer\'s own session, the Officer settles it under its own binding, and the worker\'s granted call executes — with the duplicate and Sticky-Stop laws intact',
+    parts.map(([id, verdict]) => ({
+      id: `${id}-proven`,
+      ok: verdict?.verdict === 'PROVEN',
+      detail: `${String(verdict?.verdict)}${(verdict?.failing ?? []).length === 0 ? '' : ` failing=${JSON.stringify(verdict.failing)}`}`,
+    })),
   )
 }
 function judgeRefusal({ configGate, booted, hostLogText, refusalFacts, wakeIntentFiles }) {
@@ -1246,7 +1540,11 @@ async function probeOnce({ index, head, grant }) {
   // authored ask lane and the bytes it approves are both inside that root.
   let dirs = null
   let paths = null
-  const ids = { officer: null, worker: null, pendingRequestId: null, pendingRequestId2: null }
+  const ids = { officer: null, worker: null, pendingRequestId: null, pendingRequestId2: null, pendingRequestId3: null }
+  // ROUND 97 — the duplicate-route and Sticky-Stop measurements are filled by their own arms below;
+  // a judge that never got its arm is REFUTED (it must never default to "passed").
+  let duplicateMeasurement = null
+  let stickyMeasurement = null
   let world = null
   let refusalWorld = null
   let teardown = null
@@ -1267,6 +1565,7 @@ async function probeOnce({ index, head, grant }) {
       workerFile: join(dirs.dir, 'worker-ask.txt'),
       // The second mutation's target: a DIFFERENT file, inside the same Member workspace lane.
       workerFile2: join(dirs.dir, 'worker-ask-2.txt'),
+      workerFile3: join(dirs.dir, 'worker-ask-3.txt'),
     }
     writeFileSync(paths.officerFile, 'DBOOT_D4_OFFICER_READ_SOURCE\n', 'utf8')
     const wakeIntentPath = join(join(EVIDENCE, 'runs-workspace', `boot${String(index)}`), WAKE_DIR)
@@ -1397,17 +1696,31 @@ async function probeOnce({ index, head, grant }) {
       ledger: ledgerRows,
     }, null, 2)}\n`)
 
-    // ── the Leader resolves the pending ask exactly as a human/leader would ──
+    // ── ROUND 97: the OFFICER decides — the product wakes it, not the Leader ─────────────────────
+    //
+    // The case-bearing ask is routed by the product's own notifier to the Officer's session. The
+    // Officer's OWN `team_resolve_control` is the decision; the Leader is not prompted and receives no
+    // plain C1 ask (the judge asserts that absence). `resolveOutcome` below therefore carries the
+    // OFFICER's call — the existing R3 judge's clause ("approved through the real control path") is
+    // unchanged and is now satisfied by the lawful reviewer.
+    const officerResolveOf = async (requestId, label) => {
+      const callId = CALL_OFF_RESOLVE(requestId)
+      const seen = await waitFor(() => {
+        const tx = readMemberTranscript(world.home, String(officerRow.childSessionId))
+        return (tx?.calls ?? []).some((c) => String(c.callId) === callId && c.result !== null && c.result !== undefined)
+      }, 180_000, 400)
+      const tx = readMemberTranscript(world.home, String(officerRow.childSessionId))
+      const call = (tx?.calls ?? []).find((c) => String(c.callId) === callId) ?? null
+      const settlement = settlementOf(world.home, ids.officer, callId)
+      const outcome = { seen, callId, call: call?.arguments ?? null, result: call?.result?.text?.slice(0, 800) ?? null, isError: call?.result?.isError ?? null, settlement }
+      writeFileSync(join(bootDir, `officer-resolve-${label}.json`), `${JSON.stringify(outcome, null, 2)}\n`)
+      log(`[boot${String(index)}] officer resolve(${label}) seen=${String(seen)} settlement=${String(settlement?.state)} result=${String(outcome.result).slice(0, 160)}`)
+      return outcome
+    }
     let resolveOutcome = null
     if (ids.pendingRequestId !== null) {
-      await promptTurn(MK_RESOLVE, 'd4res')
-      await waitFor(() => sawReply(DONE_RESOLVE), 120_000)
-      // The Leader's OWN team tool result is the answer: it says whether the
-      // plain C1 ask could be settled at all.
-      const leaderTxNow = readMemberTranscript(world.home, ROOT)
-      const resolveCall = (leaderTxNow?.calls ?? []).find((c) => String(c.callId) === CALL_RESOLVE) ?? null
-      resolveOutcome = { call: resolveCall?.arguments ?? null, result: resolveCall?.result?.text?.slice(0, 800) ?? null, isError: resolveCall?.result?.isError ?? null }
-      log(`[boot${String(index)}] leader resolve result: ${String(resolveOutcome.result).slice(0, 200)}`)
+      const officerResolve = await officerResolveOf(ids.pendingRequestId, 'first')
+      resolveOutcome = officerResolve.seen ? { call: officerResolve.call, result: officerResolve.result, isError: officerResolve.isError } : null
     }
 
     // ── R3 POSITIVE: the approved worker `write` must now EXECUTE through the confined Provider ──
@@ -1456,24 +1769,24 @@ async function probeOnce({ index, head, grant }) {
     // The worker model issues its second `write` only after the first call RETURNED, so the request
     // measured here is a genuinely NEW approval, not the first one re-read. This is the live half of
     // the content-binding judge: two approvals, two receipts, two files, two digests.
-    const ask2Appeared = await waitFor(async () => {
-      const st = await readState(origin, cookie)
-      const row = pendingAskOf(st, ids.worker)
-      if (row === null) return false
-      const requestId = String(row.requestId)
-      if (requestId === ids.pendingRequestId) return false
-      ids.pendingRequestId2 = requestId
+    // Read the SECOND ask from the DURABLE ledger, not from the pending projection: the officer can
+    // settle a leg in well under one poll interval, and a projection that only lists PENDING rows then
+    // misses the ask entirely (round 97 measured exactly that miss — the ask and its decision existed
+    // on disk while the poll saw nothing). The durable fact cannot be missed.
+    const ask2Appeared = await waitFor(() => {
+      const asks = readTeamDomainLedger(world.home)
+        .filter((fact) => fact?.factType === 'control-request-recorded')
+        .map((fact) => fact.payload)
+        .filter((row) => String(row?.requestId ?? '') !== String(ids.pendingRequestId ?? ''))
+      if (asks.length === 0) return false
+      ids.pendingRequestId2 = String(asks[asks.length - 1].requestId)
       return true
     }, 180_000, 300)
     log(`[boot${String(index)}] second worker ask appeared=${String(ask2Appeared)} requestId=${String(ids.pendingRequestId2)}`)
     let resolveOutcome2 = null
     if (ids.pendingRequestId2 !== null && ids.pendingRequestId2 !== undefined) {
-      await promptTurn(MK_RESOLVE2, 'd4res2')
-      await waitFor(() => sawReply(DONE_RESOLVE2), 120_000)
-      const leaderTxNow2 = readMemberTranscript(world.home, ROOT)
-      const resolveCall2 = (leaderTxNow2?.calls ?? []).find((c) => String(c.callId) === CALL_RESOLVE2) ?? null
-      resolveOutcome2 = { call: resolveCall2?.arguments ?? null, result: resolveCall2?.result?.text?.slice(0, 800) ?? null, isError: resolveCall2?.result?.isError ?? null }
-      log(`[boot${String(index)}] leader second resolve result: ${String(resolveOutcome2.result).slice(0, 200)}`)
+      const officerResolve2 = await officerResolveOf(ids.pendingRequestId2, 'second')
+      resolveOutcome2 = officerResolve2.seen ? { call: officerResolve2.call, result: officerResolve2.result, isError: officerResolve2.isError } : null
     }
     const write2Settled = await waitFor(() => {
       const tx = readMemberTranscript(world.home, String(workerRow.childSessionId))
@@ -1513,16 +1826,130 @@ async function probeOnce({ index, head, grant }) {
     fnWriteVerdict(bootDir, 'ask-execute-2', askExecute2Verdict)
     log(`[boot${String(index)}] d4:ask-execute-2=${askExecute2Verdict.verdict} failing=${JSON.stringify(askExecute2Verdict.failing)}`)
 
+    // ── ROUND 97: Sticky Stop — a HUMAN stop outranks a MACHINE wake ─────────────────────────────
+    //
+    // The product writes the Sticky Stop ONLY from a real user cancel of a RUNNING turn of a session
+    // the latch already watches (host.ts maps `turn/end` + aborted/user to `alpha6WakeUserStop`). So
+    // the arm is: (1) a HUMAN prompt starts a long Officer turn, (2) the host's own `session/cancel`
+    // aborts it, (3) a THIRD worker ask is admitted while stopped and the product routes it, (4) no
+    // wake input may reach the stopped Officer, (5) a HUMAN prompt to the Officer is the only resume,
+    // and (6) the held wake is then delivered and its decision executes the third write.
+    const intentDir = join(world.home, 'alpha6-wake-intent')
+    const stopMarkers = () => {
+      try { return readdirSync(intentDir).filter((name) => name.startsWith('stopped-') && name.endsWith('.json')).sort() }
+      catch { return [] }
+    }
+    const officerWakeInputs = () => (readMemberTranscript(world.home, String(officerRow.childSessionId))?.user ?? [])
+      .filter((text) => String(text).includes('[team-review-wake')).length
+    const wakeInputsBeforeStop = officerWakeInputs()
+    const holdPrompt = await apiPrompt(origin, cookie, String(officerRow.childSessionId), `${MK_HOLD} hold the turn open for a real human cancel`, 'd4hold')
+    // Two independent witnesses: the prompt LANDED as a user message of the Officer session, and the
+    // turn is RUNNING (it has issued hold reads). A prompt that never lands is a different defect from
+    // a turn that never starts.
+    const holdLanded = await waitFor(() => (readMemberTranscript(world.home, String(officerRow.childSessionId))?.user ?? [])
+      .some((text) => String(text).includes(MK_HOLD)), 20_000, 100)
+    const holdRunning = await waitFor(() => (readMemberTranscript(world.home, String(officerRow.childSessionId))?.calls ?? [])
+      .filter((call) => String(call.callId).startsWith('call-d4-officer-hold-')).length >= 2, 30_000, 100)
+    const stopCancel = await apiSessionCancel(origin, cookie, String(officerRow.childSessionId), 'd4sticky')
+    const stopSeen = await waitFor(() => stopMarkers().length > 0, 30_000, 100)
+    const stopMarkersBefore = stopMarkers()
+    log(`[boot${String(index)}] sticky: holdLanded=${String(holdLanded)} hold=${String(holdRunning)} cancelStatus=${String(stopCancel?.status ?? null)} stopSeen=${String(stopSeen)} markers=${JSON.stringify(stopMarkersBefore)}`)
+
+    // (3) THE MACHINE ATTEMPT: a THIRD admission ask from the worker while the Officer is stopped.
+    const thirdAskPrompt = await apiPrompt(origin, cookie, String(workerRow.childSessionId), `${MK_WORK3} issue the third write`, 'd4work3')
+    const thirdAskAppeared = await waitFor(() => {
+      const asks = readTeamDomainLedger(world.home)
+        .filter((fact) => fact?.factType === 'control-request-recorded')
+        .map((fact) => fact.payload)
+        .filter((row) => ![ids.pendingRequestId, ids.pendingRequestId2].map(String).includes(String(row?.requestId ?? '')))
+      if (asks.length === 0) return false
+      ids.pendingRequestId3 = String(asks[asks.length - 1].requestId)
+      return true
+    }, 120_000, 300)
+    // Give the fire-and-forget notifier its turn: the latch must REFUSE to deliver to a stopped
+    // reviewer. Then measure.
+    await sleep(2000)
+    const stopMarkersAfter = stopMarkers()
+    const wakeInputsAfterAttempt = officerWakeInputs()
+    const wakeInputsWhileStopped = wakeInputsAfterAttempt - wakeInputsBeforeStop
+    log(`[boot${String(index)}] sticky: thirdAsk=${String(thirdAskAppeared)} requestId=${String(ids.pendingRequestId3)} markersAfter=${JSON.stringify(stopMarkersAfter)} wakeInputsWhileStopped=${String(wakeInputsWhileStopped)}`)
+
+    // (5) THE ONLY RESUME: an explicit HUMAN prompt to the stopped Officer.
+    const resumePrompt = await apiPrompt(origin, cookie, String(officerRow.childSessionId), `${MK_RESUME} resume`, 'd4resume')
+    const resumeCleared = await waitFor(() => stopMarkers().length === 0, 30_000, 100)
+    let resolveOutcome3 = null
+    if (ids.pendingRequestId3 !== null && ids.pendingRequestId3 !== undefined) {
+      const officerResolve3 = await officerResolveOf(ids.pendingRequestId3, 'third')
+      resolveOutcome3 = officerResolve3.seen ? { call: officerResolve3.call, result: officerResolve3.result, isError: officerResolve3.isError } : null
+    }
+    const write3Settled = await waitFor(() => {
+      const tx = readMemberTranscript(world.home, String(workerRow.childSessionId))
+      const call = (tx?.calls ?? []).find((c) => String(c.callId) === CALL_WRK_WRITE3) ?? null
+      const settled = settlementOf(world.home, ids.worker, CALL_WRK_WRITE3)
+      return call?.result !== null && call?.result !== undefined && settled.present === true
+    }, 180_000, 400)
+    const workerTxFinal3 = readMemberTranscript(world.home, String(workerRow.childSessionId))
+    const workerWriteCall3 = (workerTxFinal3?.calls ?? []).find((c) => String(c.callId) === CALL_WRK_WRITE3) ?? null
+    const askFile3 = fileEvidence(paths.workerFile3)
+    const askSettlement3 = settlementOf(world.home, ids.worker, CALL_WRK_WRITE3)
+    stickyMeasurement = {
+      stoppedBefore: stopSeen === true,
+      stoppedMarkersBefore: stopMarkersBefore,
+      machineAttempted: thirdAskAppeared === true,
+      machineAttempt: { holdLanded: holdLanded === true, holdStatus: holdPrompt?.status ?? null, cancelStatus: stopCancel?.status ?? null, resumeStatus: resumePrompt?.status ?? null, thirdRequestId: ids.pendingRequestId3 ?? null },
+      stoppedAfter: stopMarkersAfter.length > 0,
+      stoppedMarkersAfter: stopMarkersAfter,
+      wakeInputsWhileStopped: Math.max(0, wakeInputsWhileStopped),
+      humanResumeCleared: resumeCleared === true,
+      humanResume: { status: resumePrompt?.status ?? null, markersAfterResume: stopMarkers().length },
+      resumedWakeDelivered: resolveOutcome3 !== null,
+      write3: { settled: write3Settled === true, file: { exists: askFile3.exists, bytes: askFile3.bytes, sha256: askFile3.sha256 }, settlement: askSettlement3.state, result: workerWriteCall3?.result?.isError ?? null },
+    }
+    writeFileSync(join(bootDir, 'sticky-stop.json'), `${JSON.stringify(stickyMeasurement, null, 2)}\n`)
+    log(`[boot${String(index)}] sticky: resumeCleared=${String(resumeCleared)} resolve3=${String(resolveOutcome3 !== null)} write3Settled=${String(write3Settled)}`)
+
+    const wakeFacts = [
+      ...factsOfType(world.home, 'team-review-wake-routed'),
+      ...factsOfType(world.home, 'team-review-wake-delivered'),
+    ].map((h) => ({ factType: h.row.factType ?? h.row.type, sequence: h.row.sequence ?? null, file: h.file, payload: h.row.payload ?? null }))
+    // ── ROUND 97: duplicate route — the SAME leg must produce ONE wake ───────────────────────────
+    //
+    // The product re-collects pending legs at EVERY reviewer turn end (`alpha6ReviewWakeTurnEnd`)
+    // and routes them through the same notifier the request-creation path uses. The second leg was
+    // ALREADY delivered when the Officer's first wake turn ended (its intent is sequence 14, its
+    // decision sequence 16), so the turn-end re-collection necessarily presented the same leg while
+    // it was still pending: a real duplicate route attempt. The latch must converge it — one intent,
+    // one confirmation, ONE model-visible input for that leg.
+    const leg2Token = String(wakeFacts.find((entry) => entry.factType === 'team-review-wake-routed'
+      && String(entry?.payload?.requestId ?? '') === String(ids.pendingRequestId2 ?? ''))?.payload?.requestToken ?? '')
+    const leg2IntentFacts = wakeFacts.filter((entry) => entry.factType === 'team-review-wake-routed'
+      && String(entry?.payload?.requestToken ?? '') === leg2Token).length
+    const leg2DeliveredFacts = wakeFacts.filter((entry) => entry.factType === 'team-review-wake-delivered'
+      && String(entry?.payload?.requestToken ?? '') === leg2Token).length
+    const leg2WakeInputs = (readMemberTranscript(world.home, String(officerRow.childSessionId))?.user ?? [])
+      .filter((text) => String(text).includes('[team-review-wake') && String(text).includes(String(ids.pendingRequestId2 ?? '\u0000'))).length
+    const leg2Decision = readTeamDomainLedger(world.home).find((fact) => fact?.factType === 'control-decision-recorded'
+      && String(fact?.payload?.requestId ?? '') === String(ids.pendingRequestId2 ?? '')) ?? null
+    const leg2Intent = wakeFacts.find((entry) => entry.factType === 'team-review-wake-routed'
+      && String(entry?.payload?.requestToken ?? '') === leg2Token) ?? null
+    duplicateMeasurement = {
+      attempted: leg2Intent !== null && leg2Decision !== null,
+      via: 'request-creation notifier + reviewer turn/end re-collection (the product\'s own two route call sites)',
+      intentFacts: leg2IntentFacts,
+      deliveredFacts: leg2DeliveredFacts,
+      wakeInputs: leg2WakeInputs,
+      converged: leg2IntentFacts === 1 && leg2DeliveredFacts === 1 && leg2WakeInputs === 1,
+      detail: { requestId: ids.pendingRequestId2 ?? null, requestToken: leg2Token || null, intentAt: leg2Intent?.payload?.at ?? null, decisionAt: leg2Decision?.createdAt ?? null },
+    }
+    writeFileSync(join(bootDir, 'duplicate-route.json'), `${JSON.stringify(duplicateMeasurement, null, 2)}\n`)
+    log(`[boot${String(index)}] duplicate: intents=${String(leg2IntentFacts)} delivered=${String(leg2DeliveredFacts)} inputs=${String(leg2WakeInputs)}`)
+
     // ── the governed delivery should have happened by now: measure it ──
     await sleep(1500)
     const officerTxAfter = readMemberTranscript(world.home, String(officerRow.childSessionId))
     const leaderTx = readMemberTranscript(world.home, ROOT)
     const leaderUserText = (leaderTx?.user ?? []).join('\n')
     const officerUserText = (officerTxAfter?.user ?? []).join('\n')
-    const wakeFacts = [
-      ...factsOfType(world.home, 'team-review-wake-routed'),
-      ...factsOfType(world.home, 'team-review-wake-delivered'),
-    ].map((h) => ({ factType: h.row.factType ?? h.row.type, file: h.file, payload: h.row.payload ?? null }))
     // The scan's own positive control: the fact types the SAME reader found in
     // the SAME stores. A reader that finds nothing at all is broken, not proof.
     const factTypeCensus = {}
@@ -1561,28 +1988,76 @@ async function probeOnce({ index, head, grant }) {
       // A routed verdict needs the product's own member snapshot, so the probe now serves the SAME
       // members `/__p6t6/state` serves (no invented rows: the officer row below came from the boot).
       const memberSnapshot = membersOf(await readState(origin, cookie))
+      const memberList = memberSnapshot.map((m) => ({
+        ...m,
+        // `/__p6t6/state` serializes absent fields as the string 'undefined'; the router reads the
+        // durable snapshot shape, so restore absence (never invent a lifecycle).
+        ...(String(m?.childSessionId ?? '') === 'undefined' ? { childSessionId: undefined } : {}),
+        ...(String(m?.lifecycle ?? '') === 'undefined' ? { lifecycle: undefined } : {}),
+      }))
+      // THE ROUTE IS EVALUATED ON THE ROW AS IT WAS WHEN IT WAS PENDING. `ledgerRows` is the snapshot
+      // the probe took BEFORE any decision (and it is the same snapshot `d4:case-created` reads), so
+      // every request in it is pending by construction — derive nothing from the later ledger state,
+      // which by now has settled every leg. Routing a decided row would return null and measure
+      // nothing; routing the captured row measures the real router's decision for the real leg.
+      const requests = ledgerRows
+        .filter((fact) => fact?.factType === 'control-request-recorded')
+        .map((fact) => ({ ...fact.payload, status: 'pending' }))
       const router = createAlpha6RootRouter({
         rootSessionId: ROOT,
         routing: parsed.routing,
         leaderTemplateId: parsed.blueprint.leader.templateId,
         control: {
           readControlState: async () => ({
-            requests: ledgerRows
-              .filter((fact) => fact?.factType === 'control-request-recorded')
-              .map((fact) => fact.payload),
+            requests,
             decisions: [],
             consumptions: [],
             transfers: [],
           }),
         },
         members: {
-          list: async () => { memberListCalls += 1; return memberSnapshot },
-          get: async (_rootSessionId, instanceId) => { memberListCalls += 1; return memberSnapshot.find((m) => String(m?.instanceId ?? '') === String(instanceId)) },
+          list: async () => { memberListCalls += 1; return memberList },
+          get: async (_rootSessionId, instanceId) => { memberListCalls += 1; return memberList.find((m) => String(m?.instanceId ?? '') === String(instanceId)) },
         },
         fixedLeaderOrHumanCategory: () => false,
       })
       const route = await router.route(String(ids.pendingRequestId))
-      routeProbe = { route, memberListCalls, officerInstanceId: String(officerRow?.instanceId ?? '') }
+      // SELF-ASK NEGATIVE CONTROL (round 97): the SAME product router, the SAME durable row, with the
+      // ONLY field that defines a self-ask changed to the Officer's own template — the operation owner
+      // IS the Officer. The router must NEVER select that Officer to review itself. Nothing else about
+      // the row is altered, and no verdict here depends on the fact that the control input was
+      // synthesized: it is the policy's answer to the self-ask condition.
+      const selfAskRouter = createAlpha6RootRouter({
+        rootSessionId: ROOT,
+        routing: parsed.routing,
+        leaderTemplateId: parsed.blueprint.leader.templateId,
+        control: {
+          readControlState: async () => ({
+            requests: requests.map((row) => (String(row.requestId) === String(ids.pendingRequestId)
+              ? { ...row, operationOwnerTemplateId: String(officerRow?.templateId ?? 'officer') }
+              : row)),
+            decisions: [],
+            consumptions: [],
+            transfers: [],
+          }),
+        },
+        members: {
+          list: async () => memberList,
+          get: async (_rootSessionId, instanceId) => memberList.find((m) => String(m?.instanceId ?? '') === String(instanceId)),
+        },
+        fixedLeaderOrHumanCategory: () => false,
+      })
+      const selfAskRoute = await selfAskRouter.route(String(ids.pendingRequestId))
+      routeProbe = {
+        route,
+        selfAskRoute,
+        memberListCalls,
+        officerInstanceId: String(officerRow?.instanceId ?? ''),
+        officerCandidateCount: memberList.filter((m) => String(m?.templateId ?? '') === String(parsed.routing.officerTemplateId)
+          && String(m?.childSessionId ?? '') !== ''
+          && ['CREATED', 'RUNNING', 'SETTLED'].includes(String(m?.lifecycle ?? ''))).length,
+        requesterInstanceId: String(durable?.row?.requester?.instanceId ?? ''),
+      }
     } catch (error) {
       routeProbe = { route: 'ERROR', memberListCalls: 0, error: String(error?.message ?? error) }
     }
@@ -1609,20 +2084,80 @@ async function probeOnce({ index, head, grant }) {
     // right when the world raised one ask; round 96 raises a SECOND (different path, different
     // bytes). The honest control is "the ledger holds exactly the asks this world OBSERVED", so a
     // reader that misses one still fails, and a second real ask is not mistaken for a broken reader.
-    const observedRequests = ids.pendingRequestId === null ? 0 : (ids.pendingRequestId2 === null || ids.pendingRequestId2 === undefined ? 1 : 2)
-    const observedDecisions = resolveOutcome === null ? 0 : (resolveOutcome2 === null ? 1 : 2)
+    const observedRequests = [ids.pendingRequestId, ids.pendingRequestId2, ids.pendingRequestId3]
+      .filter((value) => value !== null && value !== undefined).length
+    const observedDecisions = [resolveOutcome, resolveOutcome2, resolveOutcome3]
+      .filter((value) => value !== null && value !== undefined).length
     if (factTypeCensus['control-request-recorded'] !== observedRequests || factTypeCensus['control-decision-recorded'] !== observedDecisions) {
       throw new Error(`the durable reader is not reading the TeamDomain ledger: control-request-recorded count=${String(factTypeCensus['control-request-recorded'])} (observed ${String(observedRequests)}), control-decision-recorded count=${String(factTypeCensus['control-decision-recorded'])} (observed ${String(observedDecisions)}) census=${JSON.stringify(factTypeCensus)}`)
     }
-    const routedVerdict = judgeRoutedWake({
-      durableRow: durable,
+    // ── ROUND 97 — the seven routed-wake judges, each over durable bytes ──
+    const ledgerFinal = readTeamDomainLedger(world.home)
+    const decisionFact = ledgerFinal.find((fact) => fact?.factType === 'control-decision-recorded'
+      && String(fact?.payload?.requestId ?? '') === String(ids.pendingRequestId ?? '')) ?? null
+    const routedFact = wakeFacts.find((entry) => entry.factType === 'team-review-wake-routed'
+      && String(entry?.payload?.requestId ?? '') === String(ids.pendingRequestId ?? '')) ?? null
+    const managementExecutions = settlementsMentioning(world.home, String(routedFact?.payload?.requestToken ?? ''))
+    // Captured while the world is alive: the counters block is assembled AFTER teardown.
+    const officerResolveSettlementState = settlementOf(world.home, ids.officer, CALL_OFF_RESOLVE(ids.pendingRequestId)).state
+    const caseCreatedVerdict = judgeCaseCreated({ durableRow: durable, ledgerRows })
+    const routerOfficerVerdict = judgeRouterOfficer({
       routeProbe,
-      wakeFacts,
-      wakeIntentFiles,
-      officerTranscript: { userText: officerUserText },
-      leaderTranscript: { userText: leaderUserText },
-      leaderNotificationText: leaderNotification,
+      officerInstanceId: ids.officer,
+      requesterInstanceId: String(durable?.row?.requester?.instanceId ?? ''),
+      officerCandidateCount: routeProbe?.officerCandidateCount ?? null,
     })
+    const wakeDeliveredVerdict = judgeWakeDelivered({
+      requestId: ids.pendingRequestId,
+      wakeFacts,
+      officerTranscript: officerTxAfter,
+      intentFiles: wakeIntentFiles,
+      managementExecutions: managementExecutions.length,
+    })
+    const officerDecidesVerdict = judgeOfficerDecides({
+      requestId: ids.pendingRequestId,
+      officerTranscript: officerTxAfter,
+      officerFacts: factsFor(readLedger(world.home, ids.officer), CALL_OFF_RESOLVE(ids.pendingRequestId)),
+      settlement: settlementOf(world.home, ids.officer, CALL_OFF_RESOLVE(ids.pendingRequestId)),
+      leaderTranscript: leaderTx,
+      officerInstanceId: ids.officer,
+    })
+    const askAfterReviewVerdict = judgeAskExecutesAfterReview({
+      requestId: ids.pendingRequestId,
+      decisionFact,
+      file: askFile,
+      expectedBytes: `${WORKER_TEXT}\n`,
+      facts: askFacts,
+      settlement: askSettlement,
+      writeCall: workerWriteCall,
+      reviewDecisionAt: decisionFact?.createdAt ?? null,
+    })
+    const duplicateVerdict = judgeDuplicateRoute({ duplicate: duplicateMeasurement })
+    const stickyVerdict = judgeStickyStop({ sticky: stickyMeasurement })
+    const routedVerdict = judgeRoutedWake({
+      caseCreated: caseCreatedVerdict,
+      routerOfficer: routerOfficerVerdict,
+      wakeDelivered: wakeDeliveredVerdict,
+      officerDecides: officerDecidesVerdict,
+      askExecutesAfterReview: askAfterReviewVerdict,
+      duplicateRoute: duplicateVerdict,
+      stickyStop: stickyVerdict,
+    })
+    const routedJudges = {
+      caseCreated: caseCreatedVerdict,
+      routerOfficer: routerOfficerVerdict,
+      wakeDelivered: wakeDeliveredVerdict,
+      officerDecides: officerDecidesVerdict,
+      askExecutesAfterReview: askAfterReviewVerdict,
+      duplicateRoute: duplicateVerdict,
+      stickyStop: stickyVerdict,
+    }
+    writeFileSync(join(bootDir, 'routed-judges.json'), `${JSON.stringify({
+      decisionFact, routedFact, managementExecutions, judges: routedJudges, routedWake: routedVerdict,
+    }, null, 2)}\n`)
+    for (const [name, verdict] of Object.entries(routedJudges)) {
+      log(`[boot${String(index)}] d4:${name.replace(/[A-Z]/gu, (ch) => `-${ch.toLowerCase()}`)}=${verdict.verdict} failing=${JSON.stringify(verdict.failing)}`)
+    }
     log(`[boot${String(index)}] d4:routed-wake=${routedVerdict.verdict} failing=${JSON.stringify(routedVerdict.failing)}`)
     fnWriteVerdict(bootDir, 'routed', routedVerdict)
 
@@ -1752,6 +2287,14 @@ async function probeOnce({ index, head, grant }) {
       officerUp: officerUpVerdict,
       officerBinding: officerVerdict,
       routedWake: routedVerdict,
+      // The seven ROUND-97 sub-judges, each its own named verdict (the case is their conjunction).
+      caseCreated: caseCreatedVerdict,
+      routerOfficer: routerOfficerVerdict,
+      wakeDelivered: wakeDeliveredVerdict,
+      officerDecides: officerDecidesVerdict,
+      askExecutesAfterReview: askAfterReviewVerdict,
+      duplicateRoute: duplicateVerdict,
+      stickyStop: stickyVerdict,
       refusal: refusalVerdict,
       askExecute: askExecuteVerdict,
       askExecute2: askExecute2Verdict,
@@ -1765,7 +2308,6 @@ async function probeOnce({ index, head, grant }) {
       verdicts,
       counters: {
         askAppeared,
-        pendingRequestId: ids.pendingRequestId,
         wakeFacts: wakeFacts.length,
         wakeIntentFiles: wakeIntentFiles.length,
         reviewWakeHits: reviewWakeHits.length,
@@ -1780,6 +2322,18 @@ async function probeOnce({ index, head, grant }) {
         askDeniedSettlement: deniedArm.settlement?.state ?? null,
         askStoppedBytes: stoppedArm.file?.bytes ?? null,
         askStoppedSettlement: stoppedArm.settlement?.state ?? null,
+        // ROUND 97 — the routed chain's durable counters (the agreement table compares them).
+        legOrdinal: durable?.row?.legOrdinal ?? null,
+        routeKind: routeProbe?.route?.kind ?? null,
+        routeRole: routeProbe?.route?.target?.routeRole ?? null,
+        selfAskRouteKind: routeProbe?.selfAskRoute?.kind ?? null,
+        selfAskRouteRole: routeProbe?.selfAskRoute?.target?.routeRole ?? null,
+        routedWakes: wakeFacts.filter((entry) => entry.factType === 'team-review-wake-routed').length,
+        deliveredWakes: wakeFacts.filter((entry) => entry.factType === 'team-review-wake-delivered').length,
+        managementExecutions: managementExecutions.length,
+        officerResolveSettlement: officerResolveSettlementState,
+        duplicateWakeInputs: duplicateMeasurement?.wakeInputs ?? null,
+        stickyStopMarkerCount: stickyMeasurement?.stoppedMarkersAfter?.length ?? null,
       },
       ids: { ...ids },
       worldId: positiveWorldId,

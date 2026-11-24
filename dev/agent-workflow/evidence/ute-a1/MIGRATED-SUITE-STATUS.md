@@ -3323,3 +3323,48 @@ duplicate upstream's parser or let one approval authorize N effects. (3) `patch_
 admission port, Provider, binder, Control and settlement, but no preset mounts those names, so no
 model can reach them live. (4) No row is PRODUCT-PROVEN — DEV-LIVE is a record, not a gate.
 (5) `d4:routed-wake` stays REFUTED; a receipt is never routing evidence.
+
+## Round 97 (2026-11-24) — `d4:routed-wake` is PROVEN LIVE; the D4 driver gains seven judges
+
+Round 97 is measurement-only: **no production code changed**. The D4 driver
+(`tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs`) now measures the Alpha.6
+routed wake as seven named judges instead of one monolithic pair, and its world satisfies
+`ALPHA6-ORDINARY-CASE-Q` in one coherent row (declared `dsh.fs/write` binding with
+`authorization:'ask'`, the pure-ask lane kept by the round-94 algebra, `reviewRouting.enabled`).
+
+The pre-existing eight judges are byte-identical and still PROVEN; the two negative live arms
+(deny / Stop-while-pending) are unchanged. New judges, each with its own `verdict-*.json` and clause
+detail in `runs/boot0{1,2}/routed-judges.json`:
+
+| judge | clauses | what changed on disk |
+| --- | --- | --- |
+| `d4:case-created` | 9 | the durable row now carries `approvalCaseId` + `legOrdinal` + frozen operation/blueprint identity |
+| `d4:router-officer` | 4 | the product router selects the Officer; the self-ask control routes to the Leader |
+| `d4:wake-delivered` | 6 | intent + correlated confirmation + `plugin:dsh-agent-team` attribution + 0 executions |
+| `d4:officer-decides` | 5 | the Officer's own resolve is admitted under its own binding and settles the case |
+| `d4:ask-executes-after-review` | 6 | decision precedes settlement; approved bytes land |
+| `d4:duplicate-route` | 5 | leg 2 routed by both real call sites ⇒ one intent / one confirmation / one input |
+| `d4:sticky-stop` | 5 | a machine wake does not clear a human Stop; only a human claim resumes |
+| **`d4:routed-wake`** | conjunction | **PROVEN** |
+
+**Live evidence (two agreeing boots, DEV-LIVE, world `u5a5sfdev1`, grant `devlive-fs-search-1`).**
+The three live mutations wrote `29` bytes each (`sha256:2b28991b…` for asks 1 and 3, a different digest
+for ask 2), all `COMPLETED`. `managementExecutions=0`. Sticky marker `stopped-20765e07.json` written by
+a real `session/cancel`, survived the machine attempt with 0 wake inputs, cleared only by a human
+prompt. Two-boot agreement `agreeing=true differing=[]`.
+
+**Measurement bug fixed in the driver (not in the product).** The second ask was waited for on the
+`/__p6t6/state` PENDING projection; the Officer can settle a leg inside one 300 ms poll, so the ask was
+missed although the durable row and its decision existed. The wait now reads the durable ledger
+(`control-request-recorded`), which cannot be missed. The census control was tightened accordingly
+(it now expects exactly the asks this world observed: 3 requests / 3 decisions).
+
+**Counts.** No test file was added or removed, so the `ute-vnext-a1` leg and catalog counts are
+unchanged from round 96; the probe is an existing scannable-surface file, so `ute-p0-assets` has no new
+delta. Gate evidence for this round is pasted in the settlement comment.
+
+**Not proven / not claimed.** (1) The level is **DEV-LIVE**, not PRODUCT-PROVEN: no bound executable
+gate exercises this row, and `V@B=yes` requires one. (2) Only `write`/`writeText` carry the live R3
+receipt; subprocess/PTY and `apply_patch` remain R4. (3) The duplicate-route attempt itself leaves no
+durable fact; the judge proves convergence (one wake) and records the two product call sites. (4) The
+scripted model is the only double.

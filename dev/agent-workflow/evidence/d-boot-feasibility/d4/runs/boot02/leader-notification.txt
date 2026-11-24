@@ -1,12 +1,1 @@
-[team-control requestId=ctrl-1xxrzo21k29yc31rawhls0qn]
-A Team member operation is waiting for Leader approval.
 
-requestId: ctrl-1xxrzo21k29yc31rawhls0qn
-requester: inst-0ty67u70r99a
-subject: instance inst-0ty67u70r99a
-target: inst-0ty67u70r99a
-tool: write
-summary: admission ask: write (fs.write "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T23-54-58Z/workspace/lane/worker-ask.txt" requires approval under policy generation a5sf1:20071be934971e74f2d3af04b2ae719a)
-
-Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
-Recover or inspect pending requests with `team_list_pending_control`.

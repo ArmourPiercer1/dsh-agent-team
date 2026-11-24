@@ -1,26 +1,59 @@
 {
-  "requestId": "ctrl-1xxrzo21k29yc31rawhls0qn",
+  "requestId": "ctrl-0ige2v51tq21nu12elaqv1nb",
   "durable": {
     "fact": {
-      "createdAt": "2026-11-23T23:47:44.610Z",
+      "createdAt": "2026-11-24T01:10:58.213Z",
       "factType": "control-request-recorded",
       "payload": {
         "actionName": "admission-ask",
+        "approvalCaseId": "case-0dotsl405xthlb0lqsqo21tg",
+        "authorityGeneration": 0,
+        "authorityScope": {
+          "matcher": {
+            "kind": "exact",
+            "resource": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T01-08-31Z/workspace/lane/worker-ask.txt"
+          },
+          "operationClass": "write"
+        },
+        "beneficiaryAuthority": "member",
+        "blueprintContentHash": "sha256:47c096399d00599c92ff73707e2ee4cfbef3d7e31669f3ff94b01a4d35a46098",
+        "blueprintRevision": "1",
         "correlation": "admission:call-d4-worker-write",
         "executionCoupling": "inline",
         "kind": "leader-approval",
+        "legOrdinal": 1,
+        "operationFingerprint": "sha256:3c15e01d5b46c153cfe0e86a3eb0eff5a0ec7c9d4e0194571e1bca5d7e0665e1",
+        "operationOwnerTemplateId": "worker",
+        "operationToolDefinitionIdentity": "dsh.fs/write",
+        "operationToolName": "write",
+        "operationToolOwner": "dsh.fs",
         "ownerRootSessionId": "session-dboot-d4-root",
-        "requestId": "ctrl-1xxrzo21k29yc31rawhls0qn",
+        "perEffectRequiredAuthorities": [
+          "leader"
+        ],
+        "requestId": "ctrl-0ige2v51tq21nu12elaqv1nb",
+        "requestedEffect": "allow",
         "requester": {
           "instanceId": "inst-0ty67u70r99a",
           "kind": "instance",
           "role": "member"
         },
+        "requiredAuthorityAtCreation": "leader",
+        "reviewAuthority": "leader",
+        "reviewPayload": {
+          "authorityScope": {
+            "matcher": {
+              "kind": "exact",
+              "resource": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T01-08-31Z/workspace/lane/worker-ask.txt"
+            },
+            "operationClass": "write"
+          }
+        },
         "subject": {
           "instanceId": "inst-0ty67u70r99a",
           "kind": "instance"
         },
-        "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T23-45-21Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:0a2858f99aa518102c7fa06b71cfa772)",
+        "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T01-08-31Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:17f30b17ad3e48ce47e07c2f41c41021)",
         "targetInstanceId": "inst-0ty67u70r99a",
         "toolName": "write"
       },
@@ -30,28 +63,61 @@
     },
     "row": {
       "actionName": "admission-ask",
+      "approvalCaseId": "case-0dotsl405xthlb0lqsqo21tg",
+      "authorityGeneration": 0,
+      "authorityScope": {
+        "matcher": {
+          "kind": "exact",
+          "resource": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T01-08-31Z/workspace/lane/worker-ask.txt"
+        },
+        "operationClass": "write"
+      },
+      "beneficiaryAuthority": "member",
+      "blueprintContentHash": "sha256:47c096399d00599c92ff73707e2ee4cfbef3d7e31669f3ff94b01a4d35a46098",
+      "blueprintRevision": "1",
       "correlation": "admission:call-d4-worker-write",
       "executionCoupling": "inline",
       "kind": "leader-approval",
+      "legOrdinal": 1,
+      "operationFingerprint": "sha256:3c15e01d5b46c153cfe0e86a3eb0eff5a0ec7c9d4e0194571e1bca5d7e0665e1",
+      "operationOwnerTemplateId": "worker",
+      "operationToolDefinitionIdentity": "dsh.fs/write",
+      "operationToolName": "write",
+      "operationToolOwner": "dsh.fs",
       "ownerRootSessionId": "session-dboot-d4-root",
-      "requestId": "ctrl-1xxrzo21k29yc31rawhls0qn",
+      "perEffectRequiredAuthorities": [
+        "leader"
+      ],
+      "requestId": "ctrl-0ige2v51tq21nu12elaqv1nb",
+      "requestedEffect": "allow",
       "requester": {
         "instanceId": "inst-0ty67u70r99a",
         "kind": "instance",
         "role": "member"
       },
+      "requiredAuthorityAtCreation": "leader",
+      "reviewAuthority": "leader",
+      "reviewPayload": {
+        "authorityScope": {
+          "matcher": {
+            "kind": "exact",
+            "resource": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T01-08-31Z/workspace/lane/worker-ask.txt"
+          },
+          "operationClass": "write"
+        }
+      },
       "subject": {
         "instanceId": "inst-0ty67u70r99a",
         "kind": "instance"
       },
-      "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T23-45-21Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:0a2858f99aa518102c7fa06b71cfa772)",
+      "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T01-08-31Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:17f30b17ad3e48ce47e07c2f41c41021)",
       "targetInstanceId": "inst-0ty67u70r99a",
       "toolName": "write"
     }
   },
   "ledger": [
     {
-      "createdAt": "2026-11-23T23:47:43.520Z",
+      "createdAt": "2026-11-24T01:10:57.074Z",
       "factType": "provision-member-instance",
       "operationId": "op-1wlvk2s0nuqxzv1w97gvi0g2",
       "payload": {
@@ -59,18 +125,18 @@
         "label": "dboot-d4-officer",
         "rootSessionId": "session-dboot-d4-root",
         "templateId": "officer",
-        "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T23-45-21Z/workspace"
+        "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T01-08-31Z/workspace"
       },
       "rootSessionId": "session-dboot-d4-root",
       "schemaVersion": 2,
       "sequence": 1
     },
     {
-      "createdAt": "2026-11-23T23:47:43.549Z",
+      "createdAt": "2026-11-24T01:10:57.099Z",
       "factType": "team-work-admitted",
       "payload": {
         "action": "delegate",
-        "at": "2026-11-23T23:47:43.544Z",
+        "at": "2026-11-24T01:10:57.094Z",
         "caller": {
           "instanceId": "inst-leader",
           "kind": "instance",
@@ -89,7 +155,7 @@
       "sequence": 2
     },
     {
-      "createdAt": "2026-11-23T23:47:43.560Z",
+      "createdAt": "2026-11-24T01:10:57.108Z",
       "factType": "activity-interval-opened",
       "payload": {
         "correlation": "dboot-d4-delegate-officer",
@@ -107,7 +173,7 @@
       "sequence": 3
     },
     {
-      "createdAt": "2026-11-23T23:47:43.915Z",
+      "createdAt": "2026-11-24T01:10:57.446Z",
       "factType": "activity-interval-closed",
       "payload": {
         "correlation": "dboot-d4-delegate-officer",
@@ -124,11 +190,11 @@
       "sequence": 4
     },
     {
-      "createdAt": "2026-11-23T23:47:43.940Z",
+      "createdAt": "2026-11-24T01:10:57.469Z",
       "factType": "member-lifecycle-changed",
       "payload": {
         "action": "delegate",
-        "at": "2026-11-23T23:47:43.935Z",
+        "at": "2026-11-24T01:10:57.465Z",
         "caller": {
           "instanceId": "inst-leader",
           "kind": "instance",
@@ -150,7 +216,7 @@
       "sequence": 5
     },
     {
-      "createdAt": "2026-11-23T23:47:44.414Z",
+      "createdAt": "2026-11-24T01:10:57.998Z",
       "factType": "provision-member-instance",
       "operationId": "op-0uah5681rvsznr1mhkbxu1oo",
       "payload": {
@@ -158,18 +224,18 @@
         "label": "dboot-d4-worker",
         "rootSessionId": "session-dboot-d4-root",
         "templateId": "worker",
-        "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T23-45-21Z/workspace"
+        "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T01-08-31Z/workspace"
       },
       "rootSessionId": "session-dboot-d4-root",
       "schemaVersion": 2,
       "sequence": 6
     },
     {
-      "createdAt": "2026-11-23T23:47:44.439Z",
+      "createdAt": "2026-11-24T01:10:58.022Z",
       "factType": "team-work-admitted",
       "payload": {
         "action": "delegate",
-        "at": "2026-11-23T23:47:44.434Z",
+        "at": "2026-11-24T01:10:58.017Z",
         "caller": {
           "instanceId": "inst-leader",
           "kind": "instance",
@@ -188,7 +254,7 @@
       "sequence": 7
     },
     {
-      "createdAt": "2026-11-23T23:47:44.450Z",
+      "createdAt": "2026-11-24T01:10:58.031Z",
       "factType": "activity-interval-opened",
       "payload": {
         "correlation": "dboot-d4-delegate-worker",
@@ -206,25 +272,58 @@
       "sequence": 8
     },
     {
-      "createdAt": "2026-11-23T23:47:44.610Z",
+      "createdAt": "2026-11-24T01:10:58.213Z",
       "factType": "control-request-recorded",
       "payload": {
         "actionName": "admission-ask",
+        "approvalCaseId": "case-0dotsl405xthlb0lqsqo21tg",
+        "authorityGeneration": 0,
+        "authorityScope": {
+          "matcher": {
+            "kind": "exact",
+            "resource": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T01-08-31Z/workspace/lane/worker-ask.txt"
+          },
+          "operationClass": "write"
+        },
+        "beneficiaryAuthority": "member",
+        "blueprintContentHash": "sha256:47c096399d00599c92ff73707e2ee4cfbef3d7e31669f3ff94b01a4d35a46098",
+        "blueprintRevision": "1",
         "correlation": "admission:call-d4-worker-write",
         "executionCoupling": "inline",
         "kind": "leader-approval",
+        "legOrdinal": 1,
+        "operationFingerprint": "sha256:3c15e01d5b46c153cfe0e86a3eb0eff5a0ec7c9d4e0194571e1bca5d7e0665e1",
+        "operationOwnerTemplateId": "worker",
+        "operationToolDefinitionIdentity": "dsh.fs/write",
+        "operationToolName": "write",
+        "operationToolOwner": "dsh.fs",
         "ownerRootSessionId": "session-dboot-d4-root",
-        "requestId": "ctrl-1xxrzo21k29yc31rawhls0qn",
+        "perEffectRequiredAuthorities": [
+          "leader"
+        ],
+        "requestId": "ctrl-0ige2v51tq21nu12elaqv1nb",
+        "requestedEffect": "allow",
         "requester": {
           "instanceId": "inst-0ty67u70r99a",
           "kind": "instance",
           "role": "member"
         },
+        "requiredAuthorityAtCreation": "leader",
+        "reviewAuthority": "leader",
+        "reviewPayload": {
+          "authorityScope": {
+            "matcher": {
+              "kind": "exact",
+              "resource": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T01-08-31Z/workspace/lane/worker-ask.txt"
+            },
+            "operationClass": "write"
+          }
+        },
         "subject": {
           "instanceId": "inst-0ty67u70r99a",
           "kind": "instance"
         },
-        "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T23-45-21Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:0a2858f99aa518102c7fa06b71cfa772)",
+        "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T01-08-31Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:17f30b17ad3e48ce47e07c2f41c41021)",
         "targetInstanceId": "inst-0ty67u70r99a",
         "toolName": "write"
       },
