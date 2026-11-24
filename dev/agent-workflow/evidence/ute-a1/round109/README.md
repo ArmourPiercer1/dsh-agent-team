@@ -298,3 +298,11 @@ It is the reason the layer must never become a merge gate for an unrelated PR.
   arms G7, operator model G8, scripted model G9) are unchanged by this round.
 - `d4:ask-execute-process` stays REFUTED and enumerated; it is the approved Subprocess/PTY scope, not
   a pending fix.
+
+**Post-commit re-run at the round-109 feature head `6ef5394b3`** (logs `*-postcommit.log`): `docs-sync --check`
+`193/0 findings`, `ute-cut-closure` `cut(0/148)`, `ute-p0-assets` `cut(148/148)`, `place-dist-glue` 35
+placements byte-identical, `eb3-ci-required` `11/0`, `test-catalog` `785 / 38 uncollected / 14 excluded`
+(digest `sha256:da8a452d…` unchanged), `ute-a1-window` pass, `eb3-run-manifest` `records=600 strict=0
+incomplete=11 findings=0`, the `ute-vnext-a1` leg `251/248/0/3` (`sha256:edd4f1c4…` unchanged), and
+`ci-pr-gate --full --census-captures 2` **`pass=10 fail=0`** (283.3 s, census `599f/7424l`, identical
+identity sets).
