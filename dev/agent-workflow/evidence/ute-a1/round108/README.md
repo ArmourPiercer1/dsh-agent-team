@@ -128,3 +128,17 @@ was added or removed, and no dispatch leg changed. The round-108 change adds two
 already-collected `packages/runtime/test/t12a-m3-recursive-drain.test.ts` (so `tests=785` and the
 catalog digest are unchanged) and edits the existing driver + bridge double. `place-dist-glue`
 re-placed the 35 `.mjs` glue files byte-identically after the `tsc` rebuild.
+
+### Post-commit re-run of the cheap gates (`603ab8f4f`, logs `*-postcommit.log`)
+
+The six documentation-sensitive gates were re-run **after** the round-108 docs/evidence commit, so
+their verdicts describe the head that carries the prose (same values as §6):
+
+```
+docs-sync --check          docs=193 findings=0 blocking=0 contracts=20
+test-catalog                tests=785 digest=sha256:da8a452d… refused=0 findings=0
+ute-cut-closure --check     pass cut(0/148) deleted=148 prodRefs=0 distResiduals=0
+ute-p0-assets --check       pass 37 modules / 180 files / 69512 lines cut(148/148)
+place-dist-glue             done (35 placement(s)), byte-identical
+ute-a1-window --check       pass red=0/0 cut=(148/52)
+```
