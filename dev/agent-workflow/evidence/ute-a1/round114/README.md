@@ -103,6 +103,12 @@ No behaviour change. The single acceptance table has **row 35** and `CAPABILITY-
 | `ci-pr-gate --full --census-captures 2` | **PASS 10/10**; census `599f/7424l` twice with identical identity sets (`gate-ci-pr-gate.log`) |
 | `pr-settlement-gate --pr 822` | `pr-settlement-gate.log` |
 
+**Post-commit re-run:** every gate above was re-run at commit `194a5c3ce` and is green with the same
+verdicts; those logs are the `*-postcommit.log` files in this directory. The post-commit
+`ci-pr-gate --full --census-captures 2` is **PASS 10/10** (283.1 s, census `599f/7424l` twice, identical
+identity sets) and `check-artifacts-at-head` reports the commit **carries its own build**
+(`compared=1950 drift=0`), so the ledger change travelled together with its dist mirror.
+
 ## New scannable-surface delta — measured, not assumed
 
 **+1 test file, +1 collected test.** `test-catalog` moved `tests=785 → 786` and
