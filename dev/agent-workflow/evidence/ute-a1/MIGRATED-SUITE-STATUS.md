@@ -3771,3 +3771,44 @@ files are existing; the evidence is markdown) ⇒ no p4t6 booking delta. `ute-p0
 
 **Levels:** no row moves. No PRODUCT-PROVEN row is added; the four D drivers were not re-run and their
 round-109 verdicts stand.
+
+## Round 114 (2026-11-25) — SEC-01 arms + the D4 evidence-consistency arm (one scannable-surface delta)
+
+**No assertion was weakened, no timeout widened, no retry added, no arm skipped.** One product file
+changed (`packages/runtime/src/plugin/vnext/fact-ledger.mjs` + its byte-identical dist mirror), one
+existing suite grew four arms, and one new `tests/checks` suite was added.
+
+| suite | before | after | delta |
+| --- | --- | --- | --- |
+| `ute-vnext-a1` leg (`A5SF_REQUIRE_PINNED_HOST=1`) | 251 tests / 248 pass / 0 fail / 3 skip | **255 tests / 252 pass / 0 fail / 3 skip** | **+4** (`SEC-01a…d` in `packages/runtime/test/vnext-admission.test.mjs`); the 7-file set digest is unchanged (`sha256:edd4f1c4…`) because no leg FILE changed — the count moved inside an existing suite |
+| `tests-checks` leg (`tests/checks` area) | 2 files / 21 tests | **3 files / 26 tests** | **+1 file / +5 arms** (`tests/checks/d4-evidence-consistency.test.mjs`, SEC-02) |
+| bound vitest (`ci-integration`, `tests/checks/eb3-ute-migrated-suites.txt`) | 15 suites / 238 passed | **unchanged** | 0 |
+| `test-catalog` | tests=785 / collected=733 / uncollected=38 / excluded=14 | **tests=786 / collected=734 / uncollected=38 / excluded=14** | **+1 scannable test file**, booked here and in `round114/README.md` |
+| `ute-p0-assets` | modules=37 files=180 lines=69512 | unchanged | 0 |
+| `docs-sync` | docs=193 | unchanged | 0 |
+
+**Why the new arm is not an uncollected growth:** it lives under `tests/checks`, which the `tests-checks`
+leg declares as an `areas[]` entry, so collection is by the repository's own predicate (not a hand list).
+It is tracked and therefore visible to `git ls-files`/test-catalog only after it is staged — the
+post-commit `test-catalog` run is the booked measurement.
+
+**The SEC-01 arms (what each proves):**
+
+- `SEC-01a` — a returned admission fact is readable after the writer process is SIGKILLed before any
+  next append (fresh ledger sees `KNOWN`, exactly one record).
+- `SEC-01b` — the authority boundary: a real recording io shows 1 file fsync + 1 directory fsync on
+  create and only 1 file fsync on later appends; a refusing fsync throws `LEDGER_NOT_DURABLE`, the bytes
+  are rolled back (file empty), `has()`/`observe()` do not report the callId, and the REAL centre +
+  REAL settlement store leave **no settlement record at all** for that call (deny
+  `ADMISSION_LEDGER_UNWRITABLE`).
+- `SEC-01c` — the on-disk line is byte-identical to the pre-fix format (`JSON.stringify(record)+'\n'`),
+  a reload is the same object, and the replay rule still refuses a second admission.
+- `SEC-01d` — named fail-closed refusals for a refused file fsync, directory fsync (file unlinked),
+  close (durable but not reported), and an io seam without fsync (`IO_MISSING`).
+
+**The D4 consistency arm (SEC-02):** `SEC-02` ×5 asserts the README's declared measurement head equals
+`probe-digest.json#head`, the two boots agree, the §2 judge set and every verdict equal `results.json`,
+`overall` equals `results.json`, and no current-tense REFUTED about a PROVEN judge stands outside a
+`[HISTORICAL]` block. **Mutation control:** run against the pre-correction README (from `git show`), the
+judge/verdict arm reports `d4:routed-wake => REFUTED` vs the machine `PROVEN` — i.e. it would have been
+RED on the defect it exists to catch.

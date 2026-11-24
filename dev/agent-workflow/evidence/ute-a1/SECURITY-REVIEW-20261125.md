@@ -6,6 +6,23 @@ Provider/OS boundary, Settlement, Control, Stop**. This is an audit **against th
 restatement of the design notes; every claim below is either traced to a control at `file:line` and
 an arm that attempts to break it, or reported as a finding.
 
+## Disposition (round 114, 2026-11-25) — every finding closed or declared
+
+This review was produced in round 113 as an **audit with no fixes**. Round 114 dispositioned each
+finding; the finding sections below keep their original text (so the defect record is not rewritten)
+and now carry a disposition marker. Evidence: `round114/README.md`; the acceptance table row is
+`D-ACCEPTANCE-REPORT.md` round 114.
+
+| finding | severity | disposition | where it now stands |
+| --- | --- | --- | --- |
+| **SEC-01** admission fact not `fsync`'d | Low | **FIXED** | `packages/runtime/src/plugin/vnext/fact-ledger.mjs`: `open(O_APPEND) → write → fsync(file) → close`, plus one directory fsync when the append creates the file; the in-memory admission is registered only after the durable append. Policy is **fsync-before-return, not a batched window** (bounded at one fsync/record + one dir fsync for the first record). A refused fsync is named and fail-closed (`LEDGER_NOT_DURABLE` / `LEDGER_DIRECTORY_NOT_DURABLE` / `LEDGER_CLOSE_FAILED` / `LEDGER_UNRECOVERABLE`), the un-acknowledged bytes are rolled back, and settlement is **never opened** for an un-durable fact. Format, ordering, digest and replay rule unchanged. Arms `SEC-01a…d`. **Remaining bound:** real machine power loss is not injectable in-process; the ordering that makes the claim true is pinned, the physical cut is not. |
+| **SEC-02** d4 README contradicts `results.json` | Low | **FIXED (history retained)** | `dev/agent-workflow/evidence/d-boot-feasibility/d4/README.md` corrected 2026-11-25 with a dated banner; round-87/88 text kept as `[HISTORICAL]`. §2 is now the `results.json` transcription at head `41d579119`. Machine check `tests/checks/d4-evidence-consistency.test.mjs` fails on a head/judge/verdict/`overall` mismatch or a current-tense REFUTED about a PROVEN judge outside a historical block; mutation control RED on the pre-correction README. |
+| **SEC-03** host-capability tools have no managed lane | Low (declared boundary) | **DECLARED — no behaviour change** | Named on the capability surface: `CAPABILITY-MATRIX-C.md` row **C-host-capability** and the single acceptance table **row 35** (`D-ACCEPTANCE-REPORT.md`). The status vocabulary now contains DECLARED UNCOVERED BOUNDARY; the boundary is discoverable from the table, never counted as confinement. |
+| **SEC-04** ungoverned rows outside every invariant | Informational | **DECLARED (unchanged)** | Still a labelled product mode (`{ mode: 'ungoverned', uteProtected: false }`). No fix proposed; no behaviour change. |
+
+No finding remains **open**. SEC-01/SEC-02 were defects and are fixed; SEC-03/SEC-04 are declared
+product boundaries and stay declared (changing them is a product-scope decision, not this round).
+
 ## 0. Scope, method, and one honesty note
 
 - **Method.** Read the product code first (`admission.ts`, `admission-port.mjs`,
@@ -239,9 +256,9 @@ and settles `UNKNOWN` while the model-facing value is still the body's own value
 (`dispatch-settlement.ts:884-905`). That is the host's result, not a centre "success" claim — the
 durable record remains `UNKNOWN`. **Verdict: DEFENDED.**
 
-## 3. Findings (severity + `file:line`; **not fixed in this round**)
+## 3. Findings (severity + `file:line`; **dispositions added in round 114 — see the table above**)
 
-### SEC-01 — the admission fact is not `fsync`'d (Low, durability)
+### SEC-01 — the admission fact is not `fsync`'d (Low, durability) — **FIXED (round 114)**
 
 `packages/runtime/src/plugin/vnext/fact-ledger.mjs:126` appends with `appendFileSync(...)` and never
 fsyncs the file or its directory. The settlement store, by contrast, documents and performs an fsync
@@ -259,7 +276,20 @@ Severity **Low** (machine-crash only; the process-crash model is proven). Sugges
 round, with its own arm): fsync the ledger file (and directory on create) before `record()` returns,
 and add a crash-injection arm that fails the fsync and asserts the call is refused.
 
-### SEC-02 — the d4 evidence README contradicts the machine verdict (Low, evidence integrity)
+> **Disposition (round 114, 2026-11-25) — FIXED.** The suggested fix was implemented exactly, with the
+> policy made explicit: **fsync-before-return** (one file fsync per record, one directory fsync when the
+> append creates the file — no batching window). Security is fail-closed: a refused file fsync rolls the
+> bytes back and throws `LEDGER_NOT_DURABLE`; a refused directory fsync throws
+> `LEDGER_DIRECTORY_NOT_DURABLE` and unlinks the un-durable name; a refused close throws
+> `LEDGER_CLOSE_FAILED`; a failed rollback throws `LEDGER_UNRECOVERABLE`. The in-memory admission is
+> registered AFTER the durable append, so `has()`/`observe()` never answer KNOWN for an un-fsynced
+> fact, and settlement (which opens only after `record()` returns) is never opened for one. Arms
+> `SEC-01a` (SIGKILLed writer), `SEC-01b` (authority boundary, including the real centre + store),
+> `SEC-01c` (byte-identical JSONL, replay rule unchanged), `SEC-01d` (file/dir/close/io refusals) in
+> `packages/runtime/test/vnext-admission.test.mjs`. Remaining bound: a physical power cut is not
+> injectable in-process (see §4).
+
+### SEC-02 — the d4 evidence README contradicts the machine verdict (Low, evidence integrity) — **FIXED, history retained (round 114)**
 
 `dev/agent-workflow/evidence/d-boot-feasibility/d4/README.md:104-133` states `d4:routed-wake` is
 **REFUTED**, with `case-created` / `wake-delivered` marked ❌ and "0 facts". The machine artifacts in
@@ -271,7 +301,16 @@ Severity **Low** (it can mislead a merge/sign-off decision; it cannot change run
 Not fixed here (evidence-only round); recorded so the C6 sign-off in `C1-C18-SIGNOFF.md` §6 is
 explicitly using the machine artifacts.
 
-### SEC-03 — host-capability tools have no managed I/O lane (Low, scope boundary)
+> **Disposition (round 114, 2026-11-25) — FIXED, history retained.** The README was corrected to the
+> `results.json` truth (`d4:routed-wake` PROVEN, all seven sub-judges PROVEN; `overall` stays BLOCKED
+> only for the separately-declared `d4:ask-execute-process`) with a dated correction banner and the
+> round-87/88 text explicitly marked `[HISTORICAL]` — nothing was deleted. The machine check is
+> `tests/checks/d4-evidence-consistency.test.mjs` (head equality with `probe-digest.json`, judge-set
+> equality, verdict equality, `overall` equality, and no current-tense REFUTED about a PROVEN judge
+> outside a historical block). Mutation control: the arm is RED on the pre-correction README and GREEN
+> after. This makes the same drift a gate failure next time instead of a silent inversion.
+
+### SEC-03 — host-capability tools have no managed I/O lane (Low, scope boundary) — **DECLARED (round 114, no behaviour change)**
 
 `packages/runtime/src/plugin/vnext/admission.ts:143-153` admits `subagent`, `send_message`,
 `interrupt_agent`, `skill` and the 15 `team_*` names on `team.control`/host authority with **no fs
@@ -282,7 +321,15 @@ compiled lane" is **not** true of this surface. Severity **Low** (declared produ
 bypass of the managed faces); a hostile-code model must treat these as capabilities outside the
 sandbox.
 
-### SEC-04 — ungoverned rows are outside every invariant (Informational, declared boundary)
+> **Disposition (round 114, 2026-11-25) — DECLARED, no behaviour change.** The boundary is now
+> discoverable from the status surfaces: `CAPABILITY-MATRIX-C.md` row **C-host-capability** (and the
+> DECLARED UNCOVERED BOUNDARY status in its vocabulary) and the single acceptance table's
+> **row 35** in `D-ACCEPTANCE-REPORT.md`. Both state plainly that these tools are admitted on
+> `team.control`/host authority with **no managed fs/net lane**, that their effects are host services,
+> and that they are **never** counted as PROVEN for confinement. No admit/deny behaviour changed; this
+> is the wording-and-discoverability half of SEC-03 only.
+
+### SEC-04 — ungoverned rows are outside every invariant (Informational, declared boundary) — **DECLARED (unchanged)**
 
 `packages/runtime/src/plugin/vnext/agent-bindings.mjs:1880-1891`: a row that sets no
 `centreStatePath` is allowed to run under DSH's own permission model and is labelled
@@ -335,9 +382,10 @@ following are **not** provided and would each need its own design + arms:
    settlement store run in the same address space as the code they govern; a hostile module can
    rewrite the store or the receipt's `WeakMap` state. Signing the journal, or moving it to a
    separate privileged service, would be required.
-3. **`fsync`-before-effect ordering for the admission fact** (SEC-01), plus a crash-injection arm.
-4. **A managed lane (or an explicit "no lane" capability type) for host-capability tools** (SEC-03),
-   so `skill`/`subagent` effects are not silently outside the ceiling.
+3. **`fsync`-before-effect ordering for the admission fact** (SEC-01), plus a crash-injection arm. — **CLOSED round 114** (fsync-before-return; arms `SEC-01a…d`).
+4. **A managed lane (or an explicit "no lane" capability type) for host-capability tools** (SEC-03) —
+   **still declared**: the boundary is named in the matrix/status table, but no lane exists or is
+   claimed, so `skill`/`subagent` effects remain outside the ceiling.
 5. **Coverage of the host agent loop's `tools.execute` caller on rc.5.** `pre-dispatch-abort.mjs:22-27`
    states the product does not own that call site; a pre-dispatch cancellation in a real rc.5 turn
    is therefore unobserved by the centre (the A1 slice hands the batch to the observer, the real
@@ -353,9 +401,13 @@ For the product surface this generation claims to govern — a bound Member's ma
 through the one admission point, the member realm's providers, the settlement store and the one
 Control service — **no invariant in the five areas is BROKEN at this head**. Eight adversarial
 attacks were attempted; seven are defended in code and by an existing arm, the eighth
-(UNKNOWN-as-success) is defended with the nuance recorded. Two real defects are reported and left
-unfixed by design: **SEC-01** (admission fact not fsync'd; machine-crash durability) and **SEC-02**
-(stale d4 README inverting the routed-wake verdict). Two declared boundaries are named so they cannot
-be mistaken for controls: **SEC-03** (host-capability tools have no managed lane) and **SEC-04**
-(ungoverned rows). A hostile-code threat model is **not** met by this generation; §6 lists what it
-would take.
+(UNKNOWN-as-success) is defended with the nuance recorded.
+
+**As of round 114 (2026-11-25) the two defects are FIXED and the two boundaries stay DECLARED:**
+**SEC-01** (admission fact not fsync'd) is fixed by the fsync-before-return policy and its four arms;
+**SEC-02** (stale d4 README inverting the routed-wake verdict) is fixed with history retained and a
+new machine consistency check. **SEC-03** (host-capability tools have no managed lane) and **SEC-04**
+(ungoverned rows) are named so they cannot be mistaken for controls, now including the matrix row and
+the single acceptance table row for SEC-03. **No finding remains open.** A hostile-code threat model is
+**not** met by this generation; §6 lists what it would take (and §6 item 3, the fsync ordering, is now
+closed).

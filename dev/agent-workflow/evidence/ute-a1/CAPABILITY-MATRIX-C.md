@@ -9,6 +9,10 @@ Statuses used, and they are not interchangeable:
   unproven and the only admissible evidence is the product's fail-closed refusal (round 82; see the
   round-82 section at the end of this file). ENV-LIMITED is never counted as PROVEN.
 - **UNPROVEN** — nothing here should be reported as working.
+- **DECLARED UNCOVERED BOUNDARY** — the surface is admitted by the ONE centre but the centre's lane
+  algebra does **not** bound its effect (the effect is performed by a host service). It is named so it
+  cannot be mistaken for a control; it is never counted as PROVEN for confinement. The host-capability
+  tools row below (SEC-03) is the one such boundary on the capability surface.
 
 ### Candidate-gate coverage — round 109 (NON-REQUIRED by owner ruling; NO level moves)
 
@@ -131,6 +135,7 @@ below is PRODUCT-PROVEN, and "boots" is not "the capability is proven".
 | C-goal | Goal / Todo | preserved as HOST CAPABILITIES (`get_goal`/`create_goal`/`update_goal`/`todo_write`), axis `host.service`, `ADM-32` | MECHANISM |
 | C-skill | Team Skill | preserved as a host capability (`skill`, axis `host.service`, `ADM-32`); its file reads go through the host skill service, NOT the member's confined fs | MECHANISM + recorded LIMIT |
 | C-fork | Subagent Fork | preserved as host capabilities (`subagent`, `send_message`, `interrupt_agent`, axis `host.service`, `ADM-32`); the CHILD's own binding governs the child's tools | MECHANISM |
+| **C-host-capability** | **Host-capability tools: `subagent`, `send_message`, `interrupt_agent`, `skill` and the 15 `team_*` names** | **DECLARED UNCOVERED BOUNDARY (SEC-03, 2026-11-25) — not a capability level.** These names are closed and admitted on `team.control`/host authority (`admission.ts:86-153`, `TOOL_AXES`, `ADM-31`, `ADM-32`), but their effects are performed by **host services**, so the centre's fs/net lane algebra **does not bound them**: they have **no managed I/O lane**. Probe `A15` in `SECURITY-REVIEW-20261125.md` §2 measures the only "allow without a lane" and it is this surface. The broad claim "every provider effect is inside the compiled lane" is **not** true here; a hostile-code threat model must treat these as capabilities **outside** the sandbox (see `SECURITY-REVIEW-20261125.md` §6 item 4). This is by design for C15/C16 (`06-CAPABILITY-CONTRACT.md:49-50`) and is **not** a bypass of the managed fs/web/process faces. | **DECLARED UNCOVERED BOUNDARY — no managed lane; never counted as PROVEN for confinement** |
 | C-policy | observation policy two-state | SLICE-10/11 pin OFF (default) and ON on the pinned host | MECHANISM |
 
 ## MEASURED (round 56): C-tools / C-member / C-work driven END TO END over the product tool surface
@@ -960,3 +965,48 @@ mounts** (it used to be hardcoded to rc.2 — an rc.2 module in an rc.5 host, wh
 "no decision yet" clause measured the Officer's speed — a decision landed 176 ms after creation vs a
 300 ms poll — and is now an append-only-ledger ordering assertion, rc.2 and rc.5 alike). The two
 `agreement.txt` files are byte-identical across hosts.
+
+## ROUND 114 (2026-11-25) — SEC-01/SEC-02/SEC-03: durability, evidence integrity, declared boundary (no level moves)
+
+This round closes the three findings the round-113 adversarial review left open. **No capability level
+moves and no row becomes PRODUCT-PROVEN.**
+
+### SEC-01 — the admission fact is now durable across a machine crash (`fact-ledger.mjs`)
+
+The ledger's append was `appendFileSync` with no fsync: process-crash durable, machine-crash not. The
+append is now `open(O_APPEND) → write → fsync(file) → close`, plus **one directory fsync when the append
+creates the file**, and the in-memory admission map is registered only after the durable append returns.
+The policy is **fsync-before-return, not a batched/group-commit window**: one fsync per record and at
+most one extra directory fsync for the file's first record — bounded, and there is no window in which a
+returned fact is not durable. A refused fsync is a named, fail-closed refusal (`LEDGER_NOT_DURABLE`,
+`LEDGER_DIRECTORY_NOT_DURABLE`, `LEDGER_CLOSE_FAILED`, `LEDGER_UNRECOVERABLE`): the un-acknowledged bytes
+are truncated back, the callId is not registered in memory, and the settlement record is **never opened**
+(the durable record precedes settlement in `admission-port.mjs#commit`). The JSONL bytes, ordering,
+replay rule and digest are unchanged. Arms `SEC-01a…d` in `packages/runtime/test/vnext-admission.test.mjs`
+(SIGKILLed writer, authority boundary, byte-identical format, named fail-closed fsync/dir/close/io
+refusals). Machine-level power loss is out of reach in-process and is stated as the remaining bound.
+
+### SEC-02 — the D4 README no longer inverts the machine verdict, and a machine check pins it
+
+`dev/agent-workflow/evidence/d-boot-feasibility/d4/README.md` said `d4:routed-wake` **REFUTED** while
+`results.json` in the same tree recorded it PROVEN (round 97 closure, re-run rc.5 in round 102). It is
+corrected **2026-11-25 with the round-87/88 text retained as explicitly marked history** (no silent
+rewrite), its §2 table is now a transcription of `results.json` at the measurement head
+`41d5791195d199190c8d808d321aaa8e4dbca030`, and **`tests/checks/d4-evidence-consistency.test.mjs`** fails
+when the README and `results.json` disagree on the head, the judge set, any verdict, `overall`, or when a
+current-tense REFUTED about a PROVEN judge stands outside a `[HISTORICAL]` block. Mutation control: the
+arm is red on the pre-correction README (`routed-wake => REFUTED`) and green after.
+
+### SEC-03 — host-capability tools are named as a declared uncovered boundary
+
+No behaviour changed. The new **C-host-capability** row above and the matching row in the single
+acceptance table (`D-ACCEPTANCE-REPORT.md` row 35) name `subagent` / `send_message` / `interrupt_agent` /
+`skill` / the 15 `team_*` names as **admitted but outside the lane algebra**: their effects are host
+services, so the centre does not bound them. The statement "every provider effect is inside the compiled
+lane" is corrected everywhere it could be read as covering this surface.
+
+### Counts
+
+No row moves. `ute-vnext-a1` leg: **255 tests / 252 pass / 0 fail / 3 skip** (the 4 SEC-01 arms added);
+the new `tests/checks` arm is collected by the `tests-checks` area declaration. New scannable-surface
+delta is booked in `round114/README.md` (test-catalog tests 785 → 786; docs untouched).

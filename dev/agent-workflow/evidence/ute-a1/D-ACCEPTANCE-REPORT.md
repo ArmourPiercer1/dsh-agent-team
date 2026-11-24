@@ -4,6 +4,34 @@
 <!-- ROUND 109 — THE CURRENT ACCEPTANCE STATUS. Read this before anything else. -->
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
+## ROUND 114 — the three security findings are dispositioned (no capability row moves)
+
+Round 113's review (`SECURITY-REVIEW-20261125.md`) left SEC-01/SEC-02/SEC-03 open. This round closes them;
+the review's §3 carries the per-finding disposition table and its verdict section is updated. **No
+capability level moves and no row becomes PRODUCT-PROVEN.**
+
+- **SEC-01 → FIXED.** `packages/runtime/src/plugin/vnext/fact-ledger.mjs` now fsyncs the file (and the
+  directory when it creates it) **before `record()` returns**, and registers the admission in memory only
+  after that durable append. Policy is fsync-before-return, not a batching window: at most one extra
+  directory fsync for the file's first record. A refused fsync is a named fail-closed refusal; the bytes
+  are rolled back and **the settlement record is never opened** (`admission-port.mjs#commit` writes the
+  durable fact first). Format, ordering, digest and the replay rule are unchanged. Arms `SEC-01a…d`.
+- **SEC-02 → FIXED (with history retained).** `dev/agent-workflow/evidence/d-boot-feasibility/d4/README.md`
+  is corrected 2026-11-25 to the `results.json` truth (`d4:routed-wake` **PROVEN**), with a dated correction
+  banner and the round-87/88 text kept as explicitly marked history. A new arm,
+  `tests/checks/d4-evidence-consistency.test.mjs`, fails when that README contradicts `results.json`
+  (head, judge set, any verdict, `overall`, or a current-tense REFUTED outside a `[HISTORICAL]` block);
+  mutation control: RED on the pre-correction README.
+- **SEC-03 → DECLARED (no behaviour change).** The single table now has **row 35** and
+  `CAPABILITY-MATRIX-C.md` has the **C-host-capability** row: host-capability tools (`subagent`,
+  `send_message`, `interrupt_agent`, `skill`, the 15 `team_*`) are admitted on host authority with **no
+  managed fs/net lane**, so the lane algebra does not bound them. The boundary is named so it cannot be
+  read as a control.
+- **SEC-04 → DECLARED (unchanged, informational).** Ungoverned rows remain a labelled product mode.
+
+Gate re-runs and the new scannable-surface delta (test-catalog tests 785 → 786) are recorded in
+`round114/README.md`.
+
 ## ROUND 113 — the C1–C18 sign-off and the adversarial security review (counts; no capability row moves)
 
 Review `20261125-0058` Stage C. Two independent documents were produced this round, both evidence-bound
@@ -234,6 +262,7 @@ Hosts, exactly as the drivers printed them (`candidate:` row, first log line of 
 | 32 | OS confinement negative controls (§3.1) | ENV-LIMITED where the OS capability is absent | measured | measured (round 78 shape) | the host/OS limit is the limit; no product switch exists |
 | 33 | search face, Shape B (in-lane `grep`, out-of-lane refused) | DEV-LIVE | **PROVEN** (round 64/98) | **PROVEN** (round 78) | Shape B is the declared support level; not full dynamic permission governance |
 | 34 | REAL-MODEL acceptance harness (`run-real-model.mjs`, 20 judges) | **ENV-LIMITED** (harness `SCRIPTED-ONLY`) | **20/20 PROVEN, 2/2 agreeing boots — SCRIPTED-ONLY** (round 111) | not run | the ENVIRONMENT: no real model route for a test host; the exact missing item is **`DEEPSEEK_API_KEY`** (optionally `DEEPSEEK_BASE_URL`), resolved by the pinned `llm-deepseek-api-key` adapter (`deepseek-official`) in both pinned hosts. `probe.json` is the machine record. With that credential the same command becomes the real acceptance run and only then may the level become `DEV-LIVE-real-model` |
+| 35 | **host-capability tools** (`subagent`, `send_message`, `interrupt_agent`, `skill`, the 15 `team_*`) | **DECLARED UNCOVERED BOUNDARY (SEC-03)** | **n/a — not a confinement claim** (admitted on `team.control`/host authority; probe A15 measures the only `allow` with no lane) | **n/a** | **The declared boundary: these tools have NO managed fs/net lane.** Their effects are performed by host services, so the centre's lane algebra does not bound them; they are closed and admitted (`ADM-31`/`ADM-32`) but a hostile-code model must treat them as capabilities outside the sandbox (`SECURITY-REVIEW-20261125.md` §6 item 4). Named here so the boundary cannot be read as a control; **never counted as PROVEN for confinement.** |
 
 **The dual-host candidate gate — ROUND 109 result (NON-REQUIRED; this fact does not upgrade any row).**
 `node scripts/candidate-acceptance-gate.mjs --hosts both` at `41d579119` + the round-109 arm is

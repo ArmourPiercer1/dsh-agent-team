@@ -1,8 +1,35 @@
 # D4 — the LIVE ROUTED review wake: what a real Host does, and the exact seam that stops it
 
+> ## CORRECTION — 2026-11-25 (SEC-02): this README's headline verdict is stale
+>
+> **Current truth (machine record in THIS directory).** At the evidence head recorded in
+> `probe-digest.json` (`41d5791195d199190c8d808d321aaa8e4dbca030`, pinned host `0.2.2-rc.5`
+> `9c2670d3…`), `results.json` records **`d4:routed-wake` PROVEN on 2/2 agreeing boots**, as the
+> conjunction of seven independently measured judges (`case-created`, `router-officer`,
+> `wake-delivered`, `officer-decides`, `ask-executes-after-review`, `duplicate-route`,
+> `sticky-stop` — all PROVEN, `failing=[]`). The only non-PROVEN judge in the same record is
+> `d4:ask-execute-process`, which is **REFUTED and declared** (`UNSUPPORTED BY PRODUCT RULING`,
+> owner-approved 2026-11-24), so `overall` remains `BLOCKED` for that one separately-ruled row.
+>
+> **Why this correction exists.** The body below is the **round-87 (2026-11-23) measurement**, and
+> in that measurement the routed wake was genuinely REFUTED: the two product seams it named did not
+> exist at HEAD `775be06`. The round-95/96 annex on the same page still says "`d4:routed-wake` still
+> REFUTED". That was true *then* and is false *now*. Rounds 94/95 closed the lane/ask seams and
+> round 97 **measured the routed wake PROVEN live end to end** (`ALPHA6-FORMAL-ROUTING.md`
+> §"ROUND 97 ADDENDUM", HEAD `a7a7f08ca`, seven judges / 40 clauses); round 102 re-ran it on the
+> rc.5 target host and round 109's dual-host candidate gate kept it green. This README was never
+> updated, so a reviewer who read it instead of `results.json` would invert the verdict — that is
+> the evidence-integrity defect SEC-02 closed on 2026-11-25.
+>
+> **Nothing below was deleted or rewritten.** The round-87 text is retained byte-for-byte as the
+> record of what was measured then and is marked `[HISTORICAL]` where it states a now-superseded
+> verdict. The corrected machine-checked table is §2; the round-87 blocker analysis is §4
+> `[HISTORICAL — CLOSED]`. The consistency of §2 with `results.json` is enforced by
+> `tests/checks/d4-evidence-consistency.test.mjs`.
+
 **Round 87 · 2026-11-23 · HEAD `775be06d7ac21ea4f815eb93338ff4556944dcd5` · branch `vnext/a1-cut`
 · pinned host `0.2.0-rc.2` @ `639ed015397290b3745d163aafe02ffee4aa3f84` (tree porcelain empty
-before AND after both boots)**
+before AND after both boots)** **[HISTORICAL — round-87 record; corrected 2026-11-25 above]**
 
 This directory is the fourth live acceptance artefact of the D series, and it is a **blocker
 measurement, not an acceptance pass**. Round 84 implemented Alpha.6 formal routing and proved the
@@ -26,10 +53,13 @@ under `tests/homes/`, own port band, host-selectable through `tests/next-host/ho
 ---
 
 > **ANNEX — rounds 95/96 (2026-11-24): the same instrument now also measures the ask→grant→execute
-> chain.** The tables below are the round-87 measurement, unchanged and still accurate for the
-> routed-wake question. Two further judges were added to the SAME probe later and are recorded
+> chain.** **[HISTORICAL — its "`d4:routed-wake` still REFUTED" clause was overtaken by round 97 and
+> is corrected by the 2026-11-25 banner above; the annex is retained as history.]** The tables below
+> are the round-87 measurement, unchanged and still accurate for the routed-wake question. Two
+> further judges were added to the SAME probe later and are recorded
 > elsewhere: `d4:ask-execute` (round 95) and `d4:ask-execute-2` (round 96, a SECOND mutation with
-> different bytes) — both PROVEN on two agreeing boots, with `d4:routed-wake` still REFUTED. See
+> different bytes) — both PROVEN on two agreeing boots, with `d4:routed-wake` still REFUTED *at that
+> round*. See
 > `dev/agent-workflow/evidence/ute-a1/round95/settlement-comment.md`,
 > `dev/agent-workflow/evidence/ute-a1/MIGRATED-SUITE-STATUS.md` §"Round 96" and
 > `runs/boot0{1,2}/verdict-ask-execute{,-2}.json`.
@@ -65,18 +95,41 @@ vacuous: both incoherent shapes are refused BY NAME.
 
 ---
 
-## 2. Per-judge results (two agreeing boots)
+## 2. Per-judge results (two agreeing boots) — CURRENT (corrected 2026-11-25)
 
-`runs/boot0{1,2}/verdicts.json`; the pair table is `agreement.txt`.
+**Measurement head: `41d5791195d199190c8d808d321aaa8e4dbca030`** (from `probe-digest.json`; pinned
+host `0.2.2-rc.5` `9c2670d3bce5275e0d1610272958121af87787bb`). `results.json` is the authority; the
+table below is a transcription of it and `tests/checks/d4-evidence-consistency.test.mjs` fails when
+this table and `results.json` disagree. The round-87 table (six rows, `routed-wake` REFUTED) is kept
+as history in §2.4.
 
 | judge | verdict | boots |
 | --- | --- | --- |
 | `d4:enablement` | **PROVEN** | 2/2 |
 | `d4:officer-up` | **PROVEN** | 2/2 |
 | `d4:officer-binding` | **PROVEN** | 2/2 |
-| `d4:routed-wake` | **REFUTED** | 2/2 |
+| `d4:routed-wake` | **PROVEN** | 2/2 |
+| `d4:case-created` | **PROVEN** | 2/2 |
+| `d4:router-officer` | **PROVEN** | 2/2 |
+| `d4:wake-delivered` | **PROVEN** | 2/2 |
+| `d4:officer-decides` | **PROVEN** | 2/2 |
+| `d4:ask-executes-after-review` | **PROVEN** | 2/2 |
+| `d4:duplicate-route` | **PROVEN** | 2/2 |
+| `d4:sticky-stop` | **PROVEN** | 2/2 |
 | `d4:refusal` | **PROVEN** | 2/2 |
+| `d4:ask-execute` | **PROVEN** | 2/2 |
+| `d4:ask-execute-2` | **PROVEN** | 2/2 |
+| `d4:ask-execute-process` | **REFUTED** | 2/2 |
+| `d4:ask-denied` | **PROVEN** | 2/2 |
+| `d4:ask-stopped` | **PROVEN** | 2/2 |
 | overall | **BLOCKED** | 2/2 |
+
+`d4:ask-execute-process` is the one non-PROVEN judge: it is **declared and owner-approved**
+(`UNSUPPORTED BY PRODUCT RULING`, same class as PTC; see `SCOPE-subprocess-ask.md` and
+`D-ACCEPTANCE-REPORT.md` row 30). `overall: BLOCKED` is the worst-of rule over that declared row
+alone — it is **not** evidence against the routed wake. The round-97 closure reading of the seven
+routed judges is in `ute-a1/ALPHA6-FORMAL-ROUTING.md` §"ROUND 97 ADDENDUM"; rounds 102/109 re-ran
+the same judges on rc.5 and in the dual-host candidate gate.
 
 ### `d4:enablement` — PROVEN (the row is NOT refused; the Team really is up)
 
@@ -99,10 +152,17 @@ The Officer's ledgers hold exactly **1** `invocation-authority` fact for ITS cal
 `call-d4-officer-read`, axis `fs.read`, `decision: "allow"`, and its settlement transits
 `ADMITTED → RUNNING → COMPLETED`. The Officer is `inst-1crltnl0089j`, never the Leader.
 
-### `d4:routed-wake` — REFUTED, with the failing clauses being the exact seam
+### `d4:routed-wake` — **[HISTORICAL] REFUTED at round 87; PROVEN since round 97**
 
-The worker's authored `ask` lane produces a **real durable control row** — and it is the row the
-Alpha.6 router cannot route (`runs/boot01/control-row-durable.json`, read from
+> **Corrected 2026-11-25.** Everything in this subsection is the **round-87 measurement** (HEAD
+> `775be06`, rc.2). It is retained unchanged as history. The CURRENT verdict in `results.json` at the
+> measurement head `41d579119` is **PROVEN for all seven sub-judges**; see the correction banner and
+> §2. The seams described below were closed by the round-94/95 product fixes and the wake was
+> measured live by the round-97 addendum (`ALPHA6-FORMAL-ROUTING.md`), then re-run on rc.5 by round
+> 102 and in the round-109 dual-host gate. Do **not** cite this subsection as the current verdict.
+
+At round 87 the worker's authored `ask` lane produced a **real durable control row** — and it was
+the row the Alpha.6 router could not route (`runs/boot01/control-row-durable.json`, read from
 `<home>/storages/team_domain.json#tables.ledger`, fact `control-request-recorded`, sequence 9):
 
 ```json
@@ -165,15 +225,24 @@ carries the code, the team is absent and **no wake-intent file exists**.
   `d4:officer-binding`) — the round-84 claim about the Officer's calls was mechanism-only until now;
   it is now measured on a booted host.
 * The **refusal** side is unchanged and still recorded (`d4:refusal`).
-* The **routed wake does not happen**, and the reason is not the world: the product hands the ask to
-  the Leader, writes zero wake facts, and its own router answers `null` for its own durable row.
+* **[HISTORICAL — round 87]** The routed wake did not happen **at that head**, and the reason was not
+  the world: the product handed the ask to the Leader, wrote zero wake facts, and its own router
+  answered `null` for its own durable row. **This was fixed and re-measured: `d4:routed-wake` is
+  PROVEN on 2/2 boots at the current machine record (round 97 live, rc.5 re-run round 102).**
 
-**Level: MECHANISM stays. No cell is upgraded to PRODUCT-PROVEN. The live ROUTED wake remains
-UNPROVEN — now by measurement instead of by assumption.**
+**Level at round 87: MECHANISM stayed. No cell was upgraded to PRODUCT-PROVEN. [HISTORICAL]** The
+live ROUTED wake is now **DEV-LIVE / PROVEN** (round-97 addendum) — never PRODUCT-PROVEN, because the
+probe is a driver, not a bound gate. The round-87 sentence "remains UNPROVEN" is superseded.
 
 ---
 
-## 4. THE BLOCKER (two missing Team-side seams, in the order they bite)
+## 4. THE BLOCKER (two missing Team-side seams) — **[HISTORICAL — CLOSED rounds 94–97]**
+
+> **Corrected 2026-11-25.** This section is the round-87 diagnosis of why the routed wake could not
+> happen. Both seams were subsequently closed (the case-forming ask lane by the round-94/95 product
+> work, the ask-consumption/`BL-30` half by the same round-95 G11 repair and its live arm), and the
+> round-97 addendum measured the full chain PROVEN. The section is retained unchanged as the record
+> of the blocker and of the lawful fix that was later taken. Do not read it as an open blocker.
 
 ### 4.1 No live producer of a case-bearing ordinary ask (blocks the route itself)
 
@@ -255,7 +324,9 @@ and it is again **Team-side and backlog-owned**, not upstream.
 > Provider cannot be a second consumer without a second authority. **No product byte changed and no
 > boot was spent re-measuring an unchanged refusal**; the lawful routes (flip the coupling and lose
 > `ADM-57`'s Stop-cancels-the-ask law, or give the OS plane a read port onto the centre's enforced
-> decision) are owner decisions. `d4:routed-wake` therefore stays **REFUTED** on both axes.
+> decision) are owner decisions. **[HISTORICAL — round 88]** `d4:routed-wake` therefore stayed
+> **REFUTED** on both axes *at that head*; rounds 94–97 closed the lanes and the round-97 addendum
+> measured all seven judges PROVEN. The 2026-11-25 banner is the current word.
 
 ### 4.3 Classification
 

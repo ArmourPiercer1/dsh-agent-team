@@ -9505,3 +9505,209 @@ test('ADM-153 — the SAME case shape is still refused for the Officer asking ab
     assert.equal(rig.spawns.count, 1, 'exactly one process existed, under the real kernel outcome')
   })
 }
+
+// ─────────────────────────────────────────────────────────────────────────────────────────────
+// SEC-01 — the admission fact is durable across a machine crash, not only a process crash.
+// (review `20261125-0058`, disposition round 114, 2026-11-25)
+//
+// The four arms the finding demanded. (a) the append is readable after the writer is SIGKILLed
+// before any next append; (b) the authority boundary — settlement never treats an un-fsync'd fact
+// as authoritative; (c) the on-disk format is byte-identical to the old appendFileSync line, so the
+// existing ledger arms and the replay rule are unchanged; (d) a refused fsync is a named refusal,
+// never a silent success. A real power cut is out of reach in-process (SEC-01 §4); these arms pin
+// the ordering that makes the machine-crash claim true, and arm (a) pins the observable half.
+// ─────────────────────────────────────────────────────────────────────────────────────────────
+
+test('SEC-01a — a returned admission fact survives a SIGKILLed writer process', async () => {
+  const { spawn } = await import('node:child_process')
+  const { tmpdir } = await import('node:os')
+  const dir = nodeFs.mkdtempSync(pathJoin(tmpdir(), 'ledger-sec01a-'))
+  const ledgerPath = pathJoin(dir, 'facts.jsonl')
+  const writerPath = pathJoin(dir, 'writer.mjs')
+  const moduleUrl = new URL('../src/plugin/vnext/fact-ledger.mjs', import.meta.url).href
+  nodeFs.writeFileSync(writerPath, [
+    `import { openFactLedger } from ${JSON.stringify(moduleUrl)}`,
+    `const ledger = openFactLedger({ path: ${JSON.stringify(ledgerPath)} })`,
+    `ledger.recordAdmission({ callId: 'crash-1', toolName: 'read', decision: 'allow' })`,
+    // The append has RETURNED: whatever fsync ordering the ledger uses has completed. The child then
+    // waits forever so the parent can kill it with no second append and no orderly shutdown.
+    `process.stdout.write('DURABLE\\n')`,
+    `setInterval(() => {}, 1000)`,
+  ].join('\n'))
+  const child = spawn(process.execPath, [writerPath], { stdio: ['ignore', 'pipe', 'pipe'] })
+  const durable = await new Promise((resolve, reject) => {
+    let buffered = ''
+    const timer = setTimeout(() => reject(new Error('the writer never reported a returned admission')), 30000)
+    child.stdout.on('data', (chunk) => {
+      buffered += chunk
+      if (buffered.includes('DURABLE')) { clearTimeout(timer); resolve(buffered) }
+    })
+    child.on('error', (error) => { clearTimeout(timer); reject(error) })
+  })
+  assert.match(String(durable), /DURABLE/u)
+  const exited = new Promise((resolve) => child.on('exit', (code, signal) => resolve({ code, signal })))
+  child.kill('SIGKILL')
+  const end = await exited
+  assert.equal(end.signal, 'SIGKILL', 'the writer died by SIGKILL, not a clean exit')
+  // A FRESH ledger over the same file is the resumed process. The fact must be there.
+  const reader = openFactLedger({ path: ledgerPath })
+  const observed = reader.observe('crash-1')
+  assert.equal(observed.state, 'KNOWN', 'a fact whose record() returned is on the ledger after the writer is killed')
+  assert.equal(observed.admission.decision, 'allow')
+  assert.equal(observed.admission.callId, 'crash-1')
+  assert.equal(reader.readAll().length, 1, 'exactly one record survived; the kill added none')
+})
+
+test('SEC-01b — settlement never treats an un-fsync\'d fact as authoritative', async () => {
+  const { DEFAULT_LEDGER_IO } = await import('../src/plugin/vnext/fact-ledger.mjs')
+  const { tmpdir } = await import('node:os')
+  const dir = nodeFs.mkdtempSync(pathJoin(tmpdir(), 'ledger-sec01b-'))
+  const ledgerPath = pathJoin(dir, 'facts.jsonl')
+  const fileFsyncs = []
+  let fsyncCalls = 0
+  // A REAL io that counts fsyncs: the append must fsync the file, and (on create) the directory.
+  const countingIo = {
+    ...DEFAULT_LEDGER_IO,
+    fsync: (fd) => { fsyncCalls += 1; fileFsyncs.push(fd); nodeFs.fsyncSync(fd) },
+  }
+  const ledger = openFactLedger({ path: ledgerPath, io: countingIo })
+  ledger.recordAdmission({ callId: 'b-1', toolName: 'read', decision: 'allow' })
+  assert.equal(fsyncCalls, 2, 'one file fsync + one directory fsync for the CREATING append')
+  ledger.recordAdmission({ callId: 'b-2', toolName: 'read', decision: 'allow' })
+  assert.equal(fsyncCalls, 3, 'later appends fsync the file once, with NO directory fsync')
+
+  // Now the refusing fsync. The write reaches the page cache and the fsync is refused: the ledger
+  // must roll the bytes back and must NOT answer the callId as known.
+  const refusedPath = pathJoin(dir, 'refused.jsonl')
+  const refusingIo = {
+    ...DEFAULT_LEDGER_IO,
+    fsync: () => { const error = new Error('the platform refused fsync'); error.code = 'EIO'; throw error },
+  }
+  const refused = openFactLedger({ path: refusedPath, io: refusingIo })
+  assert.throws(
+    () => refused.recordAdmission({ callId: 'b-refused', toolName: 'read', decision: 'allow' }),
+    (error) => error?.code === 'LEDGER_NOT_DURABLE',
+    'a refused fsync is a named refusal, never a successful record',
+  )
+  assert.equal(refused.has('b-refused'), false, 'the in-memory authority map did not learn the un-durable fact')
+  assert.equal(refused.observe('b-refused').state, 'UNKNOWN')
+  assert.equal(nodeFs.readFileSync(refusedPath, 'utf8'), '', 'the un-acknowledged bytes were rolled back, so no fresh reader can mistake them for authority')
+  assert.equal(openFactLedger({ path: refusedPath }).observe('b-refused').state, 'UNKNOWN', 'a FRESH ledger reads no authority for the refused fact')
+
+  // The settlement boundary proper: the REAL centre, the REAL store, a durable sink that refuses.
+  const { createExecutionSettlementStore } = await import('../settlement/execution-settlement.ts')
+  const member = {
+    identity: { instanceId: 'inst-1', instanceGeneration: 1, blueprintRevision: 'rev-1' },
+    templateId: 'worker',
+    policy: { read: lane(['/a']), write: lane(['/a']), network: 'deny', revision: 'gen-1' },
+  }
+  const b = bindingFromCompiledMember({ member, agentId: 'session-1', sessionId: 'session-1', workspaceRoot: '/a', owner: 'root-1' })
+  const host = {
+    pre: [], result: [], guards: [],
+    on (event, handler) {
+      if (event === 'tools/pre-execute') host.pre.push(handler)
+      else if (event === 'tools/result') host.result.push(handler)
+      return () => {}
+    },
+    guard (fn) { host.guards.push(fn); return () => {} },
+    get: (name) => (name === 'tools' ? { guard: (fn) => host.guard(fn) } : undefined),
+    async dispatch (exec) {
+      let verdict = { kind: 'allow' }
+      for (const handler of host.pre) verdict = await handler(exec, async () => verdict)
+      if (verdict.kind !== 'allow') return verdict
+      for (const guard of host.guards) {
+        const reason = guard(exec)
+        if (reason !== undefined) return { kind: 'deny', reason }
+      }
+      for (const handler of host.result) handler(exec, { isError: false })
+      return { kind: 'allow' }
+    },
+  }
+  const identityOf = (exec) => ({ executionId: `exec-${exec.callId}`, actorId: 'inst-1', worldId: 'session-1' })
+  const store = createExecutionSettlementStore({ dir: nodeFs.mkdtempSync(pathJoin(tmpdir(), 'centre-sec01b-')) })
+  const centre = installMemberCentre({
+    ctx: host, binding: b, resolveBinding: () => b,
+    recordAdmission: (fact) => refused.recordAdmission(fact),
+    recordExecution: () => {},
+    store, identityOf,
+  })
+  const decision = await host.dispatch({ callId: 'b-settled', name: 'read', arguments: { file_path: '/a/x' } })
+  assert.equal(decision.kind, 'deny', 'an un-fsync-able admission fact refuses the call')
+  assert.match(String(decision.reason), /ADMISSION_LEDGER_UNWRITABLE/u)
+  const settled = store.read('exec-b-settled')
+  // The boundary is the ORDER in `admission-port.mjs#commit`: the durable record comes first, and the
+  // settlement record is opened only after it returns. A refused fsync therefore leaves NO settlement
+  // record at all — not RUNNING, not COMPLETED, not even a REFUSED that could later be read as an
+  // execution that happened. That is the boundary, and it is why the check is "nothing was opened".
+  assert.equal(settled, null, 'no settlement record is opened for an un-durable admission fact')
+  centre.dispose()
+})
+
+test('SEC-01c — the durable append keeps the append-only JSONL format byte-identical', async () => {
+  const { tmpdir } = await import('node:os')
+  const dir = nodeFs.mkdtempSync(pathJoin(tmpdir(), 'ledger-sec01c-'))
+  const ledgerPath = pathJoin(dir, 'facts.jsonl')
+  const ledger = openFactLedger({ path: ledgerPath, now: () => '2026-11-25T00:00:00.000Z' })
+  const written = ledger.recordAdmission({ callId: 'c-format', toolName: 'read', decision: 'allow' })
+  const raw = nodeFs.readFileSync(ledgerPath, 'utf8')
+  // THE format: exactly one JSON object per line, `JSON.stringify(record)` + '\n', no header, no
+  // checksum, no durability marker. The old appendFileSync wrote exactly these bytes.
+  assert.equal(raw, `${JSON.stringify(written)}\n`, 'the on-disk line is byte-identical to the pre-SEC-01 format')
+  assert.equal(raw.endsWith('\n'), true)
+  assert.equal(raw.split('\n').filter((line) => line !== '').length, 1)
+  const reloaded = openFactLedger({ path: ledgerPath })
+  assert.equal(reloaded.observe('c-format').state, 'KNOWN')
+  assert.deepEqual(reloaded.readAll(), [written], 'a reloaded record is the same object, so the digest is unchanged')
+  // The replay rule is unchanged on the new path.
+  assert.throws(() => ledger.recordAdmission({ callId: 'c-format', decision: 'deny' }), (error) => error?.code === 'LEDGER_REPLAY')
+})
+
+test('SEC-01d — a refused file fsync, directory fsync, or close is a named fail-closed error', async () => {
+  const { DEFAULT_LEDGER_IO } = await import('../src/plugin/vnext/fact-ledger.mjs')
+  const { tmpdir } = await import('node:os')
+  const dir = nodeFs.mkdtempSync(pathJoin(tmpdir(), 'ledger-sec01d-'))
+
+  // (1) the FILE fsync refuses -> LEDGER_NOT_DURABLE (already exercised by b; assert the class here)
+  const filePath = pathJoin(dir, 'file.jsonl')
+  const fileRefused = openFactLedger({
+    path: filePath,
+    io: { ...DEFAULT_LEDGER_IO, fsync: () => { const e = new Error('fsync(file) refused'); e.code = 'ENOTSUP'; throw e } },
+  })
+  assert.throws(() => fileRefused.recordAdmission({ callId: 'd-file' }), (error) => error?.code === 'LEDGER_NOT_DURABLE')
+
+  // (2) the DIRECTORY fsync refuses after the file fsync succeeded -> the name is not durable, so the
+  // record is refused AND the bytes are unlinked (no reader can reach an un-durable name).
+  const dirPath = pathJoin(dir, 'dir.jsonl')
+  let calls = 0
+  const dirRefused = openFactLedger({
+    path: dirPath,
+    io: {
+      ...DEFAULT_LEDGER_IO,
+      fsync: (fd) => {
+        calls += 1
+        if (calls === 2) { const e = new Error('fsync(directory) refused'); e.code = 'EISDIR'; throw e }
+        nodeFs.fsyncSync(fd)
+      },
+    },
+  })
+  assert.throws(
+    () => dirRefused.recordAdmission({ callId: 'd-dir' }),
+    (error) => error?.code === 'LEDGER_DIRECTORY_NOT_DURABLE',
+    'a directory fsync that cannot be issued refuses the fact instead of pretending the name is stable',
+  )
+  assert.equal(existsSync(dirPath), false, 'the un-durable file was unlinked, so its name is not readable authority')
+  assert.equal(openFactLedger({ path: dirPath }).observe('d-dir').state, 'UNKNOWN')
+
+  // (3) close refuses AFTER a successful fsync -> the fact is durable but not reported as recorded.
+  const closePath = pathJoin(dir, 'close.jsonl')
+  const closeRefused = openFactLedger({
+    path: closePath,
+    io: { ...DEFAULT_LEDGER_IO, close: (fd) => { nodeFs.closeSync(fd); const e = new Error('close refused'); e.code = 'EIO'; throw e } },
+  })
+  assert.throws(() => closeRefused.recordAdmission({ callId: 'd-close' }), (error) => error?.code === 'LEDGER_CLOSE_FAILED')
+  // The bytes are durable, so the retry meets the replay rule rather than a silent second admission.
+  assert.equal(openFactLedger({ path: closePath }).observe('d-close').state, 'KNOWN')
+
+  // (4) a ledger constructed without a real fsync cannot exist: no silent no-op policy.
+  assert.throws(() => openFactLedger({ path: pathJoin(dir, 'no-io.jsonl'), io: { open: DEFAULT_LEDGER_IO.open } }), (error) => error?.code === 'IO_MISSING')
+})

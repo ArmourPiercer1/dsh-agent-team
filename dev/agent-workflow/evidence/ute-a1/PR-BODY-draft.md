@@ -15,6 +15,34 @@ named in the same row or section.
 | **How to review** | (1) read the audit's corrections table first — it lists every number the report used to get wrong; (2) re-run the gate block in §"Verification on this HEAD" (single commands, ~8 min with the census) and diff the verdict lines; (3) for any capability row, follow its `file:line`/evidence path and check it says what the row claims; (4) treat every `DEV-LIVE` row as unproven for acceptance purposes; (5) read `D-ACCEPTANCE-REPORT.md` §10 before forming a view — the two round-87/88 seams and the four rulings they need are there; (6) do **not** mark this PR ready or merge it — that is the owner's act. |
 | **Gate status at this head** | **Round 112 / `ba3b3b436` + the round-112 commit — the B ladder is GREEN on BOTH hosts: `vnext-b-probe-ladder` 18/18 on rc.2 and 18/18 on rc.5 (16 pass + the same 2 declared non-runs each), leg 251/248/0/3 on both, 0 fail; no product change, no assertion weakened.** **Round 110 / `fc170f929` + the round-110 commit (rc.5 TEST MATRIX; no driver re-run, no row moves):** `dispatch-tests --run --leg ute-vnext-a1` **251 tests / 248 pass / 0 fail / 3 skipped** (exit 0, leg digest unchanged `sha256:edd4f1c4…`); `test-catalog --max-uncollected 41 --max-excluded 7` **tests=785, collected=733, uncollected=38, excluded=14, findings=0** (digest `sha256:da8a452d…` unchanged; no new scannable file); `ute-cut-closure --check` **pass** `cut(0/148)`; `ute-p0-assets --check` **pass** `cut(148/148) modules=37 files=180 lines=69512`; `docs-sync --check` **docs=193 findings=0 blocking=0**; `place-dist-glue` **35 placements** byte-identical; `eb3-ci-required` **pass workflows=11 findings=0**; bound vitest (`ci-integration`, 15 suites) **PASS 238 passed / 0 failed**; **UTE G1 nine-file argv 89/89**; `EB3-RUN-MANIFEST` **pass records=600 strict=0 incomplete=11 findings=0**; `ci-pr-gate --full --census-captures 2` **PASS 10/10** (293.5 s, census `599f/7424l` twice, identical identity sets). **rc.5 population, measured:** 759 tests / 737 pass / 21 fail / 1 skip through the ONE selector — 18 are the open B-ladder `mode` arms (`vnext-b-probe-ladder.test.mjs:273` vs rc.5 `tools/lib/index.js:407`, a deterministic failure in ~0.5 s, not a hang), 1 `a5sf-fs-contract` arm that measures the rc.2 tool package, 2 `m7a-real-slice-host-state` arms that boot the rc.2 census base; three test-side rc.5 drifts adapted with observation only (ADM-96/97 `AbortSignal`; selected-host module resolution + rc.5 executor plugin + batch dispatch) → `admission` 0 fail on both hosts, `a5sf-harness` 10/10 both, `a5sf-native-route-c` **8/8 both**. Disclosed gap: **40 vitest suites that load host code stay rc.2-only** (Vite resolves the repo install before the Node host loader — measured; a Vite alias would be a second selection mechanism). Full table: `dev/agent-workflow/evidence/ute-a1/RC5-TEST-MATRIX.md`. |
 
+## ROUND 114 — the three security findings are closed (no capability row moves, PR stays DRAFT)
+
+Head `b5da23b4b` + the round-114 commit (named in the settlement comment), branch `vnext/a1-cut`. This
+round changes **one product file** (`fact-ledger.mjs` + its dist mirror), **one test file** (four new
+arms), **one new `tests/checks` arm**, evidence docs, and the D4 README correction. **PR #822 stays
+DRAFT; no history rewrite, no merge, no upstream patch, no PRODUCT-PROVEN claim.**
+
+| finding | disposition | what proves it |
+| --- | --- | --- |
+| **SEC-01** ledger append not `fsync`'d | **FIXED** | `fact-ledger.mjs`: `open(O_APPEND) → write → fsync(file) → close`, plus one directory fsync on create; admission registered in memory only after the durable append. **Policy = fsync-before-return, not a batched window** (bounded: one fsync/record + one dir fsync for the file's first record). Refused fsync is named and fail-closed (`LEDGER_NOT_DURABLE` / `LEDGER_DIRECTORY_NOT_DURABLE` / `LEDGER_CLOSE_FAILED` / `LEDGER_UNRECOVERABLE`), bytes rolled back, settlement never opened. Format/ordering/digest/replay unchanged. Arms `SEC-01a…d`. |
+| **SEC-02** d4 README inverts the routed-wake verdict | **FIXED (history retained)** | `d4/README.md` corrected 2026-11-25 with a dated banner; round-87/88 text kept as `[HISTORICAL]`; §2 now transcribes `results.json` at head `41d579119` (all seven routed sub-judges PROVEN; `overall` BLOCKED only for the declared `d4:ask-execute-process`). Machine check `tests/checks/d4-evidence-consistency.test.mjs` (head/judge-set/verdict/`overall` equality + no current-tense REFUTED about a PROVEN judge outside a historical block). Mutation control: RED on the pre-correction README. |
+| **SEC-03** host-capability tools have no managed lane | **DECLARED — no behaviour change** | `CAPABILITY-MATRIX-C.md` row **C-host-capability** + DECLARED UNCOVERED BOUNDARY status, and the single acceptance table **row 35** in `D-ACCEPTANCE-REPORT.md`. |
+| **SEC-04** ungoverned rows outside every invariant | **DECLARED (unchanged)** | still a labelled product mode; no fix proposed. |
+
+**No finding remains open.** `SECURITY-REVIEW-20261125.md` carries the per-finding disposition table and
+its §3/§7 are updated; `D-ACCEPTANCE-REPORT.md` has the round-114 block; `CAPABILITY-MATRIX-C.md` has the
+round-114 section. **No capability level moves and no row is PRODUCT-PROVEN.**
+
+**Gates at this head (all exit 0; logs in `round114/`):** `dispatch-tests --run --leg ute-vnext-a1`
+**255 tests / 252 pass / 0 fail / 3 skip** (the 4 SEC-01 arms added); `test-catalog --max-uncollected 41
+--max-excluded 7` **tests=786, collected=734, uncollected=38, excluded=14, findings=0** (**new
+scannable-surface delta = +1 test**, the `d4-evidence-consistency` arm; booked in `round114/README.md`);
+`ute-cut-closure --check` **pass** `cut(0/148)`; `ute-p0-assets --check` **pass** `cut(148/148)`; `docs-sync
+--check` **docs=193 findings=0 blocking=0**; `place-dist-glue` **35 placements** byte-identical;
+`eb3-ci-required` **pass workflows=11 findings=0**; bound vitest (`ci-integration`, 15 suites) **PASS 238
+passed / 0 failed**; UTE G1 nine-file argv **89/89**; `EB3-RUN-MANIFEST` **pass records=602 strict=0
+incomplete=11 findings=0**; `ci-pr-gate --full --census-captures 2` **PASS 10/10**.
+
 ## ROUND 113 — the C1–C18 sign-off and the adversarial security review (evidence only; no row moves)
 
 Review `20261125-0058` Stage C. Two documents, both evidence-bound and both independent of the older
@@ -35,12 +63,14 @@ NOT PROVEN 0 · PRODUCT-PROVEN 0.** Folded back to the contract's granularity (1
 already-recorded owner decisions (PTC = `ADR-ptc-unsupported.md`; per-call process `ask` =
 `SCOPE-subprocess-ask.md`), not gaps. **No row is upgraded by the non-required candidate gate.**
 
-**Security findings (not fixed):** SEC-01 the admission ledger append is not `fsync`'d
+**Security findings (round-113 state — all four DISPOSITIONED in round 114, see the section above):**
+SEC-01 the admission ledger append is not `fsync`'d
 (`fact-ledger.mjs:126`; process-crash durable, machine-crash not); SEC-02 `d4/README.md` still inverts the
 routed-wake verdict against `results.json`; SEC-03 host-capability tools have no managed I/O lane; SEC-04
-ungoverned rows are outside every invariant. **No managed Admission / Provider-OS / Settlement / Control /
-Stop invariant was found BROKEN at this head.** The hostile-code threat model is not met (six-item list in
-the review).
+ungoverned rows are outside every invariant. **[ROUND 114: SEC-01 FIXED, SEC-02 FIXED with history
+retained, SEC-03/SEC-04 DECLARED.]** **No managed Admission / Provider-OS / Settlement / Control /
+Stop invariant was found BROKEN at that head.** The hostile-code threat model is not met (six-item list in
+the review; its fsync item is now closed).
 
 **Gates at this head (all exit 0; logs in `round113/`):** `dispatch-tests --run --leg ute-vnext-a1`
 **251 tests / 248 pass / 0 fail / 3 skip** (set `sha256:edd4f1c4…`); `test-catalog --max-uncollected 41
