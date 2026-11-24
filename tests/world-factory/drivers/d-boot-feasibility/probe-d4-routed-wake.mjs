@@ -81,7 +81,7 @@ import {
 } from 'node:fs'
 import { createConnection } from 'node:net'
 import { createRequire } from 'node:module'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { zstdDecompressSync } from 'node:zlib'
 
@@ -92,6 +92,10 @@ import { createA5sfHarness } from '../../lib/a5sf-harness.mjs'
 import { settleDevLiveLease } from '../../lib/dev-live-slots.mjs'
 import { preRegisterDevLiveBudget, resolveHeadCommit } from '../../suites/150-a5sf-read.mjs'
 import { messagesOf, surfaceNamesOf, textOf } from '../../lib/u6-fs-assembly.mjs'
+// THE CONTRACT ITSELF (P0 fix, review 20261124-1341): the probe no longer trusts that the record
+// it just wrote is a valid RUN record. It asks the same validator `EB3-RUN-MANIFEST` runs — the
+// one home of the subset/arms/cases[].id/overall algebra — and fails the run when it refuses.
+import { context as runManifestContext, validateRunRecord } from '../../../../scripts/eb3-run-manifest.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(HERE, '..', '..', '..', '..')
@@ -99,6 +103,10 @@ const EVIDENCE = join(REPO_ROOT, 'dev', 'agent-workflow', 'evidence', 'd-boot-fe
 const RUNS = join(EVIDENCE, 'runs')
 const ARCHIVE = join(EVIDENCE, 'archive')
 const LEDGER_PATH = join(EVIDENCE, 'run-ledger.jsonl')
+/** Records this process wrote that the RUN contract REFUSED (see the self-check in probeOnce). */
+const RECORD_SELF_CHECK_FAILURES = []
+/** The validator reports paths repo-relative (POSIX), like `git ls-files` does. */
+const recordRelPath = (abs) => relative(REPO_ROOT, abs).split('\\').join('/')
 // The FS face's dev-live grant (scope DEV-LIVE, face 'FS Provider', world
 // u5a5sfdev1) — a scope authorisation, never a candidate claim.
 const GRANT_PATH = join(REPO_ROOT, 'dev', 'agent-workflow', 'evidence', 'a5sf-fs-devlive', 'dev-live-grant.json')
@@ -171,17 +179,47 @@ const MK_RESUME = 'DBOOT_D4_OFFICER_RESUME'
 const MK_WORK3 = 'DBOOT_D4_WORKER_THIRD_ASK'
 const HOLD_STEPS = 40
 const CALL_OFF_HOLD = (step) => `call-d4-officer-hold-${String(step)}`
-const CASE_ID = {
+/**
+ * EVERY judge this probe answers is a RUN case with a STABLE id, and `D4_JUDGES` is the record's
+ * DECLARED case set: `selectedCases === allCases === D4_CASE_IDS`, every declared case is run, so
+ * the record says `subset: false` and needs no `arms`.
+ *
+ * P0 (review 20261124-1341): this map used to omit the eight keys marked below. `CASE_ID[id]` was
+ * then `undefined`, and run-record's `Map` collapsed all of those judges into ONE row with no
+ * `id` (`cases[4].id` missing in both boots) while `totalCases` grew past `selected`, so
+ * `finalize()` flipped the record to `subset: true` with no `arms` — two RUN_SCHEMA findings
+ * from one omission. The map is now TOTAL, the emitter refuses an unmapped judge below, and the
+ * record is validated against `scripts/eb3-run-manifest.mjs` after it is written.
+ */
+const D4_JUDGES = Object.freeze([
+  'enablement', 'officerUp', 'officerBinding', 'routedWake',
+  // ROUND 97 — the seven routed-wake propositions (documented in judgeRoutedWake below).
+  'caseCreated', 'routerOfficer', 'wakeDelivered', 'officerDecides', 'askExecutesAfterReview',
+  'duplicateRoute', 'stickyStop',
+  'refusal', 'askExecute', 'askExecute2', 'askExecuteProcess', 'askDenied', 'askStopped',
+])
+const CASE_ID = Object.freeze({
   enablement: 'd4:enablement',
   officerUp: 'd4:officer-up',
   officerBinding: 'd4:officer-binding',
   routedWake: 'd4:routed-wake',
+  // was missing before the P0 fix (folded into an anonymous row)
+  caseCreated: 'd4:case-created',
+  routerOfficer: 'd4:router-officer',
+  wakeDelivered: 'd4:wake-delivered',
+  officerDecides: 'd4:officer-decides',
+  askExecutesAfterReview: 'd4:ask-executes-after-review',
+  duplicateRoute: 'd4:duplicate-route',
+  stickyStop: 'd4:sticky-stop',
   refusal: 'd4:refusal',
   askExecute: 'd4:ask-execute',
   askDenied: 'd4:ask-denied',
   askStopped: 'd4:ask-stopped',
   askExecute2: 'd4:ask-execute-2',
-}
+  // was missing before the P0 fix (the row that lost its `id`)
+  askExecuteProcess: 'd4:ask-execute-process',
+})
+const D4_CASE_IDS = Object.freeze(D4_JUDGES.map((key) => CASE_ID[key]))
 const TEAM_TOOL_NAMES = [
   'team_delegate', 'team_collect', 'team_resolve_control', 'team_list_pending_control',
   'team_create_member', 'team_archive_member',
@@ -1623,7 +1661,10 @@ async function probeOnce({ index, head, grant }) {
   const record = createRunRecord({
     runId,
     suite: 'a5sf-live-d4-probe',
-    selectedCases: ['d4:enablement', 'd4:officer-up', 'd4:officer-binding', 'd4:routed-wake', 'd4:refusal', 'd4:ask-execute', 'd4:ask-denied', 'd4:ask-stopped'],
+    // A FULL run of the declared set: the probe runs every one of its judges, so `selectedCases`
+    // and `allCases` are the same list and the record says `subset: false` with no `arms`.
+    selectedCases: [...D4_CASE_IDS],
+    allCases: [...D4_CASE_IDS],
     bindings: runBindings(head, grant),
     ledgerPath: LEDGER_PATH,
     recordClass: 'DEV-LIVE',
@@ -2606,13 +2647,25 @@ async function probeOnce({ index, head, grant }) {
     writeFileSync(join(bootDir, 'summary.txt'), `${renderSummary(result)}\n`)
     // The RUN record carries the shipped verdict vocabulary; the probe's own
     // PROVEN/REFUTED proposition stays in `verdicts.json` and each case's detail.
+    // An unmapped judge is a REFUSAL, never an anonymous row: a case without a stable
+    // `id` is a RUN_SCHEMA finding and (before the P0 fix) silently overwrote the
+    // other unmapped judges in run-record's Map.
     for (const [id, v] of Object.entries(verdicts)) {
-      record.addCase(CASE_ID[id], v.verdict === 'PROVEN' ? 'PASS' : 'FAIL', {
+      const caseId = CASE_ID[id]
+      if (typeof caseId !== 'string' || caseId === '') {
+        throw new Error(`judge ${JSON.stringify(id)} has no stable RUN case id — refusing to write an anonymous case (EB3-RUN-MANIFEST RUN_SCHEMA)`)
+      }
+      record.addCase(caseId, v.verdict === 'PROVEN' ? 'PASS' : 'FAIL', {
         proposition: v.proposition,
         probeVerdict: v.verdict,
         failing: v.failing,
         clauses: v.clauses,
       })
+    }
+    const undeclared = Object.keys(verdicts).filter((id) => !D4_JUDGES.includes(id))
+    const unrun = D4_JUDGES.filter((id) => verdicts[id] === undefined)
+    if (undeclared.length > 0 || unrun.length > 0) {
+      throw new Error(`the judge set and the record's declared case set disagree: undeclared=${JSON.stringify(undeclared)} unrun=${JSON.stringify(unrun)}`)
     }
     log(`[boot${String(index)}] overall=${overall} (${String(result.elapsedMs)}ms)`)
   } catch (error) {
@@ -2635,9 +2688,31 @@ async function probeOnce({ index, head, grant }) {
     writeFileSync(join(bootDir, 'teardown.json'), `${JSON.stringify({ teardown, refusalTeardown }, null, 2)}\n`)
     try {
       const final = record.finalize()
-      writeFileSync(join(bootDir, 'run-record.json'), `${JSON.stringify(final, null, 2)}\n`)
+      const recordPath = join(bootDir, 'run-record.json')
+      writeFileSync(recordPath, `${JSON.stringify(final, null, 2)}\n`)
       writeFileSync(join(bootDir, 'run-record.txt'), `${formatSummary(final)}\n`)
-    } catch { /* record write is best-effort on abort */ }
+      // THE SELF-CHECK (P0, review 20261124-1341): grade the bytes just written with the SAME
+      // validator the hosted `EB3-RUN-MANIFEST` step runs. A record this probe produced but the
+      // repository's own contract refuses is a FAILED run, not evidence — the previous emitter
+      // wrote `cases[4].id`-missing + `subset: true` records for two review rounds because
+      // nothing on the producer side ever asked the consumer's rule.
+      const rel = recordRelPath(recordPath)
+      const { findings } = validateRunRecord({ record: final, rel, ctx: runManifestContext(REPO_ROOT) })
+      const check = { pass: findings.length === 0, rel, findings, at: new Date().toISOString() }
+      writeFileSync(join(bootDir, 'run-record-check.json'), `${JSON.stringify(check, null, 2)}\n`)
+      if (findings.length === 0) {
+        log(`[boot${String(index)}] RUN-RECORD SELF-CHECK pass (${rel}: schema=${String(final.schema)} cases=${String(final.cases.length)} subset=${String(final.subset)} overall=${String(final.overall)})`)
+      } else {
+        RECORD_SELF_CHECK_FAILURES.push(check)
+        for (const f of findings) log(`[boot${String(index)}] RUN-RECORD SELF-CHECK FAIL ${f.code} ${f.detail}`)
+        log(`[boot${String(index)}] RUN-RECORD SELF-CHECK FAIL — EB3-RUN-MANIFEST would refuse ${rel}; the run is NOT evidence (see run-record-check.json)`)
+      }
+    } catch (error) {
+      // A record that cannot be finalised, written or validated is not evidence either: fail
+      // the run instead of leaving a half-written artifact that a later gate discovers.
+      RECORD_SELF_CHECK_FAILURES.push({ pass: false, rel: recordRelPath(join(bootDir, 'run-record.json')), findings: [], error: String(error?.message ?? error) })
+      log(`[boot${String(index)}] RUN-RECORD SELF-CHECK ERROR ${String(error?.message ?? error)}`)
+    }
   }
   return result ?? { boot: index, overall: 'ERROR', failed: true, error: String(failure?.message ?? failure) }
 }
@@ -2688,6 +2763,60 @@ function archivePriorRuns() {
     }
   }
   mkdirSync(RUNS, { recursive: true })
+  retireSupersededRunRecords()
+}
+
+/**
+ * A SUPERSEDED RUN RECORD IS NOT REWRITTEN, AND NOT SILENTLY COMMITTED AS EVIDENCE.
+ *
+ * `EB3-RUN-MANIFEST` grades every tracked `*.json` whose `schema` is `u5-run-record/1`. The
+ * pre-P0 emitter wrote records that contract refuses (`cases[i].id` missing, `subset: true`
+ * with no `arms`), and `archive-before-start` copied them into `archive/` on every re-run —
+ * so the invalid bytes stayed in the tree and kept the hosted manifest step red long after
+ * the emitter was fixed. Rewriting them would be laundered history; deleting them would
+ * destroy the audit trail.
+ *
+ * So they are RETIRED: the bytes are left EXACTLY as produced, the file is renamed to
+ * `run-record.json.superseded` (not a `.json` RUN record, and the name says why), and every
+ * retirement is listed with its findings in `archive/P0-SUPERSEDED-RUN-RECORDS.json`. The
+ * archive remains fully readable; nothing is claimed to be valid that was not.
+ */
+function retireSupersededRunRecords() {
+  if (!existsSync(ARCHIVE)) return []
+  const retired = []
+  const walk = (dir) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const abs = join(dir, entry.name)
+      if (entry.isDirectory()) { walk(abs); continue }
+      if (entry.name !== 'run-record.json') continue
+      let record
+      try { record = JSON.parse(readFileSync(abs, 'utf8')) } catch { record = null }
+      const rel = recordRelPath(abs)
+      const { findings } = validateRunRecord({ record, rel, ctx: runManifestContext(REPO_ROOT) })
+      if (findings.length === 0) continue
+      const to = `${abs}.superseded`
+      renameSync(abs, to)
+      retired.push({
+        from: rel,
+        to: recordRelPath(to),
+        codes: findings.map((f) => f.code),
+        findings: findings.map((f) => f.detail),
+      })
+      log(`retired superseded RUN record (contract-invalid, bytes unchanged) ${rel} -> ${recordRelPath(to)}: ${findings.map((f) => f.code).join(',')}`)
+    }
+  }
+  walk(ARCHIVE)
+  if (retired.length > 0) {
+    const inventoryPath = join(ARCHIVE, 'P0-SUPERSEDED-RUN-RECORDS.json')
+    const prior = existsSync(inventoryPath) ? JSON.parse(readFileSync(inventoryPath, 'utf8')) : { note: '', records: [] }
+    const records = [...(prior.records ?? []), ...retired]
+    writeFileSync(inventoryPath, `${JSON.stringify({
+      note: 'RUN records written by the pre-2026-11-24 emitter (P0 review 20261124-1341). Their bytes are UNCHANGED; they are renamed *.json.superseded so they are not graded as current RUN records, and EB3-RUN-MANIFEST is NOT relaxed. Superseded by the records in runs/boot0*/run-record.json, which the probe self-checks against the same validator before the run can pass.',
+      retiredAt: new Date().toISOString(),
+      records,
+    }, null, 2)}\n`)
+  }
+  return retired
 }
 
 async function main() {
@@ -2726,11 +2855,23 @@ async function main() {
   const allRan = results.length === BOOTS_WANTED && results.every((r) => r?.failed !== true)
   const pairOk = BOOTS_WANTED < 2 || agreement.agreeing === true
   const blocked = results.every((r) => r?.overall === 'BLOCKED')
-  log(`RESULT evidence-complete=${String(allRan && pairOk)} allBooted=${String(allRan)} blocked=${String(blocked)} (${String(results.length)}/${String(BOOTS_WANTED)} boots; agreeing pair=${String(agreement.agreeing)})`)
+  // THE RUN-LEVEL SELF-CHECK VERDICT. A boot may measure every judge correctly and still
+  // produce a record the repository refuses; that run is NOT evidence and must not exit 0/3.
+  const recordsOk = RECORD_SELF_CHECK_FAILURES.length === 0
+  writeFileSync(join(EVIDENCE, 'run-record-self-check.json'), `${JSON.stringify({
+    pass: recordsOk,
+    checked: BOOTS_WANTED,
+    failures: RECORD_SELF_CHECK_FAILURES,
+    at: new Date().toISOString(),
+  }, null, 2)}\n`)
+  log(`RESULT evidence-complete=${String(allRan && pairOk)} allBooted=${String(allRan)} blocked=${String(blocked)} runRecordsValid=${String(recordsOk)} (${String(results.length)}/${String(BOOTS_WANTED)} boots; agreeing pair=${String(agreement.agreeing)})`)
   // A BLOCKED probe is the intended honest outcome of this round; it is not a
   // green acceptance. The exit code separates "the probe ran and measured the
   // blocker" (3) from "the probe itself failed" (1).
-  if (!allRan || !pairOk) process.exitCode = 1
+  if (!recordsOk) {
+    log(`PROBE FAILED: ${String(RECORD_SELF_CHECK_FAILURES.length)} RUN record(s) were refused by EB3-RUN-MANIFEST — see run-record-self-check.json`)
+    process.exitCode = 1
+  } else if (!allRan || !pairOk) process.exitCode = 1
   else if (blocked) process.exitCode = 3
 }
 
