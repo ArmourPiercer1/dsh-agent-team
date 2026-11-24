@@ -36,7 +36,13 @@ const deepClone = (v) => JSON.parse(JSON.stringify(v))
 test('eb3-ci-required: the unmodified tree passes from the real CLI (positive control)', () => {
   const r = spawnSync(process.execPath, [SCRIPT], { encoding: 'utf8' })
   assert.equal(r.status, 0, r.stdout + r.stderr)
-  assert.match(r.stdout, /EB3-CI-REQUIRED pass workflows=10 findings=0/)
+  // The count is the tree's real workflow population, not a literal that drifts silently when a
+  // workflow is added: the CLI must grade exactly the files this test reads. The literal below is a
+  // deliberate tripwire — adding a workflow must also classify it in dev/ci/eb3-ci-manifest.json
+  // (a required layer, or knownNonRequired with a reason), and this assertion forces that review.
+  const expected = workflowFiles().size
+  assert.equal(expected, 11, 'workflow population changed: classify the new workflow in dev/ci/eb3-ci-manifest.json')
+  assert.match(r.stdout, new RegExp(`EB3-CI-REQUIRED pass workflows=${String(expected)} findings=0`))
 })
 
 test('eb3-ci-required: a manifest dispatch cmd with an appended --json / --list is EXTRA_ARGUMENT', () => {
