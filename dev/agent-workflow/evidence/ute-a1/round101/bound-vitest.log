@@ -1,0 +1,2 @@
+EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0 clock_ms=20000
+EXIT:0

@@ -3484,3 +3484,39 @@ by construction); it compares the stable facts about the same execution (bytes/s
 **Levels.** No row moves to PRODUCT-PROVEN. FS: unchanged. Process: MECHANISM only. The live process
 gap is the next owner-ruled step and is stated verbatim in `ADR-approved-ask-receipt.md`
 §"LIVE status of the process face".
+
+---
+
+## Round 101 (2026-11-24) — the ask-under-allow reds: ONE product defect, TWO stale oracles, ONE stale pin
+
+Branch `vnext/a1-cut` · PR #822 (DRAFT) · evidence `dev/agent-workflow/evidence/ute-a1/round101/`.
+The D4 manifest fix (round 100) unmasked a pre-existing red on the hosted `tinf-instruments` leg
+(`803 tests / 788 pass / 9 fail`): the ask-under-allow arms plus the `DP*` / `PD29-*` aggregates.
+Each arm was adjudicated against the owner ruling `docs/reviews/20261124-0151.txt` §2 (R3) and the
+round-94 G11 law, not by reading the failure message alone.
+
+| arm | oracle | product | verdict | change |
+| --- | --- | --- | --- | --- |
+| `read-binding-subtree-ask-only` | `ask/deny/deny` (EX-3) | `ask/ask/deny` | **oracle stale** (pre-G11 collapse) | case → `ask/ask/ask` AGREE, cited to G11 + R3; the independent oracle's `intersectDeclaredLanes` now keeps an ask iff **neither** lane answers `deny`, matching the shipped `intersectPathRuleSets`; EX-3 rewritten to the surviving drop reason (a real deny on either side). |
+| `write-binding-subtree-ask-under-allow` | `ask/ask/ask` | `ask/deny/ask` | **product wrong (observability)** | `fs.ts` correctly refuses the ask on the R3 receipt path (`IO_ASK_RECEIPT_REFUSED`); `guard-observability.ts#laneOfRefusal` mislabelled that refusal `deny`, erasing the lane. It now maps `IO_ASK_RECEIPT_REFUSED` → `ask`. No lane was promoted to allow and no declared deny was lost. |
+| `write-binding-subtree-allow-symlink-into-ask` | `ask/ask/ask` | `ask/deny/ask` | **product wrong, same mapping** | symlink resolution was verified INTACT (authored decision → `realpath` → precedence re-applied on the resolved identity → receipt verifier); only the fact's lane was mislabelled. Zero writes / unchanged disk / code-equals-fact all still asserted. |
+| `write-member-subtree-ask-under-allow` | `ask/ask/ask` | `ask/deny/ask` | **product wrong, same mapping** (member realm) | same fix. |
+| `DP1` / `DP-SUM` / `DP-REFUSE` | reviewed triples / table / one-`ask`-fact rule | dependent on the four arms; DP-REFUSE also demanded the R4 code on every face | **dependent aggregates** | DP-REFUSE now pins the code PER FACE: read ⇒ `IO_ASK_REQUIRES_APPROVAL` (R4), write ⇒ `IO_ASK_RECEIPT_REFUSED` (R3); every other clause (ONE fact, zero bytes, zero writes, unchanged disk, AGREE) is unchanged. The case space grew 42 → 45. |
+| `PD29-STOP-SEQUENCE` / `PD29-MUTATION` | the stop facts read from `agent-bindings.mjs` | no `interrupt`/`disarmStoppedGoal` there | **STALE PIN — not a Stop regression** | round 90 moved the lane VERBATIM into `stop-drain-lane.mjs` (`createStopDrainLane`, constructed once by the glue); the sequence `cancel(hook) → disarm → durable CAS pause` is intact. The pin reads the owning module; new `PD29-WIRING` proves the glue mounts it; `PD29-PIN` also proves the module is new at the base commit; `PD29-MUTATION` mutates the owning file. |
+
+**Not a weakening.** The new expectation is strictly more permissive ONLY for the legal pure-ask case
+the ruling requires: an ask at a location BOTH lanes permit is preserved as `ask` instead of collapsing
+to `deny`. It grants nothing (`ask` still requires approval and the guard still refuses without a
+receipt) and every other locator stays denied. Three controls keep what the old expectation protected:
+`read-binding-subtree-pure-ask-lane` (G11's `{allow:[], ask:[p]}` survives as `ask`),
+`read-binding-subtree-pure-ask-lane-outside` (the same lane still DENIES a locator it does not cover),
+and `read-binding-subtree-ask-dropped-by-ceiling-deny` (a real deny on either side still drops the ask).
+
+**Counts that moved.** `tinf-instruments`: `tests 803 → 807`, `pass 788 → 801`, `fail 9 → 0`,
+`skipped 6 → 6` (four new tests: three case-space controls + `PD29-WIRING`; no arm skipped). Catalog
+unchanged (`tests=785`, uncollected 38, excluded 14; no test file added). `ute-vnext-a1`: 248 / 245 /
+0 / 3, leg digest unchanged. `dev/agent-workflow/evidence/ute-a1/round101/` carries the gate logs.
+
+**Levels.** No level moves: no capability was added or removed. FS ask-under-allow remains at its
+existing level; the product change only makes the OBSERVED LANE honest after R3 made the write-face
+refusal code richer. The R3 receipt contract, the pure-ask law and the G11 fix are unchanged.

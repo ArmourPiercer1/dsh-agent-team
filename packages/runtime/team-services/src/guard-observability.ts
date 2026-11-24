@@ -71,6 +71,17 @@ export type GuardConsultRealm = 'member' | 'binding'
  * the fact must report `ask` (not `deny`) so the three-way comparison sees the
  * lane the author declared while the effect still shows a refusal. It is a
  * MAPPING of the guard's own code, not a new decision.
+ *
+ * `IO_ASK_RECEIPT_REFUSED` is the SAME mapping for the native FS mutation face:
+ * an `ask` there is satisfied ONLY by the R3 ApprovedAskReceipt (owner ruling
+ * `docs/reviews/20261124-0151.txt` §2), so with no receipt in scope the guard
+ * refuses the ask — it never promotes it to a lane `allow`, and it is not a
+ * declared `deny` either. Reporting that refusal as `deny` erased the lane the
+ * author declared and made the three-way comparison read a lane loss (round
+ * 101, `write-*-ask-under-allow` / `write-binding-subtree-allow-symlink-into-ask`).
+ * Every receipt refusal in `APPROVED_ASK_RECEIPT_REFUSAL_CODES` is reached only
+ * from `decision.decision === 'ask'` in `fs.ts`; a `deny` is thrown earlier and
+ * keeps its own code.
  */
 export type GuardConsultDecision = 'allow' | 'deny' | 'ask'
 
@@ -259,7 +270,9 @@ export class GuardConsultTransportError extends Error {
 
 /** Map a guard refusal code to the lane it reports (see the type's doc). */
 function laneOfRefusal(code: TeamIoDenialCode): GuardConsultDecision {
-  return code === 'IO_POLICY_UNSUPPORTED' || code === 'IO_ASK_REQUIRES_APPROVAL' ? 'ask' : 'deny'
+  return code === 'IO_POLICY_UNSUPPORTED' || code === 'IO_ASK_REQUIRES_APPROVAL' || code === 'IO_ASK_RECEIPT_REFUSED'
+    ? 'ask'
+    : 'deny'
 }
 
 /**
