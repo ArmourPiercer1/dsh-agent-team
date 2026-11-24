@@ -195,7 +195,7 @@ rc.5 (`TEAM_TEST_HOST=next`, `--boots 2`) and both are **PROVEN**.
 (`resolveDrainSeam`) now resolves the drain seam by PUBLIC NAME capability — `drainDescendants`
 (rc.5) first, then `drainContinuableDescendants` (rc.2) — and passes the parents verbatim (`:238`,
 `:248`). A host exposing neither still fails closed through the same typed
-`recursive-drain-unavailable` path (`:241`). The evidence arm is the bound vitest file
+`recursive-drain-unavailable` path (`:241`). The evidence arm sits in the already-collected vitest file
 `packages/runtime/test/t12a-m3-recursive-drain.test.ts`: **M3-6** drives a double that exposes ONLY
 the rc.5 name and asserts the same drain + honest count (`:171`), and **M3-7** asserts that a service
 with `listDescendants` but neither public drain name still refuses (`:181`). The driver observation
@@ -241,9 +241,21 @@ typed code and zero added requests. Two-run agreement `agreeing=true differing=[
 `RESULT PASS (2/2 boots; agreeing pair=true)`; admissions/guard facts identical on both boots
 (`aAdmissions=10`, `bAdmissions=10`, `aGuardFacts=14`, `bGuardFacts=16`).
 
+**The rc.5 candidate gate is green at this head** (`acc72e58e`):
+`CANDIDATE-GATE pass host=next judges=31 proven=30 known-refuted=1 env-limited=0 drivers=4 records=8
+agreement=true` — the only non-PROVEN id is the enumerated `d4:ask-execute-process`
+(`dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-24T16-32-03-294Z/verdict.json`). The
+round-105 rc.5 column that read `fail` is therefore closed **by the product fix**, not by an allowance:
+`KNOWN_REFUTED` still holds exactly one literal id. All other round-108 gates (dispatch leg 251/248/0/3,
+catalog 785/38, cut-closure, p0-assets, docs-sync, place-dist-glue 35, eb3-ci-required 11, bound
+`ci-integration` 238, UTE G1 argv 89/89, run-manifest 552, window red=0/0, `ci-pr-gate --full
+--census-captures 2` PASS 10/10) are tabulated in
+`dev/agent-workflow/evidence/ute-a1/round108/README.md` §6, including the one disclosed
+`u6-mcp-017-regression` loopback-timeout flake on the first `ci-pr-gate` attempt.
+
 **Levels:** no row moves. Both rows stay **DEV-LIVE**; neither becomes PRODUCT-PROVEN (no bound,
 required gate exercises them). The rc.5 column of the single table is now green for every row except
-the two enumerated/ruled refusals (`d4:ask-execute-process`, row 30) and the ENV-LIMITED OS controls.
+the enumerated/ruled refusal (`d4:ask-execute-process`, row 30) and the ENV-LIMITED OS controls.
 
 ### Still open — the owner's next list (NOT done this round)
 

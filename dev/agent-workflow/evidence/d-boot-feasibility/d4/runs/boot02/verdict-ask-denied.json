@@ -10,7 +10,7 @@
     {
       "id": "denied-through-real-control-path",
       "ok": true,
-      "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1xxrzo21k29yc31rawhls0qn\\\",\\\"decision\\\":\\\"deny\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":4,\\\"decisionSequence\\\":5,\\\"createdAt\\\":\\\"2026-11-24T14:01:40.914\""
+      "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1xxrzo21k29yc31rawhls0qn\\\",\\\"decision\\\":\\\"deny\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":4,\\\"decisionSequence\\\":5,\\\"createdAt\\\":\\\"2026-11-24T16:50:23.003\""
     },
     {
       "id": "deny-fact-recorded",

@@ -1,9 +1,9 @@
 {
-  "at": "2026-11-24T13:45:49.684Z",
-  "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-43-59Z-next",
+  "at": "2026-11-24T16:39:32.443Z",
+  "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-38-14Z-next",
   "aRead": {
     "executionId": "exec-dd89435a21b0e5d2052c725b301bda0fc1e88071",
-    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-43-59Z-next/centre/settlement/inst-1vd6cy21kl6k/exec-dd89435a21b0e5d2052c725b301bda0fc1e88071.settlement.json",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-38-14Z-next/centre/settlement/inst-1vd6cy21kl6k/exec-dd89435a21b0e5d2052c725b301bda0fc1e88071.settlement.json",
     "present": true,
     "state": "COMPLETED",
     "dispatch": "quiesced",
@@ -24,20 +24,20 @@
       "instanceGeneration": 0,
       "toolName": "read",
       "axis": "fs.read",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-43-59Z-next/workspace/team-a/in-lane-a.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-38-14Z-next/workspace/team-a/in-lane-a.txt",
       "definitionSource": "",
-      "policyGeneration": "a5sf1:a2051716d8b65ee36a71b29070667cf2",
+      "policyGeneration": "a5sf1:235bb3ddb203eb0b63993f095608f14e",
       "blueprintRevision": "",
       "owner": "session-dboot-d3-root",
       "decision": "allow",
       "overlayOutcome": "no-opinion",
       "kind": "invocation-authority",
-      "at": "2026-11-24T13:45:43.886Z"
+      "at": "2026-11-24T16:39:27.004Z"
     }
   ],
   "bOpen": {
     "executionId": "exec-c7761249d1064b23c36e5e4f76a48778dd895896",
-    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-43-59Z-next/centre/settlement/inst-1v36r931jr7r/exec-c7761249d1064b23c36e5e4f76a48778dd895896.settlement.json",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-38-14Z-next/centre/settlement/inst-1v36r931jr7r/exec-c7761249d1064b23c36e5e4f76a48778dd895896.settlement.json",
     "present": true,
     "state": "ADMITTED",
     "dispatch": "not-started",
@@ -56,15 +56,15 @@
       "instanceGeneration": 0,
       "toolName": "edit",
       "axis": "fs.write",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-43-59Z-next/workspace/team-b/big-edit.bin",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-38-14Z-next/workspace/team-b/big-edit.bin",
       "definitionSource": "",
-      "policyGeneration": "a5sf1:8186ef5a5aab430d805c6aa3eb322753",
+      "policyGeneration": "a5sf1:3cfc3eebf27b6367bb4fab8240c73aa6",
       "blueprintRevision": "",
       "owner": "session-dboot-d3-root",
       "decision": "allow",
       "overlayOutcome": "no-opinion",
       "kind": "invocation-authority",
-      "at": "2026-11-24T13:45:49.677Z"
+      "at": "2026-11-24T16:39:32.436Z"
     }
   ],
   "bOpenExecutions": [],
@@ -77,15 +77,15 @@
       "instanceGeneration": 0,
       "toolName": "grep",
       "axis": "fs.read",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-43-59Z-next/workspace/team-b/corpus",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-38-14Z-next/workspace/team-b/corpus",
       "definitionSource": "",
-      "policyGeneration": "a5sf1:8186ef5a5aab430d805c6aa3eb322753",
+      "policyGeneration": "a5sf1:3cfc3eebf27b6367bb4fab8240c73aa6",
       "blueprintRevision": "",
       "owner": "session-dboot-d3-root",
       "decision": "allow",
       "overlayOutcome": "no-opinion",
       "kind": "invocation-authority",
-      "at": "2026-11-24T13:45:46.321Z"
+      "at": "2026-11-24T16:39:29.088Z"
     }
   ],
   "aLedgerBytes": 2864

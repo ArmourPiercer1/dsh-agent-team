@@ -1,6 +1,6 @@
 {
   "decisionFact": {
-    "createdAt": "2026-11-24T13:58:13.153Z",
+    "createdAt": "2026-11-24T16:48:02.758Z",
     "factType": "control-decision-recorded",
     "payload": {
       "decider": {
@@ -9,21 +9,21 @@
         "role": "member"
       },
       "decision": "allow",
-      "requestId": "ctrl-03fpj4p1mc2k2y0tggrtf0hm",
+      "requestId": "ctrl-14680mx0n6lh7q1djicij1d0",
       "requestSequence": 9,
       "reviewCapability": {
-        "approvalCaseId": "case-1rbtwd508xuuy41nbr9of13d",
+        "approvalCaseId": "case-0uh3kg917l1s0c1dh40wv1u1",
         "authorityGeneration": 0,
-        "blueprintContentHash": "sha256:9ea6a4470b330d12c4b943ce97a492f7f64f84d333ae171210df89ffa2ae04e4",
+        "blueprintContentHash": "sha256:5d7342abfeaeb5a0b1f87793d44b945205d906f2a0ba9b27ede97eac9b9ed5c6",
         "blueprintRevision": "1",
-        "currentLegRequestId": "ctrl-03fpj4p1mc2k2y0tggrtf0hm",
+        "currentLegRequestId": "ctrl-14680mx0n6lh7q1djicij1d0",
         "effectiveReviewAuthority": "leader",
         "entry": "allow",
         "legOrdinal": 1,
         "operationOwnerInstanceId": "inst-0ty67u70r99a",
         "operationOwnerTemplateId": "worker",
         "operationToolDefinitionIdentity": "dsh.fs/write",
-        "scopeFingerprint": "session-dboot-d4-root\u0000instance:inst-0ty67u70r99a\u0000admission-ask\u0000write\u0000admission:call-d4-worker-write\u0000sha256:660c0fc7f516cb0004aa172d10eaf08fd8c4abb7ff39ee6e3d664829042e59c2",
+        "scopeFingerprint": "session-dboot-d4-root\u0000instance:inst-0ty67u70r99a\u0000admission-ask\u0000write\u0000admission:call-d4-worker-write\u0000sha256:71b89d713f428db6690c62e19f68688caf6585eb5f7bf407be35e88ea93a9f95",
         "source": "blueprint-officer"
       },
       "scope": {
@@ -31,12 +31,12 @@
         "authorityScope": {
           "matcher": {
             "kind": "exact",
-            "resource": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-56-34Z-next/workspace/lane/worker-ask.txt"
+            "resource": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-46-58Z-next/workspace/lane/worker-ask.txt"
           },
           "operationClass": "write"
         },
         "correlation": "admission:call-d4-worker-write",
-        "operationFingerprint": "sha256:660c0fc7f516cb0004aa172d10eaf08fd8c4abb7ff39ee6e3d664829042e59c2",
+        "operationFingerprint": "sha256:71b89d713f428db6690c62e19f68688caf6585eb5f7bf407be35e88ea93a9f95",
         "rootSessionId": "session-dboot-d4-root",
         "subject": {
           "instanceId": "inst-0ty67u70r99a",
@@ -53,14 +53,14 @@
   "routedFact": {
     "factType": "team-review-wake-routed",
     "sequence": 10,
-    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-56-34Z-next/storages/team_domain.json",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-46-58Z-next/storages/team_domain.json",
     "payload": {
       "action": "review-wake",
-      "at": "2026-11-24T13:58:12.950Z",
+      "at": "2026-11-24T16:48:02.604Z",
       "deliveredToSessionId": "session-team-child-1d56dbb16a118ba3573db3c4b2641997",
       "recipientInstanceId": "inst-1crltnl0089j",
-      "requestId": "ctrl-03fpj4p1mc2k2y0tggrtf0hm",
-      "requestToken": "review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A43d1dd39",
+      "requestId": "ctrl-14680mx0n6lh7q1djicij1d0",
+      "requestToken": "review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A9abeab91",
       "routeRole": "officer"
     }
   },
@@ -83,7 +83,7 @@
         {
           "id": "approval-case-id-present",
           "ok": true,
-          "detail": "approvalCaseId=\"case-1rbtwd508xuuy41nbr9of13d\""
+          "detail": "approvalCaseId=\"case-0uh3kg917l1s0c1dh40wv1u1\""
         },
         {
           "id": "leg-ordinal-present",
@@ -98,7 +98,7 @@
         {
           "id": "frozen-operation-identity",
           "ok": true,
-          "detail": "operationFingerprint=\"sha256:660c0fc7f516cb0004aa172d10eaf08fd8c4abb7ff39ee6e3d664829042e59c2\" requestedEffect=\"allow\" authorityScope={\"matcher\":{\"kind\":\"exact\",\"resource\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-56-34Z-next/workspace/lane/worker-ask.txt\"},\"operationClass\":\"write\"}"
+          "detail": "operationFingerprint=\"sha256:71b89d713f428db6690c62e19f68688caf6585eb5f7bf407be35e88ea93a9f95\" requestedEffect=\"allow\" authorityScope={\"matcher\":{\"kind\":\"exact\",\"resource\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-46-58Z-next/workspace/lane/worker-ask.txt\"},\"operationClass\":\"write\"}"
         },
         {
           "id": "frozen-tool-coordinate",
@@ -108,12 +108,12 @@
         {
           "id": "frozen-blueprint-and-generation",
           "ok": true,
-          "detail": "blueprintContentHash=\"sha256:9ea6a4470b330d12c4b943ce97a492f7f64f84d333ae171210df89ffa2ae04e4\" revision=\"1\" authorityGeneration=0"
+          "detail": "blueprintContentHash=\"sha256:5d7342abfeaeb5a0b1f87793d44b945205d906f2a0ba9b27ede97eac9b9ed5c6\" revision=\"1\" authorityGeneration=0"
         },
         {
           "id": "captured-case-precedes-any-decision",
           "ok": true,
-          "detail": "creation sequence=9 createdAt=2026-11-24T13:58:12.932Z approvalCaseId=\"case-1rbtwd508xuuy41nbr9of13d\" decisions=[]"
+          "detail": "creation sequence=9 createdAt=2026-11-24T16:48:02.583Z approvalCaseId=\"case-0uh3kg917l1s0c1dh40wv1u1\" decisions=[]"
         }
       ],
       "failing": []
@@ -125,7 +125,7 @@
         {
           "id": "route-is-the-officer-instance",
           "ok": true,
-          "detail": "route={\"kind\":\"recipient\",\"target\":{\"kind\":\"instance\",\"instanceId\":\"inst-1crltnl0089j\",\"templateId\":\"officer\",\"routeRole\":\"officer\"},\"reason\":\"closed ordinary tool ask delegated to the dedicated Officer\",\"currentLegId\":\"ctrl-03fpj4p1mc2k2y0tggrtf0hm\"} expectedOfficer=\"inst-1crltnl0089j\" memberListCalls=1"
+          "detail": "route={\"kind\":\"recipient\",\"target\":{\"kind\":\"instance\",\"instanceId\":\"inst-1crltnl0089j\",\"templateId\":\"officer\",\"routeRole\":\"officer\"},\"reason\":\"closed ordinary tool ask delegated to the dedicated Officer\",\"currentLegId\":\"ctrl-14680mx0n6lh7q1djicij1d0\"} expectedOfficer=\"inst-1crltnl0089j\" memberListCalls=1"
         },
         {
           "id": "exactly-one-lawful-officer",
@@ -140,7 +140,7 @@
         {
           "id": "self-ask-never-routed-to-the-officer",
           "ok": true,
-          "detail": "self-ask route={\"kind\":\"recipient\",\"target\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"routeRole\":\"leader\"},\"reason\":\"actual OperationOwner is the Officer; self-ask routes to Leader\",\"currentLegId\":\"ctrl-03fpj4p1mc2k2y0tggrtf0hm\"}"
+          "detail": "self-ask route={\"kind\":\"recipient\",\"target\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"routeRole\":\"leader\"},\"reason\":\"actual OperationOwner is the Officer; self-ask routes to Leader\",\"currentLegId\":\"ctrl-14680mx0n6lh7q1djicij1d0\"}"
         }
       ],
       "failing": []
@@ -152,22 +152,22 @@
         {
           "id": "one-routed-intent-for-the-leg",
           "ok": true,
-          "detail": "routed facts for requestId=\"ctrl-03fpj4p1mc2k2y0tggrtf0hm\": [\"ctrl-03fpj4p1mc2k2y0tggrtf0hm\",\"ctrl-0n9d6jz02sr5xc0swelrl02c\",\"ctrl-1s45xsc1s24jyn0uyfi820je\",\"ctrl-0b61syf0lt922805m8f0d1p7\"]"
+          "detail": "routed facts for requestId=\"ctrl-14680mx0n6lh7q1djicij1d0\": [\"ctrl-14680mx0n6lh7q1djicij1d0\",\"ctrl-076hoke0pgawzd1alccu41qu\",\"ctrl-10yytrr0pqs8pg0z27n650v1\",\"ctrl-0pxb1jl0og7qs60ucnf8v1ey\"]"
         },
         {
           "id": "one-correlated-confirmation",
           "ok": true,
-          "detail": "requestToken=\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A43d1dd39\" confirmations=1 correlation=true"
+          "detail": "requestToken=\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A9abeab91\" confirmations=1 correlation=true"
         },
         {
           "id": "intent-names-the-officer-session",
           "ok": true,
-          "detail": "intent payload={\"action\":\"review-wake\",\"at\":\"2026-11-24T13:58:12.950Z\",\"deliveredToSessionId\":\"session-team-child-1d56dbb16a118ba3573db3c4b2641997\",\"recipientInstanceId\":\"inst-1crltnl0089j\",\"requestId\":\"ctrl-03fpj4p1mc2k2y0tggrtf0hm\",\"requestToken\":\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A43d1dd39\",\"routeRole\":\"officer\"}"
+          "detail": "intent payload={\"action\":\"review-wake\",\"at\":\"2026-11-24T16:48:02.604Z\",\"deliveredToSessionId\":\"session-team-child-1d56dbb16a118ba3573db3c4b2641997\",\"recipientInstanceId\":\"inst-1crltnl0089j\",\"requestId\":\"ctrl-14680mx0n6lh7q1djicij1d0\",\"requestToken\":\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A9abeab91\",\"routeRole\":\"officer\"}"
         },
         {
           "id": "intent-carries-the-review-action",
           "ok": true,
-          "detail": "intent payload action=\"review-wake\" at=\"2026-11-24T13:58:12.950Z\" intentDirFiles=[]"
+          "detail": "intent payload action=\"review-wake\" at=\"2026-11-24T16:48:02.604Z\" intentDirFiles=[]"
         },
         {
           "id": "machine-attribution-not-human",
@@ -194,12 +194,12 @@
         {
           "id": "officer-issued-its-own-resolve",
           "ok": true,
-          "detail": "callId=\"call-d4-officer-resolve-ctrl-03fpj4p1mc2k2y0tggrtf0hm\" found=true result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-03fpj4p1mc2k2y0tggrtf0hm\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targ\""
+          "detail": "callId=\"call-d4-officer-resolve-ctrl-14680mx0n6lh7q1djicij1d0\" found=true result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-14680mx0n6lh7q1djicij1d0\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targ\""
         },
         {
           "id": "resolve-admitted-under-its-own-binding",
           "ok": true,
-          "detail": "invocation-authority allow facts for \"call-d4-officer-resolve-ctrl-03fpj4p1mc2k2y0tggrtf0hm\"=[{\"instanceId\":\"inst-1crltnl0089j\",\"axis\":\"team.control\",\"decision\":\"allow\"}]"
+          "detail": "invocation-authority allow facts for \"call-d4-officer-resolve-ctrl-14680mx0n6lh7q1djicij1d0\"=[{\"instanceId\":\"inst-1crltnl0089j\",\"axis\":\"team.control\",\"decision\":\"allow\"}]"
         },
         {
           "id": "settlement-completed",
@@ -221,22 +221,22 @@
         {
           "id": "review-decision-is-durable",
           "ok": true,
-          "detail": "decision fact={\"requestId\":\"ctrl-03fpj4p1mc2k2y0tggrtf0hm\",\"decision\":\"allow\",\"at\":\"2026-11-24T13:58:13.153Z\"}"
+          "detail": "decision fact={\"requestId\":\"ctrl-14680mx0n6lh7q1djicij1d0\",\"decision\":\"allow\",\"at\":\"2026-11-24T16:48:02.758Z\"}"
         },
         {
           "id": "decision-precedes-execution",
           "ok": true,
-          "detail": "decisionAt=\"2026-11-24T13:58:13.153Z\" settlementTerminalAt=\"2026-11-24T13:58:13.226Z\""
+          "detail": "decisionAt=\"2026-11-24T16:48:02.758Z\" settlementTerminalAt=\"2026-11-24T16:48:02.871Z\""
         },
         {
           "id": "real-bytes-on-disk",
           "ok": true,
-          "detail": "file={\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-56-34Z-next/workspace/lane/worker-ask.txt\",\"exists\":true,\"bytes\":27,\"sha256\":\"ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3\"} expectedBytes=27"
+          "detail": "file={\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-46-58Z-next/workspace/lane/worker-ask.txt\",\"exists\":true,\"bytes\":27,\"sha256\":\"ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3\"} expectedBytes=27"
         },
         {
           "id": "worker-tool-result-not-an-error",
           "ok": true,
-          "detail": "write result=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-56-34Z-next/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+          "detail": "write result=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-46-58Z-next/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
         },
         {
           "id": "admission-allow-on-the-ask-lane",
@@ -278,7 +278,7 @@
         {
           "id": "duplicate-is-a-no-op",
           "ok": true,
-          "detail": "converged=true detail={\"requestId\":\"ctrl-0n9d6jz02sr5xc0swelrl02c\",\"requestToken\":\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A0f048dfa\",\"intentAt\":\"2026-11-24T13:58:13.354Z\",\"decisionAt\":\"2026-11-24T13:58:13.539Z\"}"
+          "detail": "converged=true detail={\"requestId\":\"ctrl-076hoke0pgawzd1alccu41qu\",\"requestToken\":\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A0ba20e81\",\"intentAt\":\"2026-11-24T16:48:02.954Z\",\"decisionAt\":\"2026-11-24T16:48:03.101Z\"}"
         }
       ],
       "failing": []
@@ -295,7 +295,7 @@
         {
           "id": "machine-wake-attempted",
           "ok": true,
-          "detail": "machine attempt={\"holdLanded\":true,\"holdStatus\":200,\"cancelStatus\":200,\"resumeStatus\":200,\"thirdRequestId\":\"ctrl-1s45xsc1s24jyn0uyfi820je\"}"
+          "detail": "machine attempt={\"holdLanded\":true,\"holdStatus\":200,\"cancelStatus\":200,\"resumeStatus\":200,\"thirdRequestId\":\"ctrl-10yytrr0pqs8pg0z27n650v1\"}"
         },
         {
           "id": "stop-survives-the-machine-wake",

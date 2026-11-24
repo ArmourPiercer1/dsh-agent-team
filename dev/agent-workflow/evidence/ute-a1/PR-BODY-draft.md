@@ -7,13 +7,13 @@ named in the same row or section.
 
 | field | value |
 | --- | --- |
-| **Head measured for every number below** | **`563feac139e87e7cc3269d3d4d799afc0b676568` (round 106; this documentation commit is its child, named in the settlement comment)**; the round-102/98/95/89 sections that name `10d8a67ae` / `a95be5f11` / `d322b17aa` / `97d7d7c8d` / `c29da52d3` keep their own round's numbers and are labelled as such |
+| **Head measured for every number below** | **`acc72e58eef3e3d791dca3da2c13cbb3adf7feae` (round 108 — the drain-seam fix; the documentation commit carrying this body is its child, named in the settlement comment)**; the round-106/102/98/95/89 sections that name `563feac13` / `10d8a67ae` / `a95be5f11` / `d322b17aa` / `97d7d7c8d` / `c29da52d3` keep their own round's numbers and are labelled as such |
 | **Base** | `master @ a19d1df01` (frozen A0, PR #821) |
 | **PR state** | **DRAFT**, `state=OPEN`, never merged (`gh pr view 822 --json isDraft,state,headRefOid`) |
 | **Record class** | every live claim is `DEV-LIVE` (a real host boot, **not a gate**); no capability row is PRODUCT-PROVEN |
 | **Read first** | `dev/agent-workflow/evidence/ute-a1/D-ACCEPTANCE-REPORT.md` (**its FIRST section is the single current acceptance-status table, round 106; everything later is historical where it disagrees**) and `dev/agent-workflow/evidence/ute-a1/CANDIDATE-AUDIT.md` (the round-86 adversarial audit: corrections, capability table, fresh gate block, verdict) |
 | **How to review** | (1) read the audit's corrections table first — it lists every number the report used to get wrong; (2) re-run the gate block in §"Verification on this HEAD" (single commands, ~8 min with the census) and diff the verdict lines; (3) for any capability row, follow its `file:line`/evidence path and check it says what the row claims; (4) treat every `DEV-LIVE` row as unproven for acceptance purposes; (5) read `D-ACCEPTANCE-REPORT.md` §10 before forming a view — the two round-87/88 seams and the four rulings they need are there; (6) do **not** mark this PR ready or merge it — that is the owner's act. |
-| **Gate status at this head** | **Round 106 / `563feac13`:** `dispatch-tests --run --leg ute-vnext-a1` **251 tests / 248 pass / 0 fail / 3 skipped** (digest `sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975`); `test-catalog --max-uncollected 41 --max-excluded 7` **tests=785, uncollected=38, excluded=14, findings=0** (digest unchanged); `ute-cut-closure --check` **pass** `cut(0/148)`; `ute-p0-assets --check` **pass** `cut(148/148)`; `docs-sync --check` **docs=193 findings=0 blocking=0**; `place-dist-glue` **35 placements** byte-identical; `eb3-ci-required` **pass workflows=11 findings=0**; bound vitest (`ci-integration`, 15 suites) **PASS 238 passed / 0 failed**; UTE G1 nine-file argv **89/89**; `EB3-RUN-MANIFEST` **pass records=546 strict=0 incomplete=11 findings=0**; `ute-a1-window --check` **pass red=0/0**; `ci-pr-gate --full --census-captures 2` **PASS 10/10** (348.2 s, census 599f/7422l, two captures with identical identity sets). Earlier, **Round 98 / `a95be5f11`:** local `ci-pr-gate --full --census-captures 2` = **PASS 10/10** (277.6 s); bound `ci-security` 222 and `ci-integration` 238; UTE G1 argv 89/89; `ute-vnext-a1` leg 242 tests (239 pass, 3 skipped); docs/matrix/D-report updated for the two decided rulings. Earlier (round 95 / `d322b17aa`): local `ci-pr-gate --full --census-captures 2` = **PASS 10/10** (275.4 s); bound vitest `ci-security` 222 / `ci-integration` 238; UTE G1 argv 89/89; the hosted verdicts below belong to the round-89 head and are re-queried after this push. Earlier round-89 local status: all required gates green, including `ci-pr-gate --full --census-captures 2` = **PASS 10/10** (275.7 s). Hosted: `pr-gate`, `ci-fast`, `ci-security`, `ci-product`, `synthesize-merge-tree`, `candidate-protection` green; **`ci-integration` FAILURE** on leg `tinf-instruments` (no named failing assertion; not reproduced locally — see "Open gaps" G10); `ci-census` **SKIPPED (draft)**; `ci-required` **RED for `ci-integration:failure,ci-census:skipped`**; `pr-settlement-gate` red until the round-89 settlement comment. On the docs-only follow-up head `d1506acd1` the same hosted job set re-ran with **`ci-integration` SUCCESS**, so the `97d7d7c8d` abort was transient; `ci-required` remains red there only for the draft census skip. |
+| **Gate status at this head** | **Round 108 / `acc72e58e`:** `candidate-acceptance-gate --hosts next` **PASS** (31 judges / 30 proven / 1 enumerated refuted / 0 env-limited, 4 drivers, 8 records, agreement); `dispatch-tests --run --leg ute-vnext-a1` **251 tests / 248 pass / 0 fail / 3 skipped** (leg digest unchanged `sha256:edd4f1c4…`); `test-catalog --max-uncollected 41 --max-excluded 7` **tests=785, uncollected=38, excluded=14, findings=0** (no new scannable file); `ute-cut-closure --check` **pass** `cut(0/148)`; `ute-p0-assets --check` **pass** `cut(148/148)`; `docs-sync --check` **docs=193 findings=0 blocking=0**; `place-dist-glue` **35 placements** byte-identical; `eb3-ci-required` **pass workflows=11 findings=0**; bound vitest (`ci-integration`, 15 suites) **PASS 238 passed / 0 failed**; UTE G1 nine-file argv **89/89**; `EB3-RUN-MANIFEST` **pass records=552 strict=0 incomplete=11 findings=0**; `ute-a1-window --check` **pass red=0/0**; `ci-pr-gate --full --census-captures 2` **PASS 10/10** (321.3 s, census `599f/7424l`, two captures with identical identity sets; the first attempt hit one unrelated loopback-timeout flake in `u6-mcp-017-regression`, disclosed in `round108` §6). Earlier, **Round 106 / `563feac13`:** `dispatch-tests --run --leg ute-vnext-a1` **251 tests / 248 pass / 0 fail / 3 skipped** (digest `sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975`); `test-catalog --max-uncollected 41 --max-excluded 7` **tests=785, uncollected=38, excluded=14, findings=0** (digest unchanged); `ute-cut-closure --check` **pass** `cut(0/148)`; `ute-p0-assets --check` **pass** `cut(148/148)`; `docs-sync --check` **docs=193 findings=0 blocking=0**; `place-dist-glue` **35 placements** byte-identical; `eb3-ci-required` **pass workflows=11 findings=0**; bound vitest (`ci-integration`, 15 suites) **PASS 238 passed / 0 failed**; UTE G1 nine-file argv **89/89**; `EB3-RUN-MANIFEST` **pass records=546 strict=0 incomplete=11 findings=0**; `ute-a1-window --check` **pass red=0/0**; `ci-pr-gate --full --census-captures 2` **PASS 10/10** (348.2 s, census 599f/7422l, two captures with identical identity sets). Earlier, **Round 98 / `a95be5f11`:** local `ci-pr-gate --full --census-captures 2` = **PASS 10/10** (277.6 s); bound `ci-security` 222 and `ci-integration` 238; UTE G1 argv 89/89; `ute-vnext-a1` leg 242 tests (239 pass, 3 skipped); docs/matrix/D-report updated for the two decided rulings. Earlier (round 95 / `d322b17aa`): local `ci-pr-gate --full --census-captures 2` = **PASS 10/10** (275.4 s); bound vitest `ci-security` 222 / `ci-integration` 238; UTE G1 argv 89/89; the hosted verdicts below belong to the round-89 head and are re-queried after this push. Earlier round-89 local status: all required gates green, including `ci-pr-gate --full --census-captures 2` = **PASS 10/10** (275.7 s). Hosted: `pr-gate`, `ci-fast`, `ci-security`, `ci-product`, `synthesize-merge-tree`, `candidate-protection` green; **`ci-integration` FAILURE** on leg `tinf-instruments` (no named failing assertion; not reproduced locally — see "Open gaps" G10); `ci-census` **SKIPPED (draft)**; `ci-required` **RED for `ci-integration:failure,ci-census:skipped`**; `pr-settlement-gate` red until the round-89 settlement comment. On the docs-only follow-up head `d1506acd1` the same hosted job set re-ran with **`ci-integration` SUCCESS**, so the `97d7d7c8d` abort was transient; `ci-required` remains red there only for the draft census skip. |
 
 ## SCOPE — the Subprocess/PTY promise (`allow`/`deny`; per-call `ask` is NOT supported)
 
@@ -42,6 +42,63 @@ RULING`**, the same class as PTC. Full statement: [`SCOPE-subprocess-ask.md`](SC
   Required`; `Body started + unconfirmable => UNKNOWN`. Tested on both hosts by `SLICE-40`/`SLICE-41`/
   `SLICE-42`; `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` remains a report, never a settlement. The observer
   still not being wired into a booted host's own agent loop is a **coverage limit**, not a blocker.
+
+## ROUND 108 — the two rc.5 gaps re-run; the `d2` rc.5 refutation was a PRODUCT defect, fixed
+
+Review `20261124-2120` §3 (first P0) named the two rows the round-106 table still carried as rc.5 gaps:
+`d:remote-creation` (never re-run on rc.5 since the round-91 judge repair) and `d2:remote-delivery` (no
+rc.5 verdict, plus the round-105 candidate-gate MEASURED refutation of one clause). Both were re-run on
+rc.5 (`TEAM_TEST_HOST=next`, `--boots 2`) and both are **PROVEN**. **No row moves; no rc.2 verdict was
+touched; PR #822 stays DRAFT.**
+
+**The refutation was the product's fault, not the judge's.** On rc.5 `member.archive` returned its own
+typed failure (`archiveOk=false`) and the durable member row stayed `SETTLED`; the round-105 observation
+discarded that reply's error code, so only the consequence was visible — `member.send` →
+`ok=true code=null requestsAdded=0`. The send was CORRECT (`SETTLED` is work-accepting, so an un-archived
+member lawfully accepts a delivery): the archive had never happened. Root cause: **rc.5 renamed the
+PUBLIC `subagents.drainContinuableDescendants` to `subagents.drainDescendants`** — same signature
+(`parents: readonly Agent[]`), same aggregate-after-settle contract, the very same
+`manager.drainDescendants` underneath. The drain seam required only the rc.2 name
+(`packages/runtime/src/plugin/vnext/stop-drain-lane.mjs`, pre-fix lines 194/201), so on rc.5
+`recursive-drain-unavailable` → `LIFECYCLE_LIVE_EFFECT_FAILED` at step `drain-descendants` → **zero
+durable writes** → the member stayed `SETTLED`.
+
+**The fix (CORE PATCH BUDGET = 0, no upstream patch).** `resolveDrainSeam` (`stop-drain-lane.mjs:177`)
+resolves the drain seam by PUBLIC NAME capability — `drainDescendants` (rc.5) first, then
+`drainContinuableDescendants` (rc.2) — and passes the parents verbatim (`:238`, `:248`); a host exposing
+neither still fails closed through the same typed `recursive-drain-unavailable` path (`:241`). Arms
+**M3-6** (a double exposing ONLY the rc.5 name drives the same drain + honest count) and **M3-7**
+(`listDescendants` but neither public drain name still refuses) are in the already-collected
+`packages/runtime/test/t12a-m3-recursive-drain.test.ts` (7/7 pass). The d2 driver also records the
+archive reply's own typed channel (`archiveCode`/`archiveMessage`) — **observation only; no clause
+predicate relaxed, no judge skipped, no timeout widened, no retry loop.**
+
+**Positive control (the clause was NOT relaxed into "nothing happened").** On the same rc.5 boots the
+same `member.send` channel is accepted for a LIVE member (`ok=true`, `deliveredSeq=40`) and again after
+`member.restore`; it refuses exactly the ARCHIVED target with the typed code
+`TEAM_RUNTIME_WORK_STATE_REJECTED` and `requestsAdded=0`.
+
+**Measured (both drivers 2/2 boots, `agreeing=true differing=[]`):**
+
+```
+d    RESULT PASS — 6/6 judges; d:remote-creation 8/8 clauses each boot
+     allowFacts=2 denyFacts=0 centreAdmissions=2 centreExecutions=2 governedSurface=true
+d2   RESULT PASS — 4/4 judges; d2:remote-delivery 20/20 clauses each boot
+     archived-member-refused-typed: archiveOk=true lifecycle=ARCHIVED
+     code=TEAM_RUNTIME_WORK_STATE_REJECTED requestsAdded=0
+```
+
+**Candidate gate (rc.5) now reads:** `CANDIDATE-GATE pass host=next judges=31 proven=30
+known-refuted=1 env-limited=0 drivers=4 records=8 agreement=true` at head `acc72e58e` — the only
+non-PROVEN id is the enumerated `d4:ask-execute-process`; `KNOWN_REFUTED` was not extended. All
+round-108 gates (dispatch leg 251/248/0/3 with the leg digest unchanged; catalog 785/38; closure four
+zeros; assets 37/180/69,512; docs-sync 0 findings; place-dist-glue 35; ci-required 11/0; bound
+`ci-integration` 238/238; UTE G1 argv 89/89; run-manifest 552; window red=0/0; `ci-pr-gate --full
+--census-captures 2` **PASS 10/10**, 321.3 s, census `599f/7424l` with identical identity sets) and the
+one disclosed `u6-mcp-017-regression` loopback-timeout flake on the first `ci-pr-gate` attempt are in
+`dev/agent-workflow/evidence/ute-a1/round108/README.md` §6. **Population delta: zero new scannable
+files** (the two arms live inside an already-collected file), so the catalog population and the leg
+digest are unchanged by construction.
 
 ## ROUND 106 — the two owner rulings implemented (scope APPROVED; P0-2 CLOSED by the lawful no-settlement boundary)
 

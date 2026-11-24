@@ -1,8 +1,8 @@
 # Member transcript — session-team-child-ce84089af9f38ed55ba2d0bdf5442691
-# durable log: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261124T16-22-03Z-next-workspace-team-b--/session-team-child-ce84089af9f38ed55ba2d0bdf5442691/session.v4.jsonl.zstd
+# durable log: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261124T16-35-43Z-next-workspace-team-b--/session-team-child-ce84089af9f38ed55ba2d0bdf5442691/session.v4.jsonl.zstd
 
 USER:
-[team-work requestToken=dboot-d2-delegate-b] dboot-d2-b-inlane: read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/in-lane-b.txt`, one tool call, then report briefly.
+[team-work requestToken=dboot-d2-delegate-b] dboot-d2-b-inlane: read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt`, one tool call, then report briefly.
 
 USER:
 <system-reminder>
@@ -28,9 +28,9 @@ USER:
 <system-reminder>
 The following information describes your current session:
 
-Current working directory: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b".
+Current working directory: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b".
 
-Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b". Some platform temporary areas may also be writable.
+Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b". Some platform temporary areas may also be writable.
 
 Approval prompts are enabled in this session: operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.
 
@@ -50,36 +50,36 @@ A skill is a reusable set of task-specific instructions. The following skills ar
 … [rendered truncated at 900 chars; the full text is in member-transcript.json]
 
 USER:
-[team-work requestToken=dboot-d2-follow-b-control] dboot-d2-b-after-stop: read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/in-lane-b.txt`, one tool call, then report briefly.
+[team-work requestToken=dboot-d2-follow-b-control] dboot-d2-b-after-stop: read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt`, one tool call, then report briefly.
 
 USER:
-[team-work requestToken=dboot-d2-follow-b-pre] dboot-d2-b-pre-revoke: read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/revocable.txt`, one tool call, then report briefly.
+[team-work requestToken=dboot-d2-follow-b-pre] dboot-d2-b-pre-revoke: read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/revocable.txt`, one tool call, then report briefly.
 
 USER:
-[team-work requestToken=dboot-d2-follow-b-mid] dboot-d2-b-mid-revoke: read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/revocable.txt`, one tool call, then report briefly.
+[team-work requestToken=dboot-d2-follow-b-mid] dboot-d2-b-mid-revoke: read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/revocable.txt`, one tool call, then report briefly.
 
 USER:
-[team-work requestToken=dboot-d2-follow-b-post] dboot-d2-b-post-revoke: read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/revocable.txt`, one tool call, then report briefly.
+[team-work requestToken=dboot-d2-follow-b-post] dboot-d2-b-post-revoke: read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/revocable.txt`, one tool call, then report briefly.
 
 USER:
-[team-work requestToken=dboot-d2-follow-b-widen] dboot-d2-b-widen-probe: read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-a/in-lane-a.txt`, one tool call, then report briefly.
-
-USER:
-[team-relay] from=human:session-dboot-d2-root to=inst-12x4j4t1rn1g (label: dboot-d2-worker-b)
-dboot-d2-remote-delivery: read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/in-lane-b.txt`, one tool call, then report the first line briefly.
+[team-work requestToken=dboot-d2-follow-b-widen] dboot-d2-b-widen-probe: read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-a/in-lane-a.txt`, one tool call, then report briefly.
 
 USER:
 [team-relay] from=human:session-dboot-d2-root to=inst-12x4j4t1rn1g (label: dboot-d2-worker-b)
-dboot-d2-remote-delivery: read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/in-lane-b.txt`, one tool call, then report the first line briefly.
+dboot-d2-remote-delivery: read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt`, one tool call, then report the first line briefly.
+
+USER:
+[team-relay] from=human:session-dboot-d2-root to=inst-12x4j4t1rn1g (label: dboot-d2-worker-b)
+dboot-d2-remote-delivery: read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt`, one tool call, then report the first line briefly.
 
 USER:
 [team-relay] from=human:session-dboot-d2-root to=inst-12x4j4t1rn1g (label: dboot-d2-worker-b)
 dboot-d2-remote-delivery: one more delivery after the restore
 
 TOOL CALL [read] call-d2-b-own
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/in-lane-b.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt
 TOOL RESULT isError=false
-  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/in-lane-b.txt</path>
+  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt</path>
   <type>file</type>
   <content>
   1: DBOOT_D2_B_UNIQUE_BYTES
@@ -88,9 +88,9 @@ TOOL RESULT isError=false
   </content>
 
 TOOL CALL [read] call-d2-b-after
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/in-lane-b.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt
 TOOL RESULT isError=false
-  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/in-lane-b.txt</path>
+  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt</path>
   <type>file</type>
   <content>
   1: DBOOT_D2_B_UNIQUE_BYTES
@@ -99,9 +99,9 @@ TOOL RESULT isError=false
   </content>
 
 TOOL CALL [read] call-d2-b-pre-inlane
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/in-lane-b.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt
 TOOL RESULT isError=false
-  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/in-lane-b.txt</path>
+  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt</path>
   <type>file</type>
   <content>
   1: DBOOT_D2_B_UNIQUE_BYTES
@@ -110,9 +110,9 @@ TOOL RESULT isError=false
   </content>
 
 TOOL CALL [read] call-d2-b-pre
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/revocable.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/revocable.txt
 TOOL RESULT isError=false
-  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/revocable.txt</path>
+  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/revocable.txt</path>
   <type>file</type>
   <content>
   1: DBOOT_D2_REVOCABLE_BYTES
@@ -121,9 +121,9 @@ TOOL RESULT isError=false
   </content>
 
 TOOL CALL [read] call-d2-b-mid-inlane
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/in-lane-b.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt
 TOOL RESULT isError=false
-  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/in-lane-b.txt</path>
+  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt</path>
   <type>file</type>
   <content>
   1: DBOOT_D2_B_UNIQUE_BYTES
@@ -132,14 +132,14 @@ TOOL RESULT isError=false
   </content>
 
 TOOL CALL [read] call-d2-b-mid
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/revocable.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/revocable.txt
 TOOL RESULT isError=true
   Error: ADMISSION_OVERLAY_DENY: a durable permission-plane restriction denies this call; the compiled binding allowed it, so the overlay wins (it can remove authority, never grant it)
 
 TOOL CALL [read] call-d2-b-post-inlane
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/in-lane-b.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt
 TOOL RESULT isError=false
-  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/in-lane-b.txt</path>
+  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt</path>
   <type>file</type>
   <content>
   1: DBOOT_D2_B_UNIQUE_BYTES
@@ -148,9 +148,9 @@ TOOL RESULT isError=false
   </content>
 
 TOOL CALL [read] call-d2-b-post
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/revocable.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/revocable.txt
 TOOL RESULT isError=false
-  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/revocable.txt</path>
+  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/revocable.txt</path>
   <type>file</type>
   <content>
   1: DBOOT_D2_REVOCABLE_BYTES
@@ -159,14 +159,14 @@ TOOL RESULT isError=false
   </content>
 
 TOOL CALL [read] call-d2-b-widen
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-a/in-lane-a.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-a/in-lane-a.txt
 TOOL RESULT isError=true
-  Error: LANE_DENY: fs.read "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-a/in-lane-a.txt" is outside the binding's fs.read lane (policy generation a5sf1:864bc3cece03597badd296a9efde9b4f)
+  Error: LANE_DENY: fs.read "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-a/in-lane-a.txt" is outside the binding's fs.read lane (policy generation a5sf1:1515c3f5e7e8957940797de991ef4b33)
 
 TOOL CALL [read] call-d2-remote-delivery
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/in-lane-b.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt
 TOOL RESULT isError=false
-  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/in-lane-b.txt</path>
+  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt</path>
   <type>file</type>
   <content>
   1: DBOOT_D2_B_UNIQUE_BYTES
@@ -175,7 +175,7 @@ TOOL RESULT isError=false
   </content>
 
 ASSISTANT (final):
-DBOOT_D2_MEMBER_RD_DONE <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/in-lane-b.txt</path>
+DBOOT_D2_MEMBER_RD_DONE <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt</path>
 <type>file</type>
 <content>
 1: DBOOT_D2_B_UNIQUE_BYTES

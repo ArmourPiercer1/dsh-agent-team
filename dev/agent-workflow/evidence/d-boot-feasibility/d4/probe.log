@@ -3106,3 +3106,153 @@ stickyStopMarkerCount                1                                    1
 
 agreeing=true differing=[]
 [2026-11-24T14:03:24.404Z] RESULT evidence-complete=true allBooted=true blocked=true runRecordsValid=true (2/2 boots; agreeing pair=true)
+[2026-11-24T16:42:27.000Z] archived previous runs -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T16-42-27-000Z
+[2026-11-24T16:42:27.186Z] host tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next HEAD=9c2670d3bce5275e0d1610272958121af87787bb pin=9c2670d3bce5275e0d1610272958121af87787bb porcelain=[]
+[2026-11-24T16:42:27.186Z] started 2026-11-24T16:42:26.957Z boots=2
+[2026-11-24T16:42:27.246Z] [boot1] candidate: {"host":"next","pin":"9c2670d3bce5275e0d1610272958121af87787bb","source":"tests/paths.mjs#NEXT_HOST","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next","asserted":true,"head":"9c2670d3bce5275e0d1610272958121af87787bb"}
+[2026-11-24T16:42:27.248Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=acc72e58eef3e3d791dca3da2c13cbb3adf7feae
+[2026-11-24T16:42:27.284Z] blueprint main.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T16:42:27.289Z] [boot1] alpha6 config gate (positive): null
+[2026-11-24T16:43:27.752Z] [boot1] host ready on http://127.0.0.1:13000
+[2026-11-24T16:43:27.774Z] [boot1] prompt(d4disc) status=200
+[2026-11-24T16:43:27.976Z] [boot1] discovery answered (mock requests=2)
+[2026-11-24T16:43:27.986Z] [boot1] prompt(d4off) status=200
+[2026-11-24T16:43:28.388Z] [boot1] officer delegated
+[2026-11-24T16:43:28.397Z] [boot1] officer instance=inst-1crltnl0089j childSession=session-team-child-1d56dbb16a118ba3573db3c4b2641997
+[2026-11-24T16:43:28.903Z] [boot1] d4:officer-up=PROVEN d4:officer-binding=PROVEN
+[2026-11-24T16:43:28.913Z] [boot1] prompt(d4wrk) status=200
+[2026-11-24T16:43:29.314Z] [boot1] worker delegated
+[2026-11-24T16:43:29.669Z] [boot1] worker ask appeared=true requestId=ctrl-1nzbjdm1fevjkx191n07o0vr
+[2026-11-24T16:43:29.671Z] [boot1] officer resolve(first) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-1nzbjdm1fevjkx191n07o0vr","decision":"allow","decider":{"kind":"instance","instanceId":"inst-1crltnl0
+[2026-11-24T16:43:30.175Z] [boot1] d4:ask-execute=PROVEN failing=[]
+[2026-11-24T16:43:30.176Z] [boot1] second worker ask appeared=true requestId=ctrl-0yq13j01wxgcub01fudpm0ec
+[2026-11-24T16:43:30.178Z] [boot1] officer resolve(second) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-0yq13j01wxgcub01fudpm0ec","decision":"allow","decider":{"kind":"instance","instanceId":"inst-1crltnl0
+[2026-11-24T16:43:30.682Z] [boot1] d4:ask-execute-2=PROVEN failing=[]
+[2026-11-24T16:43:31.000Z] [boot1] sticky: holdLanded=true hold=true cancelStatus=200 stopSeen=true markers=["stopped-20765e07.json"]
+[2026-11-24T16:43:33.310Z] [boot1] sticky: thirdAsk=true requestId=ctrl-16rd4ug17x2tlf0fl1e620og markersAfter=["stopped-20765e07.json"] wakeInputsWhileStopped=0
+[2026-11-24T16:43:33.723Z] [boot1] officer resolve(third) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-16rd4ug17x2tlf0fl1e620og","decision":"allow","decider":{"kind":"instance","instanceId":"inst-1crltnl0
+[2026-11-24T16:43:33.726Z] [boot1] sticky: resumeCleared=true resolve3=true write3Settled=true
+[2026-11-24T16:43:34.032Z] [boot1] process ask appeared=true requestId=ctrl-1gbgxo21m0do2p0q11rpg0er
+[2026-11-24T16:43:34.040Z] [boot1] prompt(d4res3) status=200
+[2026-11-24T16:43:34.945Z] [boot1] d4:ask-execute-process=REFUTED failing=["bash-tool-result-not-an-error","in-lane-write-lands","settlement-completed"]
+[2026-11-24T16:43:34.949Z] [boot1] duplicate: intents=1 delivered=1 inputs=1
+[2026-11-24T16:43:36.485Z] [boot1] d4:case-created=PROVEN failing=[]
+[2026-11-24T16:43:36.486Z] [boot1] d4:router-officer=PROVEN failing=[]
+[2026-11-24T16:43:36.486Z] [boot1] d4:wake-delivered=PROVEN failing=[]
+[2026-11-24T16:43:36.486Z] [boot1] d4:officer-decides=PROVEN failing=[]
+[2026-11-24T16:43:36.486Z] [boot1] d4:ask-executes-after-review=PROVEN failing=[]
+[2026-11-24T16:43:36.486Z] [boot1] d4:duplicate-route=PROVEN failing=[]
+[2026-11-24T16:43:36.486Z] [boot1] d4:sticky-stop=PROVEN failing=[]
+[2026-11-24T16:43:36.486Z] [boot1] d4:routed-wake=PROVEN failing=[]
+[2026-11-24T16:43:36.490Z] blueprint incoherent.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting=null
+[2026-11-24T16:44:39.911Z] [boot1] d4:refusal=PROVEN failing=[]
+[2026-11-24T16:44:39.914Z] [boot1] d4:enablement=PROVEN failing=[]
+[2026-11-24T16:44:45.548Z] blueprint ask-denied.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T16:45:51.073Z] [boot1] d4:ask-denied=PROVEN failing=[]
+[2026-11-24T16:45:53.213Z] blueprint ask-stopped.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T16:46:56.800Z] [boot1] d4:ask-stopped=PROVEN failing=[]
+[2026-11-24T16:46:58.891Z] [boot1] negative dev-live slot released (released=true held=false)
+[2026-11-24T16:46:58.892Z] [boot1] overall=BLOCKED (271626ms)
+[2026-11-24T16:46:58.892Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-24T16:46:58.899Z] [boot1] RUN-RECORD SELF-CHECK pass (dev/agent-workflow/evidence/d-boot-feasibility/d4/runs/boot01/run-record.json: schema=u5-run-record/1 cases=17 subset=false overall=FAIL)
+[2026-11-24T16:46:58.953Z] [boot2] candidate: {"host":"next","pin":"9c2670d3bce5275e0d1610272958121af87787bb","source":"tests/paths.mjs#NEXT_HOST","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next","asserted":true,"head":"9c2670d3bce5275e0d1610272958121af87787bb"}
+[2026-11-24T16:46:58.953Z] [boot2] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=acc72e58eef3e3d791dca3da2c13cbb3adf7feae
+[2026-11-24T16:46:58.961Z] blueprint main.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T16:46:58.963Z] [boot2] alpha6 config gate (positive): null
+[2026-11-24T16:48:00.992Z] [boot2] host ready on http://127.0.0.1:13000
+[2026-11-24T16:48:01.012Z] [boot2] prompt(d4disc) status=200
+[2026-11-24T16:48:01.213Z] [boot2] discovery answered (mock requests=2)
+[2026-11-24T16:48:01.221Z] [boot2] prompt(d4off) status=200
+[2026-11-24T16:48:01.621Z] [boot2] officer delegated
+[2026-11-24T16:48:01.639Z] [boot2] officer instance=inst-1crltnl0089j childSession=session-team-child-1d56dbb16a118ba3573db3c4b2641997
+[2026-11-24T16:48:02.143Z] [boot2] d4:officer-up=PROVEN d4:officer-binding=PROVEN
+[2026-11-24T16:48:02.151Z] [boot2] prompt(d4wrk) status=200
+[2026-11-24T16:48:02.552Z] [boot2] worker delegated
+[2026-11-24T16:48:02.610Z] [boot2] worker ask appeared=true requestId=ctrl-14680mx0n6lh7q1djicij1d0
+[2026-11-24T16:48:03.014Z] [boot2] officer resolve(first) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-14680mx0n6lh7q1djicij1d0","decision":"allow","decider":{"kind":"instance","instanceId":"inst-1crltnl0
+[2026-11-24T16:48:03.517Z] [boot2] d4:ask-execute=PROVEN failing=[]
+[2026-11-24T16:48:03.517Z] [boot2] second worker ask appeared=true requestId=ctrl-076hoke0pgawzd1alccu41qu
+[2026-11-24T16:48:03.519Z] [boot2] officer resolve(second) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-076hoke0pgawzd1alccu41qu","decision":"allow","decider":{"kind":"instance","instanceId":"inst-1crltnl0
+[2026-11-24T16:48:04.022Z] [boot2] d4:ask-execute-2=PROVEN failing=[]
+[2026-11-24T16:48:04.239Z] [boot2] sticky: holdLanded=true hold=true cancelStatus=200 stopSeen=true markers=["stopped-20765e07.json"]
+[2026-11-24T16:48:06.552Z] [boot2] sticky: thirdAsk=true requestId=ctrl-10yytrr0pqs8pg0z27n650v1 markersAfter=["stopped-20765e07.json"] wakeInputsWhileStopped=0
+[2026-11-24T16:48:06.963Z] [boot2] officer resolve(third) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-10yytrr0pqs8pg0z27n650v1","decision":"allow","decider":{"kind":"instance","instanceId":"inst-1crltnl0
+[2026-11-24T16:48:06.965Z] [boot2] sticky: resumeCleared=true resolve3=true write3Settled=true
+[2026-11-24T16:48:07.271Z] [boot2] process ask appeared=true requestId=ctrl-0pxb1jl0og7qs60ucnf8v1ey
+[2026-11-24T16:48:07.279Z] [boot2] prompt(d4res3) status=200
+[2026-11-24T16:48:08.183Z] [boot2] d4:ask-execute-process=REFUTED failing=["bash-tool-result-not-an-error","in-lane-write-lands","settlement-completed"]
+[2026-11-24T16:48:08.186Z] [boot2] duplicate: intents=1 delivered=1 inputs=1
+[2026-11-24T16:48:09.707Z] [boot2] d4:case-created=PROVEN failing=[]
+[2026-11-24T16:48:09.707Z] [boot2] d4:router-officer=PROVEN failing=[]
+[2026-11-24T16:48:09.707Z] [boot2] d4:wake-delivered=PROVEN failing=[]
+[2026-11-24T16:48:09.708Z] [boot2] d4:officer-decides=PROVEN failing=[]
+[2026-11-24T16:48:09.708Z] [boot2] d4:ask-executes-after-review=PROVEN failing=[]
+[2026-11-24T16:48:09.708Z] [boot2] d4:duplicate-route=PROVEN failing=[]
+[2026-11-24T16:48:09.708Z] [boot2] d4:sticky-stop=PROVEN failing=[]
+[2026-11-24T16:48:09.708Z] [boot2] d4:routed-wake=PROVEN failing=[]
+[2026-11-24T16:48:09.711Z] blueprint incoherent.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting=null
+[2026-11-24T16:49:12.796Z] [boot2] d4:refusal=PROVEN failing=[]
+[2026-11-24T16:49:12.798Z] [boot2] d4:enablement=PROVEN failing=[]
+[2026-11-24T16:49:18.289Z] blueprint ask-denied.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T16:50:24.180Z] [boot2] d4:ask-denied=PROVEN failing=[]
+[2026-11-24T16:50:26.281Z] blueprint ask-stopped.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T16:51:31.795Z] [boot2] d4:ask-stopped=PROVEN failing=[]
+[2026-11-24T16:51:33.886Z] [boot2] negative dev-live slot released (released=true held=false)
+[2026-11-24T16:51:33.886Z] [boot2] overall=BLOCKED (274932ms)
+[2026-11-24T16:51:33.886Z] [boot2] dev-live slot released (released=true held=false)
+[2026-11-24T16:51:33.893Z] [boot2] RUN-RECORD SELF-CHECK pass (dev/agent-workflow/evidence/d-boot-feasibility/d4/runs/boot02/run-record.json: schema=u5-run-record/1 cases=17 subset=false overall=FAIL)
+[2026-11-24T16:51:33.933Z] host porcelain after: []
+[2026-11-24T16:51:33.935Z] TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)
+fact                              boot1                               boot2                               
+overall                              "BLOCKED"                            "BLOCKED"                           
+enablement                           "PROVEN"                             "PROVEN"                            
+officerUp                            "PROVEN"                             "PROVEN"                            
+officerBinding                       "PROVEN"                             "PROVEN"                            
+routedWake                           "PROVEN"                             "PROVEN"                            
+caseCreated                          "PROVEN"                             "PROVEN"                            
+routerOfficer                        "PROVEN"                             "PROVEN"                            
+wakeDelivered                        "PROVEN"                             "PROVEN"                            
+officerDecides                       "PROVEN"                             "PROVEN"                            
+askExecutesAfterReview               "PROVEN"                             "PROVEN"                            
+duplicateRoute                       "PROVEN"                             "PROVEN"                            
+stickyStop                           "PROVEN"                             "PROVEN"                            
+refusal                              "PROVEN"                             "PROVEN"                            
+askExecute                           "PROVEN"                             "PROVEN"                            
+askExecute2                          "PROVEN"                             "PROVEN"                            
+askExecuteProcess                    "REFUTED"                            "REFUTED"                           
+askDenied                            "PROVEN"                             "PROVEN"                            
+askStopped                           "PROVEN"                             "PROVEN"                            
+askAppeared                          true                                 true                                
+wakeFacts                            8                                    8                                   
+wakeIntentFiles                      0                                    0                                   
+reviewWakeHits                       0                                    0                                   
+officerAllowFacts                    1                                    1                                   
+askExecuteBytes                      27                                   27                                  
+askExecuteSha256                     "ced10112e5b82a2b1b6bca1b85b1dff24   "ced10112e5b82a2b1b6bca1b85b1dff24  
+askExecuteSettlement                 "COMPLETED"                          "COMPLETED"                         
+askExecute2Bytes                     29                                   29                                  
+askExecute2Sha256                    "2d71ffdd499955a34ec86af1c25c00f83   "2d71ffdd499955a34ec86af1c25c00f83  
+askExecute2Settlement                "COMPLETED"                          "COMPLETED"                         
+askExecuteProcessRequestIdKnown      true                                 true                                
+askExecuteProcessInLaneBytes         null                                 null                                
+askExecuteProcessInLaneSha256        null                                 null                                
+askExecuteProcessOutLaneExists       false                                false                               
+askExecuteProcessSettlement          "FAILED"                             "FAILED"                            
+askDeniedBytes                       null                                 null                                
+askDeniedSettlement                  "REFUSED"                            "REFUSED"                           
+askStoppedBytes                      null                                 null                                
+askStoppedSettlement                 "REFUSED"                            "REFUSED"                           
+legOrdinal                           1                                    1                                   
+routeKind                            "recipient"                          "recipient"                         
+routeRole                            "officer"                            "officer"                           
+selfAskRouteKind                     "recipient"                          "recipient"                         
+selfAskRouteRole                     "leader"                             "leader"                            
+routedWakes                          4                                    4                                   
+deliveredWakes                       4                                    4                                   
+managementExecutions                 0                                    0                                   
+officerResolveSettlement             "COMPLETED"                          "COMPLETED"                         
+duplicateWakeInputs                  1                                    1                                   
+stickyStopMarkerCount                1                                    1                                   
+
+agreeing=true differing=[]
+[2026-11-24T16:51:33.936Z] RESULT evidence-complete=true allBooted=true blocked=true runRecordsValid=true (2/2 boots; agreeing pair=true)

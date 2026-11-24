@@ -10,7 +10,7 @@
     {
       "id": "second-approved-through-real-control-path",
       "ok": true,
-      "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-0uhui9l0f1r1dm03lrhiv02k\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write-2\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:5feff29bc030650e2f4bfe87769024bb848fc9\""
+      "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-0yq13j01wxgcub01fudpm0ec\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write-2\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:eb01122d622ed5aa3ac0248b7e5646c0bdb8d3\""
     },
     {
       "id": "second-admission-fact-allow-lane-ask",
@@ -20,7 +20,7 @@
     {
       "id": "second-write-tool-result-not-an-error",
       "ok": true,
-      "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-49-47Z-next/workspace/lane/worker-ask-2.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+      "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-42-27Z-next/workspace/lane/worker-ask-2.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
     },
     {
       "id": "second-real-bytes-on-disk",

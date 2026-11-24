@@ -73,7 +73,7 @@ PROVEN.
 | --- | --- |
 | `packages/runtime/src/plugin/vnext/stop-drain-lane.mjs` | `resolveDrainSeam` (`:177`) resolves the drain seam by PUBLIC NAME capability — `drainDescendants` (rc.5) first, then `drainContinuableDescendants` (rc.2) — and passes the parents verbatim (`:238`, `:248`); a host exposing neither still fails closed typed (`:241`). One observation records which name the host exposed. |
 | `packages/runtime/src/plugin/types.ts` | `SubagentsDrainPort` documents both public names and makes each optional. |
-| `packages/runtime/test/t12a-m3-recursive-drain.test.ts` | **M3-6** (bound arm): a double exposing ONLY the rc.5 name drives the same drain + honest count (`:171`). **M3-7**: a service with `listDescendants` but neither public drain name still refuses typed (`:181`). 7/7 tests pass. |
+| `packages/runtime/test/t12a-m3-recursive-drain.test.ts` | **M3-6**: a double exposing ONLY the rc.5 name drives the same drain + honest count (`:171`). **M3-7**: a service with `listDescendants` but neither public drain name still refuses typed (`:181`). 7/7 tests pass. |
 | `packages/runtime/test/t12a-live-bridge.mjs` | the subagents double takes `drainMethodName` so each arm models one host generation's real shape. |
 | `tests/world-factory/drivers/d-boot-feasibility/run-boot-d2.mjs` | observation only: records `archiveCode`/`archiveMessage` and the archive reply in the judge detail. **No predicate was relaxed, no judge skipped, no timeout widened, no retry added.** |
 | `packages/runtime/dist/**` | rebuilt (`tsc`) + `place-dist-glue` re-placed the 35 `.mjs` files byte-identically. |
@@ -93,3 +93,38 @@ blanket-refusing; it refuses exactly the ARCHIVED target, with the typed code
 - `KNOWN_REFUTED` still contains exactly one literal id (`d4:ask-execute-process`); nothing was added.
 - No row moves to PRODUCT-PROVEN; both rows stay DEV-LIVE (the gate is non-required).
 - PR #822 stays DRAFT; no merge, no history rewrite, no non-topic push.
+
+## 6. Gates at `acc72e58e` (logs in this directory)
+
+| gate | verdict |
+| --- | --- |
+| `candidate-acceptance-gate --hosts next` | **`CANDIDATE-GATE pass host=next judges=31 proven=30 known-refuted=1 env-limited=0 drivers=4 records=8 agreement=true`** — the only non-PROVEN id is the enumerated `d4:ask-execute-process`; machine verdict `dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-24T16-32-03-294Z/verdict.json` (head `acc72e58e`) |
+| `dispatch-tests --run --leg ute-vnext-a1` | `tests=251 pass=248 fail=0 skipped=3`, `set=sha256:edd4f1c4…` (**unchanged**: the two new arms live in a file already in the root vitest population, not in this leg) — `ute-leg.log` |
+| `test-catalog --max-uncollected 41 --max-excluded 7` | `tests=785` collected 733 excluded 14 **uncollected 38** `refused=0 findings=0`, digest `sha256:da8a452d…` — **no new scannable file**, so the catalog population is unchanged by construction |
+| `ute-cut-closure --check` | `pass deleted=148 references=3 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 retiredSurfaces=12 findings=0` |
+| `ute-p0-assets --check` | `pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 cut=cut(148/148) findings=0` |
+| `docs-sync --check` | `docs=193 notes=4 plans=152(0 declaring) findings=0 blocking=0 contracts=20` (authority pointer digest verified) |
+| `place-dist-glue` | `done (35 placement(s))`, every line byte-identical |
+| `eb3-ci-required` | `pass workflows=11 findings=0` |
+| bound vitest leg `eb3-security-run --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt` | `verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0` — `ci-integration.log` |
+| UTE G1 nine-file argv (`node --test --test-force-exit --test-timeout=480000 --test-reporter=spec` over `tests/ute1-fs/native-fs-binding.test.mjs` + the six `lane-suite.test.mjs` + `refusal-categories` + `product-route-image`) | `tests 89 pass 89 fail 0 skipped 0` — `ute-g1-argv.log` |
+| `ute-a1-window --check` | `pass branch=vnext/a1-cut red=0/0 cut=(148/52) findings=0` |
+| `eb3-run-manifest` | `pass records=552 strict=0 incomplete=11 findings=0` — `eb3-run-manifest.log` |
+| `ci-pr-gate --full --census-captures 2` | **`DSH-CI-VERDICT pass pass=10 fail=0 skip=0 legs=10 refused=0`** (321.3 s; census `599f/7424l`, two captures with **identical identity sets**) — `ci-pr-gate-full.log` |
+
+**One disclosed flake, not hidden.** The first `ci-pr-gate --full` attempt (same argv, head `acc72e58e`)
+went red on the census leg: `packages/runtime/test/u6-mcp-017-regression.test.ts` failed **only in
+capture 1** with `ERA_NEGOTIATION_FAILED` → `fetch failed` → `ConnectTimeoutError` to the test's own
+`127.0.0.1:3985` (10 s), while capture 2 passed; the two captures' identity sets therefore differed,
+and the leg grades their union. That test then passed alone in 77 ms, no listener or stray process
+existed on that port, and the **re-run with identical argv was PASS 10/10**. Both facts are stated
+here; the red attempt's own comparison artifact is
+`dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-comparison-20261124T170032Z-3.json`.
+Nothing in this round touches MCP discovery; the failure is a loopback connect timeout under the
+two-capture load. No gate was weakened, no timeout widened, no judge skipped.
+
+**Population delta: zero new scannable files.** No `packages/**` source file was added, no test file
+was added or removed, and no dispatch leg changed. The round-108 change adds two `it` arms inside the
+already-collected `packages/runtime/test/t12a-m3-recursive-drain.test.ts` (so `tests=785` and the
+catalog digest are unchanged) and edits the existing driver + bridge double. `place-dist-glue`
+re-placed the 35 `.mjs` glue files byte-identically after the `tsc` rebuild.

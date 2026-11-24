@@ -3623,7 +3623,7 @@ Round 108 re-ran the two remaining rc.5 gaps of the round-106 single table
 measured.
 
 **Population delta:** no test file added, removed or reclassified; no dispatch leg changed. One new
-evidence arm pair lives INSIDE the already-collected bound vitest file
+evidence arm pair lives INSIDE the already-collected vitest file
 `packages/runtime/test/t12a-m3-recursive-drain.test.ts` (M3-6, M3-7), so the catalog identity and the
 `ute-vnext-a1` leg digest are unchanged by construction. `place-dist-glue` re-placed the 35 dist
 files byte-identically (the glue source changed). The scripted driver observation gained two fields
