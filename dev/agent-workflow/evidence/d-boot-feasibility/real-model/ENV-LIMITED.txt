@@ -1,0 +1,9 @@
+ENV-LIMITED (review 20261125-0058 Stage B, second item)
+
+The harness is executable and complete; the ENVIRONMENT has no real model route for a test host.
+Missing item: DEEPSEEK_API_KEY (a real credential; see probe.json).
+Supplied by: export DEEPSEEK_API_KEY=<real key> (optionally DEEPSEEK_BASE_URL=<endpoint>) for the driver process, or add a DEEPSEEK_API_KEY record to the test World's .credentials.yaml
+
+Nothing was booted, nothing was simulated, and no real-model claim is made.
+Run the harness itself against the scripted model (labelled SCRIPTED-ONLY):
+  node tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs --model scripted --boots 2

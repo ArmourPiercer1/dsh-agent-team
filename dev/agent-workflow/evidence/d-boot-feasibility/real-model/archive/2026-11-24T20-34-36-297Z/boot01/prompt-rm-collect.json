@@ -1,0 +1,4 @@
+{
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"rm-collect-vbg0a3v2ao\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}"
+}

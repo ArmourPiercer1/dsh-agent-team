@@ -1,0 +1,1 @@
+RUN-SUMMARY run=a5sf-real-model-scripted-2026-11-24T20-46-28-996Z-b1 suite=a5sf-real-model-acceptance overall=PASS cases=20 PASS:20 worlds=none recordClass=DEV-LIVE (not candidate evidence)

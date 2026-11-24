@@ -4,6 +4,43 @@
 <!-- ROUND 109 — THE CURRENT ACCEPTANCE STATUS. Read this before anything else. -->
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
+## ROUND 111 — REAL-MODEL acceptance: the probe answered ENV-LIMITED; the harness is complete
+
+Review `20261125-0058` Stage B, second item: *every booted-host proof so far uses a scripted model; a
+controlled real-model scenario is required before any real-model claim may be made.* This round does
+**not** make a real-model claim. It (a) probes the environment instead of assuming a route, (b) builds the
+real-model scenario driver, and (c) validates that driver on the scripted model, **labelled
+`SCRIPTED-ONLY`**.
+
+1. **The probe (runs before any boot, in the driver, in both modes).** No `DEEPSEEK_API_KEY` and no
+   `DEEPSEEK_BASE_URL` in the launch environment; all **21** `tests/homes/*/.credentials.yaml` files carry
+   only `client-connection/browser-session` records — no provider/key record in any of the **45** worlds;
+   the only wired model deployment is the in-process mock (`startMock`), which is *not* evidence of a real
+   model; both pinned hosts ship the `deepseek-official` provider whose `apiKeyEnv` defaults to
+   `DEEPSEEK_API_KEY`; no local model server listens on the test bands. The stable `:3080` profile is out
+   of scope and was not read. **Level: `ENV-LIMITED`; exact missing item: `DEEPSEEK_API_KEY`** (a real
+   credential, optionally with `DEEPSEEK_BASE_URL`), suppliable to the driver process or as a test-home
+   `.credentials.yaml` record. `--model real` refuses to proceed: it writes `probe.json` +
+   `ENV-LIMITED.txt`, exits `4`, boots nothing and writes **no RUN record**.
+2. **The driver** `tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs` is host-selectable
+   (rc.2 default / rc.5 via the one selector), runs `--boots 2`, emits one `u5-run-record/1` per boot
+   through the same contract and machine judges, and binds the **model axis** (`mode`, `label`, base URL
+   presence, key-env name, `keyConfigured`, mock path) into every record. It covers the required chain —
+   **Leader creates Worker → Worker asked for a write requiring approval → real Control case → Officer
+   (own session, own binding) reviews → grant → execution with bytes verified OUTSIDE the sandbox →
+   collect** — plus the negatives: **denied ask** (zero bytes), **Stop while pending** (zero bytes,
+   terminal `CANCELLED`), **duplicate approval** (one decision, one execution, bytes unchanged) and
+   **restart recovery** (same home, `create-or-open`, no replayed grant).
+3. **Measured, `--model scripted --boots 2`:** each boot **20/20 judges PROVEN, overall PASS**, RUN-record
+   self-check `cases=20 subset=false`; the pair agrees (`agreeing=true differing=[]`). Full evidence and the
+   judge-by-judge values: `dev/agent-workflow/evidence/d-boot-feasibility/real-model/` and its
+   `REAL-MODEL-ACCEPTANCE.md`. The **process/PTY arm is not in this driver's declared case set** (its
+   subject is `UNSUPPORTED BY PRODUCT RULING` and absent here: `no PTY backend registered`); it still runs
+   as an observation and its REFUTED verdict is recorded — no red is converted to green.
+4. **No row above is upgraded, no real-model claim is made, and the candidate gate is unchanged
+   (NON-REQUIRED).** This section is the only change: row 34 is new and is `ENV-LIMITED` with its missing
+   item named.
+
 ## ROUND 110 — the rc.5 TEST MATRIX (no capability row moves)
 
 Round 110 (review `20261125-0058` Stage B) did **not** re-run the four D drivers and did **not** move
@@ -124,6 +161,7 @@ Hosts, exactly as the drivers printed them (`candidate:` row, first log line of 
 | 31 | P0-2 pre-dispatch abort observation (`pre-dispatch-abort.mjs`) | **MECHANISM** | **MECHANISM** (`SLICE-21/30/37/38`, assertions unchanged) | **MECHANISM** (same arms, both hosts; round 106 adds the ruled-law controls `SLICE-40/41/42` on both hosts) | **CLOSED BY OWNER RULING (round 106, review `20261124-2120` ruling 2)** — the lawful no-settlement boundary is ruled and tested; `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` remains a diagnostic report, never a settlement. The observer is still not wired into a booted host's own agent loop: a coverage limit, not an acceptance blocker |
 | 32 | OS confinement negative controls (§3.1) | ENV-LIMITED where the OS capability is absent | measured | measured (round 78 shape) | the host/OS limit is the limit; no product switch exists |
 | 33 | search face, Shape B (in-lane `grep`, out-of-lane refused) | DEV-LIVE | **PROVEN** (round 64/98) | **PROVEN** (round 78) | Shape B is the declared support level; not full dynamic permission governance |
+| 34 | REAL-MODEL acceptance harness (`run-real-model.mjs`, 20 judges) | **ENV-LIMITED** (harness `SCRIPTED-ONLY`) | **20/20 PROVEN, 2/2 agreeing boots — SCRIPTED-ONLY** (round 111) | not run | the ENVIRONMENT: no real model route for a test host; the exact missing item is **`DEEPSEEK_API_KEY`** (optionally `DEEPSEEK_BASE_URL`), resolved by the pinned `llm-deepseek-api-key` adapter (`deepseek-official`) in both pinned hosts. `probe.json` is the machine record. With that credential the same command becomes the real acceptance run and only then may the level become `DEV-LIVE-real-model` |
 
 **The dual-host candidate gate — ROUND 109 result (NON-REQUIRED; this fact does not upgrade any row).**
 `node scripts/candidate-acceptance-gate.mjs --hosts both` at `41d579119` + the round-109 arm is

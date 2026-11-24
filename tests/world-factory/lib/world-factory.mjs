@@ -544,6 +544,10 @@ export class TestWorld {
     }
     this.instance = null
     this.mock = null
+    // A REAL provider route (no in-process mock). `null` = the scripted mock is
+    // the only model; a set value = the Host talks to a real endpoint and the
+    // run is labelled by its caller. Set by `startRealProvider()` only.
+    this.realProvider = null
     this.hostLease = null
     this.mockLease = null
     this.token = undefined
@@ -594,6 +598,33 @@ export class TestWorld {
     this.mock = await startMockModel({ port: lease.port, decide, log: () => {} })
     lease.note({ mockListeningOn: this.mock.port })
     return { port: this.mock.port }
+  }
+
+  /**
+   * Bind this World to a REAL provider route instead of the in-process mock.
+   *
+   * WHY IT EXISTS: every booted-host proof so far ran the scripted mock as the
+   * model. A real-model acceptance run needs the SAME boot/teardown/lifecycle
+   * code while the Host talks to a real endpoint — not a second launcher. This
+   * method only declares the route; `startHost` writes it into the child env
+   * (`DEEPSEEK_BASE_URL` / `DEEPSEEK_API_KEY`, the two names the pinned host's
+   * `llm-deepseek-api-key` adapter resolves).
+   *
+   * It is deliberately NOT usable together with `startMock`: a World has
+   * exactly ONE model route, so a caller cannot half-run a real endpoint and
+   * fall back to the script without saying so.
+   *
+   * @param {{baseUrl?: string|null, apiKey: string}} opts
+   *   `apiKey` is the credential VALUE; the caller owns it and must never log
+   *   it. `baseUrl` null = the host's public default endpoint.
+   */
+  async startRealProvider({ baseUrl = null, apiKey } = {}) {
+    if (typeof apiKey !== 'string' || apiKey.trim() === '') {
+      throw new Error('startRealProvider needs a non-empty apiKey (the caller reads it; this module never invents one)')
+    }
+    if (this.mock !== null) throw new Error('startRealProvider after startMock: a World has ONE model route')
+    this.realProvider = { baseUrl: baseUrl === null ? null : String(baseUrl), apiKey: String(apiKey) }
+    return { mode: 'real', baseUrl: this.realProvider.baseUrl, keyConfigured: true }
   }
 
   /**
@@ -709,9 +740,20 @@ export class TestWorld {
     }
     // Reboot on a held lease: the holder is us (restart leg keeps the port).
     // Provider env: injected into process.env (DshInstance spreads it).
-    if (this.mock === null) throw new Error('startMock before startHost (provider env)')
-    process.env.DEEPSEEK_BASE_URL = `http://127.0.0.1:${this.mock.port}`
-    process.env.DEEPSEEK_API_KEY = 'u5-fake-key'
+    if (this.realProvider !== null) {
+      // REAL route: the caller already proved the credential exists. `baseUrl`
+      // null means "the pinned adapter's own public default", so the variable
+      // is removed rather than set to an empty string (an empty value would be
+      // read as a URL).
+      if (this.realProvider.baseUrl === null) delete process.env.DEEPSEEK_BASE_URL
+      else process.env.DEEPSEEK_BASE_URL = this.realProvider.baseUrl
+      process.env.DEEPSEEK_API_KEY = this.realProvider.apiKey
+    } else if (this.mock === null) {
+      throw new Error('startMock before startHost (provider env)')
+    } else {
+      process.env.DEEPSEEK_BASE_URL = `http://127.0.0.1:${this.mock.port}`
+      process.env.DEEPSEEK_API_KEY = 'u5-fake-key'
+    }
     process.env.U5_CANARY_LEDGER = this.ledgerPath
     process.env.U5_CANARY_MARKER_DIR = this.markerDir
     process.env.U5_CANARY_VISIBLE = this.visible ? '1' : '0'

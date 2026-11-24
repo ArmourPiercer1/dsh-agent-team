@@ -1,0 +1,31 @@
+{
+  "at": "2026-11-24T21:09:10.332Z",
+  "head": "82da9ca9f9a85b83506b6c170c1659867729882b",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use",
+  "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "probeSha256": "94ac7e1d9f09f08eba6f59fedee7706e6a00b907de9e4bdd43ee4b2ff4b7efdb",
+  "jsSubstitutions": [
+    {
+      "expression": "(process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split(',').map((entry) => entry.trim()).filter((entry) => entry !== '')",
+      "value": []
+    },
+    {
+      "expression": "process.env.A5SF_WEB_SEARCH_BASE_URL ?? 'https://api.exa.ai'",
+      "value": "https://api.exa.ai"
+    },
+    {
+      "expression": "process.env.A5SF_WEB_SEARCH_API_KEY ?? process.env.EXA_API_KEY ?? ''",
+      "value": ""
+    },
+    {
+      "expression": "process.platform === 'win32'",
+      "value": false
+    },
+    {
+      "expression": "process.platform === 'win32'",
+      "value": false
+    }
+  ],
+  "boots": 2
+}

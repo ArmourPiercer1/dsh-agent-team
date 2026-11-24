@@ -1,0 +1,370 @@
+{
+  "agreeing": true,
+  "rows": [
+    {
+      "key": "overall",
+      "values": [
+        "\"PASS\"",
+        "\"PASS\""
+      ]
+    },
+    {
+      "key": "enablement",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "officerUp",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "officerBinding",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "routedWake",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "caseCreated",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "routerOfficer",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "wakeDelivered",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "officerDecides",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "askExecutesAfterReview",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "duplicateRoute",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "stickyStop",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "refusal",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "askExecute",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "askExecute2",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "askDenied",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "askStopped",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "leaderCreatesWorker",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "collect",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "duplicateApproval",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "restartNoReplay",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
+      "key": "askAppeared",
+      "values": [
+        "true",
+        "true"
+      ]
+    },
+    {
+      "key": "wakeFacts",
+      "values": [
+        "8",
+        "8"
+      ]
+    },
+    {
+      "key": "wakeIntentFiles",
+      "values": [
+        "0",
+        "0"
+      ]
+    },
+    {
+      "key": "reviewWakeHits",
+      "values": [
+        "0",
+        "0"
+      ]
+    },
+    {
+      "key": "officerAllowFacts",
+      "values": [
+        "1",
+        "1"
+      ]
+    },
+    {
+      "key": "askExecuteBytes",
+      "values": [
+        "27",
+        "27"
+      ]
+    },
+    {
+      "key": "askExecuteSha256",
+      "values": [
+        "\"ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3\"",
+        "\"ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3\""
+      ]
+    },
+    {
+      "key": "askExecuteSettlement",
+      "values": [
+        "\"COMPLETED\"",
+        "\"COMPLETED\""
+      ]
+    },
+    {
+      "key": "askExecute2Bytes",
+      "values": [
+        "29",
+        "29"
+      ]
+    },
+    {
+      "key": "askExecute2Sha256",
+      "values": [
+        "\"2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f\"",
+        "\"2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f\""
+      ]
+    },
+    {
+      "key": "askExecute2Settlement",
+      "values": [
+        "\"COMPLETED\"",
+        "\"COMPLETED\""
+      ]
+    },
+    {
+      "key": "askExecuteProcessRequestIdKnown",
+      "values": [
+        "true",
+        "true"
+      ]
+    },
+    {
+      "key": "askExecuteProcessInLaneBytes",
+      "values": [
+        "null",
+        "null"
+      ]
+    },
+    {
+      "key": "askExecuteProcessInLaneSha256",
+      "values": [
+        "null",
+        "null"
+      ]
+    },
+    {
+      "key": "askExecuteProcessOutLaneExists",
+      "values": [
+        "false",
+        "false"
+      ]
+    },
+    {
+      "key": "askExecuteProcessSettlement",
+      "values": [
+        "\"FAILED\"",
+        "\"FAILED\""
+      ]
+    },
+    {
+      "key": "askDeniedBytes",
+      "values": [
+        "null",
+        "null"
+      ]
+    },
+    {
+      "key": "askDeniedSettlement",
+      "values": [
+        "\"REFUSED\"",
+        "\"REFUSED\""
+      ]
+    },
+    {
+      "key": "askStoppedBytes",
+      "values": [
+        "null",
+        "null"
+      ]
+    },
+    {
+      "key": "askStoppedSettlement",
+      "values": [
+        "\"REFUSED\"",
+        "\"REFUSED\""
+      ]
+    },
+    {
+      "key": "legOrdinal",
+      "values": [
+        "1",
+        "1"
+      ]
+    },
+    {
+      "key": "routeKind",
+      "values": [
+        "\"recipient\"",
+        "\"recipient\""
+      ]
+    },
+    {
+      "key": "routeRole",
+      "values": [
+        "\"officer\"",
+        "\"officer\""
+      ]
+    },
+    {
+      "key": "selfAskRouteKind",
+      "values": [
+        "\"recipient\"",
+        "\"recipient\""
+      ]
+    },
+    {
+      "key": "selfAskRouteRole",
+      "values": [
+        "\"leader\"",
+        "\"leader\""
+      ]
+    },
+    {
+      "key": "routedWakes",
+      "values": [
+        "4",
+        "4"
+      ]
+    },
+    {
+      "key": "deliveredWakes",
+      "values": [
+        "4",
+        "4"
+      ]
+    },
+    {
+      "key": "managementExecutions",
+      "values": [
+        "0",
+        "0"
+      ]
+    },
+    {
+      "key": "officerResolveSettlement",
+      "values": [
+        "\"COMPLETED\"",
+        "\"COMPLETED\""
+      ]
+    },
+    {
+      "key": "duplicateWakeInputs",
+      "values": [
+        "1",
+        "1"
+      ]
+    },
+    {
+      "key": "stickyStopMarkerCount",
+      "values": [
+        "1",
+        "1"
+      ]
+    }
+  ],
+  "text": "TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)\nfact                              boot1                               boot2                               \noverall                              \"PASS\"                               \"PASS\"                              \nenablement                           \"PROVEN\"                             \"PROVEN\"                            \nofficerUp                            \"PROVEN\"                             \"PROVEN\"                            \nofficerBinding                       \"PROVEN\"                             \"PROVEN\"                            \nroutedWake                           \"PROVEN\"                             \"PROVEN\"                            \ncaseCreated                          \"PROVEN\"                             \"PROVEN\"                            \nrouterOfficer                        \"PROVEN\"                             \"PROVEN\"                            \nwakeDelivered                        \"PROVEN\"                             \"PROVEN\"                            \nofficerDecides                       \"PROVEN\"                             \"PROVEN\"                            \naskExecutesAfterReview               \"PROVEN\"                             \"PROVEN\"                            \nduplicateRoute                       \"PROVEN\"                             \"PROVEN\"                            \nstickyStop                           \"PROVEN\"                             \"PROVEN\"                            \nrefusal                              \"PROVEN\"                             \"PROVEN\"                            \naskExecute                           \"PROVEN\"                             \"PROVEN\"                            \naskExecute2                          \"PROVEN\"                             \"PROVEN\"                            \naskDenied                            \"PROVEN\"                             \"PROVEN\"                            \naskStopped                           \"PROVEN\"                             \"PROVEN\"                            \nleaderCreatesWorker                  \"PROVEN\"                             \"PROVEN\"                            \ncollect                              \"PROVEN\"                             \"PROVEN\"                            \nduplicateApproval                    \"PROVEN\"                             \"PROVEN\"                            \nrestartNoReplay                      \"PROVEN\"                             \"PROVEN\"                            \naskAppeared                          true                                 true                                \nwakeFacts                            8                                    8                                   \nwakeIntentFiles                      0                                    0                                   \nreviewWakeHits                       0                                    0                                   \nofficerAllowFacts                    1                                    1                                   \naskExecuteBytes                      27                                   27                                  \naskExecuteSha256                     \"ced10112e5b82a2b1b6bca1b85b1dff24   \"ced10112e5b82a2b1b6bca1b85b1dff24  \naskExecuteSettlement                 \"COMPLETED\"                          \"COMPLETED\"                         \naskExecute2Bytes                     29                                   29                                  \naskExecute2Sha256                    \"2d71ffdd499955a34ec86af1c25c00f83   \"2d71ffdd499955a34ec86af1c25c00f83  \naskExecute2Settlement                \"COMPLETED\"                          \"COMPLETED\"                         \naskExecuteProcessRequestIdKnown      true                                 true                                \naskExecuteProcessInLaneBytes         null                                 null                                \naskExecuteProcessInLaneSha256        null                                 null                                \naskExecuteProcessOutLaneExists       false                                false                               \naskExecuteProcessSettlement          \"FAILED\"                             \"FAILED\"                            \naskDeniedBytes                       null                                 null                                \naskDeniedSettlement                  \"REFUSED\"                            \"REFUSED\"                           \naskStoppedBytes                      null                                 null                                \naskStoppedSettlement                 \"REFUSED\"                            \"REFUSED\"                           \nlegOrdinal                           1                                    1                                   \nrouteKind                            \"recipient\"                          \"recipient\"                         \nrouteRole                            \"officer\"                            \"officer\"                           \nselfAskRouteKind                     \"recipient\"                          \"recipient\"                         \nselfAskRouteRole                     \"leader\"                             \"leader\"                            \nroutedWakes                          4                                    4                                   \ndeliveredWakes                       4                                    4                                   \nmanagementExecutions                 0                                    0                                   \nofficerResolveSettlement             \"COMPLETED\"                          \"COMPLETED\"                         \nduplicateWakeInputs                  1                                    1                                   \nstickyStopMarkerCount                1                                    1                                   \n\nagreeing=true differing=[]"
+}

@@ -28,6 +28,23 @@ instead of a crash. **Not claimed:** the product wires no mount seam today, so t
 refresh cannot fire in the assembled product — that is a C-stage wiring item, now visible instead of
 fatal.
 
+## Round 111: REAL-MODEL acceptance is `ENV-LIMITED`; the harness is validated `SCRIPTED-ONLY`
+
+Not a migrated-suite change. Round 111 adds the real-model acceptance **driver**
+`tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs` (20 judges, `--model real|scripted`,
+`--boots 2`, host-selectable, RUN records through `createRunRecord`/`addCase`/`finalize` and the EB3
+manifest validator). The in-driver probe runs before any boot and found **no real model route**: no
+`DEEPSEEK_API_KEY` / `DEEPSEEK_BASE_URL` in the environment, no provider record in the 45 test worlds,
+only the mock deployment wired; both pinned hosts resolve `DEEPSEEK_API_KEY` (`deepseek-official`). The
+level is therefore **`ENV-LIMITED`** with the exact missing item **`DEEPSEEK_API_KEY`** (optionally
+`DEEPSEEK_BASE_URL`). `--model real` writes `probe.json` + `ENV-LIMITED.txt`, exits `4`, boots nothing and
+writes no RUN record. The scripted validation (`--model scripted --boots 2`, labelled **`SCRIPTED-ONLY`**)
+is **20/20 PROVEN per boot, overall PASS, agreeing pair** (`agreeing=true differing=[]`), including the
+four new judges (`rm:leader-creates-worker`, `rm:collect`, `rm:duplicate-approval`,
+`rm:restart-no-replay`) and the deny / Stop / duplicate / restart negatives. Evidence:
+`dev/agent-workflow/evidence/d-boot-feasibility/real-model/` (+ `REAL-MODEL-ACCEPTANCE.md`). **No
+migrated-suite count moves; the migrated layer remains 238/238 as measured in round 110.**
+
 ## Round 31: the four LAYOUT PINS are re-anchored — 237/238
 
 Four of the five were pins on the retired root/route, re-expressed against the new assembly

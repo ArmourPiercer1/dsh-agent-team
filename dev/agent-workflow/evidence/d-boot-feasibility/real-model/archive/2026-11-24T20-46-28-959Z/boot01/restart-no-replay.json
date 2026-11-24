@@ -1,0 +1,70 @@
+{
+  "measurement": {
+    "restarted": true,
+    "stopped": {
+      "wasRunning": true,
+      "portFree": true
+    },
+    "health": {
+      "ok": true,
+      "boot": 2,
+      "ready": true,
+      "rootSessionId": "session-real-model-root",
+      "liveSessions": [
+        "session-real-model-root",
+        "session-team-child-7e63fa40dcc75f1f9cf85433b7357426",
+        "session-team-child-a3d2ddfd7c73a4e7714c635105202791"
+      ],
+      "toolCount": 15
+    },
+    "origin": "http://127.0.0.1:3195",
+    "before": {
+      "fileSha256": "ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3",
+      "fileBytes": 27,
+      "decisions": 1,
+      "executions": 1,
+      "wakeRouted": 1,
+      "wakeDelivered": 0
+    },
+    "after": {
+      "fileSha256": "ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3",
+      "fileBytes": 27,
+      "decisions": 1,
+      "executions": 1,
+      "wakeRouted": 1,
+      "wakeDelivered": 0
+    }
+  },
+  "verdict": {
+    "proposition": "a RESTART of the same World does not replay the settled grant: the approved bytes, the decision, the settlement and the routed wake are all unchanged",
+    "verdict": "PROVEN",
+    "clauses": [
+      {
+        "id": "restart-happened",
+        "ok": true,
+        "detail": "restarted=true health={\"ok\":true,\"boot\":2,\"ready\":true,\"rootSessionId\":\"session-real-model-root\",\"liveSessions\":[\"session-real-model-root\",\"session-team-child-7e63fa40dcc75f1f9cf85433b7357426\",\"session-team-child-a3d2ddfd7"
+      },
+      {
+        "id": "file-unchanged",
+        "ok": true,
+        "detail": "before=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3 after=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3 bytes=27"
+      },
+      {
+        "id": "no-second-decision",
+        "ok": true,
+        "detail": "decisions before=1 after=1"
+      },
+      {
+        "id": "no-second-execution",
+        "ok": true,
+        "detail": "executions before=1 after=1"
+      },
+      {
+        "id": "no-second-wake",
+        "ok": true,
+        "detail": "routed before=1 after=1; delivered before=0 after=0"
+      }
+    ],
+    "failing": []
+  }
+}

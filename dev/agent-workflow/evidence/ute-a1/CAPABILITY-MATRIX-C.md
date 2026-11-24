@@ -28,6 +28,26 @@ The workflow now triggers on `pull_request: [labeled, synchronize, reopened]` fo
 every candidate HEAD gets its own result) and binds the check to `github.sha`; it is still not a
 layer of `ci-required` and not a branch-protection context.
 
+### Round 111 — REAL-MODEL acceptance: `ENV-LIMITED`, harness validated `SCRIPTED-ONLY`
+
+Round 111 answers review `20261125-0058` Stage B item 2. The **driver** for the real-model chain exists
+(`tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs`, 20 judges, `--model real|scripted`,
+`--boots 2`, host-selectable, RUN records through the same contract); the **environment** has no real model
+route. The in-driver probe (before every boot) found no `DEEPSEEK_API_KEY` / `DEEPSEEK_BASE_URL`, no
+provider record in any of the 45 test worlds (21 `.credentials.yaml`, all only
+`client-connection/browser-session`), and only the mock deployment wired; both pinned hosts resolve
+`DEEPSEEK_API_KEY` for the `deepseek-official` provider. **Missing item: `DEEPSEEK_API_KEY`** (optionally
+with `DEEPSEEK_BASE_URL`). `--model real` therefore exits `4` with `probe.json` + `ENV-LIMITED.txt`, boots
+nothing and writes no RUN record. `--model scripted --boots 2` — labelled `SCRIPTED-ONLY` in every record —
+is **20/20 PROVEN on both boots, overall PASS, agreeing pair**; the four new judges
+(`rm:leader-creates-worker`, `rm:collect`, `rm:duplicate-approval`, `rm:restart-no-replay`) and the four
+negative controls (deny / Stop / duplicate approval / restart) are green. No row below changes level; **no
+real-model claim is made**.
+
+| C row | candidate-gate judge(s) | rc.2 | rc.5 |
+| --- | --- | --- | --- |
+| C-real-model | `rm:` 20-judge set (real-model driver; harness only) | **ENV-LIMITED** — `SCRIPTED-ONLY` 20/20 ×2 boots; no real model route (`DEEPSEEK_API_KEY` missing) | not run (same environment) |
+
 ### Round 110 — the rc.5 test POPULATION (no level moves, no gate change)
 
 Round 110 measured the rc.5 behaviour of the broader test population (not the four drivers) —
