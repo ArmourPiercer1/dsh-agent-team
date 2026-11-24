@@ -2,40 +2,40 @@
   "ids": {
     "officer": "inst-1crltnl0089j",
     "worker": "inst-0ty67u70r99a",
-    "pendingRequestId": "ctrl-0vkhyoy1x4l8o10052ozk18p",
-    "pendingRequestId2": "ctrl-0b0rp991otk6rm1nluus70eo",
-    "pendingRequestId3": "ctrl-1250im9009xzr21v94zw30vt",
-    "pendingProcessRequestId": "ctrl-1hyh75w0gn4la71jpmr0e0sq"
+    "pendingRequestId": "ctrl-0lps27i0y7cskd1gsbeyk0a7",
+    "pendingRequestId2": "ctrl-0j9bamw1kd2zgj1nb4lga1qq",
+    "pendingRequestId3": "ctrl-021bsie01hk8291tmmsu00zt",
+    "pendingProcessRequestId": "ctrl-0x9y22l1emaicm1gsch1n1mh"
   },
   "resolveOutcome": {
     "call": {
       "rootSessionId": "session-dboot-d4-root",
-      "requestToken": "dboot-d4-resolve-ctrl-0vkhyoy1x4l8o10052ozk18p",
-      "requestId": "ctrl-0vkhyoy1x4l8o10052ozk18p",
+      "requestToken": "dboot-d4-resolve-ctrl-0lps27i0y7cskd1gsbeyk0a7",
+      "requestId": "ctrl-0lps27i0y7cskd1gsbeyk0a7",
       "decision": "allow"
     },
-    "result": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-0vkhyoy1x4l8o10052ozk18p\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-1crltnl0089j\",\"role\":\"member\"},\"scope\":{\"rootSessionId\":\"session-dboot-d4-root\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0ty67u70r99a\"},\"targetInstanceId\":\"inst-0ty67u70r99a\",\"actionName\":\"admission-ask\",\"correlation\":\"admission:call-d4-worker-write\",\"toolName\":\"write\",\"operationFingerprint\":\"sha256:64efc2f2c9ea4a15a9086cde5353469c0f6f4a172bba79f97271496d36f281df\",\"authorityScope\":{\"operationClass\":\"write\",\"matcher\":{\"kind\":\"exact\",\"resource\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T05-25-12Z/workspace/lane/worker-ask.txt\"}}},\"requestSequence\":9,\"decisionSequence\":12,\"crea",
+    "result": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-0lps27i0y7cskd1gsbeyk0a7\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-1crltnl0089j\",\"role\":\"member\"},\"scope\":{\"rootSessionId\":\"session-dboot-d4-root\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0ty67u70r99a\"},\"targetInstanceId\":\"inst-0ty67u70r99a\",\"actionName\":\"admission-ask\",\"correlation\":\"admission:call-d4-worker-write\",\"toolName\":\"write\",\"operationFingerprint\":\"sha256:a22a3d0dfe7f6a10fc9788951a84840ed77dbcbc2cc00b5bfcda870a57af1006\",\"authorityScope\":{\"operationClass\":\"write\",\"matcher\":{\"kind\":\"exact\",\"resource\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T06-12-24Z/workspace/lane/worker-ask.txt\"}}},\"requestSequence\":9,\"decisionSequence\":12,\"crea",
     "isError": false
   },
   "durableRowShape": {
     "actionName": "admission-ask",
-    "approvalCaseId": "case-0d7644p1dxe75m0xtcqer1ox",
+    "approvalCaseId": "case-1lerntt153pjxu1skmx5j0oi",
     "authorityGeneration": 0,
     "authorityScope": {
       "matcher": {
         "kind": "exact",
-        "resource": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T05-25-12Z/workspace/lane/worker-ask.txt"
+        "resource": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T06-12-24Z/workspace/lane/worker-ask.txt"
       },
       "operationClass": "write"
     },
     "beneficiaryAuthority": "member",
-    "blueprintContentHash": "sha256:74b3b5c6ca37d10960c2dc47584c426f0b51e80de755d3a3f387976ec1ce007f",
+    "blueprintContentHash": "sha256:f493684edea5618009729182f096f75fcd2f4c27cc7cfdeb53947de3e883e6fd",
     "blueprintRevision": "1",
     "correlation": "admission:call-d4-worker-write",
     "executionCoupling": "inline",
     "kind": "leader-approval",
     "legOrdinal": 1,
-    "operationFingerprint": "sha256:64efc2f2c9ea4a15a9086cde5353469c0f6f4a172bba79f97271496d36f281df",
+    "operationFingerprint": "sha256:a22a3d0dfe7f6a10fc9788951a84840ed77dbcbc2cc00b5bfcda870a57af1006",
     "operationOwnerTemplateId": "worker",
     "operationToolDefinitionIdentity": "dsh.fs/write",
     "operationToolName": "write",
@@ -44,7 +44,7 @@
     "perEffectRequiredAuthorities": [
       "leader"
     ],
-    "requestId": "ctrl-0vkhyoy1x4l8o10052ozk18p",
+    "requestId": "ctrl-0lps27i0y7cskd1gsbeyk0a7",
     "requestedEffect": "allow",
     "requester": {
       "instanceId": "inst-0ty67u70r99a",
@@ -57,7 +57,7 @@
       "authorityScope": {
         "matcher": {
           "kind": "exact",
-          "resource": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T05-25-12Z/workspace/lane/worker-ask.txt"
+          "resource": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T06-12-24Z/workspace/lane/worker-ask.txt"
         },
         "operationClass": "write"
       }
@@ -66,7 +66,7 @@
       "instanceId": "inst-0ty67u70r99a",
       "kind": "instance"
     },
-    "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T05-25-12Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:bdc4f57cace7924e69aaef5564300851)",
+    "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T06-12-24Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:0cf86b7029f896868d4552b580ec2596)",
     "targetInstanceId": "inst-0ty67u70r99a",
     "toolName": "write"
   },
@@ -80,7 +80,7 @@
         "routeRole": "officer"
       },
       "reason": "closed ordinary tool ask delegated to the dedicated Officer",
-      "currentLegId": "ctrl-0vkhyoy1x4l8o10052ozk18p"
+      "currentLegId": "ctrl-0lps27i0y7cskd1gsbeyk0a7"
     },
     "selfAskRoute": {
       "kind": "recipient",
@@ -91,7 +91,7 @@
         "routeRole": "leader"
       },
       "reason": "actual OperationOwner is the Officer; self-ask routes to Leader",
-      "currentLegId": "ctrl-0vkhyoy1x4l8o10052ozk18p"
+      "currentLegId": "ctrl-0lps27i0y7cskd1gsbeyk0a7"
     },
     "memberListCalls": 1,
     "officerInstanceId": "inst-1crltnl0089j",
@@ -113,113 +113,113 @@
     {
       "factType": "team-review-wake-routed",
       "sequence": 10,
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T05-25-12Z/storages/team_domain.json",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T06-12-24Z/storages/team_domain.json",
       "payload": {
         "action": "review-wake",
-        "at": "2026-11-24T05:27:38.962Z",
+        "at": "2026-11-24T06:14:52.195Z",
         "deliveredToSessionId": "session-team-child-1d56dbb16a118ba3573db3c4b2641997",
         "recipientInstanceId": "inst-1crltnl0089j",
-        "requestId": "ctrl-0vkhyoy1x4l8o10052ozk18p",
-        "requestToken": "review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A517e16bd",
+        "requestId": "ctrl-0lps27i0y7cskd1gsbeyk0a7",
+        "requestToken": "review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A0c6d240e",
         "routeRole": "officer"
       }
     },
     {
       "factType": "team-review-wake-routed",
       "sequence": 14,
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T05-25-12Z/storages/team_domain.json",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T06-12-24Z/storages/team_domain.json",
       "payload": {
         "action": "review-wake",
-        "at": "2026-11-24T05:27:39.359Z",
+        "at": "2026-11-24T06:14:52.547Z",
         "deliveredToSessionId": "session-team-child-1d56dbb16a118ba3573db3c4b2641997",
         "recipientInstanceId": "inst-1crltnl0089j",
-        "requestId": "ctrl-0b0rp991otk6rm1nluus70eo",
-        "requestToken": "review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3Ae61ab1c9",
+        "requestId": "ctrl-0j9bamw1kd2zgj1nb4lga1qq",
+        "requestToken": "review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3Afcb6ea3d",
         "routeRole": "officer"
       }
     },
     {
       "factType": "team-review-wake-routed",
       "sequence": 20,
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T05-25-12Z/storages/team_domain.json",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T06-12-24Z/storages/team_domain.json",
       "payload": {
         "action": "review-wake",
-        "at": "2026-11-24T05:27:43.208Z",
+        "at": "2026-11-24T06:14:56.275Z",
         "deliveredToSessionId": "session-team-child-1d56dbb16a118ba3573db3c4b2641997",
         "recipientInstanceId": "inst-1crltnl0089j",
-        "requestId": "ctrl-1250im9009xzr21v94zw30vt",
-        "requestToken": "review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A7826a17c",
+        "requestId": "ctrl-021bsie01hk8291tmmsu00zt",
+        "requestToken": "review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A58d7b536",
         "routeRole": "officer"
       }
     },
     {
       "factType": "team-review-wake-routed",
       "sequence": 24,
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T05-25-12Z/storages/team_domain.json",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T06-12-24Z/storages/team_domain.json",
       "payload": {
         "action": "review-wake",
-        "at": "2026-11-24T05:27:43.963Z",
+        "at": "2026-11-24T06:14:56.970Z",
         "deliveredToSessionId": "session-team-child-1d56dbb16a118ba3573db3c4b2641997",
         "recipientInstanceId": "inst-1crltnl0089j",
-        "requestId": "ctrl-1hyh75w0gn4la71jpmr0e0sq",
-        "requestToken": "review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A5bbbfc05",
+        "requestId": "ctrl-0x9y22l1emaicm1gsch1n1mh",
+        "requestToken": "review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A1fadd6cc",
         "routeRole": "officer"
       }
     },
     {
       "factType": "team-review-wake-delivered",
       "sequence": 11,
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T05-25-12Z/storages/team_domain.json",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T06-12-24Z/storages/team_domain.json",
       "payload": {
         "action": "review-wake",
-        "at": "2026-11-24T05:27:38.980Z",
+        "at": "2026-11-24T06:14:52.218Z",
         "deliveredToInstanceId": "inst-1crltnl0089j",
         "deliveredToSessionId": "session-team-child-1d56dbb16a118ba3573db3c4b2641997",
         "factSequence": 10,
         "recipientInstanceId": "inst-1crltnl0089j",
-        "requestToken": "review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A517e16bd"
+        "requestToken": "review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A0c6d240e"
       }
     },
     {
       "factType": "team-review-wake-delivered",
       "sequence": 15,
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T05-25-12Z/storages/team_domain.json",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T06-12-24Z/storages/team_domain.json",
       "payload": {
         "action": "review-wake",
-        "at": "2026-11-24T05:27:39.381Z",
+        "at": "2026-11-24T06:14:52.564Z",
         "deliveredToInstanceId": "inst-1crltnl0089j",
         "deliveredToSessionId": "session-team-child-1d56dbb16a118ba3573db3c4b2641997",
         "factSequence": 14,
         "recipientInstanceId": "inst-1crltnl0089j",
-        "requestToken": "review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3Ae61ab1c9"
+        "requestToken": "review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3Afcb6ea3d"
       }
     },
     {
       "factType": "team-review-wake-delivered",
       "sequence": 21,
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T05-25-12Z/storages/team_domain.json",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T06-12-24Z/storages/team_domain.json",
       "payload": {
         "action": "review-wake",
-        "at": "2026-11-24T05:27:43.232Z",
+        "at": "2026-11-24T06:14:56.301Z",
         "deliveredToInstanceId": "inst-1crltnl0089j",
         "deliveredToSessionId": "session-team-child-1d56dbb16a118ba3573db3c4b2641997",
         "factSequence": 20,
         "recipientInstanceId": "inst-1crltnl0089j",
-        "requestToken": "review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A7826a17c"
+        "requestToken": "review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A58d7b536"
       }
     },
     {
       "factType": "team-review-wake-delivered",
       "sequence": 25,
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T05-25-12Z/storages/team_domain.json",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T06-12-24Z/storages/team_domain.json",
       "payload": {
         "action": "review-wake",
-        "at": "2026-11-24T05:27:43.982Z",
+        "at": "2026-11-24T06:14:56.987Z",
         "deliveredToInstanceId": "inst-1crltnl0089j",
         "deliveredToSessionId": "session-team-child-1d56dbb16a118ba3573db3c4b2641997",
         "factSequence": 24,
         "recipientInstanceId": "inst-1crltnl0089j",
-        "requestToken": "review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A5bbbfc05"
+        "requestToken": "review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A1fadd6cc"
       }
     }
   ],
@@ -230,10 +230,10 @@
   "leaderNotification": "",
   "workerWrite": {
     "arguments": {
-      "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T05-25-12Z/workspace/lane/worker-ask.txt",
+      "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T06-12-24Z/workspace/lane/worker-ask.txt",
       "content": "DBOOT_D4_WORKER_ASK_CALLED\n"
     },
-    "result": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T05-25-12Z/workspace/lane/worker-ask.txt</path>\n<type>file</type>\n<content>\nCreated file\n</content>",
+    "result": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T06-12-24Z/workspace/lane/worker-ask.txt</path>\n<type>file</type>\n<content>\nCreated file\n</content>",
     "isError": false
   },
   "workerFileExists": true

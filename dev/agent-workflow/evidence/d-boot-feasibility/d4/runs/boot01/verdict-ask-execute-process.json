@@ -10,7 +10,7 @@
     {
       "id": "approved-through-real-control-path",
       "ok": true,
-      "detail": "durable control-decision-recorded decision=allow decider={\"instanceId\":\"inst-1crltnl0089j\",\"kind\":\"instance\",\"role\":\"member\"} requestId=ctrl-1hyh75w0gn4la71jpmr0e0sq"
+      "detail": "durable control-decision-recorded decision=allow decider={\"instanceId\":\"inst-1crltnl0089j\",\"kind\":\"instance\",\"role\":\"member\"} requestId=ctrl-0x9y22l1emaicm1gsch1n1mh"
     },
     {
       "id": "process-admission-fact-allow",

@@ -8,7 +8,7 @@
       "routeRole": "officer"
     },
     "reason": "closed ordinary tool ask delegated to the dedicated Officer",
-    "currentLegId": "ctrl-13ocbce1182bvl0homul81wh"
+    "currentLegId": "ctrl-008s1jv14g1gz40t7jojh1ri"
   },
   "selfAskRoute": {
     "kind": "recipient",
@@ -19,7 +19,7 @@
       "routeRole": "leader"
     },
     "reason": "actual OperationOwner is the Officer; self-ask routes to Leader",
-    "currentLegId": "ctrl-13ocbce1182bvl0homul81wh"
+    "currentLegId": "ctrl-008s1jv14g1gz40t7jojh1ri"
   },
   "memberListCalls": 1,
   "officerInstanceId": "inst-1crltnl0089j",

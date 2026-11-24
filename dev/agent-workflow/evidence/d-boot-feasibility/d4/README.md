@@ -341,4 +341,29 @@ Exit codes: `0` the probe ran and every judge is PROVEN; `3` the probe ran and m
 | `runs/boot0{1,2}/officer-{ledger,settlement,transcript}.json` | the Officer's own admitted call and settlement |
 | `runs/boot0{1,2}/refusal-arm.json` | the negative row: rule answer, recorded fact, settlement |
 | `runs/boot0{1,2}/run-record.{json,txt}`, `summary.txt`, `teardown.json` | the shipped DEV-LIVE run record |
+| `runs/boot0{1,2}/run-record-check.json` | the producer-side SELF-CHECK of that record: `scripts/eb3-run-manifest.mjs`'s own `validateRunRecord()` over the bytes just written (`pass=true`, `findings=[]`) |
+| `run-record-self-check.json` | the run-level verdict of those checks; a refused record makes the probe exit `1` instead of `0`/`3` |
+| `archive/P0-SUPERSEDED-RUN-RECORDS.json` | inventory of superseded RUN records written by the PRE-FIX emitter (P0, review 20261124-1341): renamed to `run-record.json.superseded`, bytes unchanged |
 | `run-ledger.jsonl` | the shared host-start budget ledger (one row per start) |
+
+### 9.1 The RUN-record P0 (review 20261124-1341) and how this directory records it
+
+Both boots of round 99 wrote `run-record.json` files that the repository's own
+`EB3-RUN-MANIFEST` refused: `cases[4].id` was missing, and `subset=true` carried no `arms`.
+The cause was the EMITTER, not the measurement: the probe's `CASE_ID` table was missing the seven
+round-97 routed-wake propositions and `d4:ask-execute-process`, so `addCase(undefined, …)` folded
+all eight judges into one anonymous row and the extra rows pushed `totalCases` past `selected`.
+Every judge's verdict was real; the record that carried them was not a valid record.
+
+The repair (commit `931711c98`) is in the emitter, and the records here were RE-MEASURED by a
+fresh `--boots 2`, never hand-edited:
+
+* every judge has a stable case id, and the record declares `selectedCases === allCases` = all 17
+  judges it actually runs, so it is a FULL run (`subset=false`, no `arms`);
+* after writing a record the probe grades it with `validateRunRecord()` from
+  `scripts/eb3-run-manifest.mjs` — the SAME validator the hosted step runs — writes
+  `run-record-check.json`, and fails the run when the contract refuses it;
+* superseded records from the pre-fix emitter are kept byte-for-byte but retired to
+  `*.json.superseded` (listed in `archive/P0-SUPERSEDED-RUN-RECORDS.json`), because they are
+  history that must stay readable and must NOT be graded as current evidence. No historical JSON
+  was edited and `EB3-RUN-MANIFEST` was not relaxed.

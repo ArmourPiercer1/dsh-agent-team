@@ -1,1 +1,1 @@
-RUN-SUMMARY run=a5sf-live-d4-2026-11-24T05-25-12-793Z-b1 suite=a5sf-live-d4-probe overall=FAIL cases=10 FAIL:1 PASS:9 worlds=none subset=true arms=<unspecified> selected=8/10 recordClass=DEV-LIVE (not candidate evidence)
+RUN-SUMMARY run=a5sf-live-d4-2026-11-24T06-12-24-752Z-b1 suite=a5sf-live-d4-probe overall=FAIL cases=17 FAIL:1 PASS:16 worlds=none recordClass=DEV-LIVE (not candidate evidence)
