@@ -703,7 +703,7 @@ Officer's own session receives a **machine-attributed** input (`source.kind = pl
 and the management plane executes **zero** tools. The Officer is woken in its own session and its own
 `team_resolve_control` is admitted under **its own binding** (durable `invocation-authority` allow,
 `COMPLETED` settlement). The worker's granted call then executes AFTER the decision — real bytes on the
-host filesystem (`29 bytes`, `sha256:2b28991b…`), settlement `COMPLETED`/`completed`.
+host filesystem (`27 bytes`, `sha256:ced10112…`), settlement `COMPLETED`/`completed`.
 
 **The two laws are now live, not just in-process.**
 - **Duplicate route ⇒ one wake.** Leg 2 was routed by both real call sites (request-creation notifier and

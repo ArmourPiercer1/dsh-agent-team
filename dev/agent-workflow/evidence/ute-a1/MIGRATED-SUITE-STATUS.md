@@ -3348,8 +3348,8 @@ detail in `runs/boot0{1,2}/routed-judges.json`:
 | **`d4:routed-wake`** | conjunction | **PROVEN** |
 
 **Live evidence (two agreeing boots, DEV-LIVE, world `u5a5sfdev1`, grant `devlive-fs-search-1`).**
-The three live mutations wrote `29` bytes each (`sha256:2b28991b…` for asks 1 and 3, a different digest
-for ask 2), all `COMPLETED`. `managementExecutions=0`. Sticky marker `stopped-20765e07.json` written by
+The three live mutations wrote `27` / `29` / `29` bytes (`sha256:ced10112…` / `2d71ffdd…` /
+`2b28991b…`), all `COMPLETED`. `managementExecutions=0`. Sticky marker `stopped-20765e07.json` written by
 a real `session/cancel`, survived the machine attempt with 0 wake inputs, cleared only by a human
 prompt. Two-boot agreement `agreeing=true differing=[]`.
 

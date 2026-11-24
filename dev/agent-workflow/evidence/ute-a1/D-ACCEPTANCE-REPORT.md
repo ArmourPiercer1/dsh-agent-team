@@ -1741,8 +1741,8 @@ the pure-ask lane surviving the round-94 algebra, `reviewRouting.enabled` + `def
    `invocation-authority` allow for its callId and instanceId in its centre ledger); its settlement is
    `COMPLETED`; the Leader never resolved the leg.
 5. **`d4:ask-executes-after-review` (6 clauses).** The durable decision precedes the tool settlement; the
-   worker's result is not an error; the approved bytes are on the host filesystem (`29 bytes`,
-   `sha256:2b28991b…`); the admission allow is on the `ask` lane; settlement `COMPLETED`/`completed`.
+   worker's result is not an error; the approved bytes are on the host filesystem (`27 bytes`,
+   `sha256:ced10112…`); the admission allow is on the `ask` lane; settlement `COMPLETED`/`completed`.
 6. **`d4:duplicate-route` (5 clauses).** The second leg was routed by BOTH real route call sites (the
    request-creation notifier and the reviewer turn/end re-collection) while still pending; exactly ONE
    intent, ONE confirmation and ONE model-visible input exist. A duplicate route produces one wake.
