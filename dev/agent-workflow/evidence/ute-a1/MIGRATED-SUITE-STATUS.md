@@ -3539,7 +3539,7 @@ way the three D drivers already are, and runs it on **0.2.2-rc.5** with `--boots
   `…/index.js:2003-2008`), so under `TEAM_TEST_HOST=next` it graded an rc.5 Host with an rc.2
   module. The path now comes from the SELECTED tree. Nothing else probe-side was host-specific:
   ports/home suffix/child loader/pin all already follow the selector.
-* **Result**: 17 of 18 judges **PROVEN on rc.5** with counters and bytes identical to rc.2
+* **Result**: 16 of the 17 judges **PROVEN on rc.5** with counters and bytes identical to rc.2
   (`askExecuteBytes=27`/`sha256:ced10112…`, `askExecute2Bytes=29`/`sha256:2d71ffdd…`, 8 wake facts,
   4 routed / 4 delivered, 0 management executions, 0 wake-intent files, deny/Stop zero bytes and
   `REFUSED`), `runRecordsValid=true`, world ids `…-next`, port `13000`. The two per-host

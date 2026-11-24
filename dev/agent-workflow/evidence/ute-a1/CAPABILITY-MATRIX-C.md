@@ -837,7 +837,7 @@ text does. Both limits are stated in `ADR-approved-ask-receipt.md` §"The PROCES
 stays unbound (R4), and no `CORE_SEAM_BLOCKER` was needed — no upstream patch, no new axis, no second
 authority.
 
-## ROUND 102 (2026-11-24) — the D4 acceptance runs on the TARGET host (0.2.2-rc.5): same 18 judges, identical facts
+## ROUND 102 (2026-11-24) — the D4 acceptance runs on the TARGET host (0.2.2-rc.5): the same 17 judges, identical facts
 
 The table rows above are rc.2 measurements (plus round-78 rc.5 for the three D drivers). Round 102
 closes the remaining **target-host** gap for the D4 probe: `probe-d4-routed-wake.mjs` is now

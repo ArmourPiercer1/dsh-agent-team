@@ -30,7 +30,7 @@ Evidence: `dev/agent-workflow/evidence/ute-a1/round102/` (`d4-rc2/`, `d4-rc5/`, 
   Measurable, not stylistic: rc.5's `tool-fs` injects `workingDirectory` and rc.2's does not
   (rc.5 `…/tool-fs/lib/index.js:2003-2008`, rc.2 `…:1176-1180`). It now comes from the selected tree;
   ports/home suffix/child loader/pin already followed `tests/next-host/host-select.mjs`.
-* **rc.5 result, `--boots 2`**: 17 of 18 judges **PROVEN**, with counters and bytes **identical** to
+* **rc.5 result, `--boots 2`**: 16 of the 17 judges **PROVEN**, with counters and bytes **identical** to
   rc.2 — 8 wake facts, 4 routed / 4 delivered, **0** management executions, **0** wake-intent files,
   `write` under an approval 27 B `sha256:ced10112…` and 29 B `sha256:2d71ffdd…`, both `COMPLETED`;
   deny and Stop-while-pending leave **0 bytes** and settle `REFUSED`; `runRecordsValid=true`; world

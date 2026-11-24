@@ -104,8 +104,8 @@ production wiring, and this table does not claim it is.
 
 ### What moved in round 102
 
-1. **The D4 acceptance now exists on the TARGET host.** All 18 D4 judges were run on rc.5
-   (`--boots 2`, `TEAM_TEST_HOST=next`): 17 PROVEN with facts and bytes **identical** to rc.2, one
+1. **The D4 acceptance now exists on the TARGET host.** All 17 D4 judges were run on rc.5
+   (`--boots 2`, `TEAM_TEST_HOST=next`): 16 of the 17 judges PROVEN with facts and bytes **identical** to rc.2, one
    REFUTED for the product reason above. The two `agreement.txt` files are **byte-identical**.
 2. **The probe is host-selectable** through the ONE selector (`tests/next-host/host-select.mjs`),
    including its realm `tool-fs` module, which used to be hardcoded to rc.2 (§RC5-MIGRATION §13).

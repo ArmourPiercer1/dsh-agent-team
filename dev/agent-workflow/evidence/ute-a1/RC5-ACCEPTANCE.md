@@ -487,7 +487,7 @@ of `D-ACCEPTANCE-REPORT.md`; the per-judge detail and the drift resolution are `
 | pin | `639ed01539…` | `9c2670d3bc…` |
 | world / port | `u5u5a5sfdev1-…`, 3195 | `u5u5a5sfdev1-…-next`, 13000 |
 | result line | `evidence-complete=true allBooted=true blocked=true runRecordsValid=true (2/2; agreeing pair=true)` | identical |
-| judges | 17 PROVEN + 1 REFUTED | **identical** (same clause ok-flags, same failing ids) |
+| judges | 16 of 17 PROVEN + 1 REFUTED | **identical** (same clause ok-flags, same failing ids) |
 | counters | 8 wake facts, 4 routed / 4 delivered, 0 management executions, 0 wake-intent files, 27 B `ced10112…`, 29 B `2d71ffdd…`, deny/Stop 0 B / `REFUSED` | **byte-identical** (`agreement.txt` diff = empty) |
 
 **P0-2 (pre-dispatch abort) is NOT closed by this round.** The observer
