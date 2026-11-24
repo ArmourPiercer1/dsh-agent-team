@@ -7,6 +7,7 @@ officerBinding                       "PROVEN"                             "PROVE
 routedWake                           "REFUTED"                            "REFUTED"                           
 refusal                              "PROVEN"                             "PROVEN"                            
 askExecute                           "PROVEN"                             "PROVEN"                            
+askExecute2                          "PROVEN"                             "PROVEN"                            
 askDenied                            "PROVEN"                             "PROVEN"                            
 askStopped                           "PROVEN"                             "PROVEN"                            
 askAppeared                          true                                 true                                
@@ -18,6 +19,9 @@ officerAllowFacts                    1                                    1
 askExecuteBytes                      27                                   27                                  
 askExecuteSha256                     "ced10112e5b82a2b1b6bca1b85b1dff24   "ced10112e5b82a2b1b6bca1b85b1dff24  
 askExecuteSettlement                 "COMPLETED"                          "COMPLETED"                         
+askExecute2Bytes                     29                                   29                                  
+askExecute2Sha256                    "2d71ffdd499955a34ec86af1c25c00f83   "2d71ffdd499955a34ec86af1c25c00f83  
+askExecute2Settlement                "COMPLETED"                          "COMPLETED"                         
 askDeniedBytes                       null                                 null                                
 askDeniedSettlement                  "REFUSED"                            "REFUSED"                           
 askStoppedBytes                      null                                 null                                

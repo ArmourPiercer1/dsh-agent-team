@@ -51,6 +51,13 @@
       ]
     },
     {
+      "key": "askExecute2",
+      "values": [
+        "\"PROVEN\"",
+        "\"PROVEN\""
+      ]
+    },
+    {
       "key": "askDenied",
       "values": [
         "\"PROVEN\"",
@@ -128,6 +135,27 @@
       ]
     },
     {
+      "key": "askExecute2Bytes",
+      "values": [
+        "29",
+        "29"
+      ]
+    },
+    {
+      "key": "askExecute2Sha256",
+      "values": [
+        "\"2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f\"",
+        "\"2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f\""
+      ]
+    },
+    {
+      "key": "askExecute2Settlement",
+      "values": [
+        "\"COMPLETED\"",
+        "\"COMPLETED\""
+      ]
+    },
+    {
       "key": "askDeniedBytes",
       "values": [
         "null",
@@ -156,5 +184,5 @@
       ]
     }
   ],
-  "text": "TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)\nfact                              boot1                               boot2                               \noverall                              \"BLOCKED\"                            \"BLOCKED\"                           \nenablement                           \"PROVEN\"                             \"PROVEN\"                            \nofficerUp                            \"PROVEN\"                             \"PROVEN\"                            \nofficerBinding                       \"PROVEN\"                             \"PROVEN\"                            \nroutedWake                           \"REFUTED\"                            \"REFUTED\"                           \nrefusal                              \"PROVEN\"                             \"PROVEN\"                            \naskExecute                           \"PROVEN\"                             \"PROVEN\"                            \naskDenied                            \"PROVEN\"                             \"PROVEN\"                            \naskStopped                           \"PROVEN\"                             \"PROVEN\"                            \naskAppeared                          true                                 true                                \npendingRequestId                     \"ctrl-1xxrzo21k29yc31rawhls0qn\"      \"ctrl-1xxrzo21k29yc31rawhls0qn\"     \nwakeFacts                            0                                    0                                   \nwakeIntentFiles                      0                                    0                                   \nreviewWakeHits                       0                                    0                                   \nofficerAllowFacts                    1                                    1                                   \naskExecuteBytes                      27                                   27                                  \naskExecuteSha256                     \"ced10112e5b82a2b1b6bca1b85b1dff24   \"ced10112e5b82a2b1b6bca1b85b1dff24  \naskExecuteSettlement                 \"COMPLETED\"                          \"COMPLETED\"                         \naskDeniedBytes                       null                                 null                                \naskDeniedSettlement                  \"REFUSED\"                            \"REFUSED\"                           \naskStoppedBytes                      null                                 null                                \naskStoppedSettlement                 \"REFUSED\"                            \"REFUSED\"                           \n\nagreeing=true differing=[]"
+  "text": "TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)\nfact                              boot1                               boot2                               \noverall                              \"BLOCKED\"                            \"BLOCKED\"                           \nenablement                           \"PROVEN\"                             \"PROVEN\"                            \nofficerUp                            \"PROVEN\"                             \"PROVEN\"                            \nofficerBinding                       \"PROVEN\"                             \"PROVEN\"                            \nroutedWake                           \"REFUTED\"                            \"REFUTED\"                           \nrefusal                              \"PROVEN\"                             \"PROVEN\"                            \naskExecute                           \"PROVEN\"                             \"PROVEN\"                            \naskExecute2                          \"PROVEN\"                             \"PROVEN\"                            \naskDenied                            \"PROVEN\"                             \"PROVEN\"                            \naskStopped                           \"PROVEN\"                             \"PROVEN\"                            \naskAppeared                          true                                 true                                \npendingRequestId                     \"ctrl-1xxrzo21k29yc31rawhls0qn\"      \"ctrl-1xxrzo21k29yc31rawhls0qn\"     \nwakeFacts                            0                                    0                                   \nwakeIntentFiles                      0                                    0                                   \nreviewWakeHits                       0                                    0                                   \nofficerAllowFacts                    1                                    1                                   \naskExecuteBytes                      27                                   27                                  \naskExecuteSha256                     \"ced10112e5b82a2b1b6bca1b85b1dff24   \"ced10112e5b82a2b1b6bca1b85b1dff24  \naskExecuteSettlement                 \"COMPLETED\"                          \"COMPLETED\"                         \naskExecute2Bytes                     29                                   29                                  \naskExecute2Sha256                    \"2d71ffdd499955a34ec86af1c25c00f83   \"2d71ffdd499955a34ec86af1c25c00f83  \naskExecute2Settlement                \"COMPLETED\"                          \"COMPLETED\"                         \naskDeniedBytes                       null                                 null                                \naskDeniedSettlement                  \"REFUSED\"                            \"REFUSED\"                           \naskStoppedBytes                      null                                 null                                \naskStoppedSettlement                 \"REFUSED\"                            \"REFUSED\"                           \n\nagreeing=true differing=[]"
 }

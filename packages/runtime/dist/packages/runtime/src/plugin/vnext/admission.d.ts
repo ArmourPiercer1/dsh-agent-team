@@ -53,7 +53,19 @@
  * @module packages/runtime/src/plugin/vnext/admission
  */
 import type { PathRuleSet } from '../../../member-io-policy/src/types.js';
-/** The axes a tool name can be admitted on. A name outside this table is not admitted at all. */
+/**
+ * The axes a tool name can be admitted on. A name outside this table is not admitted at all.
+ *
+ * ROUND 96 (owner ruling 20261124-0151 §2, receipt extension): `delete_file`, `move_file` and
+ * `patch_text` are DECLARED native shapes for the three rc.5 Provider methods that have no shipped
+ * tool in this product's preset. They are judged on the SAME `fs.write` axis as `write`/`edit` —
+ * one existing duty, no new one — so the ONE approved-ask receipt path can cover them. Naming them
+ * here does NOT create a tool: the mount registers only what a preset declares, so a model cannot
+ * name one this round, and a future mount of such a name is judged on the lane (never admitted by
+ * default). rc.5's real multi-file `apply_patch` is deliberately NOT here: a multi-file patch
+ * cannot be bound to ONE operation receipt without duplicating upstream's parser, so it stays
+ * UNBOUND and fail-closed (R4) — see the ADR's "not proven" section.
+ */
 export declare const TOOL_AXES: Readonly<{
     readonly read: "fs.read";
     readonly read_image: "fs.read";
@@ -61,6 +73,9 @@ export declare const TOOL_AXES: Readonly<{
     readonly glob: "fs.read";
     readonly write: "fs.write";
     readonly edit: "fs.write";
+    readonly delete_file: "fs.write";
+    readonly move_file: "fs.write";
+    readonly patch_text: "fs.write";
     readonly web_fetch: "net.fetch";
     readonly bash: "process.exec";
     readonly pwsh: "process.exec";

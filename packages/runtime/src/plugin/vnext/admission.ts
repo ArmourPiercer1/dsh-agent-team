@@ -60,7 +60,19 @@ import type { PathRuleSet } from '../../../member-io-policy/src/types.js'
 // refused escalation can never carry two different names for the same missing authority.
 import { HOST_SURFACE_REFUSALS } from './host-surface-refusal.mjs'
 
-/** The axes a tool name can be admitted on. A name outside this table is not admitted at all. */
+/**
+ * The axes a tool name can be admitted on. A name outside this table is not admitted at all.
+ *
+ * ROUND 96 (owner ruling 20261124-0151 §2, receipt extension): `delete_file`, `move_file` and
+ * `patch_text` are DECLARED native shapes for the three rc.5 Provider methods that have no shipped
+ * tool in this product's preset. They are judged on the SAME `fs.write` axis as `write`/`edit` —
+ * one existing duty, no new one — so the ONE approved-ask receipt path can cover them. Naming them
+ * here does NOT create a tool: the mount registers only what a preset declares, so a model cannot
+ * name one this round, and a future mount of such a name is judged on the lane (never admitted by
+ * default). rc.5's real multi-file `apply_patch` is deliberately NOT here: a multi-file patch
+ * cannot be bound to ONE operation receipt without duplicating upstream's parser, so it stays
+ * UNBOUND and fail-closed (R4) — see the ADR's "not proven" section.
+ */
 export const TOOL_AXES = Object.freeze({
   read: 'fs.read',
   read_image: 'fs.read',
@@ -68,6 +80,9 @@ export const TOOL_AXES = Object.freeze({
   glob: 'fs.read',
   write: 'fs.write',
   edit: 'fs.write',
+  delete_file: 'fs.write',
+  move_file: 'fs.write',
+  patch_text: 'fs.write',
   web_fetch: 'net.fetch',
   bash: 'process.exec',
   pwsh: 'process.exec',
@@ -186,6 +201,11 @@ const LOCATOR_KEYS: Readonly<Record<string, readonly string[]>> = Object.freeze(
   glob: ['path'],
   write: ['file_path', 'path'],
   edit: ['file_path', 'path'],
+  delete_file: ['file_path', 'path'],
+  // The SOURCE is the locator the centre judges; the destination is judged by the Provider guard
+  // and bound into the receipt as the second path of the same operation.
+  move_file: ['file_path', 'path'],
+  patch_text: ['file_path', 'path'],
   web_fetch: ['url'],
 })
 

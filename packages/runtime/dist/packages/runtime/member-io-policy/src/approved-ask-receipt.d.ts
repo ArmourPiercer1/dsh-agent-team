@@ -35,16 +35,20 @@
  *    log; a structural copy is refused (`RECEIPT_UNKNOWN`). The only writer of
  *    the scope is the centre's own port.
  *
- * THIS ROUND COVERS EXACTLY ONE OPERATION: the native `write` tool's
- * `writeText` effect. Every other method/tool keeps the R4 fail-closed
- * `IO_ASK_REQUIRES_APPROVAL` refusal; generalising is a later ruling.
+ * THIS ROUND COVERS THE FIVE NATIVE FS MUTATIONS, one operation kind each:
+ * `write`→`writeText`, `edit`→`editText`, `patch_text`→`patchText`,
+ * `delete_file`→`deleteFile`, `move_file`→`moveFile` (BOTH paths). The kind is
+ * part of the operation identity, so a receipt for one method can never satisfy
+ * another. Every other tool/method keeps the R4 fail-closed
+ * `IO_ASK_REQUIRES_APPROVAL` refusal (the subprocess face is explicitly NOT
+ * covered by this extension; see the ADR).
  *
  * @module @dsh-agent-team/runtime/member-io-policy/approved-ask-receipt
  */
 import { type PathIdentityResolver } from './provider-capabilities.js';
 import type { PathRuleSet } from './types.js';
 /** The one record schema. A reader that does not know it must fail loud. */
-export declare const APPROVED_ASK_RECEIPT_SCHEMA: "a5sf-approved-ask-receipt/1";
+export declare const APPROVED_ASK_RECEIPT_SCHEMA: "a5sf-approved-ask-receipt/2";
 /**
  * Closed refusal vocabulary. NONE of these starts with `ADMISSION_`: a
  * Provider refusal happens AFTER the body started, and the execution-fact
@@ -60,17 +64,95 @@ export interface ApprovedAskMemberIdentity {
     readonly templateId: string;
     readonly instanceGeneration: number;
 }
-/** The ONE operation this round can authorize: a native `write` of known bytes. */
-export interface ApprovedAskOperation {
-    readonly toolName: 'write';
+/** The authored + Provider-resolved identity of ONE path in an approved operation. */
+export interface ApprovedAskPath {
     /** The authored locator the approval named. */
     readonly locator: string;
     /** The Provider-resolved canonical path the approval covers. */
     readonly canonicalPath: string;
+}
+/**
+ * The ONE operation a receipt can authorize. Round 96 (owner ruling 20261124-0151 §2, extension):
+ * the same shape now covers the five native FS mutations, each with its OWN scope binding.
+ *
+ * WHAT THE PAYLOAD DIGESTS COVER, and what they cannot (see the ADR's per-method table):
+ *  - `fs-write`  (`write` → `writeText`): the exact bytes. Nothing about the prior file.
+ *  - `fs-edit`   (`edit` → `editText`): the requested literal transformation
+ *                (oldString, newString, replaceAll). NOT the file's prior content, so not the
+ *                resulting bytes — the Provider's own literal-match / version guard decides those.
+ *  - `fs-patch`  (`patch_text` → `patchText`): the exact hunk payload handed to the Provider.
+ *                NOT the prior content, so not the resulting bytes.
+ *  - `fs-delete` (`delete_file` → `deleteFile`): the target path only. No bytes are read back.
+ *  - `fs-move`   (`move_file` → `moveFile`): BOTH paths. A receipt for (a→b) cannot authorize (a→c).
+ */
+export interface ApprovedAskWriteOperation extends ApprovedAskPath {
+    readonly kind: 'fs-write';
+    readonly toolName: 'write';
     /** Digest of the approved bytes; the Provider re-hashes what it is about to write. */
     readonly contentSha256: string;
-    /** Deterministic digest of the three fields above, carried for auditability. */
     readonly fingerprint: string;
+}
+export interface ApprovedAskEditOperation extends ApprovedAskPath {
+    readonly kind: 'fs-edit';
+    readonly toolName: 'edit';
+    readonly oldStringSha256: string;
+    readonly newStringSha256: string;
+    readonly replaceAll: boolean;
+    /** Digest of the exact `{oldString,newString,replaceAll}` triple the Provider must receive. */
+    readonly editSha256: string;
+    readonly fingerprint: string;
+}
+export interface ApprovedAskPatchOperation extends ApprovedAskPath {
+    readonly kind: 'fs-patch';
+    /** The declared native tool shape for a single-file hunk list. */
+    readonly toolName: 'patch_text';
+    /** Digest of the canonical hunk payload the Provider must receive. */
+    readonly hunksSha256: string;
+    readonly fingerprint: string;
+}
+export interface ApprovedAskDeleteOperation extends ApprovedAskPath {
+    readonly kind: 'fs-delete';
+    readonly toolName: 'delete_file';
+    /**
+     * Literal `false`: a delete reads no bytes back, so there is nothing about the removed file's
+     * content that this receipt could or does bind. Scope is the path, and only the path.
+     */
+    readonly bytesReadBack: false;
+    readonly fingerprint: string;
+}
+export interface ApprovedAskMoveOperation {
+    readonly kind: 'fs-move';
+    readonly toolName: 'move_file';
+    /** The path being removed. */
+    readonly source: ApprovedAskPath;
+    /** The path being published. */
+    readonly destination: ApprovedAskPath;
+    readonly fingerprint: string;
+}
+export type ApprovedAskOperation = ApprovedAskWriteOperation | ApprovedAskEditOperation | ApprovedAskPatchOperation | ApprovedAskDeleteOperation | ApprovedAskMoveOperation;
+/** The Provider method each operation kind authorizes, exactly. */
+export declare const APPROVED_ASK_METHOD_OF_KIND: Readonly<{
+    readonly 'fs-write': "writeText";
+    readonly 'fs-edit': "editText";
+    readonly 'fs-patch': "patchText";
+    readonly 'fs-delete': "deleteFile";
+    readonly 'fs-move': "moveFile";
+}>;
+export type ApprovedAskFsMethod = (typeof APPROVED_ASK_METHOD_OF_KIND)[keyof typeof APPROVED_ASK_METHOD_OF_KIND];
+/** The evidence a Provider must supply for the method it is about to run. */
+export interface ApprovedAskOperationEvidence {
+    /** `writeText`: the bytes about to be written. */
+    readonly content?: string;
+    /** `editText`: the literal transformation about to be applied. */
+    readonly edit?: {
+        readonly oldString: string;
+        readonly newString: string;
+        readonly replaceAll: boolean;
+    };
+    /** `patchText`: the hunk payload about to be applied. */
+    readonly hunks?: unknown;
+    /** `moveFile`: the destination path (the source is the main `locator`). */
+    readonly destinationPath?: string;
 }
 /** The frozen projection of `(Member, Tool, operation, approval, grant)`. */
 export interface ApprovedAskReceipt {
@@ -138,7 +220,14 @@ export interface AuthorizeAskWithReceiptInput {
     readonly method: string;
     readonly locator: string;
     readonly access: 'read' | 'write';
+    /** `writeText`: the bytes about to be written. */
     readonly content?: string;
+    /** `editText`: the exact literal transformation about to be applied. */
+    readonly edit?: ApprovedAskOperationEvidence['edit'];
+    /** `patchText`: the exact hunk payload about to be applied. */
+    readonly hunks?: unknown;
+    /** `moveFile`: the destination path; `locator` is the source. */
+    readonly destinationPath?: string;
     readonly resolver?: PathIdentityResolver;
     /**
      * The invocation binder's read-only epoch surface. REQUIRED: without it a
@@ -154,6 +243,7 @@ export interface AuthorizeAskWithReceiptInput {
 export type AuthorizeAskWithReceiptResult = {
     readonly ok: true;
     readonly resolved: string;
+    readonly resolvedDestination?: string;
     readonly receipt: ApprovedAskReceipt;
 } | {
     readonly ok: false;
@@ -169,8 +259,22 @@ export interface ApprovedAskExecutionScope {
     readonly toolName: string;
     readonly receipt: ApprovedAskReceipt;
 }
-/** The operation fingerprint: one deterministic digest of the approved effect. */
-export declare function approvedAskOperationFingerprint(operation: Pick<ApprovedAskOperation, 'toolName' | 'canonicalPath' | 'contentSha256'>): string;
+/**
+ * The operation fingerprint: one deterministic digest of the approved effect.
+ *
+ * It is recomputed by `mintApprovedAskReceipt` from the operation's own fields, so a caller cannot
+ * smuggle a fingerprint that disagrees with the paths/payload it carries. Kept for auditability and
+ * for the receipt's own self-consistency check.
+ */
+export declare function approvedAskOperationFingerprint(operation: ApprovedAskOperation): string;
+/** Digest of the exact literal transformation an `editText` call receives. */
+export declare function approvedAskEditSha256(edit: {
+    readonly oldString: string;
+    readonly newString: string;
+    readonly replaceAll: boolean;
+}): string;
+/** Digest of the exact hunk payload a `patchText` call receives. */
+export declare function approvedAskHunksSha256(hunks: unknown): string;
 /**
  * Prepare the operation a native `write` approval would cover — the ONE
  * canonicalization the receipt binds. Async because the Provider resolution is
@@ -183,12 +287,47 @@ export declare function prepareApprovedWriteOperation(input: {
     readonly resolver?: PathIdentityResolver;
 }): Promise<{
     readonly ok: true;
-    readonly value: ApprovedAskOperation;
+    readonly value: ApprovedAskWriteOperation;
 } | {
     readonly ok: false;
     readonly code: string;
     readonly detail: string;
 }>;
+/**
+ * THE DECLARED NATIVE TOOL SHAPES this round can prepare a receipt for. It is closed: a tool name
+ * that is not here prepares nothing, so its `ask` keeps the R4 fail-closed refusal.
+ *
+ * `write` and `edit` are SHIPPED native tools of the pinned baseline. `patch_text`, `delete_file`
+ * and `move_file` are the declared argument shapes for the three rc.5 Provider methods that have no
+ * shipped native tool in this product's preset today; a call carrying one of these names exercises
+ * the same admission port, binder, Control and Provider, but the native-tool wiring is NOT claimed
+ * (see the ADR's "not proven" section — a multi-file `apply_patch` prepares nothing and stays R4).
+ */
+export declare const APPROVED_ASK_TOOL_SHAPES: readonly ["write", "edit", "patch_text", "delete_file", "move_file"];
+export type ApprovedAskPreparedOperation = {
+    readonly ok: true;
+    readonly value: ApprovedAskOperation;
+} | {
+    readonly ok: false;
+    readonly code: 'IO_ASK_RECEIPT_TOOL_UNSUPPORTED';
+    readonly detail: string;
+} | {
+    readonly ok: false;
+    readonly code: string;
+    readonly detail: string;
+};
+/**
+ * Prepare the operation an approval for `toolName` would cover, from the tool's OWN arguments.
+ *
+ * A recognised tool that cannot be canonicalised is `IO_ASK_RECEIPT_UNPREPARABLE` (the centre
+ * refuses the call); an unrecognised tool is `IO_ASK_RECEIPT_TOOL_UNSUPPORTED` (the centre mints no
+ * receipt, so the Provider keeps R4). No shape is guessed from a substring: the dispatch is exact.
+ */
+export declare function prepareApprovedFsOperation(input: {
+    readonly toolName: string;
+    readonly arguments?: Record<string, unknown> | undefined;
+    readonly resolver?: PathIdentityResolver;
+}): Promise<ApprovedAskPreparedOperation>;
 /**
  * Mint the receipt. Called by the centre AFTER `binder.consume` returned ok —
  * there is no code path that mints a receipt for an unconsumed grant.

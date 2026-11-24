@@ -1,11 +1,14 @@
 # ADR — the ApprovedAskReceipt (R3 of owner ruling 20261124-0151 §2)
 
-- **Status:** ACCEPTED for the PoC scope below. R2 (`guarded` coupling) is REJECTED. R4 stays the
-  fail-closed default for every operation not named here.
-- **Date:** 2026-11-24 (round 94, branch `vnext/a1-cut`).
-- **Scope:** exactly ONE operation — the native `write` tool's `writeText` effect. Edit/`patchText`/
-  `deleteFile`/`moveFile`, the `subprocess` face and every other tool keep
-  `IO_ASK_REQUIRES_APPROVAL`. Generalising is a later ruling, not this ADR.
+- **Status:** ACCEPTED and EXTENDED (round 96, owner ruling to extend R3 method by method).
+  R2 (`guarded` coupling) is REJECTED. R4 stays the fail-closed default for every operation not
+  named here.
+- **Date:** 2026-11-24 (round 94, branch `vnext/a1-cut`) · extension 2026-11-24 (round 96).
+- **Scope:** the FIVE native FS mutations — `write`→`writeText`, `edit`→`editText`,
+  `patch_text`→`patchText`, `delete_file`→`deleteFile`, `move_file`→`moveFile`. Each has its own
+  operation kind and its own scope binding (§"Per-method scope binding"). The `subprocess`/PTY face
+  and every other tool keep `IO_ASK_REQUIRES_APPROVAL` — an OS-sandbox approval path is NOT assumed
+  to inherit the FS proof.
 
 ## Context
 
@@ -27,9 +30,12 @@ proves **this** effect belongs to **this** approved execution; everything else s
 
 `packages/runtime/member-io-policy/src/approved-ask-receipt.ts`
 
-- `prepareApprovedWriteOperation({locator, content, resolver})` — pre-wait canonicalization of the
-  approved effect (canonical path + `sha256` of the bytes). Prepared by the centre before it waits,
-  so the receipt can be minted synchronously at grant consumption.
+- `prepareApprovedFsOperation({toolName, arguments, resolver})` — pre-wait preparation of the
+  approved effect for one of the five declared FS tool shapes. It returns
+  `{ok:false, code:'IO_ASK_RECEIPT_TOOL_UNSUPPORTED'}` for a name outside the table (the centre mints
+  nothing, so the Provider keeps R4) and `{ok:false, code:'IO_ASK_RECEIPT_UNPREPARABLE'}` for a
+  recognised but malformed call (the centre denies at admission — fail-closed, nothing executes).
+  `prepareApprovedWriteOperation` remains as the `write`-typed shorthand.
 - `mintApprovedAskReceipt(input)` — the only constructor; refuses unless every binding field is
   present and `grant.consumed === true`.
 - `registerPendingApprovedAskReceipt(executionObject, receipt)` /
@@ -41,12 +47,42 @@ proves **this** effect belongs to **this** approved execution; everything else s
 
 ### Binding fields (all frozen)
 
+Schema `a5sf-approved-ask-receipt/2` (round 96 widened `/1` to a discriminated operation).
+
 `receiptId`, `executionId` (the settlement `ExecutionId`), `callId`, `member` (`teamId`,
 `memberInstanceId`, `templateId`, `instanceGeneration`), `toolName`, `toolBindingIdentity` (the
-compiled ToolDefinition identity), `operation` (`toolName:'write'`, authored `locator`, Provider
-`canonicalPath`, `contentSha256`, `fingerprint`), `policyGeneration`, `approval` (`requestId`,
+compiled ToolDefinition identity), `operation` (a discriminated union, see the table below),
+`policyGeneration`, `approval` (`requestId`,
 `decisionId`, `caseId|null`, `legOrdinal|null`), `grant` (`consumed:true`, `memberEpoch`,
 `binderEpoch`), `bounds` (frozen `read`/`write` lane snapshot the approval was granted under).
+
+### Per-method scope binding
+
+The operation KIND is part of the receipt's identity: the verifier first requires an exact match
+between the Provider method being asked and the receipt's kind
+(`RECEIPT_OPERATION_MISMATCH`), so a receipt minted for one method can never satisfy another. Within
+a kind, the scope is:
+
+| tool → Provider method | receipt kind | corridor | what the fingerprint is a `sha256` OF | what it therefore CANNOT say |
+| --- | --- | --- | --- | --- |
+| `write` → `writeText(target, content)` | `fs-write` | target path | the exact `content` string the Provider is handed | nothing about the file's prior content or whether the write overwrites |
+| `edit` → `editText(target, {oldString,newString,replaceAll})` | `fs-edit` | target path | the exact requested literal transformation (`oldString`, `newString`, `replaceAll`), plus a digest of that triple for a stable id | NOT the file's prior bytes and NOT the resulting bytes: whether the literal matches is decided by the Provider's own match/version guard, after the receipt is accepted |
+| `patch_text` → `patchText(target, hunks)` | `fs-patch` | target path | the exact `PatchHunk[]` payload (canonical JSON) | not the prior content, not the resulting bytes, not that the hunks apply cleanly |
+| `delete_file` → `deleteFile(target)` | `fs-delete` | target path | nothing but the path; `bytesReadBack:false` is recorded so no reader can believe content was verified | nothing about what the file contained — no bytes are read back by design |
+| `move_file` → `moveFile(source, destination)` | `fs-move` | BOTH paths | the authored source + destination locators and both Provider canonical paths | (a→b) can never authorize (a→c): the destination is part of the operation, not a parameter |
+
+The verifier checks each path of the operation independently: authored locator **and** canonical
+path must match, the path must resolve, and it must lie inside the frozen `bounds` snapshot — one
+path for the single-target methods, two for `move_file` (a missing `destinationPath` is
+`IO_ASK_RECEIPT_REFUSED`, never a one-path match). `deny` is still decided before any receipt
+consult on every path, including both move paths.
+
+**Declared shapes, not shipped tools.** `delete_file`, `move_file` and `patch_text` have no shipped
+native tool in this product's preset; they are the argument shapes of the rc.5 Provider methods, and
+the no-shipped-tool disclosure is repeated in §"What this ADR does NOT prove". Adding them to the
+centre's closed `TOOL_AXES`/`LOCATOR_KEYS` only means such a name, if ever mounted, is judged on the
+existing `fs.write` axis (the same duty as `write`/`edit`) instead of being refused as unbound. It
+creates no tool and admits nothing by default.
 
 ### Who mints, who reads
 
@@ -55,9 +91,11 @@ compiled ToolDefinition identity), `operation` (`toolName:'write'`, authored `lo
   OBJECT (`:964`). There is no code path that mints for an unconsumed grant.
 - **Deliver:** the centre's own `tools/execute` listener takes the receipt by object identity and
   runs the body inside `runWithApprovedAskExecutionScope` (`admission-port.mjs:1023`).
-- **Read:** the confined Provider's `createMemberFsGuard` ask branch only
-  (`team-services/src/fs.ts:232`), for `writeText` with content. The refusal code is
-  `IO_ASK_RECEIPT_REFUSED` (`team-services/src/types.ts:61`).
+- **Read:** the confined Provider's `createMemberFsGuard` ask branch only (`team-services/src/fs.ts`),
+  for the five methods above, with the method's own evidence (`content` for `writeText`,
+  `{oldString,newString,replaceAll}` for `editText`, `hunks` for `patchText`, the destination for
+  `moveFile`, nothing for `deleteFile`). The refusal code is `IO_ASK_RECEIPT_REFUSED`
+  (`team-services/src/types.ts:61`).
 
 ### Lifecycle
 
@@ -153,13 +191,24 @@ attribution-ALS reuse, no second authority, no admission-duty expansion, no upst
 
 ## What this ADR does NOT prove
 
-- **Scope.** Only `write`/`writeText` is covered. `editText`/`patchText`/`deleteFile`/`moveFile`,
-  subprocess, and every other face still refuse `IO_ASK_REQUIRES_APPROVAL` (R4).
+- **Scope.** The five FS mutations are covered; the **subprocess/PTY face is NOT** and is the next
+  owner-ruled step. An OS-sandbox approval is a different plane (its authority is the
+  `SandboxExecutionPolicy`, not a file lane), so it does not inherit this proof and still refuses
+  (R4). rc.5's real multi-file `apply_patch` tool is deliberately NOT wired: it expands into several
+  per-file Provider effects, and a receipt can bind ONE operation, so admitting it would either
+  duplicate upstream's parser or let one approval authorize N effects. It stays unbound (R4).
+- **Declared shapes.** `delete_file`/`move_file`/`patch_text` are argument shapes for rc.5 Provider
+  methods with no shipped native tool this round: the arms drive them through the real admission
+  port with the declared shape, and the confined Provider, binder, Control and settlement are real,
+  but no preset mounts them, so no model can reach them live.
 - **Product status.** The D4 live evidence is `DEV-LIVE` (a booted rc.2 host, not a gate); no row is
   PRODUCT-PROVEN. `d4:routed-wake` remains REFUTED — the receipt closes the post-grant refusal, not
   Alpha.6 routing.
-- **Content binding.** The receipt binds the `writeText` content string the Provider receives. A
-  tool that mutates the payload between the centre's prepare and the Provider call would be refused
-  (`RECEIPT_CONTENT_MISMATCH`), not adapted.
+- **Content binding.** Per method, see the table: bytes for `writeText`, the requested
+  transformation for `editText`, the hunk payload for `patchText`, path only for `deleteFile`, both
+  paths for `moveFile`. A tool that mutates the payload between the centre's prepare and the
+  Provider call is refused (`RECEIPT_CONTENT_MISMATCH`), never adapted. The fingerprint is NOT a
+  statement about the file's prior or resulting bytes for edit/patch (the Provider's own guard
+  decides those), and NOT a byte check for delete.
 - **`caseId`.** An inline admission request mints `caseId:null`; it binds the durable
   request/decision identity it actually has, not an Alpha.6 case it never had.

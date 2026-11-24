@@ -1,0 +1,18 @@
+[
+  {
+    "instanceId": "inst-1crltnl0089j",
+    "templateId": "officer",
+    "label": "dboot-d4-officer",
+    "childSessionId": "session-team-child-1d56dbb16a118ba3573db3c4b2641997",
+    "lifecycle": "RUNNING",
+    "activityVersion": 2
+  },
+  {
+    "instanceId": "inst-leader",
+    "templateId": "leader",
+    "label": "leader",
+    "childSessionId": "undefined",
+    "lifecycle": "undefined",
+    "activityVersion": 1
+  }
+]

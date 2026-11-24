@@ -133,9 +133,19 @@ const DONE_OFFICER_TURN = 'DBOOT_D4_OFFICER_TURN_DONE'
 const DONE_WORKER_TURN = 'DBOOT_D4_WORKER_TURN_DONE'
 const CALL_OFF_READ = 'call-d4-officer-read'
 const CALL_WRK_WRITE = 'call-d4-worker-write'
+const CALL_WRK_WRITE2 = 'call-d4-worker-write-2'
+const CALL_RESOLVE2 = 'call-d4-leader-resolve-2'
 const CALL_RESOLVE = 'call-d4-leader-resolve'
+// NOT a prefix of MK_RESOLVE: `lastLeaderMarkerText` returns the first DECLARED marker contained
+// in the prompt text, so a suffix-style name would be read as the older ask (measured: the second
+// resolve turn answered NO_PENDING because the mock matched MK_RESOLVE).
+const MK_RESOLVE2 = 'DBOOT_D4_SECOND_ASK_RESOLVE'
+const DONE_RESOLVE2 = 'DBOOT_D4_RESOLVE_DONE_2'
 const OFFICER_TEXT = 'DBOOT_D4_OFFICER_READ_OK'
 const WORKER_TEXT = 'DBOOT_D4_WORKER_ASK_CALLED'
+// The SECOND live mutation: a DIFFERENT approval writing DIFFERENT bytes. It proves the content
+// binding across two real approvals (each receipt covers its own sha256), not just one happy path.
+const WORKER_TEXT2 = 'DBOOT_D4_WORKER_ASK_CALLED_2'
 const CASE_ID = {
   enablement: 'd4:enablement',
   officerUp: 'd4:officer-up',
@@ -145,6 +155,7 @@ const CASE_ID = {
   askExecute: 'd4:ask-execute',
   askDenied: 'd4:ask-denied',
   askStopped: 'd4:ask-stopped',
+  askExecute2: 'd4:ask-execute-2',
 }
 const TEAM_TOOL_NAMES = [
   'team_delegate', 'team_collect', 'team_resolve_control', 'team_list_pending_control',
@@ -411,7 +422,7 @@ function memberTokenOf(record) {
  * unique per driver prompt, so the newest marker-bearing text is the turn's.
  */
 function lastLeaderMarkerText(record) {
-  const markers = [MK_DISC, MK_OFF, MK_WRK, MK_RESOLVE]
+  const markers = [MK_DISC, MK_OFF, MK_WRK, MK_RESOLVE, MK_RESOLVE2]
   const users = messagesOf(record).filter((m) => m?.role === 'user')
   for (let i = users.length - 1; i >= 0; i -= 1) {
     const text = textOf(users[i])
@@ -477,6 +488,9 @@ function makeDecide({ paths, ids, resolveDecision = 'allow' }) {
       }
       if (token === TOK_WRK) {
         if (!seen.has(CALL_WRK_WRITE)) return writeCall(CALL_WRK_WRITE, paths.workerFile, `${WORKER_TEXT}\n`)
+        // The SECOND ask, on a DIFFERENT path with DIFFERENT bytes, only after the first call RETURNED
+        // (its result arrives only once the Leader resolved it). Each ask is its own durable request.
+        if (!seen.has(CALL_WRK_WRITE2)) return writeCall(CALL_WRK_WRITE2, paths.workerFile2, `${WORKER_TEXT2}\n`)
         return text(DONE_WORKER_TURN)
       }
       return text('DBOOT_D4_MEMBER_NOOP')
@@ -487,9 +501,21 @@ function makeDecide({ paths, ids, resolveDecision = 'allow' }) {
     // whole transcript would re-fire it on every later turn.
     const leaderText = lastLeaderMarkerText(req)
     const seen = resultIdsOf(req)
-    if (leaderText.includes(MK_RESOLVE) && !seen.has(CALL_RESOLVE)) {
-      if (ids.pendingRequestId === null) return text('DBOOT_D4_NO_PENDING_REQUEST')
-      return resolveCall(CALL_RESOLVE, ids.pendingRequestId)
+    if (leaderText.includes(MK_RESOLVE2)) {
+      if (!seen.has(CALL_RESOLVE2)) {
+        if (ids.pendingRequestId2 === null || ids.pendingRequestId2 === undefined) return text('DBOOT_D4_NO_PENDING_REQUEST')
+        return resolveCall(CALL_RESOLVE2, ids.pendingRequestId2)
+      }
+      // The turn's own done marker: the driver waits for THIS text, so the wait is a real signal
+      // (before, it waited 120s for a reply the plan never produced).
+      return text(DONE_RESOLVE2)
+    }
+    if (leaderText.includes(MK_RESOLVE)) {
+      if (!seen.has(CALL_RESOLVE)) {
+        if (ids.pendingRequestId === null) return text('DBOOT_D4_NO_PENDING_REQUEST')
+        return resolveCall(CALL_RESOLVE, ids.pendingRequestId)
+      }
+      return text(DONE_RESOLVE)
     }
     // One delegate per marker: after the call's result is in the transcript,
     // the NEXT step of the same turn answers the done marker (the work unit is
@@ -870,6 +896,48 @@ function judgeAskExecute({ requestRaised, resolveOutcome, file, expectedBytes, f
 }
 
 /**
+ * `d4:ask-execute-2` — THE SECOND LIVE MUTATION, and the CONTENT-BINDING arm.
+ *
+ * A SECOND `write` from the SAME worker, on a DIFFERENT path and with DIFFERENT bytes, raises its
+ * OWN durable Control request, is approved, and executes. Two things are judged that the first arm
+ * cannot judge:
+ *
+ *  * every receipt is bound to ITS OWN operation — the second approval covers the second path and
+ *    the second bytes, and the first file is byte-identical to what the first approval wrote (no
+ *    cross-approval reuse, no torn state);
+ *  * the receipt check is a CONTENT check, not a "some allow exists" check: the two files hold two
+ *    different sha256 digests, each equal to the bytes of ITS OWN approval.
+ */
+function judgeAskExecute2({ requestRaised, requestIsNew, resolveOutcome, file, firstFile, expectedBytes, firstExpectedBytes, facts, settlement, writeCall }) {
+  const allowFacts = facts.filter((f) => f?.kind === 'invocation-authority' && f?.decision === 'allow')
+  const hash = file.content === null ? null : createHash('sha256').update(file.content).digest('hex')
+  const expectedHash = createHash('sha256').update(expectedBytes).digest('hex')
+  const firstHash = firstFile.content === null ? null : createHash('sha256').update(firstFile.content).digest('hex')
+  const firstExpectedHash = createHash('sha256').update(firstExpectedBytes).digest('hex')
+  return verdictOf(
+    'a SECOND Member `write` (different path, different bytes) raises its OWN Control request, is approved, and executes: the receipt is bound to THAT operation, both files hold the bytes of their own approval, settled COMPLETED',
+    [
+      { id: 'second-control-request-raised', ok: requestRaised === true && requestIsNew === true, detail: `requestRaised=${String(requestRaised)} requestIsNew=${String(requestIsNew)}` },
+      {
+        id: 'second-approved-through-real-control-path',
+        ok: resolveOutcome?.isError !== true && typeof resolveOutcome?.result === 'string' && /resolved|allow|success/iu.test(resolveOutcome.result),
+        detail: `leader team_resolve_control result=${JSON.stringify(String(resolveOutcome?.result ?? '').slice(0, 500))}`,
+      },
+      {
+        id: 'second-admission-fact-allow-lane-ask',
+        ok: allowFacts.length === 1 && allowFacts[0]?.laneDecision === 'ask',
+        detail: `allow facts=${JSON.stringify(allowFacts.map((f) => ({ callId: f.callId, decision: f.decision, laneDecision: f.laneDecision, axis: f.axis })))}`,
+      },
+      { id: 'second-write-tool-result-not-an-error', ok: writeCall?.result?.isError === false, detail: `write result isError=${String(writeCall?.result?.isError)} text=${JSON.stringify(String(writeCall?.result?.text ?? '').slice(0, 400))}` },
+      { id: 'second-real-bytes-on-disk', ok: file.content === expectedBytes, detail: `file exists=${String(file.exists)} bytes=${String(file.content === null ? null : Buffer.byteLength(file.content))} sha256=${String(hash)} expectedSha256=${expectedHash}` },
+      { id: 'first-file-unchanged-by-second-approval', ok: firstFile.content === firstExpectedBytes, detail: `first sha256=${String(firstHash)} expectedSha256=${firstExpectedHash}` },
+      { id: 'content-binding-distinguishes-the-two-approvals', ok: hash !== null && firstHash !== null && hash !== firstHash, detail: `second=${String(hash)} first=${String(firstHash)}` },
+      { id: 'second-settlement-completed', ok: settlement?.state === 'COMPLETED' && settlement?.bodyOutcome === 'completed', detail: `state=${String(settlement?.state)} bodyOutcome=${String(settlement?.bodyOutcome)} transitions=${JSON.stringify(settlement?.transitions ?? [])}` },
+    ],
+  )
+}
+
+/**
  * `d4:ask-denied` — the NEGATIVE live arm: the SAME ask, denied through the
  * real control path. No grant is minted, so no receipt can exist: zero bytes,
  * a deny fact with `ADMISSION_APPROVAL_DENIED`, and a REFUSED / not-started
@@ -1178,7 +1246,7 @@ async function probeOnce({ index, head, grant }) {
   // authored ask lane and the bytes it approves are both inside that root.
   let dirs = null
   let paths = null
-  const ids = { officer: null, worker: null, pendingRequestId: null }
+  const ids = { officer: null, worker: null, pendingRequestId: null, pendingRequestId2: null }
   let world = null
   let refusalWorld = null
   let teardown = null
@@ -1197,6 +1265,8 @@ async function probeOnce({ index, head, grant }) {
       dir: dirs.dir,
       officerFile: join(dirs.dir, 'officer-read.txt'),
       workerFile: join(dirs.dir, 'worker-ask.txt'),
+      // The second mutation's target: a DIFFERENT file, inside the same Member workspace lane.
+      workerFile2: join(dirs.dir, 'worker-ask-2.txt'),
     }
     writeFileSync(paths.officerFile, 'DBOOT_D4_OFFICER_READ_SOURCE\n', 'utf8')
     const wakeIntentPath = join(join(EVIDENCE, 'runs-workspace', `boot${String(index)}`), WAKE_DIR)
@@ -1381,6 +1451,68 @@ async function probeOnce({ index, head, grant }) {
     fnWriteVerdict(bootDir, 'ask-execute', askExecuteVerdict)
     log(`[boot${String(index)}] d4:ask-execute=${askExecuteVerdict.verdict} failing=${JSON.stringify(askExecuteVerdict.failing)}`)
 
+    // ── R3 SECOND LIVE MUTATION: the SAME worker asks again, for DIFFERENT bytes on a DIFFERENT path ──
+    //
+    // The worker model issues its second `write` only after the first call RETURNED, so the request
+    // measured here is a genuinely NEW approval, not the first one re-read. This is the live half of
+    // the content-binding judge: two approvals, two receipts, two files, two digests.
+    const ask2Appeared = await waitFor(async () => {
+      const st = await readState(origin, cookie)
+      const row = pendingAskOf(st, ids.worker)
+      if (row === null) return false
+      const requestId = String(row.requestId)
+      if (requestId === ids.pendingRequestId) return false
+      ids.pendingRequestId2 = requestId
+      return true
+    }, 180_000, 300)
+    log(`[boot${String(index)}] second worker ask appeared=${String(ask2Appeared)} requestId=${String(ids.pendingRequestId2)}`)
+    let resolveOutcome2 = null
+    if (ids.pendingRequestId2 !== null && ids.pendingRequestId2 !== undefined) {
+      await promptTurn(MK_RESOLVE2, 'd4res2')
+      await waitFor(() => sawReply(DONE_RESOLVE2), 120_000)
+      const leaderTxNow2 = readMemberTranscript(world.home, ROOT)
+      const resolveCall2 = (leaderTxNow2?.calls ?? []).find((c) => String(c.callId) === CALL_RESOLVE2) ?? null
+      resolveOutcome2 = { call: resolveCall2?.arguments ?? null, result: resolveCall2?.result?.text?.slice(0, 800) ?? null, isError: resolveCall2?.result?.isError ?? null }
+      log(`[boot${String(index)}] leader second resolve result: ${String(resolveOutcome2.result).slice(0, 200)}`)
+    }
+    const write2Settled = await waitFor(() => {
+      const tx = readMemberTranscript(world.home, String(workerRow.childSessionId))
+      const call = (tx?.calls ?? []).find((c) => String(c.callId) === CALL_WRK_WRITE2) ?? null
+      const settled = settlementOf(world.home, ids.worker, CALL_WRK_WRITE2)
+      return call?.result !== null && call?.result !== undefined && settled.present === true
+    }, 180_000, 400)
+    await sleep(500)
+    const workerTxFinal2 = readMemberTranscript(world.home, String(workerRow.childSessionId))
+    const workerWriteCall2 = (workerTxFinal2?.calls ?? []).find((c) => String(c.callId) === CALL_WRK_WRITE2) ?? null
+    const askFile2 = fileEvidence(paths.workerFile2)
+    const askSettlement2 = settlementOf(world.home, ids.worker, CALL_WRK_WRITE2)
+    const askFacts2 = factsFor(readLedger(world.home, ids.worker), CALL_WRK_WRITE2)
+    const askExecute2Verdict = judgeAskExecute2({
+      requestRaised: ask2Appeared === true,
+      requestIsNew: ids.pendingRequestId2 !== null && ids.pendingRequestId2 !== undefined && ids.pendingRequestId2 !== ids.pendingRequestId,
+      resolveOutcome: resolveOutcome2,
+      file: askFile2,
+      firstFile: askFile,
+      expectedBytes: `${WORKER_TEXT2}\n`,
+      firstExpectedBytes: `${WORKER_TEXT}\n`,
+      facts: askFacts2,
+      settlement: askSettlement2,
+      writeCall: workerWriteCall2,
+    })
+    writeFileSync(join(bootDir, 'ask-execute-2.json'), `${JSON.stringify({
+      writeSettled: write2Settled,
+      requestId: ids.pendingRequestId2,
+      resolveOutcome: resolveOutcome2,
+      workerWriteCall: workerWriteCall2,
+      file: askFile2,
+      firstFile: askFile,
+      settlement: askSettlement2,
+      facts: askFacts2,
+      verdict: askExecute2Verdict,
+    }, null, 2)}\n`)
+    fnWriteVerdict(bootDir, 'ask-execute-2', askExecute2Verdict)
+    log(`[boot${String(index)}] d4:ask-execute-2=${askExecute2Verdict.verdict} failing=${JSON.stringify(askExecute2Verdict.failing)}`)
+
     // ── the governed delivery should have happened by now: measure it ──
     await sleep(1500)
     const officerTxAfter = readMemberTranscript(world.home, String(officerRow.childSessionId))
@@ -1473,8 +1605,14 @@ async function probeOnce({ index, head, grant }) {
       workerFileExists: existsSync(paths.workerFile),
     }, null, 2)}\n`)
 
-    if (factTypeCensus['control-request-recorded'] !== 1) {
-      throw new Error(`the durable reader is not reading the TeamDomain ledger: control-request-recorded count=${String(factTypeCensus['control-request-recorded'])} census=${JSON.stringify(factTypeCensus)}`)
+    // The reader's own positive control. It used to assert exactly ONE control request, which was
+    // right when the world raised one ask; round 96 raises a SECOND (different path, different
+    // bytes). The honest control is "the ledger holds exactly the asks this world OBSERVED", so a
+    // reader that misses one still fails, and a second real ask is not mistaken for a broken reader.
+    const observedRequests = ids.pendingRequestId === null ? 0 : (ids.pendingRequestId2 === null || ids.pendingRequestId2 === undefined ? 1 : 2)
+    const observedDecisions = resolveOutcome === null ? 0 : (resolveOutcome2 === null ? 1 : 2)
+    if (factTypeCensus['control-request-recorded'] !== observedRequests || factTypeCensus['control-decision-recorded'] !== observedDecisions) {
+      throw new Error(`the durable reader is not reading the TeamDomain ledger: control-request-recorded count=${String(factTypeCensus['control-request-recorded'])} (observed ${String(observedRequests)}), control-decision-recorded count=${String(factTypeCensus['control-decision-recorded'])} (observed ${String(observedDecisions)}) census=${JSON.stringify(factTypeCensus)}`)
     }
     const routedVerdict = judgeRoutedWake({
       durableRow: durable,
@@ -1616,6 +1754,7 @@ async function probeOnce({ index, head, grant }) {
       routedWake: routedVerdict,
       refusal: refusalVerdict,
       askExecute: askExecuteVerdict,
+      askExecute2: askExecute2Verdict,
       askDenied: deniedArm.verdict,
       askStopped: stoppedArm.verdict,
     }
@@ -1634,6 +1773,9 @@ async function probeOnce({ index, head, grant }) {
         askExecuteBytes: askFile.bytes,
         askExecuteSha256: askFile.sha256,
         askExecuteSettlement: askSettlement.state,
+        askExecute2Bytes: askFile2.bytes,
+        askExecute2Sha256: askFile2.sha256,
+        askExecute2Settlement: askSettlement2.state,
         askDeniedBytes: deniedArm.file?.bytes ?? null,
         askDeniedSettlement: deniedArm.settlement?.state ?? null,
         askStoppedBytes: stoppedArm.file?.bytes ?? null,

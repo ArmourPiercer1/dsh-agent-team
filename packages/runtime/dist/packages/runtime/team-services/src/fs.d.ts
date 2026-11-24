@@ -108,13 +108,28 @@ export type PolicyLanes = Pick<MemberPolicy | EffectiveIoPolicy, 'memberIdentity
     readonly toolBindingIdentity?: string;
 };
 /**
- * The one operation context a Provider method may add to its admission call.
- * ONLY `writeText` supplies content today: the approved-ask receipt binds the
- * exact bytes, so a receipt cannot be replayed onto different content. Every
- * other method passes nothing and keeps the pre-receipt fail-closed refusal.
+ * The operation context a Provider method adds to its admission call. It is NOT a decision input:
+ * it is the effect the approved-ask receipt is checked against, one evidence field per method
+ * (round 96 — the owner-ruled extension from `writeText` to every FS mutation):
+ *
+ *  - `content`     `writeText`  — the exact bytes;
+ *  - `edit`        `editText`   — the exact literal transformation;
+ *  - `hunks`       `patchText`  — the exact hunk payload;
+ *  - (nothing)     `deleteFile` — the path IS the whole scope; no bytes are read back;
+ *  - `destinationPath` `moveFile` — the SECOND path (the admission `hostPath` is the source).
+ *
+ * A method that supplies nothing for a receipt-bearing kind can only ever get the refusal: the
+ * verifier refuses missing evidence rather than checking it against nothing.
  */
 export interface FsGuardOperation {
     readonly content?: string;
+    readonly edit?: {
+        readonly oldString: string;
+        readonly newString: string;
+        readonly replaceAll: boolean;
+    };
+    readonly hunks?: unknown;
+    readonly destinationPath?: string;
 }
 /**
  * The per-call admission function the subclass calls before delegating.
@@ -157,18 +172,5 @@ export type ApprovedAskProviderAuthority = NonNullable<AuthorizeAskWithReceiptIn
  * window 8.56 s / 8.72 s, a second `bash` 290/427 ms before the commit).
  */
 export declare function createMemberFsGuard(policy: PolicyLanes, resolver?: PathIdentityResolver, authority?: ApprovedAskProviderAuthority): FsGuard;
-/**
- * Create the confined Provider class for one Member: the live Provider class is
- * the base, every target-bearing method guards first and delegates second.
- * The returned constructor is mountable through Cordis (`ctx.plugin`) and
- * registers the same `fs` service name in the context it is mounted under.
- *
- * @param Base - the live provider class (rc.2 or rc.5).
- * @param guard - the Member's admission function.
- * @param memberIdentity - the Member whose refusals are recorded; carried only
- *   by the "base does not implement this rc.5 method" refusal. `install.ts`
- *   always supplies it; the default exists for derivation-only callers (the
- *   SLICE-35/36 fixtures) that mount the class without a Member.
- */
 export declare function createConfinedFileSystemClass(Base: FsProviderConstructor, guard: FsGuard, memberIdentity?: string): FsProviderConstructor;
 //# sourceMappingURL=fs.d.ts.map

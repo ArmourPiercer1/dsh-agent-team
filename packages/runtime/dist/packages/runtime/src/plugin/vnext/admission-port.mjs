@@ -38,7 +38,7 @@ import { admit, invocationFactsOf } from './admission.js'
 import {
   closeApprovedAskReceipt,
   mintApprovedAskReceipt,
-  prepareApprovedWriteOperation,
+  prepareApprovedFsOperation,
   registerPendingApprovedAskReceipt,
   runWithApprovedAskExecutionScope,
   takePendingApprovedAskReceipt,
@@ -802,27 +802,30 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
       })
     }
     // R3 PREPARATION. The approved operation is canonicalized NOW, while the approval is still the
-    // subject of the decision: the Provider will later re-resolve the real path and must be able to
-    // compare it with what was approved. This round covers exactly the native `write` operation; any
-    // other tool keeps the R4 fail-closed `IO_ASK_REQUIRES_APPROVAL` refusal (no receipt is prepared,
-    // so none can be minted).
+    // subject of the decision: the Provider will later re-resolve the real path(s) and must be able
+    // to compare them with what was approved. The dispatch is EXACT (a closed table of native tool
+    // shapes — write/edit/patch_text/delete_file/move_file); any other tool prepares nothing and
+    // keeps the R4 fail-closed `IO_ASK_REQUIRES_APPROVAL` refusal, and a recognised tool whose
+    // arguments cannot be canonicalized is refused outright rather than executed under an approval
+    // no receipt can name. The subprocess face is deliberately NOT in this table (R4).
     let receiptMaterial
-    if (exec.name === 'write' && typeof exec.arguments?.file_path === 'string' && typeof exec.arguments?.content === 'string') {
-      const prepared = await prepareApprovedWriteOperation({
-        locator: exec.arguments.file_path,
-        content: exec.arguments.content,
-      })
-      if (!prepared.ok) {
+    const prepared = await prepareApprovedFsOperation({
+      toolName: exec.name,
+      arguments: exec.arguments,
+    })
+    if (prepared.ok === false) {
+      if (prepared.code !== 'IO_ASK_RECEIPT_TOOL_UNSUPPORTED') {
         return commit(exec, {
           binding,
           admission,
           decision: {
             kind: 'deny',
             code: prepared.code,
-            reason: `the approved write could not be turned into a canonical operation (${prepared.detail}); the call is refused rather than executed under an approval no receipt can name`,
+            reason: `the approved '${String(exec.name)}' call could not be turned into a canonical operation (${prepared.detail}); the call is refused rather than executed under an approval no receipt can name`,
           },
         })
       }
+    } else {
       const perTool = binding.perTool?.[exec.name]
       receiptMaterial = {
         executionId: typeof executionIdOf === 'function'

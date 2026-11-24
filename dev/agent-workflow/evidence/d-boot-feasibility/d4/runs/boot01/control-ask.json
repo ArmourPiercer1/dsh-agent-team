@@ -3,7 +3,8 @@
   "ids": {
     "officer": "inst-1crltnl0089j",
     "worker": "inst-0ty67u70r99a",
-    "pendingRequestId": "ctrl-1xxrzo21k29yc31rawhls0qn"
+    "pendingRequestId": "ctrl-1xxrzo21k29yc31rawhls0qn",
+    "pendingRequestId2": null
   },
   "askRow": {
     "requestId": "ctrl-1xxrzo21k29yc31rawhls0qn",
@@ -13,14 +14,14 @@
     "toolName": "write",
     "correlation": "admission:call-d4-worker-write",
     "status": "pending",
-    "createdAt": "2026-11-23T22:26:06.229Z",
+    "createdAt": "2026-11-23T23:47:44.610Z",
     "subject": {
       "kind": "instance",
       "instanceId": "inst-0ty67u70r99a"
     },
     "executionCoupling": "inline",
     "requestSequence": 9,
-    "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-23-40Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:2cd4e5619ecf9308b629d2b5f5443e11)"
+    "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T23-45-21Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:0a2858f99aa518102c7fa06b71cfa772)"
   },
   "requests": [
     {
@@ -31,14 +32,14 @@
       "toolName": "write",
       "correlation": "admission:call-d4-worker-write",
       "status": "pending",
-      "createdAt": "2026-11-23T22:26:06.229Z",
+      "createdAt": "2026-11-23T23:47:44.610Z",
       "subject": {
         "kind": "instance",
         "instanceId": "inst-0ty67u70r99a"
       },
       "executionCoupling": "inline",
       "requestSequence": 9,
-      "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-23-40Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:2cd4e5619ecf9308b629d2b5f5443e11)"
+      "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T23-45-21Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:0a2858f99aa518102c7fa06b71cfa772)"
     }
   ]
 }

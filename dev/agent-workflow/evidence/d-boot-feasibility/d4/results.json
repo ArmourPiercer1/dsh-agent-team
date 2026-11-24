@@ -20,7 +20,7 @@
           {
             "id": "team-session-served",
             "ok": true,
-            "detail": "teamSession={\"rootSessionId\":\"session-dboot-d4-root\",\"blueprintId\":\"team.dboot.d4.v5\",\"revision\":\"1\",\"contentHash\":\"sha256:3448c47903bea4c5a3a1bd35cc1c7e982a8d0fbe12bbae736519648aaaea6045\",\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-23-40Z/workspace\",\"createdAt\":\"2026-11-23T22:26:04.226Z\",\"generation\":11}"
+            "detail": "teamSession={\"rootSessionId\":\"session-dboot-d4-root\",\"blueprintId\":\"team.dboot.d4.v5\",\"revision\":\"1\",\"contentHash\":\"sha256:205f310975fad7894ac4778988ec719651b9d4701fe32612eb0872a6c382c664\",\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T23-45-21Z/workspace\",\"createdAt\":\"2026-11-23T23:47:42.749Z\",\"generation\":11}"
           },
           {
             "id": "no-alpha6-refusal-in-host-log",
@@ -96,7 +96,7 @@
           {
             "id": "ordinary-tool-ask-created",
             "ok": true,
-            "detail": "durable row={\"requestId\":\"ctrl-1xxrzo21k29yc31rawhls0qn\",\"kind\":\"leader-approval\",\"actionName\":\"admission-ask\",\"targetInstanceId\":\"inst-0ty67u70r99a\",\"toolName\":\"write\",\"summary\":\"admission ask: write (fs.write \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-23-40Z/workspace/lane/worker-ask.txt\\\" requires approval under policy generation a5sf1:2cd4e5619ecf9308b629d2b5f5443e11)\",\"approvalCaseId\":null,\"legOrdinal\":null,\"reviewAuthority\":null,\"operationFingerprint\":null,\"requestedEffect\":null,\"blueprintContentHash\":null}"
+            "detail": "durable row={\"requestId\":\"ctrl-1xxrzo21k29yc31rawhls0qn\",\"kind\":\"leader-approval\",\"actionName\":\"admission-ask\",\"targetInstanceId\":\"inst-0ty67u70r99a\",\"toolName\":\"write\",\"summary\":\"admission ask: write (fs.write \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T23-45-21Z/workspace/lane/worker-ask.txt\\\" requires approval under policy generation a5sf1:0a2858f99aa518102c7fa06b71cfa772)\",\"approvalCaseId\":null,\"legOrdinal\":null,\"reviewAuthority\":null,\"operationFingerprint\":null,\"requestedEffect\":null,\"blueprintContentHash\":null}"
           },
           {
             "id": "row-carries-approval-case",
@@ -167,7 +167,7 @@
           {
             "id": "refusal-recorded",
             "ok": true,
-            "detail": "deny facts=[{\"refusalCode\":\"ADMISSION_ALPHA6_UNAVAILABLE\",\"axis\":\"host.service\",\"callId\":\"alpha6:b67a6c2f-8689-468c-a1ae-9d04c3ad2a3e:0\"}]"
+            "detail": "deny facts=[{\"refusalCode\":\"ADMISSION_ALPHA6_UNAVAILABLE\",\"axis\":\"host.service\",\"callId\":\"alpha6:bbcbebe5-8211-4886-b7d5-ef177512a55c:0\"}]"
           },
           {
             "id": "refusal-is-not-a-route",
@@ -194,7 +194,7 @@
           {
             "id": "approved-through-real-control-path",
             "ok": true,
-            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1xxrzo21k29yc31rawhls0qn\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":9,\\\"decisionSequence\\\":10,\\\"createdAt\\\":\\\"2026-11-23T22:26:06.6\""
+            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1xxrzo21k29yc31rawhls0qn\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":9,\\\"decisionSequence\\\":10,\\\"createdAt\\\":\\\"2026-11-23T23:47:44.8\""
           },
           {
             "id": "admission-fact-allow-lane-ask",
@@ -204,7 +204,7 @@
           {
             "id": "write-tool-result-not-an-error",
             "ok": true,
-            "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-23-40Z/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+            "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T23-45-21Z/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
           },
           {
             "id": "real-bytes-on-disk",
@@ -213,6 +213,53 @@
           },
           {
             "id": "settlement-completed",
+            "ok": true,
+            "detail": "state=COMPLETED bodyOutcome=completed transitions=[\"ADMITTED\",\"RUNNING\",\"COMPLETED\"]"
+          }
+        ],
+        "failing": []
+      },
+      "askExecute2": {
+        "proposition": "a SECOND Member `write` (different path, different bytes) raises its OWN Control request, is approved, and executes: the receipt is bound to THAT operation, both files hold the bytes of their own approval, settled COMPLETED",
+        "verdict": "PROVEN",
+        "clauses": [
+          {
+            "id": "second-control-request-raised",
+            "ok": true,
+            "detail": "requestRaised=true requestIsNew=true"
+          },
+          {
+            "id": "second-approved-through-real-control-path",
+            "ok": true,
+            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1u9ufbv1rss8va1kc1szx1d5\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write-2\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":11,\\\"decisionSequence\\\":12,\\\"createdAt\\\":\\\"2026-11-23T23:47:4\""
+          },
+          {
+            "id": "second-admission-fact-allow-lane-ask",
+            "ok": true,
+            "detail": "allow facts=[{\"callId\":\"call-d4-worker-write-2\",\"decision\":\"allow\",\"laneDecision\":\"ask\",\"axis\":\"fs.write\"}]"
+          },
+          {
+            "id": "second-write-tool-result-not-an-error",
+            "ok": true,
+            "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T23-45-21Z/workspace/lane/worker-ask-2.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+          },
+          {
+            "id": "second-real-bytes-on-disk",
+            "ok": true,
+            "detail": "file exists=true bytes=29 sha256=2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f expectedSha256=2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f"
+          },
+          {
+            "id": "first-file-unchanged-by-second-approval",
+            "ok": true,
+            "detail": "first sha256=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3 expectedSha256=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3"
+          },
+          {
+            "id": "content-binding-distinguishes-the-two-approvals",
+            "ok": true,
+            "detail": "second=2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f first=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3"
+          },
+          {
+            "id": "second-settlement-completed",
             "ok": true,
             "detail": "state=COMPLETED bodyOutcome=completed transitions=[\"ADMITTED\",\"RUNNING\",\"COMPLETED\"]"
           }
@@ -231,7 +278,7 @@
           {
             "id": "denied-through-real-control-path",
             "ok": true,
-            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1xxrzo21k29yc31rawhls0qn\\\",\\\"decision\\\":\\\"deny\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":4,\\\"decisionSequence\\\":5,\\\"createdAt\\\":\\\"2026-11-23T22:32:58.242\""
+            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1xxrzo21k29yc31rawhls0qn\\\",\\\"decision\\\":\\\"deny\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":4,\\\"decisionSequence\\\":5,\\\"createdAt\\\":\\\"2026-11-23T23:52:33.021\""
           },
           {
             "id": "deny-fact-recorded",
@@ -294,6 +341,9 @@
       "askExecuteBytes": 27,
       "askExecuteSha256": "ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3",
       "askExecuteSettlement": "COMPLETED",
+      "askExecute2Bytes": 29,
+      "askExecute2Sha256": "2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f",
+      "askExecute2Settlement": "COMPLETED",
       "askDeniedBytes": null,
       "askDeniedSettlement": "REFUSED",
       "askStoppedBytes": null,
@@ -302,13 +352,14 @@
     "ids": {
       "officer": "inst-1crltnl0089j",
       "worker": "inst-0ty67u70r99a",
-      "pendingRequestId": "ctrl-1xxrzo21k29yc31rawhls0qn"
+      "pendingRequestId": "ctrl-1xxrzo21k29yc31rawhls0qn",
+      "pendingRequestId2": "ctrl-1u9ufbv1rss8va1kc1szx1d5"
     },
-    "worldId": "u5u5a5sfdev1-20261123T22-23-40Z",
-    "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-23-40Z",
-    "port": 3194,
-    "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/driver/logs/u5u5a5sfdev1-20261123T22-23-40Z/instance-port3194.log",
-    "refusalWorldId": "u5u5a5sfdev1-20261123T22-28-08Z",
+    "worldId": "u5u5a5sfdev1-20261123T23-45-21Z",
+    "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T23-45-21Z",
+    "port": 3195,
+    "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/driver/logs/u5u5a5sfdev1-20261123T23-45-21Z/instance-port3195.log",
+    "refusalWorldId": "u5u5a5sfdev1-20261123T23-47-47Z",
     "negativeArms": {
       "denied": {
         "requestId": "ctrl-1xxrzo21k29yc31rawhls0qn",
@@ -319,8 +370,8 @@
         "cancelStatus": 200
       }
     },
-    "bootedAt": 1795472620937,
-    "elapsedMs": 824346
+    "bootedAt": 1795477521286,
+    "elapsedMs": 577551
   },
   {
     "boot": 2,
@@ -343,7 +394,7 @@
           {
             "id": "team-session-served",
             "ok": true,
-            "detail": "teamSession={\"rootSessionId\":\"session-dboot-d4-root\",\"blueprintId\":\"team.dboot.d4.v5\",\"revision\":\"1\",\"contentHash\":\"sha256:7704ba420feafe5d53b390d64ad3d9c7d7035c1520407d530dea65aae4ebdb67\",\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-37-25Z/workspace\",\"createdAt\":\"2026-11-23T22:39:49.491Z\",\"generation\":11}"
+            "detail": "teamSession={\"rootSessionId\":\"session-dboot-d4-root\",\"blueprintId\":\"team.dboot.d4.v5\",\"revision\":\"1\",\"contentHash\":\"sha256:29ec206d56f3fbcb41b42dc1371637dd882ea7e9482047c92e769980f03b85ce\",\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T23-54-58Z/workspace\",\"createdAt\":\"2026-11-23T23:57:21.427Z\",\"generation\":11}"
           },
           {
             "id": "no-alpha6-refusal-in-host-log",
@@ -419,7 +470,7 @@
           {
             "id": "ordinary-tool-ask-created",
             "ok": true,
-            "detail": "durable row={\"requestId\":\"ctrl-1xxrzo21k29yc31rawhls0qn\",\"kind\":\"leader-approval\",\"actionName\":\"admission-ask\",\"targetInstanceId\":\"inst-0ty67u70r99a\",\"toolName\":\"write\",\"summary\":\"admission ask: write (fs.write \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-37-25Z/workspace/lane/worker-ask.txt\\\" requires approval under policy generation a5sf1:8314c9a1c612344cea629f54a0437aae)\",\"approvalCaseId\":null,\"legOrdinal\":null,\"reviewAuthority\":null,\"operationFingerprint\":null,\"requestedEffect\":null,\"blueprintContentHash\":null}"
+            "detail": "durable row={\"requestId\":\"ctrl-1xxrzo21k29yc31rawhls0qn\",\"kind\":\"leader-approval\",\"actionName\":\"admission-ask\",\"targetInstanceId\":\"inst-0ty67u70r99a\",\"toolName\":\"write\",\"summary\":\"admission ask: write (fs.write \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T23-54-58Z/workspace/lane/worker-ask.txt\\\" requires approval under policy generation a5sf1:20071be934971e74f2d3af04b2ae719a)\",\"approvalCaseId\":null,\"legOrdinal\":null,\"reviewAuthority\":null,\"operationFingerprint\":null,\"requestedEffect\":null,\"blueprintContentHash\":null}"
           },
           {
             "id": "row-carries-approval-case",
@@ -490,7 +541,7 @@
           {
             "id": "refusal-recorded",
             "ok": true,
-            "detail": "deny facts=[{\"refusalCode\":\"ADMISSION_ALPHA6_UNAVAILABLE\",\"axis\":\"host.service\",\"callId\":\"alpha6:dc44cbc6-5e03-4d52-b244-57bb411849b0:0\"}]"
+            "detail": "deny facts=[{\"refusalCode\":\"ADMISSION_ALPHA6_UNAVAILABLE\",\"axis\":\"host.service\",\"callId\":\"alpha6:fd78464d-9633-4afc-b447-8c09bedc72d8:0\"}]"
           },
           {
             "id": "refusal-is-not-a-route",
@@ -517,7 +568,7 @@
           {
             "id": "approved-through-real-control-path",
             "ok": true,
-            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1xxrzo21k29yc31rawhls0qn\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":9,\\\"decisionSequence\\\":10,\\\"createdAt\\\":\\\"2026-11-23T22:39:51.8\""
+            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1xxrzo21k29yc31rawhls0qn\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":9,\\\"decisionSequence\\\":10,\\\"createdAt\\\":\\\"2026-11-23T23:57:23.4\""
           },
           {
             "id": "admission-fact-allow-lane-ask",
@@ -527,7 +578,7 @@
           {
             "id": "write-tool-result-not-an-error",
             "ok": true,
-            "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-37-25Z/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+            "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T23-54-58Z/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
           },
           {
             "id": "real-bytes-on-disk",
@@ -536,6 +587,53 @@
           },
           {
             "id": "settlement-completed",
+            "ok": true,
+            "detail": "state=COMPLETED bodyOutcome=completed transitions=[\"ADMITTED\",\"RUNNING\",\"COMPLETED\"]"
+          }
+        ],
+        "failing": []
+      },
+      "askExecute2": {
+        "proposition": "a SECOND Member `write` (different path, different bytes) raises its OWN Control request, is approved, and executes: the receipt is bound to THAT operation, both files hold the bytes of their own approval, settled COMPLETED",
+        "verdict": "PROVEN",
+        "clauses": [
+          {
+            "id": "second-control-request-raised",
+            "ok": true,
+            "detail": "requestRaised=true requestIsNew=true"
+          },
+          {
+            "id": "second-approved-through-real-control-path",
+            "ok": true,
+            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1u9ufbv1rss8va1kc1szx1d5\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write-2\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":11,\\\"decisionSequence\\\":12,\\\"createdAt\\\":\\\"2026-11-23T23:57:2\""
+          },
+          {
+            "id": "second-admission-fact-allow-lane-ask",
+            "ok": true,
+            "detail": "allow facts=[{\"callId\":\"call-d4-worker-write-2\",\"decision\":\"allow\",\"laneDecision\":\"ask\",\"axis\":\"fs.write\"}]"
+          },
+          {
+            "id": "second-write-tool-result-not-an-error",
+            "ok": true,
+            "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T23-54-58Z/workspace/lane/worker-ask-2.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+          },
+          {
+            "id": "second-real-bytes-on-disk",
+            "ok": true,
+            "detail": "file exists=true bytes=29 sha256=2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f expectedSha256=2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f"
+          },
+          {
+            "id": "first-file-unchanged-by-second-approval",
+            "ok": true,
+            "detail": "first sha256=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3 expectedSha256=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3"
+          },
+          {
+            "id": "content-binding-distinguishes-the-two-approvals",
+            "ok": true,
+            "detail": "second=2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f first=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3"
+          },
+          {
+            "id": "second-settlement-completed",
             "ok": true,
             "detail": "state=COMPLETED bodyOutcome=completed transitions=[\"ADMITTED\",\"RUNNING\",\"COMPLETED\"]"
           }
@@ -554,7 +652,7 @@
           {
             "id": "denied-through-real-control-path",
             "ok": true,
-            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1xxrzo21k29yc31rawhls0qn\\\",\\\"decision\\\":\\\"deny\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":4,\\\"decisionSequence\\\":5,\\\"createdAt\\\":\\\"2026-11-23T22:46:43.677\""
+            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1xxrzo21k29yc31rawhls0qn\\\",\\\"decision\\\":\\\"deny\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":4,\\\"decisionSequence\\\":5,\\\"createdAt\\\":\\\"2026-11-24T00:02:13.639\""
           },
           {
             "id": "deny-fact-recorded",
@@ -617,6 +715,9 @@
       "askExecuteBytes": 27,
       "askExecuteSha256": "ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3",
       "askExecuteSettlement": "COMPLETED",
+      "askExecute2Bytes": 29,
+      "askExecute2Sha256": "2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f",
+      "askExecute2Settlement": "COMPLETED",
       "askDeniedBytes": null,
       "askDeniedSettlement": "REFUSED",
       "askStoppedBytes": null,
@@ -625,13 +726,14 @@
     "ids": {
       "officer": "inst-1crltnl0089j",
       "worker": "inst-0ty67u70r99a",
-      "pendingRequestId": "ctrl-1xxrzo21k29yc31rawhls0qn"
+      "pendingRequestId": "ctrl-1xxrzo21k29yc31rawhls0qn",
+      "pendingRequestId2": "ctrl-1u9ufbv1rss8va1kc1szx1d5"
     },
-    "worldId": "u5u5a5sfdev1-20261123T22-37-25Z",
-    "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-37-25Z",
-    "port": 3194,
-    "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/driver/logs/u5u5a5sfdev1-20261123T22-37-25Z/instance-port3194.log",
-    "refusalWorldId": "u5u5a5sfdev1-20261123T22-41-53Z",
+    "worldId": "u5u5a5sfdev1-20261123T23-54-58Z",
+    "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T23-54-58Z",
+    "port": 3195,
+    "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/driver/logs/u5u5a5sfdev1-20261123T23-54-58Z/instance-port3195.log",
+    "refusalWorldId": "u5u5a5sfdev1-20261123T23-57-26Z",
     "negativeArms": {
       "denied": {
         "requestId": "ctrl-1xxrzo21k29yc31rawhls0qn",
@@ -642,7 +744,7 @@
         "cancelStatus": 200
       }
     },
-    "bootedAt": 1795473445326,
-    "elapsedMs": 825488
+    "bootedAt": 1795478098878,
+    "elapsedMs": 581869
   }
 ]

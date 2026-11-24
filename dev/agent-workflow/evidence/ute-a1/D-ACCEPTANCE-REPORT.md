@@ -1354,7 +1354,7 @@ ruling, and the two seam rows are explicitly **not** upstream patches (`CORE PAT
 | id | open gap (measured, not inferred) | evidence (`file:line` / artefact) | what closes it |
 | --- | --- | --- | --- |
 | **G1** | **Alpha.6 has no case-bearing ordinary-ask producer (Team-side seam, NOT upstream).** `requestApprovalLeg` is only called for `envelope-mutation`; the ordinary `ask` lane does not call it and is explicitly excluded by `isDelegableOrdinaryToolAsk`, which needs `kind:'leader-approval'`, `reviewAuthority:'leader'`, an `operationFingerprint`, an `authorityScope` and a non-null `operationTool`. So the only live ordinary ask is **case-less**, `root-router.ts:209` returns `null`, and no wake intent is ever written. `d4:routed-wake` is **REFUTED** on two agreeing boots. | `dev/agent-workflow/evidence/d-boot-feasibility/d4/README.md` §4.2; `d4/runs/boot0{1,2}/control-row-durable.json` (no `approvalCaseId`/`legOrdinal`), `route-probe.json` (`null`, 0 member reads); `packages/runtime/alpha6/root-router.ts:209`; `packages/runtime/review-router/policy.ts:68-75`; `packages/runtime/src/plugin/vnext/admission-port.mjs:158-165` | **Owner decision R1** (below) — commission the Alpha.6-aware case-forming ask lane, or accept that the routed wake stays unproven this generation. **ROUND 93: R1 was ruled APPROVED and its PRODUCER IS LANDED** (`vnext/alpha6-ask-case.mjs`, five arms `ADM-149`…`ADM-153`, case through the EXISTING `requestApprovalLeg`). G1's *producer* half is therefore CLOSED; the LIVE routed wake is still REFUTED, now for a different and newly measured reason — see `G11` and §10.2 |
-| **G2** | **BL-30: no production consumer for an `ask`-disposition call, and it cannot be wired without an invariant change.** The only production ask producer hard-codes `executionCoupling:'inline'`; an inline durable allow is never a guard token (`guardOperation` `no-request`); the one-shot grant is already spent at the host tool guard before the Provider plane runs; and `resolveAskClassCall` has no production caller, so the confined provider refuses `IO_ASK_REQUIRES_APPROVAL`. **Consequence: a Member can ASK, be GRANTED, and still not run the granted call in production.** | `dev/agent-workflow/evidence/bl-30-ask-consumer/README.md` §1–§3; `packages/runtime/src/plugin/vnext/admission-port.mjs:76-79`, `:163`, `:770-784`; `packages/runtime/control/service.ts:4155-4165`, `:4289-4291`; `packages/runtime/member-io-policy/src/provider-capabilities.ts:196-210`, `:315`; `d4/runs/boot01/wake-measurement.json#workerWrite.result`; measured arms `packages/runtime/test/a5sf-approval-takeover.test.ts` (25/25) | **ROUND 94: R3 WAS PO C'd AND IS PROVEN FOR `write` ONLY** — see the round-94 addendum below and `ADR-approved-ask-receipt.md`. **ROUND 95: CLOSED FOR `write` IN A BOOTED PRODUCT** — the real mount now passes the real binder as the Provider's authority (`agent-bindings.mjs:1771-1790` → `a5sf-realm-row.mjs` → `mount.ts` → `install.ts`), and the D4 live driver proves ask → real Control allow → one-shot consume → receipt verified → real bytes on disk → `COMPLETED`, plus deny and Stop negatives. Every other tool/operation still refuses exactly as this row states, so the gap is narrowed to `write`/`writeText`. |
+| **G2** | **BL-30: no production consumer for an `ask`-disposition call, and it cannot be wired without an invariant change.** The only production ask producer hard-codes `executionCoupling:'inline'`; an inline durable allow is never a guard token (`guardOperation` `no-request`); the one-shot grant is already spent at the host tool guard before the Provider plane runs; and `resolveAskClassCall` has no production caller, so the confined provider refuses `IO_ASK_REQUIRES_APPROVAL`. **Consequence: a Member can ASK, be GRANTED, and still not run the granted call in production.** | `dev/agent-workflow/evidence/bl-30-ask-consumer/README.md` §1–§3; `packages/runtime/src/plugin/vnext/admission-port.mjs:76-79`, `:163`, `:770-784`; `packages/runtime/control/service.ts:4155-4165`, `:4289-4291`; `packages/runtime/member-io-policy/src/provider-capabilities.ts:196-210`, `:315`; `d4/runs/boot01/wake-measurement.json#workerWrite.result`; measured arms `packages/runtime/test/a5sf-approval-takeover.test.ts` (25/25) | **ROUND 94: R3 WAS PO C'd AND IS PROVEN FOR `write` ONLY** — see the round-94 addendum below and `ADR-approved-ask-receipt.md`. **ROUND 95: CLOSED FOR `write` IN A BOOTED PRODUCT** — the real mount now passes the real binder as the Provider's authority (`agent-bindings.mjs:1771-1790` → `a5sf-realm-row.mjs` → `mount.ts` → `install.ts`), and the D4 live driver proves ask → real Control allow → one-shot consume → receipt verified → real bytes on disk → `COMPLETED`, plus deny and Stop negatives. Every other tool/operation still refuses exactly as this row states, so the gap is narrowed to `write`/`writeText`. **ROUND 96: EXTENDED TO EVERY FS MUTATION** — the same receipt now covers `editText`/`patchText`/`deleteFile`/`moveFile` with per-method scope binding (see the round-96 addendum), proven by `ADM-162`…`ADM-173` and a second live mutation (`d4:ask-execute-2`). The **subprocess/PTY face is explicitly NOT covered** (its authority is an OS `SandboxExecutionPolicy`, not a file lane) and stays R4; `apply_patch` stays unbound. |
 | **G3** | **PTC (`run_code`) is refused with `CORE_SEAM_BLOCKER` on the worker's OS profile.** Three of its four parts hold (nested calls, Control escalation, Stop); part (a) — the worker's OS confinement is not the member's compiled profile — needs a per-execution policy seam upstream, which this repo may not patch. | `PTC-FOUR-PART-FINDING.md`; `packages/runtime/src/plugin/vnext/admission.ts:421-423`; report §6.3 | upstream/owner acceptance of the `CORE_SEAM_BLOCKER` shape — not product work here |
 | **G4** | **Two S6 root-work commands stay refused** on the management plane: `team.admitInitialWork`, `team.ensureRootLive`. No async enqueue-and-acknowledge root-work seam exists, and none was invented. | `packages/runtime/src/plugin/s6-command-classification.ts:111-112`; report §9.5; `d3:work-delivery` (landed=0 for root) | a new governed root-work delivery seam (product work) or an explicit owner ruling to keep them out of scope |
 | **G5** | **The rc.5 pre-dispatch-abort observer is not wired into a booted production turn.** The rc.5 additions have mechanism arms and no production pre-dispatch wiring, so a Stop between admission and dispatch is not live-evidenced on rc.5. | `RC5-MIGRATION.md:492-504`; `packages/runtime/src/plugin/vnext/pre-dispatch-abort.mjs` (present, mechanism-only) | production wiring plus a live boot; owner ruling not needed, product work needed |
@@ -1659,3 +1659,57 @@ and every other face still refuse `IO_ASK_REQUIRES_APPROVAL`; R3 covers `write`/
 (3) Alpha.6 routing (`d4:routed-wake`, G1) stays REFUTED. (4) The receipt binds `caseId:null` for an
 inline admission request. (5) The live run uses the scripted model; no real-model interleaving was
 measured.
+
+---
+
+## ROUND 96 ADDENDUM (2026-11-24) — the SAME receipt extended to `editText` / `patchText` / `deleteFile` / `moveFile`
+
+**Owner ruling and its limit.** Extend R3 method by method, each with its own proof; do NOT assume an
+OS-sandbox approval path inherits the FS proof. Round 96 therefore covers every FS mutation the
+Provider exposes and **deliberately does not touch subprocess/PTY**.
+
+**What changed in the product (no invariant moved).**
+
+| location | change |
+| --- | --- |
+| `packages/runtime/member-io-policy/src/approved-ask-receipt.ts` | schema `/2`: the operation is a discriminated union — `fs-write` (target + content `sha256`), `fs-edit` (target + the requested `(oldString,newString,replaceAll)` + `editSha256`), `fs-patch` (target + the exact `PatchHunk[]` payload `sha256`), `fs-delete` (target only, `bytesReadBack:false`), `fs-move` (**source AND destination**, authored + canonical). `prepareApprovedFsOperation` prepares the five declared tool shapes; the verifier requires an exact method↔kind match first, then per-path deny/resolve/bounds/canonical checks. |
+| `packages/runtime/team-services/src/fs.ts` | `moveFile` is ONE guard over the path PAIR (deny on either path wins; ONE receipt verification; read-before-mutate for the source and an existing destination). `editText` forwards the literal triple, `patchText` the hunks; the ask branch now covers every write method rather than `writeText` only. |
+| `packages/runtime/src/plugin/vnext/admission-port.mjs` | the centre prepares the five shapes; a name outside the table mints NO receipt (the Provider keeps R4), a recognised-but-malformed call is refused at admission. |
+| `packages/runtime/src/plugin/vnext/admission.ts` | `delete_file` / `move_file` / `patch_text` are DECLARED names on the SAME `fs.write` axis as `write`/`edit` (one existing duty, no new one). Naming them creates no tool: no preset mounts them, and rc.5's multi-file `apply_patch` is deliberately NOT in the table (stays unbound / R4). |
+
+**Frozen invariants checked and NOT moved:** `deny` is decided before any receipt consult on every
+path (including both move paths); the lane stays `ask` and is never promoted; the bounds snapshot is
+still the compiler's own; the receipt is still single-use and execution-scoped; no `guarded`
+coupling, no global callId map, no attribution-ALS reuse, no second authority, no upstream patch, no
+widened timeout/retry; the scripted model is still the only double.
+
+**Regression arms** — `ADM-162`…`ADM-173` over the REAL confined Provider (rc.2 for `editText`,
+rc.5 for the other three), real binder, real `ControlService`, real settlement store: four positives
+with the bytes (or absence) verified and `COMPLETED` settlements, and eight negatives (content/payload
+binding refused with zero bytes at the body phase, cross-operation, cross-path, revoked + reuse,
+(a→b) vs (a→c), deny-wins on the move destination, and a non-mutation approval that mints no
+receipt). File `156 tests / 155 pass / 1 skipped / 0 fail` (the admission suite's own count).
+
+**LIVE PROOF — `probe-d4-routed-wake.mjs --boots 2` (DEV-LIVE, booted rc.2 host, scripted model
+only; every existing judge unchanged).** The probe now performs a SECOND real mutation — a second
+`write` on a different path with different bytes and its OWN durable Control request.
+
+| judge | rounds | result |
+| --- | --- | --- |
+| `d4:ask-execute` | 2/2 | **PROVEN** — 27 real bytes, `sha256:ced10112…`, `COMPLETED` |
+| `d4:ask-execute-2` | 2/2 | **PROVEN** — new durable request `ctrl-1u9ufbv1rss8va1kc1szx1d5`, real Leader allow, 29 real bytes at the second path, `sha256:2d71ffdd…`, the FIRST file byte-identical, the two digests different, `COMPLETED` |
+| `d4:ask-denied`, `d4:ask-stopped` | 2/2 | **PROVEN** — 0 bytes, `REFUSED` / `not-started` |
+| `d4:enablement`, `d4:officer-up`, `d4:officer-binding`, `d4:refusal` | 2/2 | PROVEN (unchanged) |
+| `d4:routed-wake` | 2/2 | **REFUTED, deliberately unchanged** — same eight failing clauses; a receipt is never routing evidence |
+
+Two-boot agreement `agreeing=true`, `differing=[]`.
+
+**G2/BL-30 status after round 96.** The gap is now closed for **every FS mutation** at mechanism level
+and for **two mutations live** (`write`, and a second distinct `write` proving content binding). It is
+NOT closed globally: the **subprocess/PTY** face still refuses (R4) and is the next owner-ruled step,
+and `apply_patch` remains unbound.
+
+**Not proven / not claimed.** (1) Subprocess/PTY — no receipt, no proof, R4. (2) `apply_patch` — stays
+unbound. (3) The four new methods' tool names are declared shapes, not shipped tools, so they are
+proven at the production composition point, not through a live model. (4) No row is PRODUCT-PROVEN.
+(5) Real-model interleaving remains unmeasured.

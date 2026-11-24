@@ -25,6 +25,15 @@ under `tests/homes/`, own port band, host-selectable through `tests/next-host/ho
 
 ---
 
+> **ANNEX — rounds 95/96 (2026-11-24): the same instrument now also measures the ask→grant→execute
+> chain.** The tables below are the round-87 measurement, unchanged and still accurate for the
+> routed-wake question. Two further judges were added to the SAME probe later and are recorded
+> elsewhere: `d4:ask-execute` (round 95) and `d4:ask-execute-2` (round 96, a SECOND mutation with
+> different bytes) — both PROVEN on two agreeing boots, with `d4:routed-wake` still REFUTED. See
+> `dev/agent-workflow/evidence/ute-a1/round95/settlement-comment.md`,
+> `dev/agent-workflow/evidence/ute-a1/MIGRATED-SUITE-STATUS.md` §"Round 96" and
+> `runs/boot0{1,2}/verdict-ask-execute{,-2}.json`.
+
 ## 1. The world (the enablement configuration, verbatim)
 
 | item | value |

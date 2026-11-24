@@ -28,7 +28,7 @@ with its own code and the ruled status `unsupported-by-product-ruling` (round 92
 this generation by owner ruling, a scope reduction recorded in `ADR-ptc-unsupported.md`, not a blocker); the S6 management plane is
 restored (round 74) and serves work delivery (round 83); Alpha.6's formal routing is implemented
 (round 84) while its **live routed wake is REFUTED (round 87)** on two named Team-side seams, and the
-`ask`-disposition execution path had **no production consumer through round 94 (BL-30, round 88)**; since round 95 it **executes for `write`/`writeText` only** (the R3 ApprovedAskReceipt authority is wired into the production mount and proven on two agreeing live boots), while every other tool/operation keeps the fail-closed R4 refusal. **D** adds live
+`ask`-disposition execution path had **no production consumer through round 94 (BL-30, round 88)**; since round 95 it **executes** (the R3 ApprovedAskReceipt authority is wired into the production mount and proven on two agreeing live boots), and round 96 extends the SAME receipt to **every FS mutation** — `writeText`, `editText`, `patchText`, `deleteFile`, `moveFile`, each with its own scope binding and its own proof — while the **subprocess/PTY face and every other tool keep the fail-closed R4 refusal** (an OS-sandbox approval is explicitly NOT assumed to inherit the FS proof). **D** adds live
 `dsh web` evidence: **fourteen** judges PROVEN, the previously refuted three (`d3:persistent-subprocess`,
 `d2:revocation`, `d:member-read-denied`) now PROVEN, four further round-87 probe judges PROVEN
 (enablement / Officer up / Officer binding / incoherent-row refusal) and one REFUTED (`d4:routed-wake`),
@@ -62,6 +62,46 @@ as the Provider's receipt authority, for `write`/`writeText` only.
 - **Not proven.** Only `write`/`writeText`; `editText`/`patchText`/`deleteFile`/`moveFile`, subprocess
   and every other tool keep R4. No row is PRODUCT-PROVEN (DEV-LIVE is a record, not a gate). Real-model
   interleaving is not measured.
+
+## Latest round (96) — the R3 receipt extended to EVERY FS mutation (subprocess deliberately untouched)
+
+Owner ruling: extend R3 method by method, each with its own proof; do NOT assume an OS-sandbox
+approval path inherits the FS proof. Round 96 does exactly that for the FS face and states the
+subprocess face as the next step.
+
+- **One receipt, five operation kinds** (schema bumped to `a5sf-approved-ask-receipt/2`). The
+  operation is a discriminated union and the verifier requires an EXACT method↔kind match first, so a
+  receipt minted for one method can never satisfy another. Per-method scope binding:
+
+  | tool → Provider method | kind | corridor | fingerprint is a `sha256` of | cannot say |
+  | --- | --- | --- | --- | --- |
+  | `write` → `writeText` | `fs-write` | target | the exact content string | nothing about prior content |
+  | `edit` → `editText` | `fs-edit` | target | the requested `(oldString,newString,replaceAll)` transformation | not prior/resulting bytes (the Provider's match guard decides those) |
+  | `patch_text` → `patchText` | `fs-patch` | target | the exact `PatchHunk[]` payload | not prior/resulting bytes, not that the hunks apply |
+  | `delete_file` → `deleteFile` | `fs-delete` | target | nothing but the path (`bytesReadBack:false`) | nothing about what was deleted — no bytes are read back by design |
+  | `move_file` → `moveFile` | `fs-move` | **both** paths | source + destination, authored and canonical | (a→b) can never authorize (a→c) |
+
+- **Provider.** `moveFile` is now ONE guard over the path PAIR: deny on either path wins before any
+  receipt consult, then one receipt verification covers both, then the read-before-mutate rule runs
+  for the source and for an existing destination. `editText` forwards the edit triple, `patchText`
+  the hunk payload; `deleteFile` forwards the path only. `write`/`edit` are shipped native tools;
+  `patch_text`/`delete_file`/`move_file` are DECLARED argument shapes for rc.5 Provider methods with
+  no shipped tool this round (no preset mounts them, so no model can reach them; rc.5's real
+  multi-file `apply_patch` prepares nothing and stays R4).
+- **Arms** (`ADM-162`…`ADM-173`, over the REAL confined Provider on the pinned hosts — rc.2 for
+  `editText`, rc.5 for the other three — real binder, real `ControlService`, real settlement store):
+  positives for edit/delete/move/patch with the bytes (or absence) verified and `COMPLETED`
+  settlements; negatives: content/payload binding (zero bytes, `FAILED` at the body phase),
+  cross-operation and cross-path, revoked + reuse, (a→b) vs (a→c), deny-wins on the move destination,
+  and a non-mutation approval that mints no receipt.
+- **Live** (`probe-d4-routed-wake.mjs --boots 2`, DEV-LIVE, real rc.2 host, scripted model only): the
+  D4 probe now performs a SECOND real mutation — a second `write` on a different path with different
+  bytes and its OWN durable Control request — judged by `d4:ask-execute-2` (content binding across
+  two approvals: both files hold the bytes of their own approval, the first file is unchanged, the
+  digests differ). Every existing judge is unchanged, `d4:routed-wake` stays REFUTED.
+- **Not proven.** No subprocess/PTY receipt exists (next owner-ruled step); no capability row is
+  PRODUCT-PROVEN (DEV-LIVE is a record, not a gate); the four new methods are proven at the
+  production composition point and two of them live, but their tool shapes are declared, not shipped.
 
 ## What this branch is
 

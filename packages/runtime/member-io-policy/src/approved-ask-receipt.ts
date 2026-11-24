@@ -35,9 +35,13 @@
  *    log; a structural copy is refused (`RECEIPT_UNKNOWN`). The only writer of
  *    the scope is the centre's own port.
  *
- * THIS ROUND COVERS EXACTLY ONE OPERATION: the native `write` tool's
- * `writeText` effect. Every other method/tool keeps the R4 fail-closed
- * `IO_ASK_REQUIRES_APPROVAL` refusal; generalising is a later ruling.
+ * THIS ROUND COVERS THE FIVE NATIVE FS MUTATIONS, one operation kind each:
+ * `write`→`writeText`, `edit`→`editText`, `patch_text`→`patchText`,
+ * `delete_file`→`deleteFile`, `move_file`→`moveFile` (BOTH paths). The kind is
+ * part of the operation identity, so a receipt for one method can never satisfy
+ * another. Every other tool/method keeps the R4 fail-closed
+ * `IO_ASK_REQUIRES_APPROVAL` refusal (the subprocess face is explicitly NOT
+ * covered by this extension; see the ADR).
  *
  * @module @dsh-agent-team/runtime/member-io-policy/approved-ask-receipt
  */
@@ -53,7 +57,7 @@ import {
 import type { PathRuleSet } from './types.js'
 
 /** The one record schema. A reader that does not know it must fail loud. */
-export const APPROVED_ASK_RECEIPT_SCHEMA = 'a5sf-approved-ask-receipt/1' as const
+export const APPROVED_ASK_RECEIPT_SCHEMA = 'a5sf-approved-ask-receipt/2' as const
 
 /**
  * Closed refusal vocabulary. NONE of these starts with `ADMISSION_`: a
@@ -90,17 +94,109 @@ export interface ApprovedAskMemberIdentity {
   readonly instanceGeneration: number
 }
 
-/** The ONE operation this round can authorize: a native `write` of known bytes. */
-export interface ApprovedAskOperation {
-  readonly toolName: 'write'
+/** The authored + Provider-resolved identity of ONE path in an approved operation. */
+export interface ApprovedAskPath {
   /** The authored locator the approval named. */
   readonly locator: string
   /** The Provider-resolved canonical path the approval covers. */
   readonly canonicalPath: string
+}
+
+/**
+ * The ONE operation a receipt can authorize. Round 96 (owner ruling 20261124-0151 §2, extension):
+ * the same shape now covers the five native FS mutations, each with its OWN scope binding.
+ *
+ * WHAT THE PAYLOAD DIGESTS COVER, and what they cannot (see the ADR's per-method table):
+ *  - `fs-write`  (`write` → `writeText`): the exact bytes. Nothing about the prior file.
+ *  - `fs-edit`   (`edit` → `editText`): the requested literal transformation
+ *                (oldString, newString, replaceAll). NOT the file's prior content, so not the
+ *                resulting bytes — the Provider's own literal-match / version guard decides those.
+ *  - `fs-patch`  (`patch_text` → `patchText`): the exact hunk payload handed to the Provider.
+ *                NOT the prior content, so not the resulting bytes.
+ *  - `fs-delete` (`delete_file` → `deleteFile`): the target path only. No bytes are read back.
+ *  - `fs-move`   (`move_file` → `moveFile`): BOTH paths. A receipt for (a→b) cannot authorize (a→c).
+ */
+export interface ApprovedAskWriteOperation extends ApprovedAskPath {
+  readonly kind: 'fs-write'
+  readonly toolName: 'write'
   /** Digest of the approved bytes; the Provider re-hashes what it is about to write. */
   readonly contentSha256: string
-  /** Deterministic digest of the three fields above, carried for auditability. */
   readonly fingerprint: string
+}
+
+export interface ApprovedAskEditOperation extends ApprovedAskPath {
+  readonly kind: 'fs-edit'
+  readonly toolName: 'edit'
+  readonly oldStringSha256: string
+  readonly newStringSha256: string
+  readonly replaceAll: boolean
+  /** Digest of the exact `{oldString,newString,replaceAll}` triple the Provider must receive. */
+  readonly editSha256: string
+  readonly fingerprint: string
+}
+
+export interface ApprovedAskPatchOperation extends ApprovedAskPath {
+  readonly kind: 'fs-patch'
+  /** The declared native tool shape for a single-file hunk list. */
+  readonly toolName: 'patch_text'
+  /** Digest of the canonical hunk payload the Provider must receive. */
+  readonly hunksSha256: string
+  readonly fingerprint: string
+}
+
+export interface ApprovedAskDeleteOperation extends ApprovedAskPath {
+  readonly kind: 'fs-delete'
+  readonly toolName: 'delete_file'
+  /**
+   * Literal `false`: a delete reads no bytes back, so there is nothing about the removed file's
+   * content that this receipt could or does bind. Scope is the path, and only the path.
+   */
+  readonly bytesReadBack: false
+  readonly fingerprint: string
+}
+
+export interface ApprovedAskMoveOperation {
+  readonly kind: 'fs-move'
+  readonly toolName: 'move_file'
+  /** The path being removed. */
+  readonly source: ApprovedAskPath
+  /** The path being published. */
+  readonly destination: ApprovedAskPath
+  readonly fingerprint: string
+}
+
+export type ApprovedAskOperation =
+  | ApprovedAskWriteOperation
+  | ApprovedAskEditOperation
+  | ApprovedAskPatchOperation
+  | ApprovedAskDeleteOperation
+  | ApprovedAskMoveOperation
+
+/** The Provider method each operation kind authorizes, exactly. */
+export const APPROVED_ASK_METHOD_OF_KIND = Object.freeze({
+  'fs-write': 'writeText',
+  'fs-edit': 'editText',
+  'fs-patch': 'patchText',
+  'fs-delete': 'deleteFile',
+  'fs-move': 'moveFile',
+} as const)
+
+export type ApprovedAskFsMethod = (typeof APPROVED_ASK_METHOD_OF_KIND)[keyof typeof APPROVED_ASK_METHOD_OF_KIND]
+
+/** The evidence a Provider must supply for the method it is about to run. */
+export interface ApprovedAskOperationEvidence {
+  /** `writeText`: the bytes about to be written. */
+  readonly content?: string
+  /** `editText`: the literal transformation about to be applied. */
+  readonly edit?: {
+    readonly oldString: string
+    readonly newString: string
+    readonly replaceAll: boolean
+  }
+  /** `patchText`: the hunk payload about to be applied. */
+  readonly hunks?: unknown
+  /** `moveFile`: the destination path (the source is the main `locator`). */
+  readonly destinationPath?: string
 }
 
 /** The frozen projection of `(Member, Tool, operation, approval, grant)`. */
@@ -167,7 +263,14 @@ export interface AuthorizeAskWithReceiptInput {
   readonly method: string
   readonly locator: string
   readonly access: 'read' | 'write'
+  /** `writeText`: the bytes about to be written. */
   readonly content?: string
+  /** `editText`: the exact literal transformation about to be applied. */
+  readonly edit?: ApprovedAskOperationEvidence['edit']
+  /** `patchText`: the exact hunk payload about to be applied. */
+  readonly hunks?: unknown
+  /** `moveFile`: the destination path; `locator` is the source. */
+  readonly destinationPath?: string
   readonly resolver?: PathIdentityResolver
   /**
    * The invocation binder's read-only epoch surface. REQUIRED: without it a
@@ -182,7 +285,7 @@ export interface AuthorizeAskWithReceiptInput {
 }
 
 export type AuthorizeAskWithReceiptResult =
-  | { readonly ok: true; readonly resolved: string; readonly receipt: ApprovedAskReceipt }
+  | { readonly ok: true; readonly resolved: string; readonly resolvedDestination?: string; readonly receipt: ApprovedAskReceipt }
   | { readonly ok: false; readonly code: ApprovedAskReceiptRefusalCode; readonly detail: string }
 
 // ---------------------------------------------------------------------------
@@ -260,14 +363,61 @@ function sha256Hex(value: string): string {
   return createHash('sha256').update(value).digest('hex')
 }
 
-/** The operation fingerprint: one deterministic digest of the approved effect. */
-export function approvedAskOperationFingerprint(operation: Pick<ApprovedAskOperation, 'toolName' | 'canonicalPath' | 'contentSha256'>): string {
+/**
+ * The operation fingerprint: one deterministic digest of the approved effect.
+ *
+ * It is recomputed by `mintApprovedAskReceipt` from the operation's own fields, so a caller cannot
+ * smuggle a fingerprint that disagrees with the paths/payload it carries. Kept for auditability and
+ * for the receipt's own self-consistency check.
+ */
+export function approvedAskOperationFingerprint(operation: ApprovedAskOperation): string {
+  const material: Record<string, unknown> = { schema: APPROVED_ASK_RECEIPT_SCHEMA, kind: operation.kind }
+  if (operation.kind === 'fs-move') {
+    material.toolName = operation.toolName
+    material.source = { canonicalPath: operation.source.canonicalPath }
+    material.destination = { canonicalPath: operation.destination.canonicalPath }
+  } else {
+    material.toolName = operation.toolName
+    material.canonicalPath = operation.canonicalPath
+    if (operation.kind === 'fs-write') material.contentSha256 = operation.contentSha256
+    if (operation.kind === 'fs-edit') {
+      material.oldStringSha256 = operation.oldStringSha256
+      material.newStringSha256 = operation.newStringSha256
+      material.replaceAll = operation.replaceAll
+      material.editSha256 = operation.editSha256
+    }
+    if (operation.kind === 'fs-patch') material.hunksSha256 = operation.hunksSha256
+    if (operation.kind === 'fs-delete') material.bytesReadBack = operation.bytesReadBack
+  }
+  return `sha256:${sha256Hex(canonicalJson(material))}`
+}
+
+/** Digest of the exact literal transformation an `editText` call receives. */
+export function approvedAskEditSha256(edit: { readonly oldString: string; readonly newString: string; readonly replaceAll: boolean }): string {
   return `sha256:${sha256Hex(canonicalJson({
-    schema: APPROVED_ASK_RECEIPT_SCHEMA,
-    toolName: operation.toolName,
-    canonicalPath: operation.canonicalPath,
-    contentSha256: operation.contentSha256,
+    oldString: edit.oldString,
+    newString: edit.newString,
+    replaceAll: edit.replaceAll,
   }))}`
+}
+
+/** Digest of the exact hunk payload a `patchText` call receives. */
+export function approvedAskHunksSha256(hunks: unknown): string {
+  return `sha256:${sha256Hex(canonicalJson(hunks))}`
+}
+
+async function resolveWritePath(locator: string, resolver?: PathIdentityResolver): Promise<{ ok: true; resolved: string } | { ok: false; code: string; detail: string }> {
+  const resolution = await resolveTargetIdentity({
+    locator,
+    access: 'write',
+    resolver: resolver ?? NODE_PATH_IDENTITY_RESOLVER,
+  })
+  if (!resolution.ok) return { ok: false, code: 'IO_ASK_RECEIPT_UNPREPARABLE', detail: `${resolution.code}: ${resolution.detail}` }
+  return { ok: true, resolved: resolution.value.resolved }
+}
+
+function unpreparable(detail: string): { ok: false; code: string; detail: string } {
+  return { ok: false, code: 'IO_ASK_RECEIPT_UNPREPARABLE', detail }
 }
 
 /**
@@ -280,26 +430,163 @@ export async function prepareApprovedWriteOperation(input: {
   readonly locator: string
   readonly content: string
   readonly resolver?: PathIdentityResolver
-}): Promise<{ readonly ok: true; readonly value: ApprovedAskOperation } | { readonly ok: false; readonly code: string; readonly detail: string }> {
-  if (!isNonBlank(input.locator)) return { ok: false, code: 'IO_ASK_RECEIPT_UNPREPARABLE', detail: 'the write names no locator' }
-  if (typeof input.content !== 'string') return { ok: false, code: 'IO_ASK_RECEIPT_UNPREPARABLE', detail: 'the write carries no content string' }
-  const resolution = await resolveTargetIdentity({
-    locator: input.locator,
-    access: 'write',
-    resolver: input.resolver ?? NODE_PATH_IDENTITY_RESOLVER,
-  })
-  if (!resolution.ok) {
-    return { ok: false, code: 'IO_ASK_RECEIPT_UNPREPARABLE', detail: `${resolution.code}: ${resolution.detail}` }
-  }
+}): Promise<{ readonly ok: true; readonly value: ApprovedAskWriteOperation } | { readonly ok: false; readonly code: string; readonly detail: string }> {
+  if (!isNonBlank(input.locator)) return unpreparable('the write names no locator')
+  if (typeof input.content !== 'string') return unpreparable('the write carries no content string')
+  const resolution = await resolveWritePath(input.locator, input.resolver)
+  if (!resolution.ok) return resolution
   const contentSha256 = `sha256:${sha256Hex(input.content)}`
-  const operation: ApprovedAskOperation = Object.freeze({
+  const base = {
+    kind: 'fs-write' as const,
     toolName: 'write' as const,
     locator: input.locator,
-    canonicalPath: resolution.value.resolved,
+    canonicalPath: resolution.resolved,
     contentSha256,
-    fingerprint: approvedAskOperationFingerprint({ toolName: 'write', canonicalPath: resolution.value.resolved, contentSha256 }),
-  })
-  return { ok: true, value: operation }
+  }
+  return { ok: true, value: Object.freeze({ ...base, fingerprint: approvedAskOperationFingerprint({ ...base, fingerprint: '' }) }) }
+}
+
+/**
+ * THE DECLARED NATIVE TOOL SHAPES this round can prepare a receipt for. It is closed: a tool name
+ * that is not here prepares nothing, so its `ask` keeps the R4 fail-closed refusal.
+ *
+ * `write` and `edit` are SHIPPED native tools of the pinned baseline. `patch_text`, `delete_file`
+ * and `move_file` are the declared argument shapes for the three rc.5 Provider methods that have no
+ * shipped native tool in this product's preset today; a call carrying one of these names exercises
+ * the same admission port, binder, Control and Provider, but the native-tool wiring is NOT claimed
+ * (see the ADR's "not proven" section — a multi-file `apply_patch` prepares nothing and stays R4).
+ */
+export const APPROVED_ASK_TOOL_SHAPES = Object.freeze(['write', 'edit', 'patch_text', 'delete_file', 'move_file'] as const)
+
+export type ApprovedAskPreparedOperation =
+  | { readonly ok: true; readonly value: ApprovedAskOperation }
+  | { readonly ok: false; readonly code: 'IO_ASK_RECEIPT_TOOL_UNSUPPORTED'; readonly detail: string }
+  | { readonly ok: false; readonly code: string; readonly detail: string }
+
+/**
+ * Prepare the operation an approval for `toolName` would cover, from the tool's OWN arguments.
+ *
+ * A recognised tool that cannot be canonicalised is `IO_ASK_RECEIPT_UNPREPARABLE` (the centre
+ * refuses the call); an unrecognised tool is `IO_ASK_RECEIPT_TOOL_UNSUPPORTED` (the centre mints no
+ * receipt, so the Provider keeps R4). No shape is guessed from a substring: the dispatch is exact.
+ */
+export async function prepareApprovedFsOperation(input: {
+  readonly toolName: string
+  readonly arguments?: Record<string, unknown> | undefined
+  readonly resolver?: PathIdentityResolver
+}): Promise<ApprovedAskPreparedOperation> {
+  const args = input.arguments ?? {}
+  if (!(APPROVED_ASK_TOOL_SHAPES as readonly string[]).includes(input.toolName)) {
+    return { ok: false, code: 'IO_ASK_RECEIPT_TOOL_UNSUPPORTED', detail: `this round can prepare a receipt for ${APPROVED_ASK_TOOL_SHAPES.join(' / ')}, not '${input.toolName}'` }
+  }
+  if (input.toolName === 'write') {
+    const locator = args['file_path']
+    const content = args['content']
+    if (typeof locator !== 'string' || typeof content !== 'string') return unpreparable('the write call carries no file_path/content pair')
+    return prepareApprovedWriteOperation({ locator, content, ...(input.resolver === undefined ? {} : { resolver: input.resolver }) })
+  }
+  if (input.toolName === 'edit') {
+    const locator = args['file_path']
+    const oldString = args['old_string']
+    const newString = args['new_string']
+    const replaceAll = args['replace_all']
+    if (typeof locator !== 'string' || !isNonBlank(locator)) return unpreparable('the edit call names no file_path')
+    if (typeof oldString !== 'string' || oldString.length === 0) return unpreparable('the edit call carries no non-empty old_string')
+    if (typeof newString !== 'string') return unpreparable('the edit call carries no new_string')
+    if (oldString === newString) return unpreparable('old_string and new_string are equal: the native edit refuses a guaranteed no-op')
+    if (replaceAll !== undefined && typeof replaceAll !== 'boolean') return unpreparable('replace_all must be a boolean when present')
+    const resolution = await resolveWritePath(locator, input.resolver)
+    if (!resolution.ok) return resolution
+    const edit = { oldString, newString, replaceAll: replaceAll === true }
+    const base = {
+      kind: 'fs-edit' as const,
+      toolName: 'edit' as const,
+      locator,
+      canonicalPath: resolution.resolved,
+      oldStringSha256: `sha256:${sha256Hex(oldString)}`,
+      newStringSha256: `sha256:${sha256Hex(newString)}`,
+      replaceAll: edit.replaceAll,
+      editSha256: approvedAskEditSha256(edit),
+    }
+    return { ok: true, value: Object.freeze({ ...base, fingerprint: approvedAskOperationFingerprint({ ...base, fingerprint: '' }) }) }
+  }
+  if (input.toolName === 'patch_text') {
+    const locator = args['file_path']
+    const hunks = args['hunks']
+    if (typeof locator !== 'string' || !isNonBlank(locator)) return unpreparable('the patch call names no file_path')
+    if (!Array.isArray(hunks)) return unpreparable('the patch call carries no hunk array')
+    const resolution = await resolveWritePath(locator, input.resolver)
+    if (!resolution.ok) return resolution
+    const base = {
+      kind: 'fs-patch' as const,
+      toolName: 'patch_text' as const,
+      locator,
+      canonicalPath: resolution.resolved,
+      hunksSha256: approvedAskHunksSha256(hunks),
+    }
+    return { ok: true, value: Object.freeze({ ...base, fingerprint: approvedAskOperationFingerprint({ ...base, fingerprint: '' }) }) }
+  }
+  if (input.toolName === 'delete_file') {
+    const locator = args['file_path']
+    if (typeof locator !== 'string' || !isNonBlank(locator)) return unpreparable('the delete call names no file_path')
+    const resolution = await resolveWritePath(locator, input.resolver)
+    if (!resolution.ok) return resolution
+    const base = {
+      kind: 'fs-delete' as const,
+      toolName: 'delete_file' as const,
+      locator,
+      canonicalPath: resolution.resolved,
+      bytesReadBack: false as const,
+    }
+    return { ok: true, value: Object.freeze({ ...base, fingerprint: approvedAskOperationFingerprint({ ...base, fingerprint: '' }) }) }
+  }
+  // move_file — BOTH paths are prepared and bound; one missing path is un preparable.
+  const sourceLocator = args['file_path']
+  const destinationLocator = args['destination_path']
+  if (typeof sourceLocator !== 'string' || !isNonBlank(sourceLocator)) return unpreparable('the move call names no source file_path')
+  if (typeof destinationLocator !== 'string' || !isNonBlank(destinationLocator)) return unpreparable('the move call names no destination_path')
+  const source = await resolveWritePath(sourceLocator, input.resolver)
+  if (!source.ok) return source
+  const destination = await resolveWritePath(destinationLocator, input.resolver)
+  if (!destination.ok) return destination
+  const base = {
+    kind: 'fs-move' as const,
+    toolName: 'move_file' as const,
+    source: { locator: sourceLocator, canonicalPath: source.resolved },
+    destination: { locator: destinationLocator, canonicalPath: destination.resolved },
+  }
+  return { ok: true, value: Object.freeze({ ...base, fingerprint: approvedAskOperationFingerprint({ ...base, fingerprint: '' }) }) }
+}
+
+/** Per-kind validation of a prepared operation. Returns the reason it is unusable, or undefined. */
+function validateOperation(operation: ApprovedAskOperation | undefined | null): string | undefined {
+  if (operation === undefined || operation === null) return 'a receipt binds the operation it authorizes'
+  const isPath = (value: unknown): value is ApprovedAskPath => {
+    const path = value as ApprovedAskPath | undefined
+    return path !== undefined && path !== null && isNonBlank(path.locator) && isNonBlank(path.canonicalPath)
+  }
+  switch (operation.kind) {
+    case 'fs-write':
+      if (!isPath(operation)) return 'a write operation must carry its authored locator and canonical path'
+      return isNonBlank(operation.contentSha256) ? undefined : 'the approved write must carry its content digest'
+    case 'fs-edit':
+      if (!isPath(operation)) return 'an edit operation must carry its authored locator and canonical path'
+      if (!isNonBlank(operation.oldStringSha256) || !isNonBlank(operation.newStringSha256) || !isNonBlank(operation.editSha256)) {
+        return 'the approved edit must carry the digests of the exact transformation it authorizes'
+      }
+      return typeof operation.replaceAll === 'boolean' ? undefined : 'the approved edit must carry replaceAll as a boolean'
+    case 'fs-patch':
+      if (!isPath(operation)) return 'a patch operation must carry its authored locator and canonical path'
+      return isNonBlank(operation.hunksSha256) ? undefined : 'the approved patch must carry its hunk-payload digest'
+    case 'fs-delete':
+      if (!isPath(operation)) return 'a delete operation must carry its authored locator and canonical path'
+      return operation.bytesReadBack === false ? undefined : 'a delete operation reads no bytes back; that fact is part of its scope'
+    case 'fs-move':
+      if (!isPath(operation.source) || !isPath(operation.destination)) return 'a move operation must carry BOTH the source and destination paths'
+      return undefined
+    default:
+      return `unknown approved operation kind '${String((operation as { kind?: unknown }).kind)}'`
+  }
 }
 
 /**
@@ -316,11 +603,15 @@ export function mintApprovedAskReceipt(input: MintApprovedAskReceiptInput): Mint
     return invalid('a receipt binds a complete trusted Member identity (teamId / memberInstanceId / templateId / instanceGeneration)')
   }
   if (!isNonBlank(input.toolName)) return invalid('a receipt needs the tool it authorizes')
-  if (input.operation === undefined || input.operation === null || input.operation.toolName !== 'write') {
-    return invalid('this round mints receipts for the native write operation only')
+  const operationProblem = validateOperation(input.operation)
+  if (operationProblem !== undefined) return invalid(operationProblem)
+  // The fingerprint is RECOMPUTED here so a prepared operation cannot carry a digest that
+  // disagrees with the paths/payload it names.
+  if (input.operation.fingerprint !== approvedAskOperationFingerprint(input.operation)) {
+    return invalid('the approved operation fingerprint does not match its own fields')
   }
-  if (!isNonBlank(input.operation.canonicalPath) || !isNonBlank(input.operation.contentSha256)) {
-    return invalid('the approved operation must carry its canonical path and content digest')
+  if (input.operation.toolName !== input.toolName) {
+    return invalid(`the approved operation is for tool '${input.operation.toolName}', not '${input.toolName}'`)
   }
   if (!isNonBlank(input.policyGeneration)) return invalid('a receipt is bound to the policy generation the reviewer approved')
   if (input.approval === undefined || input.approval === null || !isNonBlank(input.approval.requestId)) {
@@ -461,8 +752,12 @@ export async function authorizeAskWithReceipt(input: AuthorizeAskWithReceiptInpu
   if (receipt.member.memberInstanceId !== input.memberIdentity) {
     return refuse('RECEIPT_MEMBER_MISMATCH', `receipt ${receipt.receiptId} was minted for '${receipt.member.memberInstanceId}', not '${input.memberIdentity}'`)
   }
-  if (receipt.toolName !== 'write' || input.method !== 'writeText') {
-    return refuse('RECEIPT_OPERATION_MISMATCH', `receipt ${receipt.receiptId} covers the native write operation, not method '${input.method}'`)
+  // EXACT METHOD ↔ OPERATION KIND. A receipt minted for one operation can never authorize another:
+  // a `writeText` receipt cannot satisfy `editText`, and a delete receipt cannot satisfy a write.
+  const operation = receipt.operation
+  const expectedMethod = APPROVED_ASK_METHOD_OF_KIND[operation.kind]
+  if (input.method !== expectedMethod) {
+    return refuse('RECEIPT_OPERATION_MISMATCH', `receipt ${receipt.receiptId} covers '${String(expectedMethod)}' (${operation.kind}), not method '${input.method}'`)
   }
   if (input.toolBindingIdentity !== undefined && input.toolBindingIdentity !== '' &&
       receipt.toolBindingIdentity !== '' && input.toolBindingIdentity !== receipt.toolBindingIdentity) {
@@ -481,38 +776,85 @@ export async function authorizeAskWithReceipt(input: AuthorizeAskWithReceiptInpu
   if (binder.currentMemberEpoch(receipt.member.memberInstanceId) !== receipt.grant.memberEpoch) {
     return refuse('RECEIPT_REVOKED', `receipt ${receipt.receiptId} was spent under member epoch ${String(receipt.grant.memberEpoch)}, but '${receipt.member.memberInstanceId}' is at ${String(binder.currentMemberEpoch(receipt.member.memberInstanceId))} (revoked)`)
   }
-  if (typeof input.content !== 'string') {
-    return refuse('RECEIPT_CONTENT_UNAVAILABLE', 'the Provider call carries no content string, so the approved bytes cannot be checked')
+
+  // PAYLOAD BINDING, per kind. Each kind checks the ONLY evidence its effect has; a method whose
+  // evidence is missing is refused rather than checked against nothing.
+  if (operation.kind === 'fs-write') {
+    if (typeof input.content !== 'string') {
+      return refuse('RECEIPT_CONTENT_UNAVAILABLE', 'the Provider call carries no content string, so the approved bytes cannot be checked')
+    }
+    const contentSha256 = `sha256:${sha256Hex(input.content)}`
+    if (contentSha256 !== operation.contentSha256) {
+      return refuse('RECEIPT_CONTENT_MISMATCH', `receipt ${receipt.receiptId} approved different bytes (${operation.contentSha256}) than the Provider is about to write (${contentSha256})`)
+    }
+  } else if (operation.kind === 'fs-edit') {
+    const edit = input.edit
+    if (edit === undefined || typeof edit.oldString !== 'string' || typeof edit.newString !== 'string' || typeof edit.replaceAll !== 'boolean') {
+      return refuse('RECEIPT_CONTENT_UNAVAILABLE', 'the Provider call carries no complete edit triple, so the approved transformation cannot be checked')
+    }
+    const editSha256 = approvedAskEditSha256({ oldString: edit.oldString, newString: edit.newString, replaceAll: edit.replaceAll })
+    if (editSha256 !== operation.editSha256) {
+      return refuse('RECEIPT_CONTENT_MISMATCH', `receipt ${receipt.receiptId} approved a different edit (${operation.editSha256}) than the Provider is about to apply (${editSha256})`)
+    }
+  } else if (operation.kind === 'fs-patch') {
+    if (input.hunks === undefined) {
+      return refuse('RECEIPT_CONTENT_UNAVAILABLE', 'the Provider call carries no hunk payload, so the approved patch cannot be checked')
+    }
+    const hunksSha256 = approvedAskHunksSha256(input.hunks)
+    if (hunksSha256 !== operation.hunksSha256) {
+      return refuse('RECEIPT_CONTENT_MISMATCH', `receipt ${receipt.receiptId} approved a different patch (${operation.hunksSha256}) than the Provider is about to apply (${hunksSha256})`)
+    }
   }
-  const contentSha256 = `sha256:${sha256Hex(input.content)}`
-  if (contentSha256 !== receipt.operation.contentSha256) {
-    return refuse('RECEIPT_CONTENT_MISMATCH', `receipt ${receipt.receiptId} approved different bytes (${receipt.operation.contentSha256}) than the Provider is about to write (${contentSha256})`)
+  // `fs-delete` has NO payload clause by design: nothing is read back, and the scope is the path.
+
+  /** The path pairs this receipt must cover, exactly. */
+  const paths: ReadonlyArray<{ readonly authored: string; readonly canonical: string; readonly role: string }> =
+    operation.kind === 'fs-move'
+      ? [
+          { authored: input.locator, canonical: operation.source.canonicalPath, role: 'source' },
+          ...(typeof input.destinationPath === 'string' && isNonBlank(input.destinationPath)
+            ? [{ authored: input.destinationPath, canonical: operation.destination.canonicalPath, role: 'destination' }]
+            : []),
+        ]
+      : [{ authored: input.locator, canonical: operation.canonicalPath, role: 'target' }]
+  if (operation.kind === 'fs-move' && paths.length !== 2) {
+    return refuse('RECEIPT_OPERATION_MISMATCH', `receipt ${receipt.receiptId} covers a move, but the Provider call names no destination path`)
   }
 
-  // DENY WINS, on the authored name and on the canonical resolution.
-  if (matchLocator(input.lane, input.locator) === 'deny') {
-    return refuse('RECEIPT_DENIED', `'${input.locator}' is explicitly denied by the live lane; deny wins over any receipt`)
+  const resolvedPaths: string[] = []
+  for (const entry of paths) {
+    // DENY WINS, on the authored name and on the canonical resolution.
+    if (matchLocator(input.lane, entry.authored) === 'deny') {
+      return refuse('RECEIPT_DENIED', `'${entry.authored}' (${entry.role}) is explicitly denied by the live lane; deny wins over any receipt`)
+    }
+    const resolution = await resolveTargetIdentity({
+      locator: entry.authored,
+      access: input.access,
+      resolver: input.resolver ?? NODE_PATH_IDENTITY_RESOLVER,
+    })
+    if (!resolution.ok) {
+      return refuse('RECEIPT_PATH_UNRESOLVED', `${resolution.code}: ${resolution.detail}`)
+    }
+    const resolved = resolution.value.resolved
+    if (matchLocator(input.lane, resolved) === 'deny') {
+      return refuse('RECEIPT_DENIED', `'${entry.authored}' (${entry.role}) resolves to '${resolved}', which the live lane explicitly denies`)
+    }
+    // THE ORIGINAL HARD BOUNDS. The approval cannot be replayed onto a locator
+    // the lane snapshot did not cover, even if the live lane happens to.
+    if (matchLocator(receipt.bounds.write, entry.authored) === 'deny' || matchLocator(receipt.bounds.write, resolved) === 'deny') {
+      return refuse('RECEIPT_BOUNDS_VIOLATION', `'${resolved}' (${entry.role}) is outside the lane snapshot the approval was granted under`)
+    }
+    if (entry.canonical !== resolved) {
+      return refuse('RECEIPT_OPERATION_MISMATCH', `receipt ${receipt.receiptId} covers ${entry.role} '${entry.canonical}', but this call resolves '${entry.authored}' to '${resolved}'`)
+    }
+    resolvedPaths.push(resolved)
   }
-  const resolution = await resolveTargetIdentity({
-    locator: input.locator,
-    access: input.access,
-    resolver: input.resolver ?? NODE_PATH_IDENTITY_RESOLVER,
-  })
-  if (!resolution.ok) {
-    return refuse('RECEIPT_PATH_UNRESOLVED', `${resolution.code}: ${resolution.detail}`)
-  }
-  const resolved = resolution.value.resolved
-  if (matchLocator(input.lane, resolved) === 'deny') {
-    return refuse('RECEIPT_DENIED', `'${input.locator}' resolves to '${resolved}', which the live lane explicitly denies`)
-  }
-  // THE ORIGINAL HARD BOUNDS. The approval cannot be replayed onto a locator
-  // the lane snapshot did not cover, even if the live lane happens to.
-  if (matchLocator(receipt.bounds.write, input.locator) === 'deny' || matchLocator(receipt.bounds.write, resolved) === 'deny') {
-    return refuse('RECEIPT_BOUNDS_VIOLATION', `'${resolved}' is outside the lane snapshot the approval was granted under`)
-  }
-  if (receipt.operation.canonicalPath !== resolved) {
-    return refuse('RECEIPT_OPERATION_MISMATCH', `receipt ${receipt.receiptId} covers '${receipt.operation.canonicalPath}', but this call resolves '${input.locator}' to '${resolved}'`)
+  const resolved = resolvedPaths[0]
+  if (resolved === undefined) {
+    return refuse('RECEIPT_OPERATION_MISMATCH', `receipt ${receipt.receiptId} names no path for method '${input.method}'`)
   }
   state.used = true
-  return { ok: true, resolved, receipt }
+  return operation.kind === 'fs-move'
+    ? { ok: true, resolved, resolvedDestination: resolvedPaths[1], receipt }
+    : { ok: true, resolved, receipt }
 }

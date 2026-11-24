@@ -138,13 +138,24 @@ export type PolicyLanes = Pick<MemberPolicy | EffectiveIoPolicy, 'memberIdentity
 }
 
 /**
- * The one operation context a Provider method may add to its admission call.
- * ONLY `writeText` supplies content today: the approved-ask receipt binds the
- * exact bytes, so a receipt cannot be replayed onto different content. Every
- * other method passes nothing and keeps the pre-receipt fail-closed refusal.
+ * The operation context a Provider method adds to its admission call. It is NOT a decision input:
+ * it is the effect the approved-ask receipt is checked against, one evidence field per method
+ * (round 96 — the owner-ruled extension from `writeText` to every FS mutation):
+ *
+ *  - `content`     `writeText`  — the exact bytes;
+ *  - `edit`        `editText`   — the exact literal transformation;
+ *  - `hunks`       `patchText`  — the exact hunk payload;
+ *  - (nothing)     `deleteFile` — the path IS the whole scope; no bytes are read back;
+ *  - `destinationPath` `moveFile` — the SECOND path (the admission `hostPath` is the source).
+ *
+ * A method that supplies nothing for a receipt-bearing kind can only ever get the refusal: the
+ * verifier refuses missing evidence rather than checking it against nothing.
  */
 export interface FsGuardOperation {
   readonly content?: string
+  readonly edit?: { readonly oldString: string; readonly newString: string; readonly replaceAll: boolean }
+  readonly hunks?: unknown
+  readonly destinationPath?: string
 }
 
 /**
@@ -200,70 +211,15 @@ export function createMemberFsGuard(
   authority?: ApprovedAskProviderAuthority,
 ): FsGuard {
   const policyRevision = policy.policyRevision ?? policy.revision ?? ''
-  return async function guard(method: string, hostPath: string, _annotations?: readonly string[], operation?: FsGuardOperation): Promise<void> {
-    // The lifecycle admission close comes FIRST: the lane decision is not even
-    // taken for a Member whose archive/dispose has been requested, so there is
-    // no allow fact to misread as "this Member was still operable".
-    const closed = memberAdmissionCloseOf(policy.memberIdentity)
-    if (closed !== undefined) throw new LifecycleAdmissionClosedError(closed, method, hostPath)
 
-    const write = WRITE_METHODS.has(method)
-    const lane: PathRuleSet = write ? policy.write : policy.read
-
-    const decision = await evaluateLocatorAccess({ lane, locator: hostPath, access: write ? 'write' : 'read', resolver })
-    let resolved: string
-    if (decision.decision === 'allow') {
-      resolved = decision.resolved
-    } else if (decision.decision === 'ask') {
-      // THE R3 RECEIPT PATH (owner ruling 20261124-0151 §2). An ask is a
-      // decision, and the ONLY way this plane may satisfy it is a receipt
-      // minted for THIS execution after the one-shot grant was consumed. The
-      // receipt is read from the body's own authorization scope; a missing,
-      // closed, revoked, cross-member, cross-path or replay receipt is the
-      // same typed refusal as before. NOTHING here turns an ask into a lane
-      // allow, and `deny` was already decided above.
-      if (method !== 'writeText' || !write) {
-        throw new TeamIoDenial(
-          'IO_ASK_REQUIRES_APPROVAL',
-          decision.detail,
-          { memberIdentity: policy.memberIdentity, method, target: hostPath },
-        )
-      }
-      const authorized = await authorizeAskWithReceipt({
-        memberIdentity: policy.memberIdentity,
-        policyRevision,
-        ...(policy.toolBindingIdentity === undefined ? {} : { toolBindingIdentity: policy.toolBindingIdentity }),
-        lane,
-        method,
-        locator: hostPath,
-        access: 'write',
-        ...(operation?.content === undefined ? {} : { content: operation.content }),
-        resolver,
-        ...(authority === undefined ? {} : { authority }),
-      })
-      if (!authorized.ok) {
-        throw new TeamIoDenial(
-          'IO_ASK_RECEIPT_REFUSED',
-          `${authorized.code}: ${authorized.detail}`,
-          { memberIdentity: policy.memberIdentity, method, target: hostPath },
-        )
-      }
-      resolved = authorized.resolved
-    } else {
-      throw new TeamIoDenial(
-        decision.decision === 'deny'
-          ? (write ? 'IO_WRITE_DENIED' : 'IO_READ_DENIED')
-          : 'IO_POLICY_UNSUPPORTED',
-        decision.detail,
-        { memberIdentity: policy.memberIdentity, method, target: hostPath },
-      )
-    }
-
-    if (!write) return
-
-    // write ⇒ read, but only for an EXISTING target: creating a brand-new file
-    // has nothing to read, and the upstream read-before-write policy is
-    // likewise conditioned on the file existing.
+  /**
+   * write ⇒ read, but only for an EXISTING target: creating a brand-new file has nothing to read,
+   * and the upstream read-before-write policy is likewise conditioned on the file existing.
+   *
+   * One function for EVERY write method (writeText / editText / patchText / deleteFile / moveFile's
+   * two paths): the rule is the native read-before-mutate contract, not a per-method opinion.
+   */
+  async function requireReadCoverage(method: string, hostPath: string, resolved: string): Promise<void> {
     let exists = true
     try {
       await resolver.lstat(resolved)
@@ -297,6 +253,126 @@ export function createMemberFsGuard(
       )
     }
   }
+
+  return async function guard(method: string, hostPath: string, _annotations?: readonly string[], operation?: FsGuardOperation): Promise<void> {
+    // The lifecycle admission close comes FIRST: the lane decision is not even
+    // taken for a Member whose archive/dispose has been requested, so there is
+    // no allow fact to misread as "this Member was still operable".
+    const closed = memberAdmissionCloseOf(policy.memberIdentity)
+    if (closed !== undefined) throw new LifecycleAdmissionClosedError(closed, method, hostPath)
+
+    const write = WRITE_METHODS.has(method)
+    const lane: PathRuleSet = write ? policy.write : policy.read
+
+    // moveFile is the ONE method whose effect covers TWO paths, and BOTH must be admitted under
+    // ONE decision: a receipt for (a→b) must not authorize (a→c), and neither path may be acted on
+    // when the other is refused. It is therefore handled as a pair before the single-path flow.
+    if (method === 'moveFile') {
+      const destinationPath = operation?.destinationPath
+      if (typeof destinationPath !== 'string' || destinationPath === '') {
+        throw new TeamIoDenial(
+          'IO_POLICY_UNSUPPORTED',
+          'moveFile admission requires BOTH paths; a call without a destination path cannot be admitted',
+          { memberIdentity: policy.memberIdentity, method, target: hostPath },
+        )
+      }
+      const sourceDecision = await evaluateLocatorAccess({ lane, locator: hostPath, access: 'write', resolver })
+      const destinationDecision = await evaluateLocatorAccess({ lane, locator: destinationPath, access: 'write', resolver })
+      for (const [path, decided] of [[hostPath, sourceDecision], [destinationPath, destinationDecision]] as const) {
+        if (decided.decision === 'deny') {
+          throw new TeamIoDenial('IO_WRITE_DENIED', decided.detail, { memberIdentity: policy.memberIdentity, method, target: path })
+        }
+      }
+      let sourceResolved: string
+      let destinationResolved: string
+      if (sourceDecision.decision === 'ask' || destinationDecision.decision === 'ask') {
+        const authorized = await authorizeAskWithReceipt({
+          memberIdentity: policy.memberIdentity,
+          policyRevision,
+          ...(policy.toolBindingIdentity === undefined ? {} : { toolBindingIdentity: policy.toolBindingIdentity }),
+          lane,
+          method,
+          locator: hostPath,
+          access: 'write',
+          destinationPath,
+          resolver,
+          ...(authority === undefined ? {} : { authority }),
+        })
+        if (!authorized.ok) {
+          throw new TeamIoDenial(
+            'IO_ASK_RECEIPT_REFUSED',
+            `${authorized.code}: ${authorized.detail}`,
+            { memberIdentity: policy.memberIdentity, method, target: `${hostPath} -> ${destinationPath}` },
+          )
+        }
+        sourceResolved = authorized.resolved
+        destinationResolved = authorized.resolvedDestination ?? destinationPath
+      } else if (sourceDecision.decision === 'allow' && destinationDecision.decision === 'allow') {
+        sourceResolved = sourceDecision.resolved
+        destinationResolved = destinationDecision.resolved
+      } else {
+        throw new TeamIoDenial('IO_POLICY_UNSUPPORTED', 'the move admission reached a decision this plane cannot honour', { memberIdentity: policy.memberIdentity, method, target: hostPath })
+      }
+      // write ⇒ read for the SOURCE (it is removed) and for the DESTINATION when it already exists.
+      await requireReadCoverage(method, hostPath, sourceResolved)
+      await requireReadCoverage(method, destinationPath, destinationResolved)
+      return
+    }
+
+    const decision = await evaluateLocatorAccess({ lane, locator: hostPath, access: write ? 'write' : 'read', resolver })
+    let resolved: string
+    if (decision.decision === 'allow') {
+      resolved = decision.resolved
+    } else if (decision.decision === 'ask') {
+      // THE R3 RECEIPT PATH (owner ruling 20261124-0151 §2). An ask is a
+      // decision, and the ONLY way this plane may satisfy it is a receipt
+      // minted for THIS execution after the one-shot grant was consumed. The
+      // receipt is read from the body's own authorization scope; a missing,
+      // closed, revoked, cross-member, cross-path or replay receipt is the
+      // same typed refusal as before. NOTHING here turns an ask into a lane
+      // allow, and `deny` was already decided above.
+      if (!write) {
+        throw new TeamIoDenial(
+          'IO_ASK_REQUIRES_APPROVAL',
+          decision.detail,
+          { memberIdentity: policy.memberIdentity, method, target: hostPath },
+        )
+      }
+      const authorized = await authorizeAskWithReceipt({
+        memberIdentity: policy.memberIdentity,
+        policyRevision,
+        ...(policy.toolBindingIdentity === undefined ? {} : { toolBindingIdentity: policy.toolBindingIdentity }),
+        lane,
+        method,
+        locator: hostPath,
+        access: 'write',
+        ...(operation?.content === undefined ? {} : { content: operation.content }),
+        ...(operation?.edit === undefined ? {} : { edit: operation.edit }),
+        ...(operation?.hunks === undefined ? {} : { hunks: operation.hunks }),
+        resolver,
+        ...(authority === undefined ? {} : { authority }),
+      })
+      if (!authorized.ok) {
+        throw new TeamIoDenial(
+          'IO_ASK_RECEIPT_REFUSED',
+          `${authorized.code}: ${authorized.detail}`,
+          { memberIdentity: policy.memberIdentity, method, target: hostPath },
+        )
+      }
+      resolved = authorized.resolved
+    } else {
+      throw new TeamIoDenial(
+        decision.decision === 'deny'
+          ? (write ? 'IO_WRITE_DENIED' : 'IO_READ_DENIED')
+          : 'IO_POLICY_UNSUPPORTED',
+        decision.detail,
+        { memberIdentity: policy.memberIdentity, method, target: hostPath },
+      )
+    }
+
+    if (!write) return
+    await requireReadCoverage(method, hostPath, resolved)
+  }
 }
 
 /**
@@ -312,6 +388,18 @@ export function createMemberFsGuard(
  *   always supplies it; the default exists for derivation-only callers (the
  *   SLICE-35/36 fixtures) that mount the class without a Member.
  */
+/**
+ * The `editText` operation evidence, or undefined when the caller's `edit` value is not the literal
+ * triple the provider contract names. Undefined is NOT a fallback allow: it means "no evidence", and
+ * the verifier refuses a receipt-bearing ask that supplies none.
+ */
+function editEvidence(edit: unknown): { readonly oldString: string; readonly newString: string; readonly replaceAll: boolean } | undefined {
+  if (edit === null || typeof edit !== 'object') return undefined
+  const candidate = edit as { readonly oldString?: unknown; readonly newString?: unknown; readonly replaceAll?: unknown }
+  if (typeof candidate.oldString !== 'string' || typeof candidate.newString !== 'string' || typeof candidate.replaceAll !== 'boolean') return undefined
+  return { oldString: candidate.oldString, newString: candidate.newString, replaceAll: candidate.replaceAll }
+}
+
 export function createConfinedFileSystemClass(
   Base: FsProviderConstructor,
   guard: FsGuard,
@@ -426,7 +514,10 @@ export function createConfinedFileSystemClass(
       signal?: AbortSignal,
       policy?: unknown,
     ): Promise<unknown> {
-      await this.admitted('editText', target)
+      // The receipt binds the EXACT literal transformation. A malformed edit object supplies no
+      // evidence, and a receipt-bearing ask is then refused rather than checked against nothing.
+      const evidence = editEvidence(edit)
+      await this.admitted('editText', target, evidence === undefined ? undefined : { edit: evidence })
       return super.editText(target, edit, expected, signal, this.hostPolicyOf(policy))
     }
 
@@ -444,7 +535,8 @@ export function createConfinedFileSystemClass(
       signal?: AbortSignal,
       policy?: unknown,
     ): Promise<unknown> {
-      const hostPath = await this.admitted('patchText', target)
+      // The receipt binds the EXACT hunk payload the Provider is about to apply.
+      const hostPath = await this.admitted('patchText', target, { hunks })
       const implementation = this.baseImplementation('patchText', basePatchText, hostPath)
       return implementation.call(this, target, hunks, expected, signal, this.hostPolicyOf(policy))
     }
@@ -495,10 +587,12 @@ export function createConfinedFileSystemClass(
       signal?: AbortSignal,
       policy?: unknown,
     ): Promise<unknown> {
+      // ONE admission for the PAIR, before either effect: the receipt covers (source → destination)
+      // as one operation, so a receipt for (a→b) can never authorize (a→c), and a refusal on either
+      // path leaves the source in place.
       const sourcePath = this.processPath(source)
-      await guard('moveFile', sourcePath)
       const destinationPath = this.processPath(destination)
-      await guard('moveFile', destinationPath)
+      await guard('moveFile', sourcePath, undefined, { destinationPath })
       const implementation = this.baseImplementation('moveFile', baseMoveFile, `${sourcePath} -> ${destinationPath}`)
       return implementation.call(this, source, destination, options, signal, this.hostPolicyOf(policy))
     }

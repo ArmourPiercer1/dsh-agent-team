@@ -704,3 +704,21 @@ becomes PRODUCT-PROVEN.
 **Explicit non-claim.** The evidence is `DEV-LIVE` (a real host boot, not a gate), so no row is
 PRODUCT-PROVEN. BL-30/G2 is **closed for `write`/`writeText` only** — a deliberate, frozen scope; every
 extension to another operation is a separate ruling, and Alpha.6 routing remains open.
+
+## ROUND 96 ANNOTATION — the SAME receipt extended to `editText` / `patchText` / `deleteFile` / `moveFile` (MECHANISM + DEV-LIVE, subprocess still open)
+
+Owner ruling: extend R3 method by method, each with its own proof, and do NOT assume an OS-sandbox
+approval path inherits the FS proof. Round 96 therefore extends the ONE receipt to every FS mutation
+the Provider exposes, and states the subprocess face as the next step instead of touching it.
+
+| row | what round 96 measured | level effect |
+| --- | --- | --- |
+| **C-fs** (the five FS mutations) | The receipt operation is now a discriminated union (schema `/2`): `fs-write` (target + content sha256), `fs-edit` (target + the requested `oldString`/`newString`/`replaceAll` transformation), `fs-patch` (target + the exact `PatchHunk[]` payload), `fs-delete` (target only, `bytesReadBack:false`), `fs-move` (**both** paths). The verifier requires an exact method↔kind match first, then per-path binding/bounds resolution. Over the REAL confined Provider on the pinned hosts (rc.2 for `editText`, rc.5 for the other three), the REAL binder, the REAL durable `ControlService` and the REAL settlement store: `ADM-162` edit writes `gamma beta`, `ADM-166` delete removes the file (absence verified), `ADM-168` move publishes the bytes at the destination and the source is gone, `ADM-171` patch yields `one\nTWO\n`; each settles `COMPLETED`. Negatives: `ADM-163`/`ADM-172` (content/payload binding, zero bytes, `FAILED` at the body phase), `ADM-164`/`ADM-167` (cross-operation and cross-path, nothing changes), `ADM-165` (revoked + reuse), `ADM-169` ((a→b) cannot authorize (a→c)), `ADM-170` (deny on the move destination wins over a live receipt), `ADM-173` (a non-mutation approval mints no receipt). | **MECHANISM (all five), plus DEV-LIVE for TWO of them.** `write` and now `editText`/`patchText`/`deleteFile`/`moveFile` are executable and refuse every negative; the live D4 pair proves a SECOND real mutation with different bytes (`d4:ask-execute-2`). Never PRODUCT-PROVEN. |
+| **C-subprocess** | **NOT TOUCHED, by ruling.** No subprocess/PTY receipt exists; every subprocess ask still refuses, because the OS plane's authority is a `SandboxExecutionPolicy`, not a file lane, and nothing here proves that plane. | **Unchanged (R4), named next step.** |
+| **C-tools** (ask-consumer half) | Unchanged in level: the half is now DEV-LIVE for `write` and MECHANISM for the four new methods (their tool shapes are declared, not shipped, so no live model can reach them this round). | **DEV-LIVE (`write`), MECHANISM (`edit`/`patch_text`/`delete_file`/`move_file`).** |
+| **C-alpha6** | Unchanged: `d4:routed-wake` remains REFUTED; a receipt is never routing evidence. | **MECHANISM, unchanged.** |
+
+**Explicit non-claim.** The four new methods are proven at the in-process production composition
+point (real admission port, real Provider, real binder, real Control, real settlement) and two of
+them live on a booted host; `apply_patch` (rc.5's multi-file tool) stays unbound, and the
+subprocess/PTY plane stays R4 rectangularly.

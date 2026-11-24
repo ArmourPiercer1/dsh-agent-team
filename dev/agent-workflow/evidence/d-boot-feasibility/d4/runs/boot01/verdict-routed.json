@@ -5,7 +5,7 @@
     {
       "id": "ordinary-tool-ask-created",
       "ok": true,
-      "detail": "durable row={\"requestId\":\"ctrl-1xxrzo21k29yc31rawhls0qn\",\"kind\":\"leader-approval\",\"actionName\":\"admission-ask\",\"targetInstanceId\":\"inst-0ty67u70r99a\",\"toolName\":\"write\",\"summary\":\"admission ask: write (fs.write \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-23-40Z/workspace/lane/worker-ask.txt\\\" requires approval under policy generation a5sf1:2cd4e5619ecf9308b629d2b5f5443e11)\",\"approvalCaseId\":null,\"legOrdinal\":null,\"reviewAuthority\":null,\"operationFingerprint\":null,\"requestedEffect\":null,\"blueprintContentHash\":null}"
+      "detail": "durable row={\"requestId\":\"ctrl-1xxrzo21k29yc31rawhls0qn\",\"kind\":\"leader-approval\",\"actionName\":\"admission-ask\",\"targetInstanceId\":\"inst-0ty67u70r99a\",\"toolName\":\"write\",\"summary\":\"admission ask: write (fs.write \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T23-45-21Z/workspace/lane/worker-ask.txt\\\" requires approval under policy generation a5sf1:0a2858f99aa518102c7fa06b71cfa772)\",\"approvalCaseId\":null,\"legOrdinal\":null,\"reviewAuthority\":null,\"operationFingerprint\":null,\"requestedEffect\":null,\"blueprintContentHash\":null}"
     },
     {
       "id": "row-carries-approval-case",

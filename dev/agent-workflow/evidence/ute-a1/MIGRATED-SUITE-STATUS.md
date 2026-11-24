@@ -3244,3 +3244,82 @@ not routing evidence. (2) No row is PRODUCT-PROVEN: DEV-LIVE is a record, not a 
 other tool keep R4 (`IO_ASK_REQUIRES_APPROVAL`). (4) The receipt binds `caseId:null` for an inline
 admission request. (5) The live run uses the scripted model; no real-model interleaving was measured.
 
+
+## Round 96 (2026-11-24) — the R3 receipt extended to EVERY FS mutation; subprocess deliberately untouched
+
+Owner ruling: extend R3 **method by method, each with its own proof**, and do NOT assume an
+OS-sandbox approval path inherits the FS proof. Round 96 extends the ONE receipt to `editText`,
+`patchText`, `deleteFile` and `moveFile` and states the subprocess/PTY face as the next step.
+
+**One receipt, five operation kinds** (`a5sf-approved-ask-receipt/2`). The operation is now a
+discriminated union; the verifier requires an EXACT method↔kind match
+(`RECEIPT_OPERATION_MISMATCH`) BEFORE any binding check, then binds:
+
+| tool → Provider method | kind | corridor | fingerprint is a `sha256` of | cannot say |
+| --- | --- | --- | --- | --- |
+| `write` → `writeText` | `fs-write` | target | the exact content string | nothing about the file's prior content |
+| `edit` → `editText` | `fs-edit` | target | the requested `(oldString,newString,replaceAll)` transformation (+ `editSha256` of the triple) | not the prior or resulting bytes — the Provider's literal-match/version guard decides those, after the receipt |
+| `patch_text` → `patchText` | `fs-patch` | target | the exact `PatchHunk[]` payload (canonical JSON) | not prior/resulting bytes, not that the hunks apply |
+| `delete_file` → `deleteFile` | `fs-delete` | target | nothing but the path (`bytesReadBack:false` is recorded) | nothing about the deleted bytes — none are read back, by design |
+| `move_file` → `moveFile` | `fs-move` | **both** paths | source AND destination, authored and canonical | (a→b) can never authorize (a→c) |
+
+**Provider.** `moveFile` is ONE guard over the path PAIR: deny on either path wins before any receipt
+consult, then ONE receipt verification covers both paths, then the native read-before-mutate rule
+runs for the source and for an existing destination. `editText` forwards the literal triple,
+`patchText` the hunk payload, `deleteFile` the path only. The centre's `prepareApprovedFsOperation`
+prepares the five declared shapes: a name outside the table yields NO receipt (R4), a recognised but
+malformed call is refused at admission (`IO_ASK_RECEIPT_UNPREPARABLE`), never forwarded.
+
+**Arms — `ADM-162`…`ADM-173`** (`packages/runtime/test/vnext-admission.test.mjs`), over the REAL
+confined Provider on the PINNED hosts (`editText` on rc.2; `patchText`/`deleteFile`/`moveFile` on
+rc.5 through the same host selector the rc.5 lane uses), REAL binder, REAL durable `ControlService`,
+REAL settlement store; only the host loop is a double.
+
+| arm | what it measures | result |
+| --- | --- | --- |
+| `ADM-162` edit positive | ask → allow → receipt verified for THAT edit → real Provider writes `gamma beta\n`, `COMPLETED` | PASS |
+| `ADM-163` edit content binding | receipt for edit X, body applies Y ⇒ `RECEIPT_CONTENT_MISMATCH`, 0 bytes, `FAILED` at the body phase | PASS |
+| `ADM-164` cross-operation | a `writeText` receipt on `editText` ⇒ `RECEIPT_OPERATION_MISMATCH` | PASS |
+| `ADM-165` lifecycle | revoked-after-consumption ⇒ `RECEIPT_REVOKED`; one consumed grant authorizes exactly one effect ⇒ `RECEIPT_REUSED` | PASS |
+| `ADM-166` delete positive (rc.5) | ask → allow → receipt → file REMOVED (absence verified), `COMPLETED` | PASS |
+| `ADM-167` delete negatives | another path ⇒ `OPERATION_MISMATCH` (both files intact); delete receipt on `writeText` ⇒ `OPERATION_MISMATCH` | PASS |
+| `ADM-168` move positive (rc.5) | ask → allow → receipt bound to BOTH paths → source gone, destination holds the exact bytes, `COMPLETED` | PASS |
+| `ADM-169` move cross-path | receipt (a→b) used for (a→c), with c inside the live ask class ⇒ `OPERATION_MISMATCH`, a intact, c absent, `FAILED` | PASS |
+| `ADM-170` deny wins (move) | explicit deny on the destination refuses BEFORE any receipt consult, even with a live unused receipt ⇒ `IO_WRITE_DENIED`, nothing moved | PASS |
+| `ADM-171` patch positive (rc.5) | ask → allow → receipt for the hunk payload → `one\nTWO\n`, `COMPLETED` | PASS |
+| `ADM-172` patch content binding | receipt for payload X, body applies Y ⇒ `RECEIPT_CONTENT_MISMATCH`, byte-identical file, `FAILED` | PASS |
+| `ADM-173` declared-shape honesty | a NON-mutation approval (`read`) mints NO receipt ⇒ a write in its body is `RECEIPT_NOT_IN_SCOPE`, 0 bytes | PASS |
+
+**LIVE — `probe-d4-routed-wake.mjs --boots 2`** (real rc.2 host, DEV-LIVE, scripted model only; every
+existing judge is unchanged and none was weakened). The probe now performs a SECOND real mutation: a
+second `write` from the same worker, on a different path with different bytes, raising its OWN
+durable Control request, approved through the real control path, judged by `d4:ask-execute-2`.
+
+| judge | boot1 | boot2 |
+| --- | --- | --- |
+| `d4:ask-execute` | **PROVEN** — 27 bytes, `sha256:ced10112…`, `COMPLETED` | **PROVEN** — identical |
+| `d4:ask-execute-2` | **PROVEN** — NEW request `ctrl-1u9ufbv1rss8va1kc1szx1d5`, real allow, 29 bytes, `sha256:2d71ffdd…`, first file byte-identical, digests differ, `COMPLETED` | **PROVEN** — identical |
+| `d4:ask-denied` / `d4:ask-stopped` | **PROVEN** — 0 bytes, `REFUSED`/`not-started` | **PROVEN** — identical |
+| `d4:enablement` / `d4:officer-up` / `d4:officer-binding` / `d4:refusal` | PROVEN | PROVEN |
+| `d4:routed-wake` | **REFUTED (unchanged)**, same 8 failing clauses: the ordinary ask carries no approval CASE | **REFUTED (unchanged)** |
+
+Two-boot agreement `agreeing=true differing=[]`; `askExecuteBytes 27/27`, `askExecute2Bytes 29/29`,
+both settlements `COMPLETED/COMPLETED`. The probe's own ledger positive control was tightened rather
+than relaxed: it now requires the durable reader to see exactly the control requests the world
+OBSERVED (2 requests / 2 decisions), so a reader that misses one still fails.
+
+**Counts that moved.** `ute-vnext-a1`: `tests 228 → 240`, `pass 225 → 237`, `skipped 3 → 3`, file set
+unchanged (7 files) ⇒ leg digest unchanged `sha256:edd4f1c4…c8a975`. Catalog unchanged (`tests=785`,
+uncollected 38, excluded 14, digest `sha256:da8a452d…5f5ed32`). Bound vitest unchanged
+(`ci-security 222`, `ci-integration 238`) — this round adds node:test arms only. UTE G1 argv `89/89`.
+`ute-p0-assets` unchanged (`modules=37 files=180 lines=69512`) ⇒ no new scannable file, no p4t6 delta.
+
+**Not proven / not claimed.** (1) The **subprocess/PTY face has NO receipt** — its authority is the
+`SandboxExecutionPolicy`, not a file lane, and an OS-sandbox approval is not assumed to inherit this
+proof; it keeps R4 and is the named next step. (2) rc.5's real multi-file `apply_patch` stays
+UNBOUND (R4): one receipt binds ONE operation, and admitting a multi-file patch would either
+duplicate upstream's parser or let one approval authorize N effects. (3) `patch_text`/`delete_file`/
+`move_file` are DECLARED argument shapes with no shipped tool this round: the arms drive the real
+admission port, Provider, binder, Control and settlement, but no preset mounts those names, so no
+model can reach them live. (4) No row is PRODUCT-PROVEN — DEV-LIVE is a record, not a gate.
+(5) `d4:routed-wake` stays REFUTED; a receipt is never routing evidence.

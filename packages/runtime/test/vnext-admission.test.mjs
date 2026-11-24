@@ -8191,11 +8191,13 @@ test('ADM-153 — the SAME case shape is still refused for the Officer asking ab
     nodeFs.mkdirSync(inside, { recursive: true })
     const approvedPath = pathJoin(inside, 'approved.txt')
     const otherPath = pathJoin(inside, 'other.txt')
+    const tool = options.tool ?? 'write'
+    const bindingIdentity = `dsh.fs/${tool}`
     const write = options.write ?? lane([], [approvedPath])
     const read = options.read ?? lane([inside])
     const policy = {
       memberIdentity: R3_WORKER,
-      toolBindingIdentity: 'dsh.fs/write',
+      toolBindingIdentity: bindingIdentity,
       policyRevision: R3_REVISION,
       read,
       write,
@@ -8212,9 +8214,12 @@ test('ADM-153 — the SAME case shape is still refused for the Officer asking ab
       blueprintRevision: 'bp-r3-poc',
       owner: P6T4_ROOT,
       templateId: 'worker',
-      perTool: { write: { read, write, toolBindingIdentity: 'dsh.fs/write', authorization: 'ask' } },
+      perTool: { [tool]: { read, write, toolBindingIdentity: bindingIdentity, authorization: 'ask' } },
     }
     const binder = createInvocationBinder()
+    // The durable scratch world is keyed by label; a previous FAILED run of the same arm must not
+    // turn the next one into `TEAM_DOMAIN_EXISTS` (a stale directory is test debris, not a fixture).
+    nodeFs.rmSync(pathJoin(DOMAIN_ROOT, 'packages', 'testkit', 'test', '.tmp-fault', `r3-${label}`), { recursive: true, force: true })
     const world = await createP6T4World(`r3-${label}`, ['leader', 'worker'])
     const recheck = constantAuthorityRecheck()
     const service = createP6T4Service(world, { authorityRevalidation: recheck.port })
@@ -8226,7 +8231,13 @@ test('ADM-153 — the SAME case shape is still refused for the Officer asking ab
       onRequested: (record) => { requests.push(record) },
     })
     const host = r3FakeHost()
-    const seams = await loadFsContractSeams(DOMAIN_ROOT)
+    // The rc.5 methods (`patchText` / `deleteFile` / `moveFile`) do not exist on the pinned rc.2
+    // provider, so the arms that prove THEM wrap the REAL rc.5 `LocalFileSystem`. The tree is
+    // resolved through the host selector, which refuses an out-of-tree escape; nothing here mixes
+    // the two hosts in one process beyond the seam each rig itself mounts.
+    const seams = options.hostMode === undefined
+      ? await loadFsContractSeams(DOMAIN_ROOT)
+      : await loadFsContractSeams(DOMAIN_ROOT, options.hostMode)
     const Confined = createConfinedFileSystemClass(
       seams.LocalFileSystem,
       createMemberFsGuard(policy, undefined, { binder }),
@@ -8264,7 +8275,7 @@ test('ADM-153 — the SAME case shape is still refused for the Officer asking ab
       identityOf,
     })
     return {
-      dir, inside, approvedPath, otherPath, policy, binding, binder, world, service, host, fs, store, centre,
+      dir, inside, approvedPath, otherPath, policy, binding, binder, world, service, host, fs, store, centre, tool,
       requests, admissions, executions, identityOf, seams, completedCallIds,
       cleanup: async () => {
         try { centre.dispose() } catch { /* the rig is already closed */ }
@@ -8550,6 +8561,336 @@ test('ADM-153 — the SAME case shape is still refused for the Officer asking ab
     assert.equal(run.error?.code, 'IO_ASK_RECEIPT_REFUSED')
     assert.match(String(run.error?.message), /RECEIPT_MEMBER_MISMATCH/u)
     assert.equal(fileContent(rig.approvedPath), null, 'the other Member wrote nothing')
+  })
+
+  // =================================================================================================
+  // R3b — ADM-162…ADM-173: the owner-ruled EXTENSION of the receipt to every FS mutation.
+  //
+  // Round 96 extends the SAME chain (`ask` → durable allow → one-shot grant consumed → receipt
+  // minted for THAT operation → real effect) from `writeText` to `editText`, `patchText`,
+  // `deleteFile` and `moveFile`, each with its own scope binding:
+  //   editText   target path + the exact literal transformation (old/new/replaceAll);
+  //   patchText  target path + the exact hunk payload;
+  //   deleteFile target path only — no bytes are read back;
+  //   moveFile   BOTH paths (a→b is not a→c).
+  // A receipt for one method can never satisfy another (the operation KIND is part of its identity).
+  //
+  // HOST GENERATION. `editText` exists on the pinned rc.2 provider, so its arms wrap the REAL rc.2
+  // `LocalFileSystem`. The other three methods do not exist on rc.2 at all; their arms wrap the REAL
+  // rc.5 `LocalFileSystem` through the same host selector the rc.5 acceptance lane uses. In every arm
+  // the Provider is the product's confined subclass, the guard is the production guard, the binder is
+  // the real invocation binder, the approvals are the real durable ControlService and the store is
+  // the real execution-settlement store. Only the HOST LOOP is a double (r3FakeHost).
+  // =================================================================================================
+  const R3B_EDIT_BEFORE = 'alpha beta\n'
+  const R3B_PATCH_HUNKS = Object.freeze([Object.freeze({ lineNumber: 1, oldLines: Object.freeze(['one', 'two']), newLines: Object.freeze(['one', 'TWO']), isEndOfFile: false })])
+
+  test('ADM-162 (R3b POSITIVE) — editText: ask → allow → receipt verified for THIS edit → the REAL Provider applies it; bytes and settlement are honest', async (t) => {
+    const rig = await r3Rig('edit-positive', { tool: 'edit' })
+    t.after(rig.cleanup)
+    nodeFs.writeFileSync(rig.approvedPath, R3B_EDIT_BEFORE, 'utf8')
+    const exec = {
+      name: 'edit',
+      callId: 'call-r3b-edit-positive',
+      arguments: { file_path: rig.approvedPath, old_string: 'alpha', new_string: 'gamma' },
+    }
+    const run = await r3Dispatch(rig, exec, {
+      body: async (world) => world.fs.editText(targetOf(rig.approvedPath), { oldString: 'alpha', newString: 'gamma', replaceAll: false }),
+    })
+    assert.equal(run.phase, 'body', `the approved edit must reach the real Provider (got ${JSON.stringify(run)})`)
+    assert.equal(run.error, undefined, `the real Provider must not refuse: ${run.error?.message}`)
+    assert.equal(fileContent(rig.approvedPath), 'gamma beta\n', 'the REAL confined Provider applied the approved transformation')
+    const admission = rig.admissions.find((fact) => fact.callId === exec.callId)
+    assert.equal(admission?.decision, 'allow', 'the enforced decision is the approval')
+    assert.equal(admission?.laneDecision, 'ask', 'the lane answer is preserved in the fact')
+    const settled = settlementOf(rig, exec.callId)
+    assert.equal(settled?.state, 'COMPLETED')
+    assert.equal(settled?.observation.bodyOutcome, 'completed')
+  })
+
+  test('ADM-163 (R3b NEGATIVE, content binding) — a receipt for edit X cannot authorize edit Y (same path, same lane, same ask class); the refusal is a BODY failure at the real phase', async (t) => {
+    const rig = await r3Rig('edit-content-binding', { tool: 'edit' })
+    t.after(rig.cleanup)
+    nodeFs.writeFileSync(rig.approvedPath, R3B_EDIT_BEFORE, 'utf8')
+    const exec = {
+      name: 'edit',
+      callId: 'call-r3b-edit-binding',
+      arguments: { file_path: rig.approvedPath, old_string: 'alpha', new_string: 'gamma' },
+    }
+    const run = await r3Dispatch(rig, exec, {
+      // A DIFFERENT transformation on the SAME path: legal as an operation, but not the approved one.
+      body: async (world) => world.fs.editText(targetOf(rig.approvedPath), { oldString: 'alpha', newString: 'DELTA', replaceAll: false }),
+    })
+    assert.equal(run.phase, 'body')
+    assert.equal(run.error?.code, 'IO_ASK_RECEIPT_REFUSED')
+    assert.match(String(run.error?.message), /RECEIPT_CONTENT_MISMATCH/u)
+    assert.equal(fileContent(rig.approvedPath), R3B_EDIT_BEFORE, 'the unapproved transformation wrote nothing')
+    const settled = settlementOf(rig, exec.callId)
+    assert.equal(settled?.state, 'FAILED', 'a Provider refusal after body entry is FAILED, not REFUSED')
+    assert.equal(settled?.observation.bodyOutcome, 'failed')
+  })
+
+  test('ADM-164 (R3b NEGATIVE, cross-operation) — a writeText receipt cannot authorize an editText (the operation KIND is part of the receipt)', async (t) => {
+    const rig = await r3Rig('cross-operation-write-to-edit') // tool defaults to `write`
+    t.after(rig.cleanup)
+    nodeFs.writeFileSync(rig.approvedPath, R3B_EDIT_BEFORE, 'utf8')
+    const exec = {
+      name: 'write',
+      callId: 'call-r3b-cross-operation',
+      arguments: { file_path: rig.approvedPath, content: R3_CONTENT },
+    }
+    const run = await r3Dispatch(rig, exec, {
+      body: async (world) => world.fs.editText(targetOf(rig.approvedPath), { oldString: 'alpha', newString: 'gamma', replaceAll: false }),
+    })
+    assert.equal(run.phase, 'body')
+    assert.equal(run.error?.code, 'IO_ASK_RECEIPT_REFUSED')
+    assert.match(String(run.error?.message), /RECEIPT_OPERATION_MISMATCH/u)
+    assert.equal(fileContent(rig.approvedPath), R3B_EDIT_BEFORE, 'no byte was written by the wrong operation kind')
+  })
+
+  test('ADM-165 (R3b NEGATIVE, lifecycle) — the extended methods inherit the receipt laws: revoked-after-consumption refuses, and one consumed grant authorizes exactly one effect', async (t) => {
+    // TWO rigs: a revocation bumps the Member epoch, so it must not be carried into the reuse arm
+    // (there it would be a bind refusal, not the law under test).
+    const revokedRig = await r3Rig('edit-lifecycle-revoked', { tool: 'edit' })
+    t.after(revokedRig.cleanup)
+    nodeFs.writeFileSync(revokedRig.approvedPath, R3B_EDIT_BEFORE, 'utf8')
+    const revoked = await r3Dispatch(revokedRig, {
+      name: 'edit',
+      callId: 'call-r3b-edit-revoked',
+      arguments: { file_path: revokedRig.approvedPath, old_string: 'alpha', new_string: 'gamma' },
+    }, {
+      body: async (world) => {
+        revokedRig.binder.revoke(R3_WORKER)
+        return world.fs.editText(targetOf(revokedRig.approvedPath), { oldString: 'alpha', newString: 'gamma', replaceAll: false })
+      },
+    })
+    assert.equal(revoked.phase, 'body')
+    assert.equal(revoked.error?.code, 'IO_ASK_RECEIPT_REFUSED')
+    assert.match(String(revoked.error?.message), /RECEIPT_REVOKED/u)
+    assert.equal(fileContent(revokedRig.approvedPath), R3B_EDIT_BEFORE, 'a revoked Member wrote nothing')
+
+    const reuseRig = await r3Rig('edit-lifecycle-reuse', { tool: 'edit' })
+    t.after(reuseRig.cleanup)
+    nodeFs.writeFileSync(reuseRig.approvedPath, R3B_EDIT_BEFORE, 'utf8')
+    const reused = await r3Dispatch(reuseRig, {
+      name: 'edit',
+      callId: 'call-r3b-edit-reuse',
+      arguments: { file_path: reuseRig.approvedPath, old_string: 'alpha', new_string: 'gamma' },
+    }, {
+      body: async (world) => {
+        await world.fs.editText(targetOf(reuseRig.approvedPath), { oldString: 'alpha', newString: 'gamma', replaceAll: false })
+        return world.fs.editText(targetOf(reuseRig.approvedPath), { oldString: 'gamma', newString: 'delta', replaceAll: false })
+      },
+    })
+    assert.equal(reused.phase, 'body')
+    assert.equal(reused.error?.code, 'IO_ASK_RECEIPT_REFUSED')
+    assert.match(String(reused.error?.message), /RECEIPT_REUSED/u)
+    assert.equal(fileContent(reuseRig.approvedPath), 'gamma beta\n', 'the first (authorized) edit is the only effect')
+  })
+
+  test('ADM-166 (R3b POSITIVE, rc.5) — deleteFile: ask → allow → receipt verified for THIS delete → the REAL rc.5 Provider removes the file; absence is the verified effect', async (t) => {
+    const rig = await r3Rig('delete-positive', { tool: 'delete_file', hostMode: 'next' })
+    t.after(rig.cleanup)
+    nodeFs.writeFileSync(rig.approvedPath, 'GOING AWAY\n', 'utf8')
+    const exec = { name: 'delete_file', callId: 'call-r3b-delete-positive', arguments: { file_path: rig.approvedPath } }
+    const run = await r3Dispatch(rig, exec, { body: async (world) => world.fs.deleteFile(targetOf(rig.approvedPath)) })
+    assert.equal(run.phase, 'body', `the approved delete must reach the real Provider (got ${JSON.stringify(run)})`)
+    assert.equal(run.error, undefined, `the real Provider must not refuse: ${run.error?.message}`)
+    assert.equal(existsSync(rig.approvedPath), false, 'the REAL rc.5 confined Provider removed the approved file')
+    assert.equal(fileContent(rig.approvedPath), null, 'no bytes are read back from a deleted file')
+    const admission = rig.admissions.find((fact) => fact.callId === exec.callId)
+    assert.equal(admission?.decision, 'allow')
+    assert.equal(admission?.laneDecision, 'ask')
+    const settled = settlementOf(rig, exec.callId)
+    assert.equal(settled?.state, 'COMPLETED')
+    assert.equal(settled?.observation.bodyOutcome, 'completed')
+  })
+
+  test('ADM-167 (R3b NEGATIVE, deleteFile) — a delete receipt covers ONE path and ONE operation: another path and another method are both refused, nothing is removed', async (t) => {
+    const rig = await r3Rig('delete-negatives', {
+      tool: 'delete_file',
+      hostMode: 'next',
+      write: lane([], [pathJoin(R3_ROOT, 'delete-negatives', 'inside', 'approved.txt'), pathJoin(R3_ROOT, 'delete-negatives', 'inside', 'other.txt')]),
+    })
+    t.after(rig.cleanup)
+    nodeFs.writeFileSync(rig.approvedPath, 'APPROVED\n', 'utf8')
+    nodeFs.writeFileSync(rig.otherPath, 'UNTOUCHED\n', 'utf8')
+
+    const crossPath = await r3Dispatch(rig, {
+      name: 'delete_file',
+      callId: 'call-r3b-delete-cross-path',
+      arguments: { file_path: rig.approvedPath },
+    }, { body: async (world) => world.fs.deleteFile(targetOf(rig.otherPath)) })
+    assert.equal(crossPath.phase, 'body')
+    assert.equal(crossPath.error?.code, 'IO_ASK_RECEIPT_REFUSED')
+    assert.match(String(crossPath.error?.message), /RECEIPT_OPERATION_MISMATCH/u)
+    assert.equal(existsSync(rig.otherPath), true, 'the unapproved path survived')
+    assert.equal(existsSync(rig.approvedPath), true, 'and the approved path is untouched because nothing ran')
+    const crossPathSettled = settlementOf(rig, 'call-r3b-delete-cross-path')
+    assert.equal(crossPathSettled?.state, 'FAILED')
+    assert.equal(crossPathSettled?.observation.bodyOutcome, 'failed')
+
+    // A fresh execution, fresh receipt, used for a DIFFERENT method: the kind refuses it.
+    const crossOperation = await r3Dispatch(rig, {
+      name: 'delete_file',
+      callId: 'call-r3b-delete-cross-operation',
+      arguments: { file_path: rig.approvedPath },
+    }, { body: async (world) => world.fs.writeText(targetOf(rig.approvedPath), 'NOPE\n') })
+    assert.equal(crossOperation.phase, 'body')
+    assert.equal(crossOperation.error?.code, 'IO_ASK_RECEIPT_REFUSED')
+    assert.match(String(crossOperation.error?.message), /RECEIPT_OPERATION_MISMATCH/u)
+    assert.equal(fileContent(rig.approvedPath), 'APPROVED\n', 'the delete receipt wrote no bytes')
+  })
+
+  test('ADM-168 (R3b POSITIVE, rc.5) — moveFile: ask → allow → receipt bound to BOTH paths → the REAL rc.5 Provider moves the file; source absence and destination bytes are verified', async (t) => {
+    const rig = await r3Rig('move-positive', { tool: 'move_file', hostMode: 'next', write: lane([], [pathJoin(R3_ROOT, 'move-positive', 'inside', 'approved.txt'), pathJoin(R3_ROOT, 'move-positive', 'inside', 'other.txt')]) })
+    t.after(rig.cleanup)
+    nodeFs.writeFileSync(rig.approvedPath, 'MOVED BYTES\n', 'utf8')
+    const exec = {
+      name: 'move_file',
+      callId: 'call-r3b-move-positive',
+      arguments: { file_path: rig.approvedPath, destination_path: rig.otherPath },
+    }
+    const run = await r3Dispatch(rig, exec, { body: async (world) => world.fs.moveFile(targetOf(rig.approvedPath), targetOf(rig.otherPath), {}) })
+    assert.equal(run.phase, 'body', `the approved move must reach the real Provider (got ${JSON.stringify(run)})`)
+    assert.equal(run.error, undefined, `the real Provider must not refuse: ${run.error?.message}`)
+    assert.equal(existsSync(rig.approvedPath), false, 'the source is gone')
+    assert.equal(fileContent(rig.otherPath), 'MOVED BYTES\n', 'the destination carries the exact bytes')
+    const settled = settlementOf(rig, exec.callId)
+    assert.equal(settled?.state, 'COMPLETED')
+    assert.equal(settled?.observation.bodyOutcome, 'completed')
+  })
+
+  test('ADM-169 (R3b NEGATIVE, moveFile) — a receipt for (a→b) cannot authorize (a→c); both paths are inside the operation scope', async (t) => {
+    const rig = await r3Rig('move-cross-path', {
+      tool: 'move_file',
+      hostMode: 'next',
+      write: lane([], [
+        pathJoin(R3_ROOT, 'move-cross-path', 'inside', 'approved.txt'),
+        pathJoin(R3_ROOT, 'move-cross-path', 'inside', 'other.txt'),
+        pathJoin(R3_ROOT, 'move-cross-path', 'inside', 'third.txt'),
+      ]),
+    })
+    t.after(rig.cleanup)
+    nodeFs.writeFileSync(rig.approvedPath, 'STAY\n', 'utf8')
+    // `third.txt` is a legal ASK on the live lane, so only the receipt's two-path scope can refuse it.
+    const thirdPath = pathJoin(rig.inside, 'third.txt')
+    const exec = {
+      name: 'move_file',
+      callId: 'call-r3b-move-cross-path',
+      arguments: { file_path: rig.approvedPath, destination_path: rig.otherPath },
+    }
+    const run = await r3Dispatch(rig, exec, { body: async (world) => world.fs.moveFile(targetOf(rig.approvedPath), targetOf(thirdPath), {}) })
+    assert.equal(run.phase, 'body')
+    assert.equal(run.error?.code, 'IO_ASK_RECEIPT_REFUSED')
+    assert.match(String(run.error?.message), /RECEIPT_OPERATION_MISMATCH/u)
+    assert.equal(fileContent(rig.approvedPath), 'STAY\n', 'the source was not removed by an unauthorized move')
+    assert.equal(existsSync(thirdPath), false, 'and the unapproved destination does not exist')
+    assert.equal(existsSync(rig.otherPath), false, 'the approved destination was not created either')
+    const settled = settlementOf(rig, exec.callId)
+    assert.equal(settled?.state, 'FAILED')
+    assert.equal(settled?.observation.bodyOutcome, 'failed')
+  })
+
+  test('ADM-170 (R3b NEGATIVE, deny wins) — an explicit deny on EITHER move path refuses before any receipt consult, even with a live unused receipt', async (t) => {
+    const rig = await r3Rig('move-deny-wins', { tool: 'move_file', hostMode: 'next', write: lane([], [pathJoin(R3_ROOT, 'move-deny-wins', 'inside', 'approved.txt'), pathJoin(R3_ROOT, 'move-deny-wins', 'inside', 'other.txt')]) })
+    t.after(rig.cleanup)
+    nodeFs.writeFileSync(rig.approvedPath, 'KEEP\n', 'utf8')
+    const denyPolicy = {
+      memberIdentity: R3_WORKER,
+      toolBindingIdentity: 'dsh.fs/move_file',
+      policyRevision: R3_REVISION,
+      read: lane([rig.inside]),
+      write: lane([], [rig.approvedPath], [rig.otherPath]),
+    }
+    const DenyConfined = createConfinedFileSystemClass(
+      rig.seams.LocalFileSystem,
+      createMemberFsGuard(denyPolicy, undefined, { binder: rig.binder }),
+      R3_WORKER,
+    )
+    const denyRoot = new rig.seams.Context()
+    await denyRoot.plugin(DenyConfined, { cwd: rig.inside, diffBasisMaxBytes: 10 * 1024 * 1024 })
+    const denyFs = denyRoot.get('fs')
+    const exec = {
+      name: 'move_file',
+      callId: 'call-r3b-move-deny',
+      arguments: { file_path: rig.approvedPath, destination_path: rig.otherPath },
+    }
+    const run = await r3Dispatch(rig, exec, {
+      body: async (world) => {
+        // The receipt is live and unused here; the denied destination must still win.
+        await denyFs.moveFile(targetOf(rig.approvedPath), targetOf(rig.otherPath), {})
+        return world.fs.moveFile(targetOf(rig.approvedPath), targetOf(rig.otherPath), {})
+      },
+    })
+    assert.equal(run.phase, 'body')
+    assert.equal(run.error?.code, 'IO_WRITE_DENIED')
+    assert.equal(fileContent(rig.approvedPath), 'KEEP\n', 'deny wins: the source stayed in place')
+    assert.equal(existsSync(rig.otherPath), false, 'deny wins: the denied destination was never published')
+  })
+
+  test('ADM-171 (R3b POSITIVE, rc.5) — patchText: ask → allow → receipt verified for THIS hunk payload → the REAL rc.5 Provider applies it; bytes are verified', async (t) => {
+    const rig = await r3Rig('patch-positive', { tool: 'patch_text', hostMode: 'next' })
+    t.after(rig.cleanup)
+    nodeFs.writeFileSync(rig.approvedPath, 'one\ntwo\n', 'utf8')
+    const exec = {
+      name: 'patch_text',
+      callId: 'call-r3b-patch-positive',
+      arguments: { file_path: rig.approvedPath, hunks: R3B_PATCH_HUNKS },
+    }
+    const run = await r3Dispatch(rig, exec, { body: async (world) => world.fs.patchText(targetOf(rig.approvedPath), R3B_PATCH_HUNKS) })
+    assert.equal(run.phase, 'body', `the approved patch must reach the real Provider (got ${JSON.stringify(run)})`)
+    assert.equal(run.error, undefined, `the real Provider must not refuse: ${run.error?.message}`)
+    assert.equal(fileContent(rig.approvedPath), 'one\nTWO\n', 'the REAL rc.5 confined Provider applied the approved patch')
+    const settled = settlementOf(rig, exec.callId)
+    assert.equal(settled?.state, 'COMPLETED')
+    assert.equal(settled?.observation.bodyOutcome, 'completed')
+  })
+
+  test('ADM-172 (R3b NEGATIVE, patchText) — a receipt for hunk payload X cannot authorize payload Y on the same path; the file is byte-identical', async (t) => {
+    const rig = await r3Rig('patch-content-binding', { tool: 'patch_text', hostMode: 'next' })
+    t.after(rig.cleanup)
+    nodeFs.writeFileSync(rig.approvedPath, 'one\ntwo\n', 'utf8')
+    const otherHunks = Object.freeze([Object.freeze({ lineNumber: 1, oldLines: Object.freeze(['one', 'two']), newLines: Object.freeze(['one', 'THREE']), isEndOfFile: false })])
+    const exec = {
+      name: 'patch_text',
+      callId: 'call-r3b-patch-binding',
+      arguments: { file_path: rig.approvedPath, hunks: R3B_PATCH_HUNKS },
+    }
+    const run = await r3Dispatch(rig, exec, { body: async (world) => world.fs.patchText(targetOf(rig.approvedPath), otherHunks) })
+    assert.equal(run.phase, 'body')
+    assert.equal(run.error?.code, 'IO_ASK_RECEIPT_REFUSED')
+    assert.match(String(run.error?.message), /RECEIPT_CONTENT_MISMATCH/u)
+    assert.equal(fileContent(rig.approvedPath), 'one\ntwo\n', 'the unapproved patch wrote nothing')
+    const settled = settlementOf(rig, exec.callId)
+    assert.equal(settled?.state, 'FAILED')
+    assert.equal(settled?.observation.bodyOutcome, 'failed')
+  })
+
+  test('ADM-173 (R3b NEGATIVE, declared-shape honesty) — a NON-mutation tool prepares NO receipt, so a mutation smuggled into its body is refused (the subprocess face is outside this extension and stays R4)', async (t) => {
+    // `read` is a shipped tool with an axis but NOT one of the five receipt-bearing shapes: the
+    // centre approves it (the read lane allows) and mints NO receipt, so a write attempted inside
+    // the same body has no authorization carrier at all.
+    const rig = await r3Rig('no-receipt-for-read', { tool: 'read' })
+    t.after(rig.cleanup)
+    nodeFs.writeFileSync(rig.approvedPath, 'READ ME\n', 'utf8')
+    const exec = { name: 'read', callId: 'call-r3b-no-receipt-read', arguments: { file_path: rig.approvedPath } }
+    let witnessed
+    const run = await r3Dispatch(rig, exec, {
+      body: async (world) => {
+        try {
+          await world.fs.writeText(targetOf(rig.approvedPath), 'NOPE\n')
+        } catch (error) {
+          witnessed = error
+          throw error
+        }
+        return undefined
+      },
+    })
+    assert.equal(run.phase, 'body')
+    assert.equal(witnessed?.code, 'IO_ASK_RECEIPT_REFUSED', 'no receipt means the receipt-refusal path, never an allow')
+    assert.match(String(witnessed?.message), /RECEIPT_NOT_IN_SCOPE/u)
+    assert.equal(fileContent(rig.approvedPath), 'READ ME\n', 'zero bytes were written under an approval that prepared no receipt')
   })
 
   // The receipt module is imported lazily so the arms above read as the product surface; these two

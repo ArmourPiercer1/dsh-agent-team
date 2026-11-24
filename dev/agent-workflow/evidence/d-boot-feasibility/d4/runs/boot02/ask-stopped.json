@@ -4,7 +4,7 @@
   "resolveOutcome": null,
   "cancelStatus": 200,
   "file": {
-    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-48-44Z/workspace/lane/ask-stopped.txt",
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T00-02-14Z/workspace/lane/ask-stopped.txt",
     "exists": false,
     "content": null,
     "bytes": null,
@@ -12,7 +12,7 @@
   },
   "settlement": {
     "executionId": "exec-e14318d017ca1dc2ba9c1821dfa714eee89178b2",
-    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-48-44Z/centre/settlement/inst-0ty67u70r99a/exec-e14318d017ca1dc2ba9c1821dfa714eee89178b2.settlement.json",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T00-02-14Z/centre/settlement/inst-0ty67u70r99a/exec-e14318d017ca1dc2ba9c1821dfa714eee89178b2.settlement.json",
     "present": true,
     "state": "REFUSED",
     "bodyOutcome": "not-started",
@@ -31,9 +31,9 @@
       "instanceGeneration": 0,
       "toolName": "write",
       "axis": "fs.write",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T22-48-44Z/workspace/lane/ask-stopped.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T00-02-14Z/workspace/lane/ask-stopped.txt",
       "definitionSource": "",
-      "policyGeneration": "a5sf1:a0e985b4a955e3669845f0e6a8fb0fa3",
+      "policyGeneration": "a5sf1:da44c3571ace16dd756a592436bc0e93",
       "blueprintRevision": "",
       "owner": "session-dboot-d4-root",
       "decision": "deny",
@@ -41,7 +41,7 @@
       "refusalCode": "ADMISSION_STOPPED",
       "reason": "the execution \"call-d4-worker-write\" was aborted before its body; a Stop is not a lane denial, an expiry or a fault, and nothing that arrives after it may authorize this call",
       "kind": "invocation-authority",
-      "at": "2026-11-23T22:51:09.554Z"
+      "at": "2026-11-24T00:04:39.496Z"
     },
     {
       "callId": "call-d4-worker-write",
@@ -51,9 +51,9 @@
       "outcome": "admission-refusal",
       "isError": true,
       "refusalCode": "ADMISSION_STOPPED",
-      "policyGeneration": "a5sf1:a0e985b4a955e3669845f0e6a8fb0fa3",
+      "policyGeneration": "a5sf1:da44c3571ace16dd756a592436bc0e93",
       "kind": "execution",
-      "at": "2026-11-23T22:51:09.566Z"
+      "at": "2026-11-24T00:04:39.508Z"
     }
   ],
   "verdict": {
