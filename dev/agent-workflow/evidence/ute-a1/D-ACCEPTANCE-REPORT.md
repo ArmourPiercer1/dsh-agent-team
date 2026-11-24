@@ -75,10 +75,26 @@ Hosts, exactly as the drivers printed them (`candidate:` row, first log line of 
 | 27 | `d4:ask-execute-2` (`write`, 29 B, different path) | DEV-LIVE | **PROVEN** — `sha256:2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f` | **PROVEN** — byte-identical | same |
 | 28 | `d4:ask-denied` | DEV-LIVE | **PROVEN** — 0 bytes, settlement `REFUSED` | **PROVEN** (identical) | same |
 | 29 | `d4:ask-stopped` | DEV-LIVE | **PROVEN** — 0 bytes, settlement `REFUSED` | **PROVEN** (identical) | same |
-| 30 | `d4:ask-execute-process` (governed `bash` under an approval) | **NOT-PRODUCT-PROVEN** (REFUTED) | **REFUTED** | **REFUTED — same 3 clauses, same error** | **product assembly gap**: no PTY backend on the v5 per-tool `bash` binding realm (`Error: no PTY backend registered for "a5sf-governed-shell"`, thrown by the host at `tests/deepseek-harness-next/packages/terminal/terminal/src/index.ts:140`; rc.2 `…test-use/…/index.ts:159`). The governed PTY face is created only when a PTY terminal spec is passed (`packages/runtime/team-services/src/install.ts:609-619`), and this realm carries none. Zero bytes, settlement `FAILED` — fail-closed. Owner decision required; **not** an rc.5 drift |
+| 30 | `d4:ask-execute-process` (governed `bash` under an approval) | **NOT-PRODUCT-PROVEN** (REFUTED) | **REFUTED** | **REFUTED — same 3 clauses, same error** | **product assembly gap**: no PTY backend on the v5 per-tool `bash` binding realm (`Error: no PTY backend registered for "a5sf-governed-shell"`, thrown by the host at `tests/deepseek-harness-next/packages/terminal/terminal/src/index.ts:140`; rc.2 `…test-use/…/index.ts:159`). The governed PTY face is created only when a PTY terminal spec is passed (`packages/runtime/team-services/src/install.ts:609-619`), and this realm carries none. Zero bytes, settlement `FAILED` — fail-closed. Owner decision required; **not** an rc.5 drift. **Declared scope (2026-11-24, PENDING OWNER CONFIRMATION, review `20261124-1341` §3.1): this generation promises `allow`/`deny` for Subprocess/PTY; per-call `ask` for process execution is NOT supported and remains fail-closed — see `SCOPE-subprocess-ask.md`.** |
 | 31 | P0-2 pre-dispatch abort observation (`pre-dispatch-abort.mjs`) | **MECHANISM** | **MECHANISM** (`SLICE-21/30/37/38`, assertions unchanged) | **MECHANISM** (same arms, both hosts) | **OPEN TARGET-HOST ACCEPTANCE BLOCKER** — not production-wired; see below |
 | 32 | OS confinement negative controls (§3.1) | ENV-LIMITED where the OS capability is absent | measured | measured (round 78 shape) | the host/OS limit is the limit; no product switch exists |
 | 33 | search face, Shape B (in-lane `grep`, out-of-lane refused) | DEV-LIVE | **PROVEN** (round 64/98) | **PROVEN** (round 78) | Shape B is the declared support level; not full dynamic permission governance |
+
+**The two P0-2 lines, visible in this status table (review `20261124-1341` §3.1/P0-2; not closed):**
+
+- **`P0-2` — OPEN TARGET-HOST ACCEPTANCE BLOCKER — pre-dispatch Stop observation not production-wired.**
+  See row 31; `packages/runtime/src/plugin/vnext/pre-dispatch-abort.mjs` is exported and driven in the
+  slice composition, but a real host's agent loop is the `tools.execute` caller and the product does not
+  own it.
+- **What closes `P0-2`:** (a) a public batch-completion observation seam the host exposes to a plugin, or
+  (b) an owner ruling defining the lawful "no settlement" boundary for a call that never entered admission
+  and never started a body. `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` is a visible report, not a settlement.
+
+**The process-face scope, visible here too:** this generation promises **`allow`/`deny`** for
+Subprocess/PTY; **per-call `ask` for process execution is NOT supported and remains fail-closed**. The
+refusal in row 30 is the promise, not a pending fix. Wording, the proven process behaviours and the two
+preconditions a future generation would need: `SCOPE-subprocess-ask.md` (**PENDING OWNER
+CONFIRMATION**).
 
 ### The P0-2 open item, classified precisely
 

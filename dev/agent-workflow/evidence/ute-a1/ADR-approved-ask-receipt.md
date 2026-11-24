@@ -3,7 +3,9 @@
 - **Status:** ACCEPTED and EXTENDED twice — round 96 (every FS mutation, method by method) and
   round 99 (the PROCESS face: `bash` over the confined subprocess face and the governed persistent
   PTY). R2 (`guarded` coupling) is REJECTED. R4 stays the fail-closed default for every operation not
-  named here.
+  named here. **The round-99 process extension is an in-process MECHANISM only and is NOT a declared
+  support promise — see the scope boundary at the end of §"The PROCESS face" and
+  `SCOPE-subprocess-ask.md` (PENDING OWNER CONFIRMATION).**
 - **Date:** 2026-11-24 (round 94, branch `vnext/a1-cut`) · extension 2026-11-24 (round 96) ·
   extension 2026-11-24 (round 99, process face).
 - **Scope:** the FIVE native FS mutations — `write`→`writeText`, `edit`→`editText`,
@@ -221,6 +223,15 @@ The consequence for this ADR is narrow and explicit: **no live claim is made for
 The spawn-point verification is a proven MECHANISM (with the FS face's live precedent), and the live
 `ask` leg for a process tool is BLOCKED by an assembly gap named above, which is a product decision,
 not a receipt defect.
+
+> **Scope boundary (2026-11-24, PENDING OWNER CONFIRMATION, review `20261124-1341` §3.1).** The
+> process-face extension above is a MECHANISM, not a support promise. This generation promises
+> **`allow`/`deny` only** for Subprocess/PTY; **per-call `ask` for process execution is NOT supported and
+> remains fail-closed**. The R3 receipt is **not** extended to the process face as a live promise: a
+> receipt minted for a file operation must never be read as permission to bypass the OS sandbox, and no
+> approval may widen the kernel profile. Declared wording, the process behaviours that *are* proven, and
+> the two preconditions a future generation would need (a governed PTY backend on the binding realm + a
+> process-scoped receipt that cannot widen the kernel profile): `SCOPE-subprocess-ask.md`.
 
 ### Limits, stated exactly
 

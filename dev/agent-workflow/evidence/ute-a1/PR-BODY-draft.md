@@ -15,6 +15,28 @@ named in the same row or section.
 | **How to review** | (1) read the audit's corrections table first — it lists every number the report used to get wrong; (2) re-run the gate block in §"Verification on this HEAD" (single commands, ~8 min with the census) and diff the verdict lines; (3) for any capability row, follow its `file:line`/evidence path and check it says what the row claims; (4) treat every `DEV-LIVE` row as unproven for acceptance purposes; (5) read `D-ACCEPTANCE-REPORT.md` §10 before forming a view — the two round-87/88 seams and the four rulings they need are there; (6) do **not** mark this PR ready or merge it — that is the owner's act. |
 | **Gate status at this head** | **Round 98 / `a95be5f11`:** local `ci-pr-gate --full --census-captures 2` = **PASS 10/10** (277.6 s); bound `ci-security` 222 and `ci-integration` 238; UTE G1 argv 89/89; `ute-vnext-a1` leg 242 tests (239 pass, 3 skipped); docs/matrix/D-report updated for the two decided rulings. Earlier (round 95 / `d322b17aa`): local `ci-pr-gate --full --census-captures 2` = **PASS 10/10** (275.4 s); bound vitest `ci-security` 222 / `ci-integration` 238; UTE G1 argv 89/89; the hosted verdicts below belong to the round-89 head and are re-queried after this push. Earlier round-89 local status: all required gates green, including `ci-pr-gate --full --census-captures 2` = **PASS 10/10** (275.7 s). Hosted: `pr-gate`, `ci-fast`, `ci-security`, `ci-product`, `synthesize-merge-tree`, `candidate-protection` green; **`ci-integration` FAILURE** on leg `tinf-instruments` (no named failing assertion; not reproduced locally — see "Open gaps" G10); `ci-census` **SKIPPED (draft)**; `ci-required` **RED for `ci-integration:failure,ci-census:skipped`**; `pr-settlement-gate` red until the round-89 settlement comment. On the docs-only follow-up head `d1506acd1` the same hosted job set re-ran with **`ci-integration` SUCCESS**, so the `97d7d7c8d` abort was transient; `ci-required` remains red there only for the draft census skip. |
 
+## SCOPE — the Subprocess/PTY promise (`allow`/`deny`; per-call `ask` is NOT supported)
+
+**PENDING OWNER CONFIRMATION (review `20261124-1341` §3.1). Behaviour does not change either way; only the
+declared promise does.** Full statement: [`SCOPE-subprocess-ask.md`](SCOPE-subprocess-ask.md).
+
+> **This generation promises `allow`/`deny` for Subprocess/PTY. Per-call `ask` for process execution is
+> NOT supported and remains fail-closed.**
+
+- **What stands:** live persistent `bash` under the OS sandbox (two turns on one shell, `d3:persistent-subprocess`,
+  both hosts), out-of-lane refusal by the OS profile (`Read-only file system`, 0 bytes), PTY confinement
+  (`OWNER_NOT_LIVE`, `PTY_PROCESS_DENIED`, `PTY_PROCESS_RECEIPT_REFUSED`), and Stop (`d2:stop`; `d4:ask-stopped`).
+- **What does not:** `d4:ask-execute-process` is **REFUTED on BOTH hosts** — the v5 per-tool `bash` binding
+  lands on a realm with no governed PTY backend (`no PTY backend registered for "a5sf-governed-shell"`),
+  the receipt verifier is never reached, **zero bytes**, settlement **`FAILED`**. The R3 receipt is **not**
+  extended to the process face: a file-operation receipt must never be read as permission to bypass the OS
+  sandbox.
+- **A future generation would need:** a governed PTY backend on the binding realm **and** a process-scoped
+  receipt that cannot widen the kernel profile (`SCOPE-subprocess-ask.md` §5). Neither is scheduled.
+- **P0-2 stays OPEN** — **OPEN TARGET-HOST ACCEPTANCE BLOCKER — pre-dispatch Stop observation not
+  production-wired**; it closes with a public batch-completion observation seam **or** an owner ruling on
+  the lawful "no settlement" boundary (`D-ACCEPTANCE-REPORT.md`, status table).
+
 ## ROUND 102 — the D4 acceptance runs on the TARGET host (0.2.2-rc.5), judge by judge
 
 **This section supersedes the D-stage sentences above and the round-87/93/97 D4 wording.** The single
