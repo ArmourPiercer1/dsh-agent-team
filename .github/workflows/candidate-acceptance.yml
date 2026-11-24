@@ -1,0 +1,165 @@
+# candidate-acceptance — THE CANDIDATE ACCEPTANCE LAYER. **NOT Required CI.**
+#
+# Review `docs/reviews/20261124-1341.txt` §4.4 asks for the key DEV-LIVE
+# scenarios to become "an executable, reviewable candidate gate". This workflow
+# is that layer, and nothing more:
+#
+#   * It is NOT a layer of `.github/workflows/ci-required.yml`, it is NOT in
+#     `dev/ci/eb3-ci-manifest.json`'s `layers`, and it is NOT a branch-protection
+#     context. `ci-required`'s layer list is unchanged by this file.
+#   * It is registered in the manifest as an explicitly NON-REQUIRED job so
+#     `scripts/eb3-ci-required.mjs` sees it declared rather than silently
+#     undeclared (CANDIDATE-AUDIT.md counts one more workflow, ten → eleven).
+#   * It is manual (`workflow_dispatch`) and label-triggered
+#     (`pull_request: labeled`, label `candidate-acceptance`). A green run here
+#     means "the four D drivers ran on both pinned hosts with two agreeing boots
+#     and only the enumerated known-refuted judge is REFUTED". It does NOT mean
+#     a capability row is PRODUCT-PROVEN: a row becomes gate-backed only when a
+#     gate is REQUIRED by branch protection AND green, and this layer is
+#     deliberately non-required.
+#
+# The single verdict is `scripts/candidate-acceptance-gate.mjs`'s own; this
+# workflow only provisions the two pinned hosts and runs it. The gate performs
+# no retries and widens no timeout: a hung driver is a FAIL naming its timeout.
+name: candidate-acceptance (candidate acceptance layer, NOT Required CI)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [master]
+    types: [labeled]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: candidate-acceptance-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  candidate-acceptance:
+    name: candidate-acceptance (candidate acceptance layer, NOT Required CI)
+    runs-on: ubuntu-latest
+    # FOUR boots per driver set, both hosts: ~33 min/host measured locally
+    # (D4 alone is 2 x ~6.5 min), plus two host builds. This is a ceiling for
+    # the whole non-required run, not a driver-timeout widening: the driver
+    # timeout remains `DRIVER_TIMEOUT_MS` inside the gate script.
+    timeout-minutes: 120
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'candidate-acceptance'
+    steps:
+      - name: Checkout (full history; the RUN record binds a real commit)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.7.0
+
+      - name: Resolve the pinned pristine host from tests/paths.mjs
+        shell: bash
+        run: |
+          set -euo pipefail
+          SHA=$(node -e "import('./tests/paths.mjs').then((m) => console.log(m.TEST_USE_BASELINE_SHA))")
+          VER=$(node -e "import('./tests/paths.mjs').then((m) => console.log(m.DSH_BASELINE_VERSION))")
+          CH=$(node -e "import('./tests/paths.mjs').then((m) => console.log(m.CLIENT_COMMIT_HASH))")
+          if ! printf '%s' "$SHA" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "::error::tests/paths.mjs gave no 40-hex TEST_USE_BASELINE_SHA (got '${SHA}') — refusing to provision an unpinned host"
+            exit 1
+          fi
+          echo "TEST_USE_SHA=$SHA" >> "$GITHUB_ENV"
+          echo "TEST_USE_VERSION=$VER" >> "$GITHUB_ENV"
+          echo "TEST_USE_CLIENT_HASH=$CH" >> "$GITHUB_ENV"
+
+      - name: Provision the pinned pristine rc.2 test host
+        shell: bash
+        env:
+          HOST_URL: https://github.com/ArmourPiercer1/deepseek-harness
+          HOST_BRANCH: stable-3-0.2.0-rc.2
+          HOST_DIR: tests/deepseek-harness-test-use
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOST_DIR"
+          git -C "$HOST_DIR" init -q .
+          git -C "$HOST_DIR" remote add origin "$HOST_URL"
+          if ! git -C "$HOST_DIR" fetch -q --depth 1 --no-tags origin "$TEST_USE_SHA"; then
+            git -C "$HOST_DIR" fetch -q --depth 1 --no-tags origin "$HOST_BRANCH"
+          fi
+          git -C "$HOST_DIR" checkout -q --detach FETCH_HEAD
+          HEAD_SHA=$(git -C "$HOST_DIR" rev-parse HEAD)
+          if [ "$HEAD_SHA" != "$TEST_USE_SHA" ]; then
+            echo "::error::PRISTINE HOST DRIFT: $HEAD_SHA != $TEST_USE_SHA"
+            exit 1
+          fi
+          if [ "$(git -C "$HOST_DIR" status --porcelain | wc -l)" != "0" ]; then
+            echo "::error::pristine rc.2 host is not clean after detach"
+            exit 1
+          fi
+          HOST_VERSION=$(node -p "require('./${HOST_DIR}/package.json').version")
+          if [ "$HOST_VERSION" != "$TEST_USE_VERSION" ]; then
+            echo "::error::host at $HEAD_SHA reports version $HOST_VERSION, tests/paths.mjs declares $TEST_USE_VERSION"
+            exit 1
+          fi
+
+      - name: Build the pristine rc.2 host
+        shell: bash
+        env:
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
+          PNPM_STORE_DIR: ${{ runner.temp }}/pnpm-store
+          HOST_DIR: tests/deepseek-harness-test-use
+        run: |
+          set -euo pipefail
+          mkdir -p "$XDG_CACHE_HOME"
+          cd "$HOST_DIR"
+          pnpm install --ignore-scripts --store-dir "$PNPM_STORE_DIR"
+          ESBUILD_WORKER_THREADS=1 DSH_CLIENT_COMMIT_HASH="$TEST_USE_CLIENT_HASH" pnpm run build
+          cd "$GITHUB_WORKSPACE"
+          if [ ! -f "$HOST_DIR/apps/cli/lib/bin.js" ]; then
+            echo "::error::rc.2 host build produced no $HOST_DIR/apps/cli/lib/bin.js"
+            exit 1
+          fi
+          BUILT_SHA=$(git -C "$HOST_DIR" rev-parse HEAD)
+          if [ "$BUILT_SHA" != "$TEST_USE_SHA" ]; then
+            echo "::error::PRISTINE HOST DRIFT AFTER BUILD: $BUILT_SHA != $TEST_USE_SHA"
+            exit 1
+          fi
+
+      - name: Materialize the pinned rc.5 test host
+        shell: bash
+        timeout-minutes: 30
+        run: node scripts/provision-next-host.mjs --materialize
+
+      - name: Native sandbox assets for the rc.5 host (digest-verified published package)
+        shell: bash
+        timeout-minutes: 10
+        run: node scripts/provision-next-host.mjs --assets
+
+      - name: Install and build this repository (the drivers load packages/runtime/dist)
+        shell: bash
+        env:
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
+          PNPM_STORE_DIR: ${{ runner.temp }}/pnpm-store
+        run: |
+          set -euo pipefail
+          mkdir -p "$XDG_CACHE_HOME"
+          pnpm install --frozen-lockfile --store-dir "$PNPM_STORE_DIR"
+          pnpm run build
+          pnpm build:composition
+
+      - name: Candidate acceptance gate — both pinned hosts, one machine verdict
+        shell: bash
+        run: node scripts/candidate-acceptance-gate.mjs --hosts both
+
+      - name: Upload the gate's verdict and its per-host evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: candidate-acceptance-${{ github.run_id }}
+          path: dev/agent-workflow/evidence/candidate-acceptance-gate/
+          if-no-files-found: warn

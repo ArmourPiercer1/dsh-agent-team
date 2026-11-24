@@ -13,19 +13,19 @@
     "memberProviderRequests": 2,
     "unknownMemberCode": "TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
     "duplicateSameConfirmation": false,
-    "archivedCode": "TEAM_RUNTIME_WORK_STATE_REJECTED",
+    "archivedCode": null,
     "stoppedRefusalCode": "ADMISSION_STOPPED"
   },
   "mockRequests": 63,
   "memberModelRequests": 30,
   "aWindow": {
-    "first": "2026-11-23T10:02:57.370Z",
-    "last": "2026-11-23T10:02:57.987Z",
+    "first": "2026-11-24T13:40:17.058Z",
+    "last": "2026-11-24T13:40:17.759Z",
     "count": 10
   },
   "bWindow": {
-    "first": "2026-11-23T10:02:57.599Z",
-    "last": "2026-11-23T10:02:57.727Z",
+    "first": "2026-11-24T13:40:17.209Z",
+    "last": "2026-11-24T13:40:17.509Z",
     "count": 3
   }
 }

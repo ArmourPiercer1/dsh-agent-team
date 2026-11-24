@@ -3562,3 +3562,54 @@ way the three D drivers already are, and runs it on **0.2.2-rc.5** with `--boots
 
 **Levels**: no row moves. C-alpha6 and the R3 `write` receipt remain **DEV-LIVE** (now on both
 hosts). The governed process face remains **NOT-PRODUCT-PROVEN**. No row is PRODUCT-PROVEN.
+
+## Round 105 (2026-11-24) — the candidate acceptance gate: one executable layer, one verdict, and the rc.5 `d2` red it exposed
+
+Branch `vnext/a1-cut` · PR #822 (DRAFT, unmerged) · measured at
+`65481f2f6eb0bd684e83cfa1e43e3c5268eb9de9` · evidence
+`dev/agent-workflow/evidence/candidate-acceptance-gate/<stamp>/` + `dev/agent-workflow/evidence/ute-a1/round105/`.
+The single current verdict table and the layer's precise scope live in `D-ACCEPTANCE-REPORT.md`
+(the candidate-gate section); this section is the suite-status delta.
+
+Review `20261124-1341` §4.4 asked for the key DEV-LIVE scenarios as an executable, reviewable
+candidate gate. `scripts/candidate-acceptance-gate.mjs` now:
+
+* runs `run-boot.mjs`, `run-boot-d2.mjs`, `run-boot-d3.mjs` and `probe-d4-routed-wake.mjs` with
+  `--boots 2`, sequentially, on `legacy` (rc.2) and/or `next` (rc.5) through the existing
+  `TEAM_TEST_HOST` selector (`--hosts both` for the pair);
+* reads the drivers' OWN artifacts (`run-record.json`, `agreement.json`, `results.json`,
+  `routed-judges.json`) and requires the 31 enumerated judges to be present with `agreement=true`
+  and records valid under `scripts/eb3-run-manifest.mjs`; the ONLY allowed non-PROVEN verdict is the
+  literal enumerated `d4:ask-execute-process` (`SCOPE-subprocess-ask.md` §2/§4);
+* has no retries and no timeout widening: `DRIVER_TIMEOUT_MS` = 2,700,000 ms, a hung driver is a
+  FAIL naming that value;
+* snapshots each driver's artifacts per host so a later host's run cannot overwrite the evidence
+  the verdict was computed from.
+
+**Population delta:** no test file added, removed or reclassified; no dispatch leg changed; the
+`ute-vnext-a1` leg digest is untouched. The gate is a `scripts/` runner, not a suite. The CI shape
+gate moves `workflows=10 → 11` because the new workflow is a real file, and it is registered in
+`dev/ci/eb3-ci-manifest.json#knownNonRequired` — `ci-required`'s layer list is unchanged.
+
+**Round-105 verdicts (both hosts were run in one invocation):**
+
+```
+CANDIDATE-GATE pass host=legacy judges=31 proven=30 known-refuted=1 env-limited=0 drivers=4 records=8 agreement=true
+CANDIDATE-GATE fail host=next  judges=31 proven=29 known-refuted=1 env-limited=0 drivers=4 records=8 agreement=true
+  d2: d2:remote-delivery REFUTED — archived-member-refused-typed: lifecycle=SETTLED code=null requestsAdded=0 (both boots)
+CANDIDATE-GATE fail hosts=legacy,next judges=62 proven=59 known-refuted=2 env-limited=0
+```
+
+**The rc.5 red is a new measured fact, not a gate defect.** `d2:remote-delivery` passed on rc.2 and
+was previously **NOT RECORDED** on rc.5. The gate's first dual-host run records it as REFUTED in
+exactly one of its 19 clauses (`archived-member-refused-typed`); every other clause is PROVEN, and
+the two boots agree. The proposition is that an archived member's `member.send` is refused with a
+TYPED code and zero executions; on rc.5 the acknowledgement settles with `code=null` while
+`requestsAdded=0` — the refusal is not typed. This is a driver judge whose clause expectation may
+need an rc.5-shape repair OR a product/owner decision; round 105 does not guess which, and it does
+NOT add the id to `KNOWN_REFUTED` (only `d4:ask-execute-process` is enumerated).
+
+**Levels:** no row moves. The gate is non-required; rc.2 is green and rc.5 is FAIL. C-alpha6 and the
+R3 `write` receipt remain **DEV-LIVE** on both hosts. The governed process face remains
+**NOT-PRODUCT-PROVEN**. No row is PRODUCT-PROVEN, and no row becomes gate-backed without an owner
+decision to make the gate required.

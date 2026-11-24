@@ -1,10 +1,10 @@
 TWO-RUN AGREEMENT (the same command, two boots; every measured row must be identical)
 fact                                     boot1                                    boot2
-overall                                  PASS                                     PASS
+overall                                  FAIL                                     FAIL
 multiMemberVerdict                       PROVEN                                   PROVEN
 revocationVerdict                        PROVEN                                   PROVEN
 stopVerdict                              PROVEN                                   PROVEN
-remoteDeliveryVerdict                    PROVEN                                   PROVEN
+remoteDeliveryVerdict                    REFUTED                                  REFUTED
 aAdmissions                              10                                       10
 bAdmissions                              10                                       10
 aGuardFacts                              14                                       14

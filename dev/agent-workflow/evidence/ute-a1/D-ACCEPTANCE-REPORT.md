@@ -50,11 +50,11 @@ Hosts, exactly as the drivers printed them (`candidate:` row, first log line of 
 | 2 | `d:guard-facts` / `d:centre-facts` | DEV-LIVE | **PROVEN** — 2 allow facts, 2 admissions, 2 executions | **PROVEN** — same counters | same |
 | 3 | `d:native-read-surface` | DEV-LIVE | **PROVEN** (6 clauses) | **PROVEN** | same |
 | 4 | `d:member-read-denied` | DEV-LIVE | **PROVEN** (deciding channel + zero bytes/not-ENOENT) | **PROVEN** (round 78 port: batch + `workingDirectory`) | provider-channel refusal is in-process only (`ADM-100`) |
-| 5 | `d:remote-creation` | DEV-LIVE | **PROVEN** (round 91 judge repair) | **PROVEN at the round-78 clause shape — NOT re-run after the round-91 repair** | re-run `run-boot.mjs` on rc.5 to carry the repaired clause |
+| 5 | `d:remote-creation` | DEV-LIVE | **PROVEN** (round 91 judge repair) | **PROVEN** (round 105 candidate gate, repaired clause carried; 2/2 boots) | no bound gate ⇒ never PRODUCT-PROVEN |
 | 6 | `d2:multi-member-concurrency` | DEV-LIVE | **PROVEN** | **PROVEN** (round 78/79) | no bound gate |
 | 7 | `d2:revocation` (4 directions) | DEV-LIVE | **PROVEN** | **PROVEN** (9/9 + 9/9, 14/14 guard facts) | same |
 | 8 | `d2:stop` | DEV-LIVE | **PROVEN** | **PROVEN** (`stopSettlementState=REFUSED`) | same |
-| 9 | `d2:remote-delivery` | DEV-LIVE | **PROVEN** (round 83) | **NOT RECORDED** | run `run-boot-d2.mjs` on rc.5 after round 83 |
+| 9 | `d2:remote-delivery` | DEV-LIVE | **PROVEN** (round 83) | **REFUTED** (round 105 candidate gate, both boots) — one clause only: `archived-member-refused-typed` gives `lifecycle=SETTLED code=null requestsAdded=0`; every other clause PROVEN | **new round-105 finding**: on rc.5 an archived member's `member.send` does not yield the typed refusal. Product/owner decision; not a documentation defect |
 | 10 | `d3:persistent-subprocess` | DEV-LIVE | **PROVEN** (round 76) | **PROVEN** (round 78/79) | same |
 | 11 | `d3:crash-cold-recovery` | DEV-LIVE | **PROVEN** | **PROVEN** | same |
 | 12 | `d3:work-delivery` | DEV-LIVE | **PROVEN** | **PROVEN** (`collectStatus=succeeded`; `inflightAfter=UNKNOWN` by contract) | cross-process in-flight truth not established |
@@ -131,9 +131,74 @@ production wiring, and this table does not claim it is.
 
 ### What did NOT move
 
-No level was upgraded. No row is PRODUCT-PROVEN. `d4:ask-execute-process` is still REFUTED. The
-rc.5 column of `d:remote-creation` and `d2:remote-delivery` is still not recorded (rows 5 and 9) —
-those are the two driver judges that need a re-run on rc.5, not product work.
+No level was upgraded. No row is PRODUCT-PROVEN. `d4:ask-execute-process` is still REFUTED. The two
+driver judges that needed an rc.5 re-run are now recorded by the candidate gate (round 105):
+`d:remote-creation` is **PROVEN** on rc.5, and `d2:remote-delivery` is **REFUTED** on rc.5 in ONE
+clause (`archived-member-refused-typed`: `lifecycle=SETTLED code=null requestsAdded=0`, both boots)
+— a new measured rc.5 gap, not a documentation defect. The gate section below states exactly what
+that means and what it does not mean.
+
+### The candidate acceptance gate — round 105 (NON-REQUIRED layer)
+
+Review `20261124-1341` §4.4 asked for the key DEV-LIVE scenarios to become "an executable,
+reviewable candidate gate". `scripts/candidate-acceptance-gate.mjs` is that layer. It is a runner,
+not a new judge: it runs the four D drivers (`run-boot.mjs`, `run-boot-d2.mjs`, `run-boot-d3.mjs`,
+`probe-d4-routed-wake.mjs`) with `--boots 2` on the host selected by the existing `TEAM_TEST_HOST`
+machinery (`--hosts legacy|next|both`), then reads each driver's OWN emitted artifacts
+(`run-record.json`, `agreement.json`, `results.json`, `routed-judges.json`) and requires:
+
+1. every one of the **31** enumerated judges is present in both boots (a dropped or renamed judge
+   fails; the set is pinned in the script, not derived from what the driver happened to write);
+2. every judge is **PROVEN** except the exact enumerated `KNOWN_REFUTED` entry
+   `d4:ask-execute-process`, whose citation is `SCOPE-subprocess-ask.md` §2/§4 (a REFUTED judge not
+   in that literal map fails; nothing is matched by pattern);
+3. the driver's own `agreement.agreeing === true` with zero differing rows;
+4. every RUN record is valid under `scripts/eb3-run-manifest.mjs` (the SAME validator the hosted
+   `EB3-RUN-MANIFEST` leg runs), non-partial and non-subset, and was written by THIS run (`mtime`,
+   so yesterday's bytes cannot pass).
+
+Any unexpected verdict, invalid record, stale artifact, disagreement, driver failure or timeout is a
+FAIL. There are **no retries** and **no timeout widening**: the one timeout is
+`DRIVER_TIMEOUT_MS` = 2,700,000 ms (45 min), and a hung driver is killed and reported as a FAIL that
+names it. The machine verdict is `verdict.json`; the human summary is `summary.txt`; both live under
+`dev/agent-workflow/evidence/candidate-acceptance-gate/<stamp>/`, with each driver's artifacts
+snapshotted per host under `<stamp>/<host>/<driver>/`.
+
+**Round-105 verdicts (HEAD `65481f2f6`, the round's measurement head):**
+
+| host | selector | judges | proven | known-refuted | env-limited | verdict |
+| --- | --- | --- | --- | --- | --- | --- |
+| rc.2 (control) | `TEAM_TEST_HOST=legacy` | 31 | **30** | **1** | **0** | **pass** |
+| rc.5 (target) | `TEAM_TEST_HOST=next` | 31 | **29** | **1** | **0** | **FAIL** |
+
+rc.5's FAIL is the honest verdict, not a gate defect: `d2:remote-delivery` is REFUTED while a judge
+outside the enumerated known-refuted list may not pass, and `d2` therefore exits 1. The failing
+clause is `archived-member-refused-typed` (`lifecycle=SETTLED code=null requestsAdded=0`), identical
+on both boots; every other `d2` clause and every other driver passed. The single known-refuted entry
+(`d4:ask-execute-process`) is REFUTED on both hosts exactly as above, and is the only non-PROVEN
+verdict the gate is allowed to accept.
+
+**What the layer DOES change:** the whole acceptance set is now ONE command with ONE machine-readable
+verdict and one human summary; the drivers' two-boot agreement, RUN-record validity and known-refuted
+scope are checked in one place, and a stale artifact cannot be quoted as a fresh run.
+
+**What it does NOT change:**
+
+- It is **NOT Required CI**. `ci-required`'s layer list is untouched; the new workflow
+  `.github/workflows/candidate-acceptance.yml` runs on `workflow_dispatch` and on the
+  `candidate-acceptance` PR label only, and its job is registered in
+  `dev/ci/eb3-ci-manifest.json#knownNonRequired` (with the reason) so `eb3-ci-required` sees it as an
+  explicitly non-required job. It is not a branch-protection context.
+- It does **not** upgrade a row. Every row in the table above stays at the level it had. A row
+  becomes **gate-backed only when the gate is REQUIRED by branch protection AND green** — that is an
+  owner decision, and this round does not claim it. A green non-required gate (rc.2 is green here)
+  is still DEV-LIVE evidence in the vocabulary of this report.
+- It does **not** re-implement, weaken or relax any driver judge; it reads the verdicts those judges
+  already emit, and validates the records with the repository's existing validator.
+- It does **not** turn `d4:ask-execute-process` into a pass. The refutation stays enumerated with its
+  citation, and removing the enumeration makes the gate red.
+- It does **not** claim a deliverable green on rc.5: the rc.5 verdict is FAIL until the
+  `d2:remote-delivery` clause is repaired or lawfully ruled, and no such rule exists this round.
 
 **Worktree:** `.worktrees/vnext-a1-cut` · **Branch:** `vnext/a1-cut` ·
 **HEAD measured for every number below (round 89):**

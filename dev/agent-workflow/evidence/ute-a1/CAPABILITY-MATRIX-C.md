@@ -10,6 +10,34 @@ Statuses used, and they are not interchangeable:
   round-82 section at the end of this file). ENV-LIMITED is never counted as PROVEN.
 - **UNPROVEN** — nothing here should be reported as working.
 
+### Candidate-gate coverage — round 105 (NON-REQUIRED; NO level moves)
+
+`scripts/candidate-acceptance-gate.mjs` now runs the four D drivers as ONE executable layer per host
+(`--boots 2`, host via `TEAM_TEST_HOST`, `--hosts both` for the pair) and emits one machine verdict.
+The column below is a **coverage note, not a level**: it says which driver judge executes the row in
+the gate and what round 105 measured. **No cell moves to PRODUCT-PROVEN.** A row becomes gate-backed
+only when the gate is REQUIRED by branch protection AND green; this layer is deliberately
+non-required, so it cannot upgrade anything.
+
+| C row | candidate-gate judge(s) | rc.2 | rc.5 |
+| --- | --- | --- | --- |
+| C-member | `d2:stop`, `d2:remote-delivery` | PROVEN | **`d2:remote-delivery` REFUTED** (one clause: `archived-member-refused-typed` = `lifecycle=SETTLED code=null`; every other clause PROVEN) |
+| C-tools | `d4:ask-execute`, `d4:ask-execute-2` (write only), `d4:ask-denied`, `d4:ask-stopped` | PROVEN | PROVEN |
+| C-fs | `d:member-read-admitted`, `d:member-read-denied`, `d:native-read-surface`, `d:guard-facts`, `d:centre-facts` | PROVEN | PROVEN |
+| C-remote | `d:remote-creation`, `d2:multi-member-concurrency`, `d2:revocation` | PROVEN | PROVEN |
+| C-subprocess | `d3:persistent-subprocess`, `d4:ask-execute-process` | PROVEN / **REFUTED** (enumerated) | PROVEN / **REFUTED** (enumerated) |
+| C-pty | `d4:ask-execute-process` | **REFUTED** (enumerated) | **REFUTED** (enumerated) |
+| C-alpha6 | `d4:routed-wake` + its seven sub-judges (`case-created`, `router-officer`, `wake-delivered`, `officer-decides`, `ask-executes-after-review`, `duplicate-route`, `sticky-stop`) | PROVEN | PROVEN |
+| C-recovery | `d3:crash-cold-recovery` | PROVEN | PROVEN |
+| C-work-delivery | `d3:work-delivery` | PROVEN | PROVEN |
+| C-search (Shape B) | not covered by the D gate | — | — |
+| OS negative controls | not covered by the D gate | — | — |
+
+The only non-PROVEN verdict the gate may accept is the literal enumerated
+`d4:ask-execute-process` (citation `SCOPE-subprocess-ask.md` §2/§4). The rc.5 `d2:remote-delivery`
+refutation is **not** exempt, so the rc.5 gate verdict is FAIL. Round-105 verdicts:
+rc.2 `pass` (31 judges / 30 proven / 1 known-refuted / 0 env-limited); rc.5 `fail` (31 / 29 / 1 / 0).
+
 This worktree **does** boot the product at this HEAD (measured rounds 58–60, `D-BOOT-FEASIBILITY.md` §2/§11/
 §12): the `node_modules` link resolves, `tsc` runs from the main install, and a real `dsh web` host serves a
 centre-configured row. The earlier statement that the link points at a nonexistent pnpm store was true only

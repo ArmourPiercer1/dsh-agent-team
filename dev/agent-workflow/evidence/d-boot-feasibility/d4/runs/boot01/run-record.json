@@ -1,9 +1,9 @@
 {
   "schema": "u5-run-record/1",
-  "runId": "a5sf-live-d4-2026-11-24T06-12-24-752Z-b1",
+  "runId": "a5sf-live-d4-2026-11-24T13-49-47-450Z-b1",
   "suite": "a5sf-live-d4-probe",
   "recordClass": "DEV-LIVE",
-  "startedAt": "2026-11-24T06:12:24.752Z",
+  "startedAt": "2026-11-24T13:49:47.450Z",
   "selectedCases": [
     "d4:enablement",
     "d4:officer-up",
@@ -56,9 +56,9 @@
       "snapshotDigest": "9e2a211ff34196c68fd8db5a0d0d19af124df8fd949190c9c6b990cf3600ede8"
     },
     "candidate": {
-      "head": "931711c9829f4bf641bb7cebc4b4df45662c1d09",
-      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
-      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+      "head": "65481f2f6eb0bd684e83cfa1e43e3c5268eb9de9",
+      "hostSha": "9c2670d3bce5275e0d1610272958121af87787bb",
+      "baseline": "9c2670d3bce5275e0d1610272958121af87787bb"
     },
     "grant": {
       "grantId": "devlive-fs-search-1",
@@ -69,8 +69,8 @@
     "recordClass": "DEV-LIVE",
     "compositionDrops": [],
     "layout": "centre",
-    "teamSha": "931711c9829f4bf641bb7cebc4b4df45662c1d09",
-    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "teamSha": "65481f2f6eb0bd684e83cfa1e43e3c5268eb9de9",
+    "hostSha": "9c2670d3bce5275e0d1610272958121af87787bb",
     "note": "DEV-LIVE probe: a blocker measurement, never a candidate claim and never an acceptance driver",
     "driver": "probe-d4-routed-wake"
   },
@@ -78,7 +78,7 @@
     {
       "id": "d4:enablement",
       "verdict": "PASS",
-      "at": "2026-11-24T06:22:23.286Z",
+      "at": "2026-11-24T13:56:34.853Z",
       "proposition": "a COHERENT Alpha.6 row (v5 reviewRouting + centreStatePath + absolute alpha6WakeIntentPath) is ENABLED — the host boots, the TeamSession exists, and the row is not refused",
       "probeVerdict": "PROVEN",
       "failing": [],
@@ -96,7 +96,7 @@
         {
           "id": "team-session-served",
           "ok": true,
-          "detail": "teamSession={\"rootSessionId\":\"session-dboot-d4-root\",\"blueprintId\":\"team.dboot.d4.v5\",\"revision\":\"1\",\"contentHash\":\"sha256:f493684edea5618009729182f096f75fcd2f4c27cc7cfdeb53947de3e883e6fd\",\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T06-12-24Z/workspace\",\"createdAt\":\"2026-11-24T06:14:50.351Z\",\"generation\":11}"
+          "detail": "teamSession={\"rootSessionId\":\"session-dboot-d4-root\",\"blueprintId\":\"team.dboot.d4.v5\",\"revision\":\"1\",\"contentHash\":\"sha256:569be7e3a02a0b25767027261dc6366bc2fde8495181f3d286759e4a80c1a2fc\",\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-49-47Z-next/workspace\",\"createdAt\":\"2026-11-24T13:51:21.182Z\",\"generation\":13}"
         },
         {
           "id": "no-alpha6-refusal-in-host-log",
@@ -113,7 +113,7 @@
     {
       "id": "d4:officer-up",
       "verdict": "PASS",
-      "at": "2026-11-24T06:22:23.286Z",
+      "at": "2026-11-24T13:56:34.853Z",
       "proposition": "the Officer MemberTemplate comes up as its own Member instance with a bound child session, and the Officer session actually runs",
       "probeVerdict": "PROVEN",
       "failing": [],
@@ -143,7 +143,7 @@
     {
       "id": "d4:officer-binding",
       "verdict": "PASS",
-      "at": "2026-11-24T06:22:23.286Z",
+      "at": "2026-11-24T13:56:34.853Z",
       "proposition": "the Officer's OWN tool call is admitted by the ONE centre under the OFFICER's binding: an allow invocation-authority fact for ITS callId in the OFFICER's own ledger, settled COMPLETED",
       "probeVerdict": "PROVEN",
       "failing": [],
@@ -173,7 +173,7 @@
     {
       "id": "d4:routed-wake",
       "verdict": "PASS",
-      "at": "2026-11-24T06:22:23.286Z",
+      "at": "2026-11-24T13:56:34.853Z",
       "proposition": "the Alpha.6 ROUTED review wake reaches a real Host end to end: a qualifying worker ask opens a durable case, the product router selects the unique Officer, the governed wake reaches the Officer's own session, the Officer settles it under its own binding, and the worker's granted call executes — with the duplicate and Sticky-Stop laws intact",
       "probeVerdict": "PROVEN",
       "failing": [],
@@ -218,7 +218,7 @@
     {
       "id": "d4:case-created",
       "verdict": "PASS",
-      "at": "2026-11-24T06:22:23.286Z",
+      "at": "2026-11-24T13:56:34.853Z",
       "proposition": "a qualifying ordinary admission ask opened a REAL durable Alpha.6 approval CASE (server-derived case id + leg ordinal + frozen operation/tool/blueprint identity), read back from the TeamDomain ledger on disk",
       "probeVerdict": "PROVEN",
       "failing": [],
@@ -236,7 +236,7 @@
         {
           "id": "approval-case-id-present",
           "ok": true,
-          "detail": "approvalCaseId=\"case-1lerntt153pjxu1skmx5j0oi\""
+          "detail": "approvalCaseId=\"case-0qj1i6v1fsu26i1cbwrwh15c\""
         },
         {
           "id": "leg-ordinal-present",
@@ -251,7 +251,7 @@
         {
           "id": "frozen-operation-identity",
           "ok": true,
-          "detail": "operationFingerprint=\"sha256:a22a3d0dfe7f6a10fc9788951a84840ed77dbcbc2cc00b5bfcda870a57af1006\" requestedEffect=\"allow\" authorityScope={\"matcher\":{\"kind\":\"exact\",\"resource\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T06-12-24Z/workspace/lane/worker-ask.txt\"},\"operationClass\":\"write\"}"
+          "detail": "operationFingerprint=\"sha256:331a96fa10853ecbe2ce299699246ca681e0994845b63bc60c1ca240c8000dda\" requestedEffect=\"allow\" authorityScope={\"matcher\":{\"kind\":\"exact\",\"resource\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-49-47Z-next/workspace/lane/worker-ask.txt\"},\"operationClass\":\"write\"}"
         },
         {
           "id": "frozen-tool-coordinate",
@@ -261,19 +261,19 @@
         {
           "id": "frozen-blueprint-and-generation",
           "ok": true,
-          "detail": "blueprintContentHash=\"sha256:f493684edea5618009729182f096f75fcd2f4c27cc7cfdeb53947de3e883e6fd\" revision=\"1\" authorityGeneration=0"
+          "detail": "blueprintContentHash=\"sha256:569be7e3a02a0b25767027261dc6366bc2fde8495181f3d286759e4a80c1a2fc\" revision=\"1\" authorityGeneration=0"
         },
         {
-          "id": "case-has-no-decision-yet",
+          "id": "captured-case-precedes-any-decision",
           "ok": true,
-          "detail": "decision facts at capture time=0"
+          "detail": "creation sequence=9 createdAt=2026-11-24T13:51:23.521Z approvalCaseId=\"case-0qj1i6v1fsu26i1cbwrwh15c\" decisions=[]"
         }
       ]
     },
     {
       "id": "d4:router-officer",
       "verdict": "PASS",
-      "at": "2026-11-24T06:22:23.286Z",
+      "at": "2026-11-24T13:56:34.853Z",
       "proposition": "the product router selects the UNIQUE lawful Officer for the case leg, and a self-ask (the operation owner is the Officer) is never routed to that Officer",
       "probeVerdict": "PROVEN",
       "failing": [],
@@ -281,7 +281,7 @@
         {
           "id": "route-is-the-officer-instance",
           "ok": true,
-          "detail": "route={\"kind\":\"recipient\",\"target\":{\"kind\":\"instance\",\"instanceId\":\"inst-1crltnl0089j\",\"templateId\":\"officer\",\"routeRole\":\"officer\"},\"reason\":\"closed ordinary tool ask delegated to the dedicated Officer\",\"currentLegId\":\"ctrl-0lps27i0y7cskd1gsbeyk0a7\"} expectedOfficer=\"inst-1crltnl0089j\" memberListCalls=1"
+          "detail": "route={\"kind\":\"recipient\",\"target\":{\"kind\":\"instance\",\"instanceId\":\"inst-1crltnl0089j\",\"templateId\":\"officer\",\"routeRole\":\"officer\"},\"reason\":\"closed ordinary tool ask delegated to the dedicated Officer\",\"currentLegId\":\"ctrl-1azu9g60qxtwm906wgiug1k7\"} expectedOfficer=\"inst-1crltnl0089j\" memberListCalls=1"
         },
         {
           "id": "exactly-one-lawful-officer",
@@ -296,14 +296,14 @@
         {
           "id": "self-ask-never-routed-to-the-officer",
           "ok": true,
-          "detail": "self-ask route={\"kind\":\"recipient\",\"target\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"routeRole\":\"leader\"},\"reason\":\"actual OperationOwner is the Officer; self-ask routes to Leader\",\"currentLegId\":\"ctrl-0lps27i0y7cskd1gsbeyk0a7\"}"
+          "detail": "self-ask route={\"kind\":\"recipient\",\"target\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"routeRole\":\"leader\"},\"reason\":\"actual OperationOwner is the Officer; self-ask routes to Leader\",\"currentLegId\":\"ctrl-1azu9g60qxtwm906wgiug1k7\"}"
         }
       ]
     },
     {
       "id": "d4:wake-delivered",
       "verdict": "PASS",
-      "at": "2026-11-24T06:22:23.286Z",
+      "at": "2026-11-24T13:56:34.853Z",
       "proposition": "the routed review wake is DELIVERED through the governed delivery: exactly one durable `team-review-wake-routed` intent, one correlated `team-review-wake-delivered` confirmation, the input is machine-attributed (never human), and the management plane executed ZERO tools",
       "probeVerdict": "PROVEN",
       "failing": [],
@@ -311,22 +311,22 @@
         {
           "id": "one-routed-intent-for-the-leg",
           "ok": true,
-          "detail": "routed facts for requestId=\"ctrl-0lps27i0y7cskd1gsbeyk0a7\": [\"ctrl-0lps27i0y7cskd1gsbeyk0a7\",\"ctrl-0j9bamw1kd2zgj1nb4lga1qq\",\"ctrl-021bsie01hk8291tmmsu00zt\",\"ctrl-0x9y22l1emaicm1gsch1n1mh\"]"
+          "detail": "routed facts for requestId=\"ctrl-1azu9g60qxtwm906wgiug1k7\": [\"ctrl-1azu9g60qxtwm906wgiug1k7\",\"ctrl-0uhui9l0f1r1dm03lrhiv02k\",\"ctrl-0rsl5ae1ujhfx11gnex981ly\",\"ctrl-1kuqnbf1ct56os0n07b8l0fb\"]"
         },
         {
           "id": "one-correlated-confirmation",
           "ok": true,
-          "detail": "requestToken=\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A0c6d240e\" confirmations=1 correlation=true"
+          "detail": "requestToken=\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A165792f7\" confirmations=1 correlation=true"
         },
         {
           "id": "intent-names-the-officer-session",
           "ok": true,
-          "detail": "intent payload={\"action\":\"review-wake\",\"at\":\"2026-11-24T06:14:52.195Z\",\"deliveredToSessionId\":\"session-team-child-1d56dbb16a118ba3573db3c4b2641997\",\"recipientInstanceId\":\"inst-1crltnl0089j\",\"requestId\":\"ctrl-0lps27i0y7cskd1gsbeyk0a7\",\"requestToken\":\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A0c6d240e\",\"routeRole\":\"officer\"}"
+          "detail": "intent payload={\"action\":\"review-wake\",\"at\":\"2026-11-24T13:51:23.538Z\",\"deliveredToSessionId\":\"session-team-child-1d56dbb16a118ba3573db3c4b2641997\",\"recipientInstanceId\":\"inst-1crltnl0089j\",\"requestId\":\"ctrl-1azu9g60qxtwm906wgiug1k7\",\"requestToken\":\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A165792f7\",\"routeRole\":\"officer\"}"
         },
         {
           "id": "intent-carries-the-review-action",
           "ok": true,
-          "detail": "intent payload action=\"review-wake\" at=\"2026-11-24T06:14:52.195Z\" intentDirFiles=[]"
+          "detail": "intent payload action=\"review-wake\" at=\"2026-11-24T13:51:23.538Z\" intentDirFiles=[]"
         },
         {
           "id": "machine-attribution-not-human",
@@ -343,7 +343,7 @@
     {
       "id": "d4:officer-decides",
       "verdict": "PASS",
-      "at": "2026-11-24T06:22:23.286Z",
+      "at": "2026-11-24T13:56:34.853Z",
       "proposition": "the Officer is woken in ITS OWN session and its OWN `team_resolve_control` is admitted under ITS binding (a durable invocation-authority allow for its call, in its centre ledger), settling the case",
       "probeVerdict": "PROVEN",
       "failing": [],
@@ -356,12 +356,12 @@
         {
           "id": "officer-issued-its-own-resolve",
           "ok": true,
-          "detail": "callId=\"call-d4-officer-resolve-ctrl-0lps27i0y7cskd1gsbeyk0a7\" found=true result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-0lps27i0y7cskd1gsbeyk0a7\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targ\""
+          "detail": "callId=\"call-d4-officer-resolve-ctrl-1azu9g60qxtwm906wgiug1k7\" found=true result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1azu9g60qxtwm906wgiug1k7\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targ\""
         },
         {
           "id": "resolve-admitted-under-its-own-binding",
           "ok": true,
-          "detail": "invocation-authority allow facts for \"call-d4-officer-resolve-ctrl-0lps27i0y7cskd1gsbeyk0a7\"=[{\"instanceId\":\"inst-1crltnl0089j\",\"axis\":\"team.control\",\"decision\":\"allow\"}]"
+          "detail": "invocation-authority allow facts for \"call-d4-officer-resolve-ctrl-1azu9g60qxtwm906wgiug1k7\"=[{\"instanceId\":\"inst-1crltnl0089j\",\"axis\":\"team.control\",\"decision\":\"allow\"}]"
         },
         {
           "id": "settlement-completed",
@@ -378,7 +378,7 @@
     {
       "id": "d4:ask-executes-after-review",
       "verdict": "PASS",
-      "at": "2026-11-24T06:22:23.286Z",
+      "at": "2026-11-24T13:56:34.853Z",
       "proposition": "the worker's granted call EXECUTES AFTER the review decision: the durable decision precedes the tool settlement, the receipt let REAL bytes through, and the admission allow is on the ask lane",
       "probeVerdict": "PROVEN",
       "failing": [],
@@ -386,22 +386,22 @@
         {
           "id": "review-decision-is-durable",
           "ok": true,
-          "detail": "decision fact={\"requestId\":\"ctrl-0lps27i0y7cskd1gsbeyk0a7\",\"decision\":\"allow\",\"at\":\"2026-11-24T06:14:52.342Z\"}"
+          "detail": "decision fact={\"requestId\":\"ctrl-1azu9g60qxtwm906wgiug1k7\",\"decision\":\"allow\",\"at\":\"2026-11-24T13:51:23.723Z\"}"
         },
         {
           "id": "decision-precedes-execution",
           "ok": true,
-          "detail": "decisionAt=\"2026-11-24T06:14:52.342Z\" settlementTerminalAt=\"2026-11-24T06:14:52.472Z\""
+          "detail": "decisionAt=\"2026-11-24T13:51:23.723Z\" settlementTerminalAt=\"2026-11-24T13:51:23.806Z\""
         },
         {
           "id": "real-bytes-on-disk",
           "ok": true,
-          "detail": "file={\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T06-12-24Z/workspace/lane/worker-ask.txt\",\"exists\":true,\"bytes\":27,\"sha256\":\"ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3\"} expectedBytes=27"
+          "detail": "file={\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-49-47Z-next/workspace/lane/worker-ask.txt\",\"exists\":true,\"bytes\":27,\"sha256\":\"ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3\"} expectedBytes=27"
         },
         {
           "id": "worker-tool-result-not-an-error",
           "ok": true,
-          "detail": "write result=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T06-12-24Z/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+          "detail": "write result=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-49-47Z-next/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
         },
         {
           "id": "admission-allow-on-the-ask-lane",
@@ -418,7 +418,7 @@
     {
       "id": "d4:duplicate-route",
       "verdict": "PASS",
-      "at": "2026-11-24T06:22:23.286Z",
+      "at": "2026-11-24T13:56:34.853Z",
       "proposition": "a duplicate route for the SAME leg produces exactly ONE wake: one delivery intent, one confirmation, one input accepted by the Officer session, and the duplicate attempt is reported as a convergent no-op (never a second model-visible wake)",
       "probeVerdict": "PROVEN",
       "failing": [],
@@ -446,14 +446,14 @@
         {
           "id": "duplicate-is-a-no-op",
           "ok": true,
-          "detail": "converged=true detail={\"requestId\":\"ctrl-0j9bamw1kd2zgj1nb4lga1qq\",\"requestToken\":\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3Afcb6ea3d\",\"intentAt\":\"2026-11-24T06:14:52.547Z\",\"decisionAt\":\"2026-11-24T06:14:52.693Z\"}"
+          "detail": "converged=true detail={\"requestId\":\"ctrl-0uhui9l0f1r1dm03lrhiv02k\",\"requestToken\":\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3Aebabf3a0\",\"intentAt\":\"2026-11-24T13:51:23.907Z\",\"decisionAt\":\"2026-11-24T13:51:24.085Z\"}"
         }
       ]
     },
     {
       "id": "d4:sticky-stop",
       "verdict": "PASS",
-      "at": "2026-11-24T06:22:23.286Z",
+      "at": "2026-11-24T13:56:34.853Z",
       "proposition": "a machine-delivered review wake does NOT clear a HUMAN Sticky Stop: the stop marker survives a machine wake attempt, the stopped Officer receives NO wake input from it, and only an explicit human interaction resumes the latch",
       "probeVerdict": "PROVEN",
       "failing": [],
@@ -466,7 +466,7 @@
         {
           "id": "machine-wake-attempted",
           "ok": true,
-          "detail": "machine attempt={\"holdLanded\":true,\"holdStatus\":200,\"cancelStatus\":200,\"resumeStatus\":200,\"thirdRequestId\":\"ctrl-021bsie01hk8291tmmsu00zt\"}"
+          "detail": "machine attempt={\"holdLanded\":true,\"holdStatus\":200,\"cancelStatus\":200,\"resumeStatus\":200,\"thirdRequestId\":\"ctrl-0rsl5ae1ujhfx11gnex981ly\"}"
         },
         {
           "id": "stop-survives-the-machine-wake",
@@ -488,7 +488,7 @@
     {
       "id": "d4:refusal",
       "verdict": "PASS",
-      "at": "2026-11-24T06:22:23.286Z",
+      "at": "2026-11-24T13:56:34.853Z",
       "proposition": "the refusal side still works for an incoherent row: the SAME v5 document WITHOUT the absolute wake-intent path is refused by the closed enablement rule, the refusal is recorded, the team is absent and no wake exists",
       "probeVerdict": "PROVEN",
       "failing": [],
@@ -501,7 +501,7 @@
         {
           "id": "refusal-recorded",
           "ok": true,
-          "detail": "deny facts=[{\"refusalCode\":\"ADMISSION_ALPHA6_UNAVAILABLE\",\"axis\":\"host.service\",\"callId\":\"alpha6:47966b94-7af0-4884-a559-cf5179796dd3:0\"}]"
+          "detail": "deny facts=[{\"refusalCode\":\"ADMISSION_ALPHA6_UNAVAILABLE\",\"axis\":\"host.service\",\"callId\":\"alpha6:43629441-7519-4354-955f-5ad93cd5ce7f:0\"}]"
         },
         {
           "id": "refusal-is-not-a-route",
@@ -518,7 +518,7 @@
     {
       "id": "d4:ask-execute",
       "verdict": "PASS",
-      "at": "2026-11-24T06:22:23.286Z",
+      "at": "2026-11-24T13:56:34.853Z",
       "proposition": "a Member `write` whose disposition is `ask` raises a REAL Control request, is approved through the REAL control path, and then executes: the confined Provider verifies the minted receipt and writes the exact approved bytes, settled COMPLETED",
       "probeVerdict": "PROVEN",
       "failing": [],
@@ -531,7 +531,7 @@
         {
           "id": "approved-through-real-control-path",
           "ok": true,
-          "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-0lps27i0y7cskd1gsbeyk0a7\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:a22a3d0dfe7f6a10fc9788951a84840ed77dbcbc\""
+          "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1azu9g60qxtwm906wgiug1k7\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:331a96fa10853ecbe2ce299699246ca681e09948\""
         },
         {
           "id": "admission-fact-allow-lane-ask",
@@ -541,7 +541,7 @@
         {
           "id": "write-tool-result-not-an-error",
           "ok": true,
-          "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T06-12-24Z/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+          "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-49-47Z-next/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
         },
         {
           "id": "real-bytes-on-disk",
@@ -558,7 +558,7 @@
     {
       "id": "d4:ask-execute-2",
       "verdict": "PASS",
-      "at": "2026-11-24T06:22:23.286Z",
+      "at": "2026-11-24T13:56:34.853Z",
       "proposition": "a SECOND Member `write` (different path, different bytes) raises its OWN Control request, is approved, and executes: the receipt is bound to THAT operation, both files hold the bytes of their own approval, settled COMPLETED",
       "probeVerdict": "PROVEN",
       "failing": [],
@@ -571,7 +571,7 @@
         {
           "id": "second-approved-through-real-control-path",
           "ok": true,
-          "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-0j9bamw1kd2zgj1nb4lga1qq\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write-2\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:a14b23003b68ef94986d7dc5da45c05cd5447e\""
+          "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-0uhui9l0f1r1dm03lrhiv02k\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write-2\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:5feff29bc030650e2f4bfe87769024bb848fc9\""
         },
         {
           "id": "second-admission-fact-allow-lane-ask",
@@ -581,7 +581,7 @@
         {
           "id": "second-write-tool-result-not-an-error",
           "ok": true,
-          "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T06-12-24Z/workspace/lane/worker-ask-2.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+          "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-49-47Z-next/workspace/lane/worker-ask-2.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
         },
         {
           "id": "second-real-bytes-on-disk",
@@ -608,7 +608,7 @@
     {
       "id": "d4:ask-execute-process",
       "verdict": "FAIL",
-      "at": "2026-11-24T06:22:23.286Z",
+      "at": "2026-11-24T13:56:34.853Z",
       "proposition": "a Member `bash` whose disposition is `ask` raises a REAL Control request, is approved through the REAL control path, and then executes under the confined profile: the in-lane write lands with the exact bytes, the out-of-lane write produces NOTHING, and the execution settles COMPLETED",
       "probeVerdict": "REFUTED",
       "failing": [
@@ -625,7 +625,7 @@
         {
           "id": "approved-through-real-control-path",
           "ok": true,
-          "detail": "durable control-decision-recorded decision=allow decider={\"instanceId\":\"inst-1crltnl0089j\",\"kind\":\"instance\",\"role\":\"member\"} requestId=ctrl-0x9y22l1emaicm1gsch1n1mh"
+          "detail": "durable control-decision-recorded decision=allow decider={\"instanceId\":\"inst-1crltnl0089j\",\"kind\":\"instance\",\"role\":\"member\"} requestId=ctrl-1kuqnbf1ct56os0n07b8l0fb"
         },
         {
           "id": "process-admission-fact-allow",
@@ -657,7 +657,7 @@
     {
       "id": "d4:ask-denied",
       "verdict": "PASS",
-      "at": "2026-11-24T06:22:23.286Z",
+      "at": "2026-11-24T13:56:34.853Z",
       "proposition": "the SAME live `write` ask denied through the real control path mints nothing and writes nothing: zero bytes on disk, a recorded deny fact, and a REFUSED / not-started settlement",
       "probeVerdict": "PROVEN",
       "failing": [],
@@ -670,7 +670,7 @@
         {
           "id": "denied-through-real-control-path",
           "ok": true,
-          "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1xxrzo21k29yc31rawhls0qn\\\",\\\"decision\\\":\\\"deny\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":4,\\\"decisionSequence\\\":5,\\\"createdAt\\\":\\\"2026-11-24T06:19:53.207\""
+          "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1xxrzo21k29yc31rawhls0qn\\\",\\\"decision\\\":\\\"deny\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":4,\\\"decisionSequence\\\":5,\\\"createdAt\\\":\\\"2026-11-24T13:54:51.361\""
         },
         {
           "id": "deny-fact-recorded",
@@ -692,7 +692,7 @@
     {
       "id": "d4:ask-stopped",
       "verdict": "PASS",
-      "at": "2026-11-24T06:22:23.286Z",
+      "at": "2026-11-24T13:56:34.853Z",
       "proposition": "a live `write` ask that is STOPPED while pending is refused with the product Stop code: zero bytes on disk and a REFUSED / not-started settlement, never an execution",
       "probeVerdict": "PROVEN",
       "failing": [],
@@ -730,8 +730,8 @@
     "thisRunCount": 6,
     "thisRunEntries": [
       {
-        "at": "2026-11-24T06:12:24.783Z",
-        "runId": "a5sf-live-d4-2026-11-24T06-12-24-752Z-b1",
+        "at": "2026-11-24T13:49:47.499Z",
+        "runId": "a5sf-live-d4-2026-11-24T13-49-47-450Z-b1",
         "suite": "a5sf-read",
         "recordClass": "DEV-LIVE",
         "kind": "budget-intent",
@@ -742,28 +742,28 @@
         "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the FS Provider face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
         "face": "FS Provider",
         "worldLine": "u5a5sfdev1",
-        "headCommit": "931711c9829f4bf641bb7cebc4b4df45662c1d09",
+        "headCommit": "65481f2f6eb0bd684e83cfa1e43e3c5268eb9de9",
         "plannedStarts": 2
       },
       {
-        "at": "2026-11-24T06:13:41.249Z",
-        "runId": "a5sf-live-d4-2026-11-24T06-12-24-752Z-b1",
+        "at": "2026-11-24T13:51:16.587Z",
+        "runId": "a5sf-live-d4-2026-11-24T13-49-47-450Z-b1",
         "suite": "a5sf-live-d4-probe",
         "recordClass": "DEV-LIVE",
-        "world": "u5u5a5sfdev1-20261124T06-12-24Z",
+        "world": "u5u5a5sfdev1-20261124T13-49-47Z-next",
         "phase": "a5sf-live-d4-boot1"
       },
       {
-        "at": "2026-11-24T06:16:16.503Z",
-        "runId": "a5sf-live-d4-2026-11-24T06-12-24-752Z-b1",
+        "at": "2026-11-24T13:53:02.317Z",
+        "runId": "a5sf-live-d4-2026-11-24T13-49-47-450Z-b1",
         "suite": "a5sf-live-d4-probe",
         "recordClass": "DEV-LIVE",
-        "world": "u5u5a5sfdev1-20261124T06-14-59Z",
+        "world": "u5u5a5sfdev1-20261124T13-51-31Z-next",
         "phase": "a5sf-live-d4-boot1-refusal"
       },
       {
-        "at": "2026-11-24T06:17:25.338Z",
-        "runId": "a5sf-live-d4-2026-11-24T06-12-24-752Z-b1",
+        "at": "2026-11-24T13:53:13.945Z",
+        "runId": "a5sf-live-d4-2026-11-24T13-49-47-450Z-b1",
         "suite": "a5sf-read",
         "recordClass": "DEV-LIVE",
         "kind": "budget-intent",
@@ -774,23 +774,23 @@
         "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the FS Provider face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
         "face": "FS Provider",
         "worldLine": "u5a5sfdev1",
-        "headCommit": "931711c9829f4bf641bb7cebc4b4df45662c1d09",
+        "headCommit": "65481f2f6eb0bd684e83cfa1e43e3c5268eb9de9",
         "plannedStarts": 2
       },
       {
-        "at": "2026-11-24T06:18:42.958Z",
-        "runId": "a5sf-live-d4-2026-11-24T06-12-24-752Z-b1",
+        "at": "2026-11-24T13:54:45.239Z",
+        "runId": "a5sf-live-d4-2026-11-24T13-49-47-450Z-b1",
         "suite": "a5sf-live-d4-probe",
         "recordClass": "DEV-LIVE",
-        "world": "u5u5a5sfdev1-20261124T06-17-25Z",
+        "world": "u5u5a5sfdev1-20261124T13-53-13Z-next",
         "phase": "a5sf-live-d4-boot1-ask-denied"
       },
       {
-        "at": "2026-11-24T06:21:12.126Z",
-        "runId": "a5sf-live-d4-2026-11-24T06-12-24-752Z-b1",
+        "at": "2026-11-24T13:56:25.776Z",
+        "runId": "a5sf-live-d4-2026-11-24T13-49-47-450Z-b1",
         "suite": "a5sf-live-d4-probe",
         "recordClass": "DEV-LIVE",
-        "world": "u5u5a5sfdev1-20261124T06-19-54Z",
+        "world": "u5u5a5sfdev1-20261124T13-54-54Z-next",
         "phase": "a5sf-live-d4-boot1-ask-stopped"
       }
     ]
@@ -798,9 +798,9 @@
   "candidateClaimEligibility": {
     "eligible": false,
     "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
-    "reason": "run 'a5sf-live-d4-2026-11-24T06-12-24-752Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+    "reason": "run 'a5sf-live-d4-2026-11-24T13-49-47-450Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
   },
   "overall": "FAIL",
   "partial": false,
-  "finishedAt": "2026-11-24T06:22:23.287Z"
+  "finishedAt": "2026-11-24T13:56:34.853Z"
 }

@@ -1,9 +1,9 @@
 {
-  "at": "2026-11-23T10:00:33.026Z",
-  "head": "b67a3eb38d617b2aa7dbe0cddd2fb9f2a49e334f",
-  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use",
-  "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
-  "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "at": "2026-11-24T13:38:40.762Z",
+  "head": "65481f2f6eb0bd684e83cfa1e43e3c5268eb9de9",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next",
+  "hostSha": "9c2670d3bce5275e0d1610272958121af87787bb",
+  "pin": "9c2670d3bce5275e0d1610272958121af87787bb",
   "driverSha256": "4125ec49833b7bac962132a175b79def46de0bd54c1b343a066356113e8196a6",
   "jsSubstitutions": [
     {

@@ -1,6 +1,6 @@
 {
   "executionId": "exec-9ffe85796938c28e962b77ae4692c7788bc5e6c0",
-  "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T06-22-23Z/centre/settlement/inst-1crltnl0089j/exec-9ffe85796938c28e962b77ae4692c7788bc5e6c0.settlement.json",
+  "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-56-34Z-next/centre/settlement/inst-1crltnl0089j/exec-9ffe85796938c28e962b77ae4692c7788bc5e6c0.settlement.json",
   "present": true,
   "state": "COMPLETED",
   "bodyOutcome": "completed",
@@ -10,5 +10,5 @@
     "RUNNING",
     "COMPLETED"
   ],
-  "terminalAt": "2026-11-24T06:24:50.954Z"
+  "terminalAt": "2026-11-24T13:58:11.899Z"
 }
