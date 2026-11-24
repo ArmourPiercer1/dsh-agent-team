@@ -1,0 +1,329 @@
+{
+  "decisionFact": null,
+  "routedFact": null,
+  "managementExecutions": [],
+  "judges": {
+    "caseCreated": {
+      "proposition": "a qualifying ordinary admission ask opened a REAL durable Alpha.6 approval CASE (server-derived case id + leg ordinal + frozen operation/tool/blueprint identity), read back from the TeamDomain ledger on disk",
+      "verdict": "REFUTED",
+      "clauses": [
+        {
+          "id": "read-back-from-the-ledger",
+          "ok": false,
+          "detail": "factFile=null sequence=null"
+        },
+        {
+          "id": "durable-row-is-an-approval-ask",
+          "ok": false,
+          "detail": "kind=null actionName=null"
+        },
+        {
+          "id": "approval-case-id-present",
+          "ok": false,
+          "detail": "approvalCaseId=null"
+        },
+        {
+          "id": "leg-ordinal-present",
+          "ok": false,
+          "detail": "legOrdinal=null"
+        },
+        {
+          "id": "case-rung-is-the-leader",
+          "ok": false,
+          "detail": "reviewAuthority=null requiredAuthorityAtCreation=null"
+        },
+        {
+          "id": "frozen-operation-identity",
+          "ok": false,
+          "detail": "operationFingerprint=null requestedEffect=null authorityScope=null"
+        },
+        {
+          "id": "frozen-tool-coordinate",
+          "ok": false,
+          "detail": "coordinate=[null,null,null]"
+        },
+        {
+          "id": "frozen-blueprint-and-generation",
+          "ok": false,
+          "detail": "blueprintContentHash=null revision=null authorityGeneration=null"
+        },
+        {
+          "id": "case-has-no-decision-yet",
+          "ok": true,
+          "detail": "decision facts at capture time=0"
+        }
+      ],
+      "failing": [
+        "read-back-from-the-ledger",
+        "durable-row-is-an-approval-ask",
+        "approval-case-id-present",
+        "leg-ordinal-present",
+        "case-rung-is-the-leader",
+        "frozen-operation-identity",
+        "frozen-tool-coordinate",
+        "frozen-blueprint-and-generation"
+      ]
+    },
+    "routerOfficer": {
+      "proposition": "the product router selects the UNIQUE lawful Officer for the case leg, and a self-ask (the operation owner is the Officer) is never routed to that Officer",
+      "verdict": "REFUTED",
+      "clauses": [
+        {
+          "id": "route-is-the-officer-instance",
+          "ok": false,
+          "detail": "route=null expectedOfficer=\"inst-1crltnl0089j\" memberListCalls=0"
+        },
+        {
+          "id": "exactly-one-lawful-officer",
+          "ok": true,
+          "detail": "active officer candidates=1"
+        },
+        {
+          "id": "requester-is-not-the-reviewer",
+          "ok": false,
+          "detail": "requester=\"\" officer=\"inst-1crltnl0089j\""
+        },
+        {
+          "id": "self-ask-never-routed-to-the-officer",
+          "ok": false,
+          "detail": "self-ask route=null"
+        }
+      ],
+      "failing": [
+        "route-is-the-officer-instance",
+        "requester-is-not-the-reviewer",
+        "self-ask-never-routed-to-the-officer"
+      ]
+    },
+    "wakeDelivered": {
+      "proposition": "the routed review wake is DELIVERED through the governed delivery: exactly one durable `team-review-wake-routed` intent, one correlated `team-review-wake-delivered` confirmation, the input is machine-attributed (never human), and the management plane executed ZERO tools",
+      "verdict": "REFUTED",
+      "clauses": [
+        {
+          "id": "one-routed-intent-for-the-leg",
+          "ok": false,
+          "detail": "routed facts for requestId=null: [\"ctrl-1wnbavh1snvzcq07odnlj1oh\",\"ctrl-14ycwmq12utn1h1nzb45o15u\",\"ctrl-1bpkvn31v7n9hk1rniex110g\",\"ctrl-121adzh0t6tm2i180hs3f1dw\"]"
+        },
+        {
+          "id": "one-correlated-confirmation",
+          "ok": false,
+          "detail": "requestToken=\"\" confirmations=0 correlation=false"
+        },
+        {
+          "id": "intent-names-the-officer-session",
+          "ok": false,
+          "detail": "intent payload=null"
+        },
+        {
+          "id": "intent-carries-the-review-action",
+          "ok": false,
+          "detail": "intent payload action=null at=null intentDirFiles=[]"
+        },
+        {
+          "id": "machine-attribution-not-human",
+          "ok": true,
+          "detail": "wake input sources=[\"plugin:dsh-agent-team\",\"plugin:dsh-agent-team\",\"plugin:dsh-agent-team\",\"plugin:dsh-agent-team\"] expected=\"plugin:dsh-agent-team\""
+        },
+        {
+          "id": "zero-management-plane-tool-executions",
+          "ok": true,
+          "detail": "settlements naming the wake token or the review-wake tool=0"
+        }
+      ],
+      "failing": [
+        "one-routed-intent-for-the-leg",
+        "one-correlated-confirmation",
+        "intent-names-the-officer-session",
+        "intent-carries-the-review-action"
+      ]
+    },
+    "officerDecides": {
+      "proposition": "the Officer is woken in ITS OWN session and its OWN `team_resolve_control` is admitted under ITS binding (a durable invocation-authority allow for its call, in its centre ledger), settling the case",
+      "verdict": "REFUTED",
+      "clauses": [
+        {
+          "id": "officer-woken-in-its-own-session",
+          "ok": true,
+          "detail": "officer session=\"session-team-child-1d56dbb16a118ba3573db3c4b2641997\" wake-for-this-leg=false"
+        },
+        {
+          "id": "officer-issued-its-own-resolve",
+          "ok": false,
+          "detail": "callId=\"call-d4-officer-resolve-null\" found=false result=null"
+        },
+        {
+          "id": "resolve-admitted-under-its-own-binding",
+          "ok": false,
+          "detail": "invocation-authority allow facts for \"call-d4-officer-resolve-null\"=[]"
+        },
+        {
+          "id": "settlement-completed",
+          "ok": false,
+          "detail": "settlement={\"state\":null,\"bodyOutcome\":null}"
+        },
+        {
+          "id": "leader-did-not-decide",
+          "ok": true,
+          "detail": "leader resolve calls for the leg=false"
+        }
+      ],
+      "failing": [
+        "officer-issued-its-own-resolve",
+        "resolve-admitted-under-its-own-binding",
+        "settlement-completed"
+      ]
+    },
+    "askExecutesAfterReview": {
+      "proposition": "the worker's granted call EXECUTES AFTER the review decision: the durable decision precedes the tool settlement, the receipt let REAL bytes through, and the admission allow is on the ask lane",
+      "verdict": "REFUTED",
+      "clauses": [
+        {
+          "id": "review-decision-is-durable",
+          "ok": false,
+          "detail": "decision fact={\"requestId\":null,\"decision\":null,\"at\":null}"
+        },
+        {
+          "id": "decision-precedes-execution",
+          "ok": false,
+          "detail": "decisionAt=null settlementTerminalAt=\"2026-11-24T04:51:48.617Z\""
+        },
+        {
+          "id": "real-bytes-on-disk",
+          "ok": true,
+          "detail": "file={\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T04-49-21Z/workspace/lane/worker-ask.txt\",\"exists\":true,\"bytes\":27,\"sha256\":\"ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3\"} expectedBytes=27"
+        },
+        {
+          "id": "worker-tool-result-not-an-error",
+          "ok": true,
+          "detail": "write result=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T04-49-21Z/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+        },
+        {
+          "id": "admission-allow-on-the-ask-lane",
+          "ok": true,
+          "detail": "allow fact={\"callId\":\"call-d4-worker-write\",\"axis\":\"fs.write\",\"decision\":\"allow\"}"
+        },
+        {
+          "id": "settlement-completed",
+          "ok": true,
+          "detail": "settlement={\"state\":\"COMPLETED\",\"bodyOutcome\":\"completed\"}"
+        }
+      ],
+      "failing": [
+        "review-decision-is-durable",
+        "decision-precedes-execution"
+      ]
+    },
+    "duplicateRoute": {
+      "proposition": "a duplicate route for the SAME leg produces exactly ONE wake: one delivery intent, one confirmation, one input accepted by the Officer session, and the duplicate attempt is reported as a convergent no-op (never a second model-visible wake)",
+      "verdict": "PROVEN",
+      "clauses": [
+        {
+          "id": "duplicate-attempt-was-made",
+          "ok": true,
+          "detail": "attempted=true via=\"request-creation notifier + reviewer turn/end re-collection (the product's own two route call sites)\""
+        },
+        {
+          "id": "one-delivery-intent",
+          "ok": true,
+          "detail": "routed intent facts for the token=1"
+        },
+        {
+          "id": "one-confirmation",
+          "ok": true,
+          "detail": "delivered confirmation facts for the token=1"
+        },
+        {
+          "id": "one-model-visible-wake",
+          "ok": true,
+          "detail": "wake inputs in the Officer session=1"
+        },
+        {
+          "id": "duplicate-is-a-no-op",
+          "ok": true,
+          "detail": "converged=true detail={\"requestId\":\"ctrl-14ycwmq12utn1h1nzb45o15u\",\"requestToken\":\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A1784700b\",\"intentAt\":\"2026-11-24T04:51:48.704Z\",\"decisionAt\":\"2026-11-24T04:51:48.856Z\"}"
+        }
+      ],
+      "failing": []
+    },
+    "stickyStop": {
+      "proposition": "a machine-delivered review wake does NOT clear a HUMAN Sticky Stop: the stop marker survives a machine wake attempt, the stopped Officer receives NO wake input from it, and only an explicit human interaction resumes the latch",
+      "verdict": "PROVEN",
+      "clauses": [
+        {
+          "id": "human-sticky-stop-marked",
+          "ok": true,
+          "detail": "stop markers before the machine attempt=[\"stopped-20765e07.json\"]"
+        },
+        {
+          "id": "machine-wake-attempted",
+          "ok": true,
+          "detail": "machine attempt={\"holdLanded\":true,\"holdStatus\":200,\"cancelStatus\":200,\"resumeStatus\":200,\"thirdRequestId\":\"ctrl-1wnbavh1snvzcq07odnlj1oh\"}"
+        },
+        {
+          "id": "stop-survives-the-machine-wake",
+          "ok": true,
+          "detail": "stop markers after the machine attempt=[\"stopped-20765e07.json\"]"
+        },
+        {
+          "id": "no-wake-input-while-stopped",
+          "ok": true,
+          "detail": "wake inputs between the stop and the human resume=0"
+        },
+        {
+          "id": "human-resume-is-the-only-clear",
+          "ok": true,
+          "detail": "human resume cleared the marker={\"status\":200,\"markersAfterResume\":0}"
+        }
+      ],
+      "failing": []
+    }
+  },
+  "routedWake": {
+    "proposition": "the Alpha.6 ROUTED review wake reaches a real Host end to end: a qualifying worker ask opens a durable case, the product router selects the unique Officer, the governed wake reaches the Officer's own session, the Officer settles it under its own binding, and the worker's granted call executes — with the duplicate and Sticky-Stop laws intact",
+    "verdict": "REFUTED",
+    "clauses": [
+      {
+        "id": "d4:case-created-proven",
+        "ok": false,
+        "detail": "REFUTED failing=[\"read-back-from-the-ledger\",\"durable-row-is-an-approval-ask\",\"approval-case-id-present\",\"leg-ordinal-present\",\"case-rung-is-the-leader\",\"frozen-operation-identity\",\"frozen-tool-coordinate\",\"frozen-blueprint-and-generation\"]"
+      },
+      {
+        "id": "d4:router-officer-proven",
+        "ok": false,
+        "detail": "REFUTED failing=[\"route-is-the-officer-instance\",\"requester-is-not-the-reviewer\",\"self-ask-never-routed-to-the-officer\"]"
+      },
+      {
+        "id": "d4:wake-delivered-proven",
+        "ok": false,
+        "detail": "REFUTED failing=[\"one-routed-intent-for-the-leg\",\"one-correlated-confirmation\",\"intent-names-the-officer-session\",\"intent-carries-the-review-action\"]"
+      },
+      {
+        "id": "d4:officer-decides-proven",
+        "ok": false,
+        "detail": "REFUTED failing=[\"officer-issued-its-own-resolve\",\"resolve-admitted-under-its-own-binding\",\"settlement-completed\"]"
+      },
+      {
+        "id": "d4:ask-executes-after-review-proven",
+        "ok": false,
+        "detail": "REFUTED failing=[\"review-decision-is-durable\",\"decision-precedes-execution\"]"
+      },
+      {
+        "id": "d4:duplicate-route-proven",
+        "ok": true,
+        "detail": "PROVEN"
+      },
+      {
+        "id": "d4:sticky-stop-proven",
+        "ok": true,
+        "detail": "PROVEN"
+      }
+    ],
+    "failing": [
+      "d4:case-created-proven",
+      "d4:router-officer-proven",
+      "d4:wake-delivered-proven",
+      "d4:officer-decides-proven",
+      "d4:ask-executes-after-review-proven"
+    ]
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "stoppedBefore": true,
+  "stoppedMarkersBefore": [
+    "stopped-20765e07.json"
+  ],
+  "machineAttempted": true,
+  "machineAttempt": {
+    "holdLanded": true,
+    "holdStatus": 200,
+    "cancelStatus": 200,
+    "resumeStatus": 200,
+    "thirdRequestId": "ctrl-1kg650m1bledxx0vwjh3w1un"
+  },
+  "stoppedAfter": true,
+  "stoppedMarkersAfter": [
+    "stopped-20765e07.json"
+  ],
+  "wakeInputsWhileStopped": 0,
+  "humanResumeCleared": true,
+  "humanResume": {
+    "status": 200,
+    "markersAfterResume": 0
+  },
+  "resumedWakeDelivered": true,
+  "write3": {
+    "settled": true,
+    "file": {
+      "exists": true,
+      "bytes": 29,
+      "sha256": "2b28991b1453c91d156a15f550556549cbdbcb5856aa833b3fcfa7d5b3d1ea0e"
+    },
+    "settlement": "COMPLETED",
+    "result": false
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "stoppedBefore": true,
+  "stoppedMarkersBefore": [
+    "stopped-20765e07.json"
+  ],
+  "machineAttempted": true,
+  "machineAttempt": {
+    "holdLanded": true,
+    "holdStatus": 200,
+    "cancelStatus": 200,
+    "resumeStatus": 200,
+    "thirdRequestId": "ctrl-1i4269d05bvoqi0dwifrb0rs"
+  },
+  "stoppedAfter": true,
+  "stoppedMarkersAfter": [
+    "stopped-20765e07.json"
+  ],
+  "wakeInputsWhileStopped": 0,
+  "humanResumeCleared": true,
+  "humanResume": {
+    "status": 200,
+    "markersAfterResume": 0
+  },
+  "resumedWakeDelivered": true,
+  "write3": {
+    "settled": true,
+    "file": {
+      "exists": false,
+      "bytes": null,
+      "sha256": null
+    },
+    "settlement": "FAILED",
+    "result": true
+  }
+}

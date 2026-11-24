@@ -1,0 +1,49 @@
+{
+  "askAppeared": true,
+  "ids": {
+    "officer": "inst-1crltnl0089j",
+    "worker": "inst-0ty67u70r99a",
+    "pendingRequestId": "ctrl-1bkn2f414xjzrf1pb6kxa1yy",
+    "pendingRequestId2": null,
+    "pendingRequestId3": null,
+    "pendingProcessRequestId": null
+  },
+  "askRow": {
+    "requestId": "ctrl-1bkn2f414xjzrf1pb6kxa1yy",
+    "kind": "leader-approval",
+    "targetInstanceId": "inst-0ty67u70r99a",
+    "actionName": "admission-ask",
+    "toolName": "write",
+    "correlation": "admission:call-d4-worker-write",
+    "status": "pending",
+    "createdAt": "2026-11-24T04:12:01.142Z",
+    "subject": {
+      "kind": "instance",
+      "instanceId": "inst-0ty67u70r99a"
+    },
+    "executionCoupling": "inline",
+    "requestSequence": 9,
+    "operationFingerprint": "sha256:58d58f902d50e5037ef61f80e199155a17413a3eb693008a24a32ab622517ed7",
+    "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T04-09-34Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:6e86c281a48c9254ac9f6026fc524081)"
+  },
+  "requests": [
+    {
+      "requestId": "ctrl-1bkn2f414xjzrf1pb6kxa1yy",
+      "kind": "leader-approval",
+      "targetInstanceId": "inst-0ty67u70r99a",
+      "actionName": "admission-ask",
+      "toolName": "write",
+      "correlation": "admission:call-d4-worker-write",
+      "status": "pending",
+      "createdAt": "2026-11-24T04:12:01.142Z",
+      "subject": {
+        "kind": "instance",
+        "instanceId": "inst-0ty67u70r99a"
+      },
+      "executionCoupling": "inline",
+      "requestSequence": 9,
+      "operationFingerprint": "sha256:58d58f902d50e5037ef61f80e199155a17413a3eb693008a24a32ab622517ed7",
+      "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T04-09-34Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:6e86c281a48c9254ac9f6026fc524081)"
+    }
+  ]
+}

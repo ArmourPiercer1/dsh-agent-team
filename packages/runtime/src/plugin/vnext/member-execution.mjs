@@ -125,6 +125,14 @@ export async function installMemberExecution ({
       // Rebuilt on every recheck, so a face that disappeared between the approval and the body is a
       // typed `ADMISSION_EXECUTOR_UNAVAILABLE`, not a stale allow.
       executors: executorReadinessOf(answer),
+      // ROUND 99 — the COMPOSITION's process face, for the process receipt's operation identity.
+      // The PTY face carries `program`; the confined process face carries the declared shell class
+      // on its `subprocess` spec. Neither is a Member ceiling: this grants nothing, it only names
+      // the class a process receipt must bind and the spawn point re-checks.
+      ...(answer.terminal === undefined && answer.subprocess === undefined
+        ? {}
+        : { processFace: answer.terminal ?? answer.subprocess }),
+      ...(answer.subprocess?.shellClass === undefined ? {} : { processShellClass: answer.subprocess.shellClass }),
       // The MEMBER, not the session. `agentId` used to be the session id, which put the host's identity
       // where the record's member identity belongs; they are now separate fields.
       agentId: String(instanceId),

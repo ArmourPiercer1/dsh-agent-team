@@ -74,6 +74,10 @@ export const APPROVED_ASK_RECEIPT_REFUSAL_CODES = [
     'RECEIPT_DENIED',
     'RECEIPT_BOUNDS_VIOLATION',
     'RECEIPT_INPUT_INVALID',
+    /** The process face's fixed shell class differs from the one the receipt binds. */
+    'RECEIPT_PROCESS_CLASS_MISMATCH',
+    /** The command about to be spawned differs from the command the approval named. */
+    'RECEIPT_COMMAND_MISMATCH',
 ];
 /** The Provider method each operation kind authorizes, exactly. */
 export const APPROVED_ASK_METHOD_OF_KIND = Object.freeze({
@@ -141,6 +145,14 @@ export function approvedAskOperationFingerprint(operation) {
         material.source = { canonicalPath: operation.source.canonicalPath };
         material.destination = { canonicalPath: operation.destination.canonicalPath };
     }
+    else if (operation.kind === 'process-exec') {
+        material.toolName = operation.toolName;
+        material.executionBoundary = operation.executionBoundary;
+        material.implementationOrigin = operation.implementationOrigin;
+        material.processClass = { program: operation.processClass.program, programs: [...operation.processClass.programs] };
+        material.commandSha256 = operation.commandSha256;
+        material.cwd = operation.cwd;
+    }
     else {
         material.toolName = operation.toolName;
         material.canonicalPath = operation.canonicalPath;
@@ -158,6 +170,10 @@ export function approvedAskOperationFingerprint(operation) {
             material.bytesReadBack = operation.bytesReadBack;
     }
     return `sha256:${sha256Hex(canonicalJson(material))}`;
+}
+/** Digest of the exact declared command text a process approval names. */
+export function approvedAskCommandSha256(command) {
+    return `sha256:${sha256Hex(command)}`;
 }
 /** Digest of the exact literal transformation an `editText` call receives. */
 export function approvedAskEditSha256(edit) {
@@ -325,7 +341,57 @@ export async function prepareApprovedFsOperation(input) {
     };
     return { ok: true, value: Object.freeze({ ...base, fingerprint: approvedAskOperationFingerprint({ ...base, fingerprint: '' }) }) };
 }
-/** Per-kind validation of a prepared operation. Returns the reason it is unusable, or undefined. */
+/**
+ * ROUND 99 — the process face's DECLARED TOOL SHAPES. Closed, like the FS table: a name that is
+ * not here prepares nothing, so its `ask` keeps the R4 fail-closed refusal. `bash` is the only
+ * shipped process tool whose execution authorization this product compiles.
+ */
+export const APPROVED_ASK_PROCESS_TOOL_SHAPES = Object.freeze(['bash']);
+/**
+ * Prepare the process operation an approval for `toolName` would cover.
+ *
+ * The OPERATION binds what the centre can know for THIS execution: the tool, the compiled
+ * `executionBoundary`/`implementationOrigin`, the composition's fixed shell class, the declared
+ * command text's digest and the authored working directory. It does NOT bind (and must not claim)
+ * the OS profile: that is compiled by the spawn point from the Member's three lanes, unchanged.
+ *
+ * A process ask whose execution facts are missing, or whose composition fixes no shell class, is
+ * `IO_ASK_RECEIPT_UNPREPARABLE` — refused, never executed under an approval no receipt can name.
+ */
+export function prepareApprovedProcessOperation(input) {
+    if (!APPROVED_ASK_PROCESS_TOOL_SHAPES.includes(input.toolName)) {
+        return { ok: false, code: 'IO_ASK_RECEIPT_TOOL_UNSUPPORTED', detail: `this round can prepare a process receipt for ${APPROVED_ASK_PROCESS_TOOL_SHAPES.join(' / ')}, not '${input.toolName}'` };
+    }
+    const execution = input.execution;
+    if (execution === undefined || !isNonBlank(execution.executionBoundary) || !isNonBlank(execution.implementationOrigin)) {
+        return unpreparable('the compiled per-tool answer carries no execution authorization (implementationOrigin/executionBoundary); a process ask is bound to the declaration it was admitted on');
+    }
+    const processClass = input.processClass;
+    if (processClass === undefined || !Array.isArray(processClass.programs) || processClass.programs.length === 0 ||
+        processClass.programs.some((program) => !isNonBlank(program))) {
+        return unpreparable('the composition fixes no shell class for this process face; a process receipt must bind the class it may run');
+    }
+    const args = input.arguments ?? {};
+    const command = args['command'];
+    if (typeof command !== 'string')
+        return unpreparable('the process call carries no command string');
+    const cwd = typeof args['workdir'] === 'string' ? args['workdir'] : '';
+    const base = {
+        kind: 'process-exec',
+        toolName: 'bash',
+        executionBoundary: execution.executionBoundary,
+        implementationOrigin: execution.implementationOrigin,
+        processClass: Object.freeze({
+            program: typeof processClass.program === 'string' ? processClass.program : '',
+            programs: Object.freeze([...processClass.programs].sort()),
+        }),
+        // A command that DID arrive is bound exactly; the PTY spawn point cannot compare it (the
+        // process precedes any command text) and the ADR says so.
+        commandSha256: command === '' ? null : approvedAskCommandSha256(command),
+        cwd,
+    };
+    return { ok: true, value: Object.freeze({ ...base, fingerprint: approvedAskOperationFingerprint({ ...base, fingerprint: '' }) }) };
+}
 function validateOperation(operation) {
     if (operation === undefined || operation === null)
         return 'a receipt binds the operation it authorizes';
@@ -356,6 +422,23 @@ function validateOperation(operation) {
         case 'fs-move':
             if (!isPath(operation.source) || !isPath(operation.destination))
                 return 'a move operation must carry BOTH the source and destination paths';
+            return undefined;
+        case 'process-exec':
+            if (!isNonBlank(operation.executionBoundary))
+                return 'a process operation must carry the declared executionBoundary it was approved under';
+            if (!isNonBlank(operation.implementationOrigin))
+                return 'a process operation must carry the declared implementationOrigin';
+            if (operation.processClass === undefined || operation.processClass === null)
+                return 'a process operation must carry the composition\'s fixed shell class';
+            if (!Array.isArray(operation.processClass.programs) || operation.processClass.programs.length === 0 ||
+                operation.processClass.programs.some((program) => !isNonBlank(program))) {
+                return 'a process operation must carry the admitted shell-class programs it may run (a class that admits nothing is not a class)';
+            }
+            if (operation.commandSha256 !== null && !isNonBlank(operation.commandSha256)) {
+                return 'a process operation must carry the approved command digest, or the literal null when the call carried none';
+            }
+            if (typeof operation.cwd !== 'string')
+                return 'a process operation must carry the authored working directory (an empty string when none was given)';
             return undefined;
         default:
             return `unknown approved operation kind '${String(operation.kind)}'`;
@@ -532,9 +615,16 @@ export async function authorizeAskWithReceipt(input) {
     // EXACT METHOD ↔ OPERATION KIND. A receipt minted for one operation can never authorize another:
     // a `writeText` receipt cannot satisfy `editText`, and a delete receipt cannot satisfy a write.
     const operation = receipt.operation;
-    const expectedMethod = APPROVED_ASK_METHOD_OF_KIND[operation.kind];
-    if (input.method !== expectedMethod) {
+    // The FS verifier owns the FS kinds only; a process receipt is refused here (its own verifier is
+    // `authorizeProcessAskWithReceipt`) so the two faces can never satisfy each other.
+    const expectedMethod = operation.kind === 'process-exec' ? undefined : APPROVED_ASK_METHOD_OF_KIND[operation.kind];
+    if (expectedMethod === undefined || input.method !== expectedMethod) {
         return refuse('RECEIPT_OPERATION_MISMATCH', `receipt ${receipt.receiptId} covers '${String(expectedMethod)}' (${operation.kind}), not method '${input.method}'`);
+    }
+    // Explicit narrowing: the FS verifier never reads a process operation's fields (the process
+    // verifier is the only reader of `process-exec`).
+    if (operation.kind === 'process-exec') {
+        return refuse('RECEIPT_OPERATION_MISMATCH', `receipt ${receipt.receiptId} covers a process execution, not an FS Provider method`);
     }
     if (input.toolBindingIdentity !== undefined && input.toolBindingIdentity !== '' &&
         receipt.toolBindingIdentity !== '' && input.toolBindingIdentity !== receipt.toolBindingIdentity) {
@@ -632,5 +722,87 @@ export async function authorizeAskWithReceipt(input) {
     return operation.kind === 'fs-move'
         ? { ok: true, resolved, resolvedDestination: resolvedPaths[1], receipt }
         : { ok: true, resolved, receipt };
+}
+/**
+ * The process-face verifier. It is called at the GOVERNED SPAWN POINT, before any process exists,
+ * and only when the compiled process disposition is `ask` (the caller checks `deny` first and never
+ * calls this for `allow`). It can authorize a spawn that THIS execution's consumed grant paid for;
+ * it can never add a writable, executable or kernel capability, because it returns no policy and
+ * the caller's OS profile was compiled from the Member's three lanes before this ran.
+ */
+export function authorizeProcessAskWithReceipt(input) {
+    const scope = EXECUTION_SCOPE.getStore();
+    if (scope === undefined) {
+        return refuse('RECEIPT_NOT_IN_SCOPE', 'no approved-ask execution scope is active for this spawn; a process ask is refused rather than approved by ambient state');
+    }
+    if (!SCOPE_BRAND.has(scope) || !RECEIPT_BRAND.has(scope.receipt)) {
+        return refuse('RECEIPT_UNKNOWN', 'the execution scope or its receipt was not minted by this module');
+    }
+    const receipt = scope.receipt;
+    const state = RECEIPT_STATE.get(receipt);
+    if (state === undefined || !state.available || state.closed) {
+        return refuse('RECEIPT_CLOSED', `receipt ${receipt.receiptId} is no longer available: it was closed with its execution and never reopens`);
+    }
+    if (state.used) {
+        return refuse('RECEIPT_REUSED', `receipt ${receipt.receiptId} already authorized one effect; the consumed grant authorizes exactly one`);
+    }
+    if (scope.executionId !== receipt.executionId || scope.callId !== receipt.callId) {
+        return refuse('RECEIPT_UNKNOWN', 'the active scope does not name the execution/receipt pair it carries');
+    }
+    if (scope.memberIdentity !== receipt.member.memberInstanceId || receipt.member.memberInstanceId !== input.memberIdentity) {
+        return refuse('RECEIPT_MEMBER_MISMATCH', `receipt ${receipt.receiptId} was minted for '${receipt.member.memberInstanceId}', not '${input.memberIdentity}'`);
+    }
+    const operation = receipt.operation;
+    if (operation.kind !== 'process-exec') {
+        return refuse('RECEIPT_OPERATION_MISMATCH', `receipt ${receipt.receiptId} covers '${operation.kind}', not a process execution`);
+    }
+    if (operation.toolName !== input.toolName) {
+        return refuse('RECEIPT_TOOL_MISMATCH', `receipt ${receipt.receiptId} covers tool '${operation.toolName}', not '${input.toolName}'`);
+    }
+    if (input.toolBindingIdentity !== undefined && input.toolBindingIdentity !== '' &&
+        receipt.toolBindingIdentity !== '' && input.toolBindingIdentity !== receipt.toolBindingIdentity) {
+        return refuse('RECEIPT_TOOL_MISMATCH', `receipt ${receipt.receiptId} was minted for binding '${receipt.toolBindingIdentity}', not '${input.toolBindingIdentity}'`);
+    }
+    if (receipt.policyGeneration !== input.policyRevision) {
+        return refuse('RECEIPT_POLICY_GENERATION_MISMATCH', `receipt ${receipt.receiptId} was approved under policy generation '${receipt.policyGeneration}', but the spawn point is enforcing '${input.policyRevision}'`);
+    }
+    const binder = input.authority?.binder;
+    if (binder === undefined) {
+        return refuse('RECEIPT_AUTHORITY_UNAVAILABLE', 'the process face was not given the invocation binder, so receipt liveness (cold start / member revocation) cannot be proven');
+    }
+    if (binder.currentEpoch() !== receipt.grant.binderEpoch) {
+        return refuse('RECEIPT_REVOKED', `receipt ${receipt.receiptId} was spent under binder epoch ${String(receipt.grant.binderEpoch)}, but the binder is at ${String(binder.currentEpoch())} (cold start)`);
+    }
+    if (binder.currentMemberEpoch(receipt.member.memberInstanceId) !== receipt.grant.memberEpoch) {
+        return refuse('RECEIPT_REVOKED', `receipt ${receipt.receiptId} was spent under member epoch ${String(receipt.grant.memberEpoch)}, but '${receipt.member.memberInstanceId}' is at ${String(binder.currentMemberEpoch(receipt.member.memberInstanceId))} (revoked)`);
+    }
+    // THE DECLARED PROCESS OPERATION, exactly. A receipt minted for a different boundary or a
+    // different shell class is a different process and can never satisfy this spawn.
+    if (operation.executionBoundary !== input.executionBoundary) {
+        return refuse('RECEIPT_OPERATION_MISMATCH', `receipt ${receipt.receiptId} was approved for executionBoundary '${operation.executionBoundary}', but this spawn is '${input.executionBoundary}'`);
+    }
+    const wantPrograms = [...input.processClass.programs].sort();
+    const havePrograms = [...operation.processClass.programs].sort();
+    if (wantPrograms.length !== havePrograms.length || wantPrograms.some((program, at) => program !== havePrograms[at])) {
+        return refuse('RECEIPT_PROCESS_CLASS_MISMATCH', `receipt ${receipt.receiptId} was approved for shell class [${havePrograms.join(', ')}], but this face admits [${wantPrograms.join(', ')}]`);
+    }
+    if (isNonBlank(operation.processClass.program) && isNonBlank(input.processClass.program) &&
+        operation.processClass.program !== input.processClass.program) {
+        return refuse('RECEIPT_PROCESS_CLASS_MISMATCH', `receipt ${receipt.receiptId} was approved for shell program '${operation.processClass.program}', but this face runs '${input.processClass.program}'`);
+    }
+    // THE COMMAND, when the spawn point can see it. A receipt that named command A cannot spawn
+    // command B; when the spawn point cannot see the command at all (the persistent PTY), it says so
+    // by omitting `command` and this clause is not fabricatable from the receipt's own field.
+    if (input.command !== undefined) {
+        if (operation.commandSha256 === null) {
+            return refuse('RECEIPT_CONTENT_UNAVAILABLE', `receipt ${receipt.receiptId} bound no command text, so the command about to spawn cannot be checked against it`);
+        }
+        const wanted = approvedAskCommandSha256(input.command);
+        if (wanted !== operation.commandSha256) {
+            return refuse('RECEIPT_COMMAND_MISMATCH', `receipt ${receipt.receiptId} approved a different command (${operation.commandSha256}) than the one about to spawn (${wanted})`);
+        }
+    }
+    state.used = true;
+    return { ok: true, receipt };
 }
 //# sourceMappingURL=approved-ask-receipt.js.map

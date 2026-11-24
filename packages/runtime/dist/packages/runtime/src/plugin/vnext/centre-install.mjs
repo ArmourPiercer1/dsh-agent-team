@@ -13,9 +13,33 @@
  * @module packages/runtime/src/plugin/vnext/centre-install
  */
 
+import { basename } from 'node:path'
 import { installAdmissionPoint } from './admission-port.mjs'
 import { installExecutionFacts } from './execution-facts.mjs'
 import { createSettlementWriter } from './settlement-port.mjs'
+
+/**
+ * The composition's FIXED PROCESS CLASS, projected from the realm faces this compiled answer
+ * carries. It is a COMPOSITION fact (which shell program the face runs, which basenames its declared
+ * shell class admits), never a Member ceiling: it grants nothing and is only used as the receipt's
+ * process-operation identity, which the spawn point re-checks against its own class.
+ *
+ * A face that fixes no class (`programs` empty) answers `undefined`: a process ask on such a
+ * composition is then unprepared and refused, never executed under a receipt that cannot name the
+ * class.
+ */
+function processClassOf (processFace, shellClass) {
+  if (processFace === undefined || processFace === null || typeof processFace !== 'object') return undefined
+  const program = typeof processFace.program === 'string' ? processFace.program : ''
+  const declared = Array.isArray(shellClass?.programs)
+    ? shellClass.programs.filter((entry) => typeof entry === 'string' && entry.trim() !== '')
+    : []
+  const programs = declared.length > 0
+    ? [...declared].sort()
+    : (program !== '' ? [basename(program)] : [])
+  if (programs.length === 0) return undefined
+  return Object.freeze({ program, programs: Object.freeze(programs) })
+}
 
 /**
  * Map ONE compiled member policy onto the centre's `Binding`.
@@ -41,7 +65,7 @@ function requireGeneration (identity, policy, member) {
   return generation
 }
 
-export function bindingFromCompiledMember ({ member, bindings, agentId, sessionId, workspaceRoot, owner, instanceId, executors }) {
+export function bindingFromCompiledMember ({ member, bindings, agentId, sessionId, workspaceRoot, owner, instanceId, executors, processFace, processShellClass }) {
   if (member === undefined || member === null) throw new TypeError('centre-install: a member binding needs the compiled member')
   const policy = member.policy?.value ?? member.policy
   if (policy === undefined || policy === null || typeof policy !== 'object') {
@@ -110,6 +134,11 @@ export function bindingFromCompiledMember ({ member, bindings, agentId, sessionI
     policyGeneration: policy.revision ?? '',
     blueprintRevision: identity.blueprintRevision ?? '',
     owner: owner ?? '',
+    // ROUND 99 — the composition's fixed process class, for the process face's receipt operation.
+    // Absent = this composition fixes none, so a process ask prepares no receipt and refuses.
+    ...(processClassOf(processFace, processShellClass) === undefined
+      ? {}
+      : { processClass: processClassOf(processFace, processShellClass) }),
   })
 }
 

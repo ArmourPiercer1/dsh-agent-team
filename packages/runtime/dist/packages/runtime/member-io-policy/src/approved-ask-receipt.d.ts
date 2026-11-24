@@ -55,7 +55,7 @@ export declare const APPROVED_ASK_RECEIPT_SCHEMA: "a5sf-approved-ask-receipt/2";
  * classifier must settle it as the real phase (FAILED / body-started), never
  * as a pre-execution `REFUSED / not-started`.
  */
-export declare const APPROVED_ASK_RECEIPT_REFUSAL_CODES: readonly ["RECEIPT_NOT_IN_SCOPE", "RECEIPT_UNKNOWN", "RECEIPT_CLOSED", "RECEIPT_REUSED", "RECEIPT_MEMBER_MISMATCH", "RECEIPT_TOOL_MISMATCH", "RECEIPT_POLICY_GENERATION_MISMATCH", "RECEIPT_AUTHORITY_UNAVAILABLE", "RECEIPT_REVOKED", "RECEIPT_OPERATION_MISMATCH", "RECEIPT_CONTENT_MISMATCH", "RECEIPT_CONTENT_UNAVAILABLE", "RECEIPT_PATH_UNRESOLVED", "RECEIPT_DENIED", "RECEIPT_BOUNDS_VIOLATION", "RECEIPT_INPUT_INVALID"];
+export declare const APPROVED_ASK_RECEIPT_REFUSAL_CODES: readonly ["RECEIPT_NOT_IN_SCOPE", "RECEIPT_UNKNOWN", "RECEIPT_CLOSED", "RECEIPT_REUSED", "RECEIPT_MEMBER_MISMATCH", "RECEIPT_TOOL_MISMATCH", "RECEIPT_POLICY_GENERATION_MISMATCH", "RECEIPT_AUTHORITY_UNAVAILABLE", "RECEIPT_REVOKED", "RECEIPT_OPERATION_MISMATCH", "RECEIPT_CONTENT_MISMATCH", "RECEIPT_CONTENT_UNAVAILABLE", "RECEIPT_PATH_UNRESOLVED", "RECEIPT_DENIED", "RECEIPT_BOUNDS_VIOLATION", "RECEIPT_INPUT_INVALID", "RECEIPT_PROCESS_CLASS_MISMATCH", "RECEIPT_COMMAND_MISMATCH"];
 export type ApprovedAskReceiptRefusalCode = (typeof APPROVED_ASK_RECEIPT_REFUSAL_CODES)[number];
 /** The trusted member identity a receipt is bound to (the grant's own tuple). */
 export interface ApprovedAskMemberIdentity {
@@ -129,7 +129,46 @@ export interface ApprovedAskMoveOperation {
     readonly destination: ApprovedAskPath;
     readonly fingerprint: string;
 }
-export type ApprovedAskOperation = ApprovedAskWriteOperation | ApprovedAskEditOperation | ApprovedAskPatchOperation | ApprovedAskDeleteOperation | ApprovedAskMoveOperation;
+/**
+ * THE PRODUCT'S FIXED SHELL CLASS, as the composition declares it. The receipt binds it so a
+ * receipt minted under one process face cannot satisfy a different one (a different program, or a
+ * different admitted shell-class set, is a different operation).
+ */
+export interface ApprovedAskProcessClass {
+    /** The absolute shell program the face runs; '' when the face does not pin one. */
+    readonly program: string;
+    /** The admitted shell-class program basenames, sorted (closed, composition-owned). */
+    readonly programs: readonly string[];
+}
+/**
+ * ROUND 99 — the PROCESS face (owner ruling 20261124-0151 §2: extend the receipt to Subprocess,
+ * with the added condition that an OS-sandbox approval must be proven separately and must NEVER
+ * widen the process's kernel permissions).
+ *
+ * WHAT IT BINDS: the tool, the DECLARED `executionBoundary`, the composition's fixed shell class,
+ * and — when the call carried a command string — the exact command text's digest. The OS profile is
+ * NOT part of the receipt and is never read from it: the spawn point compiles it from the Member's
+ * three lanes exactly as it did before, so a receipt cannot add a writable/executable/kernel bit.
+ *
+ * WHAT IT CANNOT SAY: (a) for a PERSISTENT shell the process is created before any command text
+ * exists, so the spawn-point verifier cannot compare `commandSha256` — the field records the command
+ * the approval was requested for and the ADR states the limit; (b) nothing about a command body's
+ * dynamic reads (`$(...)`, `$VAR` paths) — those are the OS profile's remit; (c) nothing about prior
+ * shell state (`cd`/`export` from an earlier command) in a persistent session.
+ */
+export interface ApprovedAskProcessOperation {
+    readonly kind: 'process-exec';
+    readonly toolName: 'bash';
+    readonly executionBoundary: string;
+    readonly implementationOrigin: string;
+    readonly processClass: ApprovedAskProcessClass;
+    /** `sha256:` of the exact declared command text; `null` when the call carried none. */
+    readonly commandSha256: string | null;
+    /** The AUTHORED working directory (context, never an authority). */
+    readonly cwd: string;
+    readonly fingerprint: string;
+}
+export type ApprovedAskOperation = ApprovedAskWriteOperation | ApprovedAskEditOperation | ApprovedAskPatchOperation | ApprovedAskDeleteOperation | ApprovedAskMoveOperation | ApprovedAskProcessOperation;
 /** The Provider method each operation kind authorizes, exactly. */
 export declare const APPROVED_ASK_METHOD_OF_KIND: Readonly<{
     readonly 'fs-write': "writeText";
@@ -267,6 +306,8 @@ export interface ApprovedAskExecutionScope {
  * for the receipt's own self-consistency check.
  */
 export declare function approvedAskOperationFingerprint(operation: ApprovedAskOperation): string;
+/** Digest of the exact declared command text a process approval names. */
+export declare function approvedAskCommandSha256(command: string): string;
 /** Digest of the exact literal transformation an `editText` call receives. */
 export declare function approvedAskEditSha256(edit: {
     readonly oldString: string;
@@ -329,6 +370,41 @@ export declare function prepareApprovedFsOperation(input: {
     readonly resolver?: PathIdentityResolver;
 }): Promise<ApprovedAskPreparedOperation>;
 /**
+ * ROUND 99 — the process face's DECLARED TOOL SHAPES. Closed, like the FS table: a name that is
+ * not here prepares nothing, so its `ask` keeps the R4 fail-closed refusal. `bash` is the only
+ * shipped process tool whose execution authorization this product compiles.
+ */
+export declare const APPROVED_ASK_PROCESS_TOOL_SHAPES: readonly ["bash"];
+/** The declared execution facts the compiled per-tool answer carries. */
+export interface ApprovedAskProcessExecution {
+    readonly implementationOrigin?: string;
+    readonly executionBoundary?: string;
+}
+/**
+ * Prepare the process operation an approval for `toolName` would cover.
+ *
+ * The OPERATION binds what the centre can know for THIS execution: the tool, the compiled
+ * `executionBoundary`/`implementationOrigin`, the composition's fixed shell class, the declared
+ * command text's digest and the authored working directory. It does NOT bind (and must not claim)
+ * the OS profile: that is compiled by the spawn point from the Member's three lanes, unchanged.
+ *
+ * A process ask whose execution facts are missing, or whose composition fixes no shell class, is
+ * `IO_ASK_RECEIPT_UNPREPARABLE` — refused, never executed under an approval no receipt can name.
+ */
+export declare function prepareApprovedProcessOperation(input: {
+    readonly toolName: string;
+    readonly arguments?: Record<string, unknown> | undefined;
+    readonly execution?: ApprovedAskProcessExecution | undefined;
+    readonly processClass?: ApprovedAskProcessClass | undefined;
+}): {
+    readonly ok: true;
+    readonly value: ApprovedAskProcessOperation;
+} | {
+    readonly ok: false;
+    readonly code: string;
+    readonly detail: string;
+};
+/**
  * Mint the receipt. Called by the centre AFTER `binder.consume` returned ok —
  * there is no code path that mints a receipt for an unconsumed grant.
  */
@@ -358,4 +434,44 @@ export declare function currentApprovedAskExecutionScope(): ApprovedAskExecution
  * snapshot approved. A receipt that fails any clause is a refusal.
  */
 export declare function authorizeAskWithReceipt(input: AuthorizeAskWithReceiptInput): Promise<AuthorizeAskWithReceiptResult>;
+/** What a governed spawn point hands the process verifier. */
+export interface AuthorizeProcessAskInput {
+    readonly memberIdentity: string;
+    readonly policyRevision: string;
+    readonly toolBindingIdentity?: string;
+    /** The tool the spawn point is executing (`bash`). */
+    readonly toolName: string;
+    /** The DECLARED execution boundary the composition compiler produced. */
+    readonly executionBoundary: string;
+    /** The composition's OWN fixed shell class (the verifier's, never the receipt's). */
+    readonly processClass: ApprovedAskProcessClass;
+    /**
+     * The exact command text the spawn is about to run. Omitted = the spawn point cannot see the
+     * command (the persistent PTY creates its shell before any command exists); the receipt's
+     * `commandSha256` is then recorded but not compared, and that is the honest limit.
+     */
+    readonly command?: string;
+    readonly authority?: {
+        readonly binder?: {
+            currentEpoch(): number;
+            currentMemberEpoch(memberIdentity: string): number;
+        };
+    };
+}
+export type AuthorizeProcessAskResult = {
+    readonly ok: true;
+    readonly receipt: ApprovedAskReceipt;
+} | {
+    readonly ok: false;
+    readonly code: ApprovedAskReceiptRefusalCode;
+    readonly detail: string;
+};
+/**
+ * The process-face verifier. It is called at the GOVERNED SPAWN POINT, before any process exists,
+ * and only when the compiled process disposition is `ask` (the caller checks `deny` first and never
+ * calls this for `allow`). It can authorize a spawn that THIS execution's consumed grant paid for;
+ * it can never add a writable, executable or kernel capability, because it returns no policy and
+ * the caller's OS profile was compiled from the Member's three lanes before this ran.
+ */
+export declare function authorizeProcessAskWithReceipt(input: AuthorizeProcessAskInput): AuthorizeProcessAskResult;
 //# sourceMappingURL=approved-ask-receipt.d.ts.map

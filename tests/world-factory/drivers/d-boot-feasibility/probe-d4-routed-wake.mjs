@@ -146,6 +146,16 @@ const CALL_OFF_RESOLVE = (requestId) => `call-d4-officer-resolve-${String(reques
 // resolve turn answered NO_PENDING because the mock matched MK_RESOLVE).
 const MK_RESOLVE2 = 'DBOOT_D4_SECOND_ASK_RESOLVE'
 const DONE_RESOLVE2 = 'DBOOT_D4_RESOLVE_DONE_2'
+// ROUND 99 — the PROCESS face: a `bash` ask (the plain C1 leader path; a process ask is not an
+// Alpha.6 case because the case vocabulary is the outstanding-operation canonicalizer, which
+// cannot express a shell body). Its own marker/call ids so it can never be mistaken for ask 1/2.
+const MK_RESOLVE3 = 'DBOOT_D4_PROCESS_ASK_RESOLVE'
+const DONE_RESOLVE3 = 'DBOOT_D4_RESOLVE_DONE_3'
+const CALL_RESOLVE3 = 'call-d4-leader-resolve-3'
+const CALL_WRK_BASH = 'call-d4-worker-bash'
+const BASH_INLANE_TEXT = 'DBOOT_D4_BASH_INLANE'
+const MK_BASH = 'DBOOT_D4_WORKER_BASH_TURN'
+const DONE_BASH = 'DBOOT_D4_WORKER_BASH_DONE'
 const OFFICER_TEXT = 'DBOOT_D4_OFFICER_READ_OK'
 const WORKER_TEXT = 'DBOOT_D4_WORKER_ASK_CALLED'
 // The SECOND live mutation: a DIFFERENT approval writing DIFFERENT bytes. It proves the content
@@ -321,6 +331,23 @@ function v5Doc({ blueprintId, dirs }) {
     // ask to deny-all; round 94 fixed the lane algebra, and this round measures the resulting live
     // `ask → case → Officer wake → decision → execute` chain.
     toolBindings: [
+      // ROUND 99 — THE PROCESS FACE. A Team-scoped `bash` declaration whose disposition is `ask`:
+      // the driver measures the real Control ask → allow → receipt → governed PTY spawn chain. Its
+      // `io` is the worker's own directory (the operation's own lane); a process is NOT gated by a
+      // path lane (`process.exec` is decided by this declaration), so the OS profile below is what
+      // actually bounds what the shell can touch.
+      // The DECLARATION SHAPE is D3's (`d3:persistent-subprocess`, PROVEN live): owner
+      // `dsh.subprocess`, `io` mode `all` (process authority is NOT a lane), boundary
+      // `confined-subprocess`. Only the DISPOSITION differs — `ask` instead of `allow` — which is what
+      // makes the centre raise the approval this arm measures. A process is never gated by a path lane:
+      // the OS profile below is what bounds the shell.
+      {
+        owner: 'dsh.subprocess',
+        name: 'bash',
+        authorization: 'ask',
+        io: { read: { mode: 'all', deny: [] }, write: { mode: 'all', deny: [] }, network: { mode: 'allow' } },
+        execution: { implementationOrigin: 'dsh-native', executionBoundary: 'confined-subprocess' },
+      },
       {
         owner: 'dsh.fs',
         name: 'write',
@@ -339,10 +366,28 @@ function v5Doc({ blueprintId, dirs }) {
     ],
     memberIoCeilings: [
       { templateId: 'officer', io: { read: lane([dirs.dir]), write: lane([dirs.dir]), network: { mode: 'allow' } } },
-      // THE DECLARED ORDINARY ASK: the worker's write lane ASKs for its own
-      // directory (the shipped v4 grammar's `ask` arm), so one worker write is
-      // an ordinary tool ask the control plane has to route.
-      { templateId: 'worker', io: { read: lane([dirs.dir]), write: lane([], [dirs.dir]), network: { mode: 'allow' } } },
+      // THE DECLARED ORDINARY ASK lives on the TOOL binding (`write` below), whose lane is a PURE ask
+      // for the worker's own directory — the shipped v4 grammar's `ask` arm the control plane routes.
+      //
+      // ROUND 99: the CEILING is a PURE ALLOW of the session workspace. Two MEASURED reasons, both
+      // about expressibility rather than convenience:
+      //   1. a ceiling that ASKs for a subtree while ALLOWing an enclosing root is not expressible to
+      //      Landlock; the product refuses that shape and the Member never activates (measured twice:
+      //      the officer with such a ceiling never came up);
+      //   2. the governed PTY derives its write root from `effective.write.allow`, so a writable root
+      //      must exist that CONTAINS the shell's cwd (= the session workspace); an empty allow list
+      //      leaves the shell read-only.
+      // This widens NOTHING a tool can reach: the write tool's own lane is still a pure ask, and
+      // `matchLocator` intersects ceiling-allow with tool-ask to an ask, so `write` keeps asking. The
+      // process receipt adds no writable bit.
+      {
+        templateId: 'worker',
+        io: {
+          read: lane([dirs.dir]),
+          write: lane([dirs.workspace ?? dirs.dir]),
+          network: { mode: 'allow' },
+        },
+      },
     ],
     reviewRouting: {
       enabled: true,
@@ -404,6 +449,11 @@ function composedRows({ home, mainYaml, alpha6 }) {
     // `toolBindings[]` entry names a tool; the realm can only shadow a name it can mount, so a
     // world that DECLARES the operation tool must also mount the module that provides it. This is
     // the pinned host `tool-fs` package (read-only, from the pristine test tree), not a product mock.
+    // ROUND 99 — UNCHANGED from round 98. `[]` was MEASURED to break Member activation (the officer
+    // never came up: the governed realm needs its configured native module), so the D4 world keeps the
+    // FS module exactly as it was. The consequence for the process arm is recorded in its own artifact:
+    // a v5 per-tool `bash` binding lands on a BINDING realm, and that realm carries no governed PTY
+    // face, so the spawn refuses `NO_BACKEND` (a product assembly gap, measured not inferred).
     a5sfNativeToolModules: [BASELINE_TOOL_FS],
     ...(alpha6.enabled
       ? {
@@ -504,6 +554,9 @@ function makeDecide({ paths, ids, resolveDecision = 'allow' }) {
   const text = (content) => ({ kind: 'text', content })
   const readCall = (id, filePath) => ({ kind: 'tool-call', toolCalls: [{ id, name: 'read', arguments: { file_path: filePath } }] })
   const writeCall = (id, filePath, content) => ({ kind: 'tool-call', toolCalls: [{ id, name: 'write', arguments: { file_path: filePath, content } }] })
+  // The SHIPPED persistent `bash` argument shape is `{ command }` ONLY (its own persona states that
+  // `workdir`/`timeoutMs` cannot be passed), so the receipt's `cwd` is the empty context.
+  const bashCall = (id, command) => ({ kind: 'tool-call', toolCalls: [{ id, name: 'bash', arguments: { command } }] })
   const resolveCall = (id, requestId) => ({
     kind: 'tool-call',
     toolCalls: [{
@@ -567,7 +620,15 @@ function makeDecide({ paths, ids, resolveDecision = 'allow' }) {
     // ── ROUND 97: the HUMAN-driven turns used by the Sticky-Stop arm ─────────────────────────────
     // A human prompt appended after the newest wake owns the turn. The hold turn issues one `read`
     // per step so a real `session/cancel` can land mid-turn; the third worker ask is an ask.
-    const humanTurn = newestMarkerText(req, [MK_HOLD, MK_RESUME, MK_WORK3])
+    const humanTurn = newestMarkerText(req, [MK_HOLD, MK_RESUME, MK_WORK3, MK_BASH])
+    // ROUND 99 — the PROCESS face turn. ONE shell command: an in-lane write that must land, and an
+    // OUT-OF-LANE write the OS profile must refuse. It ends with `true` so the shell's own exit code
+    // is the tool's success, never the denied arm's.
+    if (humanTurn === MK_BASH) {
+      const seen = resultIdsOf(req)
+      if (!seen.has(CALL_WRK_BASH)) return bashCall(CALL_WRK_BASH, `printf '${BASH_INLANE_TEXT}' > ${paths.workerBashInLane}; printf 'DBOOT_D4_BASH_LEAK' > ${paths.workerBashOutside} || true`)
+      return text(DONE_BASH)
+    }
     if (humanTurn === MK_HOLD) {
       const seen = resultIdsOf(req)
       for (let step = 1; step <= HOLD_STEPS; step += 1) {
@@ -603,6 +664,13 @@ function makeDecide({ paths, ids, resolveDecision = 'allow' }) {
     // whole transcript would re-fire it on every later turn.
     const leaderText = lastLeaderMarkerText(req)
     const seen = resultIdsOf(req)
+    if (leaderText.includes(MK_RESOLVE3)) {
+      if (!seen.has(CALL_RESOLVE3)) {
+        if (ids.pendingProcessRequestId === null || ids.pendingProcessRequestId === undefined) return text('DBOOT_D4_NO_PENDING_REQUEST')
+        return resolveCall(CALL_RESOLVE3, ids.pendingProcessRequestId)
+      }
+      return text(DONE_RESOLVE3)
+    }
     if (leaderText.includes(MK_RESOLVE2)) {
       if (!seen.has(CALL_RESOLVE2)) {
         if (ids.pendingRequestId2 === null || ids.pendingRequestId2 === undefined) return text('DBOOT_D4_NO_PENDING_REQUEST')
@@ -1232,6 +1300,49 @@ function judgeAskExecute2({ requestRaised, requestIsNew, resolveOutcome, file, f
 }
 
 /**
+ * `d4:ask-execute-process` — THE LIVE PROCESS CHAIN (round 99).
+ *
+ * The worker's `bash` declares disposition `ask`. The centre raises a REAL Control request on the
+ * plain leader path, the Leader settles it through `team_resolve_control`, the grant is consumed,
+ * the process receipt is minted and bound to the tool + declared `executionBoundary` + the
+ * composition's fixed shell class + the exact command digest, the governed PTY verifies it BEFORE
+ * creating the shell, and the REAL command runs under the Member's own OS profile.
+ *
+ * Byte-level evidence, two directions in ONE command: an in-lane write must appear with the exact
+ * bytes, and an OUT-OF-LANE write must produce NO file at all. The command is compound and ends in
+ * `true`, so a non-zero tool result cannot be the escape hatch that hides a denied write.
+ */
+function judgeAskProcess({ requestRaised, controlDecision, inLane, outLane, facts, settlement, bashCall }) {
+  const allowFacts = facts.filter((f) => f?.kind === 'invocation-authority' && f?.decision === 'allow')
+  const processFact = allowFacts.find((f) => f?.axis === 'process.exec') ?? null
+  const inLaneHash = inLane.content === null ? null : createHash('sha256').update(inLane.content).digest('hex')
+  const expectedHash = createHash('sha256').update(BASH_INLANE_TEXT).digest('hex')
+  return verdictOf(
+    'a Member `bash` whose disposition is `ask` raises a REAL Control request, is approved through the REAL control path, and then executes under the confined profile: the in-lane write lands with the exact bytes, the out-of-lane write produces NOTHING, and the execution settles COMPLETED',
+    [
+      { id: 'control-request-raised', ok: requestRaised === true, detail: `requestRaised=${String(requestRaised)}` },
+      {
+        id: 'approved-through-real-control-path',
+        // The Leader's own tool result is not persisted to disk (only CHILD sessions persist), so the
+        // approval is read from the DURABLE decision row the real ControlService wrote — the record the
+        // grant was minted from, not a re-statement by the driver.
+        ok: controlDecision !== null && controlDecision?.decision === 'allow' && controlDecision?.decider !== undefined,
+        detail: `durable control-decision-recorded decision=${String(controlDecision?.decision)} decider=${JSON.stringify(controlDecision?.decider ?? null)} requestId=${String(controlDecision?.requestId ?? null)}`,
+      },
+      {
+        id: 'process-admission-fact-allow',
+        ok: processFact !== null && processFact.decision === 'allow' && processFact.laneDecision === 'ask',
+        detail: `process.exec allow facts=${JSON.stringify(allowFacts.map((f) => ({ callId: f.callId, decision: f.decision, laneDecision: f.laneDecision, axis: f.axis })))}`,
+      },
+      { id: 'bash-tool-result-not-an-error', ok: bashCall?.result?.isError === false, detail: `bash result isError=${String(bashCall?.result?.isError)} text=${JSON.stringify(String(bashCall?.result?.text ?? '').slice(0, 400))}` },
+      { id: 'in-lane-write-lands', ok: inLane.content === BASH_INLANE_TEXT, detail: `file exists=${String(inLane.exists)} bytes=${String(inLane.content === null ? null : Buffer.byteLength(inLane.content))} sha256=${String(inLaneHash)} expectedSha256=${expectedHash}` },
+      { id: 'out-of-lane-write-produces-nothing', ok: outLane.exists === false, detail: `out-of-lane file exists=${String(outLane.exists)} bytes=${String(outLane.bytes ?? null)} (the OS profile refused it; the receipt added no writable bit)` },
+      { id: 'settlement-completed', ok: settlement?.state === 'COMPLETED' && settlement?.bodyOutcome === 'completed', detail: `state=${String(settlement?.state)} bodyOutcome=${String(settlement?.bodyOutcome)} transitions=${JSON.stringify(settlement?.transitions ?? [])}` },
+    ],
+  )
+}
+
+/**
  * `d4:ask-denied` — the NEGATIVE live arm: the SAME ask, denied through the
  * real control path. No grant is minted, so no receipt can exist: zero bytes,
  * a deny fact with `ADMISSION_APPROVAL_DENIED`, and a REFUSED / not-started
@@ -1540,7 +1651,7 @@ async function probeOnce({ index, head, grant }) {
   // authored ask lane and the bytes it approves are both inside that root.
   let dirs = null
   let paths = null
-  const ids = { officer: null, worker: null, pendingRequestId: null, pendingRequestId2: null, pendingRequestId3: null }
+  const ids = { officer: null, worker: null, pendingRequestId: null, pendingRequestId2: null, pendingRequestId3: null, pendingProcessRequestId: null }
   // ROUND 97 — the duplicate-route and Sticky-Stop measurements are filled by their own arms below;
   // a judge that never got its arm is REFUTED (it must never default to "passed").
   let duplicateMeasurement = null
@@ -1557,7 +1668,11 @@ async function probeOnce({ index, head, grant }) {
     // ── the POSITIVE world: one coherent v5 row ──
     world = await harness.createWorld({ line: LINE, u6Fs: { rows: [] } })
     mkdirSync(world.workspaceDir, { recursive: true })
-    dirs = { dir: join(world.workspaceDir, 'lane') }
+    // ROUND 99: the process arm needs BOTH the operation lane (`dir`, which the ceiling ASKs for)
+    // and the session workspace the PTY's OS profile is derived against (`workspace`). The
+    // out-of-lane target lives OUTSIDE the session workspace but inside the host's own writable
+    // area, so only the OS profile can be the reason it does not exist.
+    dirs = { dir: join(world.workspaceDir, 'lane'), workspace: world.workspaceDir }
     mkdirSync(dirs.dir, { recursive: true })
     paths = {
       dir: dirs.dir,
@@ -1566,6 +1681,11 @@ async function probeOnce({ index, head, grant }) {
       // The second mutation's target: a DIFFERENT file, inside the same Member workspace lane.
       workerFile2: join(dirs.dir, 'worker-ask-2.txt'),
       workerFile3: join(dirs.dir, 'worker-ask-3.txt'),
+      // ROUND 99 — the process arm's two targets. The in-lane file is inside the session workspace
+      // (inside the ceiling's allowed write root); the out-of-lane file is inside the host's DSH_HOME
+      // (writable by the host user, OUTSIDE the Member's OS profile).
+      workerBashInLane: join(dirs.dir, 'worker-bash-inlane.txt'),
+      workerBashOutside: join(world.home, 'worker-bash-outside.txt'),
     }
     writeFileSync(paths.officerFile, 'DBOOT_D4_OFFICER_READ_SOURCE\n', 'utf8')
     const wakeIntentPath = join(join(EVIDENCE, 'runs-workspace', `boot${String(index)}`), WAKE_DIR)
@@ -1666,6 +1786,27 @@ async function probeOnce({ index, head, grant }) {
     await promptTurn(MK_WRK, 'd4wrk')
     if (!(await waitFor(() => sawReply(DONE_WRK), 120_000))) throw new Error('the worker delegation turn never answered the delegate call')
     log(`[boot${String(index)}] worker delegated`)
+    // THE DELEGATION'S OWN RESULT (round 99). A delegation can be REFUSED by the product and still
+    // let the Leader's turn finish, which looks exactly like "the member is slow". The refusal text
+    // is a tool result in the mock's NEXT request, so it is read back here and surfaced instead of
+    // being inferred from a 120s silence.
+    const workerDelegateResult = (() => {
+      for (const r of requests()) {
+        for (const message of messagesOf(r)) {
+          if (!Array.isArray(message?.content)) continue
+          for (const block of message.content) {
+            if (block?.type === 'tool_result' && String(block?.tool_use_id ?? '') === 'call-d4-delegate-worker') {
+              return { isError: block?.is_error === true, text: String(block?.content ?? '') }
+            }
+          }
+        }
+      }
+      return null
+    })()
+    writeFileSync(join(bootDir, 'worker-delegate-result.json'), `${JSON.stringify(workerDelegateResult, null, 2)}\n`)
+    if (workerDelegateResult?.isError === true) {
+      throw new Error(`the product REFUSED the worker delegation: ${workerDelegateResult.text.slice(0, 1500)}`)
+    }
     const workerUp = await waitFor(async () => {
       const st = await readState(origin, cookie)
       return membersOf(st).some((m) => String(m?.templateId ?? '') === 'worker')
@@ -1674,11 +1815,36 @@ async function probeOnce({ index, head, grant }) {
     state = await readState(origin, cookie)
     const workerRow = membersOf(state).find((m) => String(m?.templateId ?? '') === 'worker') ?? null
     ids.worker = String(workerRow.instanceId)
+    // ROUND 99 measurement fix, the SAME one round 97 applied to the second ask: discover the leg on
+    // the DURABLE ledger as well as on the pending projection. The Officer can settle a leg inside one
+    // poll (measured: a boot where leg 1 was already decided before the projection was read, so the
+    // judge reported "no request raised" while the write really executed under a real approval). The
+    // pending projection is still read and recorded for the shape evidence below.
+    // The CASE ROW is snapshotted the moment its id is known — a disk read, no HTTP — BEFORE any
+    // reviewer can decide it. Round 99 measured the alternative: reading it after the ask-appearance
+    // HTTP roundtrip let the Officer settle first, so a round-97 clause ("the routed case has no
+    // decision yet") failed on a real run while the product was correct. The snapshot is the same
+    // durable row, taken earlier; no assertion changes.
+    let caseSnapshot = null
     const askAppeared = await waitFor(async () => {
       const st = await readState(origin, cookie)
-      const row = pendingAskOf(st, ids.worker)
-      if (row !== null && ids.pendingRequestId === null) ids.pendingRequestId = String(row.requestId)
-      return row !== null
+      if (ids.pendingRequestId === null) {
+        const row = pendingAskOf(st, ids.worker)
+        if (row !== null) ids.pendingRequestId = String(row.requestId)
+      }
+      if (ids.pendingRequestId === null) {
+        const durableRow = readTeamDomainLedger(world.home)
+          .filter((fact) => fact?.factType === 'control-request-recorded'
+            && String(fact?.payload?.correlation ?? '') === `admission:${CALL_WRK_WRITE}`)
+          .at(-1)
+        const rowId = durableRow?.payload?.requestId
+        if (rowId !== undefined && rowId !== null) ids.pendingRequestId = String(rowId)
+      }
+      if (ids.pendingRequestId !== null && caseSnapshot === null) {
+        const snapshot = durableControlRow(world.home, ids.pendingRequestId)
+        if (snapshot !== null) caseSnapshot = snapshot
+      }
+      return ids.pendingRequestId !== null
     }, 180_000, 300)
     state = await readState(origin, cookie)
     const askRow = pendingAskOf(state, ids.worker)
@@ -1688,7 +1854,7 @@ async function probeOnce({ index, head, grant }) {
     // The durable row's REAL shape, read from the TeamDomain ledger (the state
     // route does not expose the case fields). This is the fact the router
     // routes on; it is read from disk, never inferred.
-    const durable = ids.pendingRequestId === null ? null : durableControlRow(world.home, ids.pendingRequestId)
+    const durable = caseSnapshot ?? (ids.pendingRequestId === null ? null : durableControlRow(world.home, ids.pendingRequestId))
     const ledgerRows = readTeamDomainLedger(world.home)
     writeFileSync(join(bootDir, 'control-row-durable.json'), `${JSON.stringify({
       requestId: ids.pendingRequestId,
@@ -1908,6 +2074,72 @@ async function probeOnce({ index, head, grant }) {
     writeFileSync(join(bootDir, 'sticky-stop.json'), `${JSON.stringify(stickyMeasurement, null, 2)}\n`)
     log(`[boot${String(index)}] sticky: resumeCleared=${String(resumeCleared)} resolve3=${String(resolveOutcome3 !== null)} write3Settled=${String(write3Settled)}`)
 
+    // ── ROUND 99: THE PROCESS FACE — the worker's `bash` ask, approved, then EXECUTED under the ──
+    // ── Member's own OS profile.                                                              ──
+    //
+    // Its own HUMAN turn marker (not part of the write/ask chain), so every discovery above is
+    // byte-identical to round 98. The ask is a `process.exec` ask: it is NOT an Alpha.6 case (the
+    // case vocabulary is the outstanding-operation canonicalizer, which cannot express a shell
+    // body), so it takes the plain leader path — the Leader resolves it through the REAL
+    // `team_resolve_control`, exactly as it did for the very first write ask.
+    const bashPrompt = await apiPrompt(origin, cookie, String(workerRow.childSessionId), `${MK_BASH} run the process probe command`, 'd4bash')
+    if (bashPrompt?.status !== 200) throw new Error(`the process arm's worker prompt failed: status=${String(bashPrompt?.status)}`)
+    const processAskAppeared = await waitFor(() => {
+      const asks = readTeamDomainLedger(world.home)
+        .filter((fact) => fact?.factType === 'control-request-recorded')
+        .map((fact) => fact.payload)
+        .filter((row) => ![ids.pendingRequestId, ids.pendingRequestId2, ids.pendingRequestId3].map(String).includes(String(row?.requestId ?? '')))
+      if (asks.length === 0) return false
+      ids.pendingProcessRequestId = String(asks[asks.length - 1].requestId)
+      return true
+    }, 180_000, 300)
+    log(`[boot${String(index)}] process ask appeared=${String(processAskAppeared)} requestId=${String(ids.pendingProcessRequestId)}`)
+    if (!processAskAppeared) throw new Error('the process arm raised no Control request')
+    await promptTurn(MK_RESOLVE3, 'd4res3')
+    // The Leader resolves the ask through the REAL `team_resolve_control`; its own tool result lives in
+    // the ROOT session, which the product does not persist (only child sessions are), so the approval
+    // is observed where it is authoritative: the durable `control-decision-recorded` row.
+    const processDecisionSeen = await waitFor(() => readTeamDomainLedger(world.home).some((fact) => fact?.factType === 'control-decision-recorded'
+      && String(fact?.payload?.requestId ?? '') === String(ids.pendingProcessRequestId ?? '\u0000')), 120_000, 400)
+    const processDecision = readTeamDomainLedger(world.home).find((fact) => fact?.factType === 'control-decision-recorded'
+      && String(fact?.payload?.requestId ?? '') === String(ids.pendingProcessRequestId ?? '\u0000')) ?? null
+    const bashSettled = await waitFor(() => {
+      const tx = readMemberTranscript(world.home, String(workerRow.childSessionId))
+      const call = (tx?.calls ?? []).find((c) => String(c.callId) === CALL_WRK_BASH) ?? null
+      const settled = settlementOf(world.home, ids.worker, CALL_WRK_BASH)
+      return call?.result !== null && call?.result !== undefined && settled.present === true
+    }, 180_000, 400)
+    await sleep(500)
+    const workerTxProcess = readMemberTranscript(world.home, String(workerRow.childSessionId))
+    const workerBashCall = (workerTxProcess?.calls ?? []).find((c) => String(c.callId) === CALL_WRK_BASH) ?? null
+    const bashInLane = fileEvidence(paths.workerBashInLane)
+    const bashOutside = fileEvidence(paths.workerBashOutside)
+    const bashSettlement = settlementOf(world.home, ids.worker, CALL_WRK_BASH)
+    const bashFacts = factsFor(readLedger(world.home, ids.worker), CALL_WRK_BASH)
+    const processAskVerdict = judgeAskProcess({
+      requestRaised: ids.pendingProcessRequestId !== null && ids.pendingProcessRequestId !== undefined,
+      controlDecision: processDecision?.payload ?? null,
+      inLane: bashInLane,
+      outLane: bashOutside,
+      facts: bashFacts,
+      settlement: bashSettlement,
+      bashCall: workerBashCall,
+    })
+    writeFileSync(join(bootDir, 'ask-execute-process.json'), `${JSON.stringify({
+      bashSettled,
+      requestId: ids.pendingProcessRequestId,
+      processDecisionSeen,
+      controlDecision: processDecision,
+      workerBashCall,
+      inLane: bashInLane,
+      outLane: bashOutside,
+      settlement: bashSettlement,
+      facts: bashFacts,
+      verdict: processAskVerdict,
+    }, null, 2)}\n`)
+    fnWriteVerdict(bootDir, 'ask-execute-process', processAskVerdict)
+    log(`[boot${String(index)}] d4:ask-execute-process=${processAskVerdict.verdict} failing=${JSON.stringify(processAskVerdict.failing)}`)
+
     const wakeFacts = [
       ...factsOfType(world.home, 'team-review-wake-routed'),
       ...factsOfType(world.home, 'team-review-wake-delivered'),
@@ -2084,10 +2316,23 @@ async function probeOnce({ index, head, grant }) {
     // right when the world raised one ask; round 96 raises a SECOND (different path, different
     // bytes). The honest control is "the ledger holds exactly the asks this world OBSERVED", so a
     // reader that misses one still fails, and a second real ask is not mistaken for a broken reader.
-    const observedRequests = [ids.pendingRequestId, ids.pendingRequestId2, ids.pendingRequestId3]
-      .filter((value) => value !== null && value !== undefined).length
-    const observedDecisions = [resolveOutcome, resolveOutcome2, resolveOutcome3]
-      .filter((value) => value !== null && value !== undefined).length
+    // ROUND 99 adds a FOURTH ask (the process arm). The control is derived from the WORLD'S OWN
+    // CORRELATIONS (`admission:<callId>` for the four calls the mock issues), NOT from transient
+    // variables that depend on WHICH actor resolved a leg: round 99 measured that flake — on one boot
+    // the OFFICER settled the third leg, so the Leader's `resolveOutcome3` was never set and a
+    // variable-counting control reported a broken reader while the ledger was complete. The ledger is
+    // still the thing under test: every durable request must belong to this world, and every durable
+    // decision must answer one of those requests.
+    const worldCorrelations = [CALL_WRK_WRITE, CALL_WRK_WRITE2, CALL_WRK_WRITE3, CALL_WRK_BASH].map((id) => `admission:${id}`)
+    const censusLedger = readTeamDomainLedger(world.home)
+    const worldRequestIds = new Set(censusLedger
+      .filter((fact) => fact?.factType === 'control-request-recorded' && worldCorrelations.includes(String(fact?.payload?.correlation ?? '')))
+      .map((fact) => String(fact.payload.requestId)))
+    const worldDecisionIds = new Set(censusLedger
+      .filter((fact) => fact?.factType === 'control-decision-recorded' && worldRequestIds.has(String(fact?.payload?.requestId ?? '')))
+      .map((fact) => String(fact.payload.requestId)))
+    const observedRequests = worldRequestIds.size
+    const observedDecisions = worldDecisionIds.size
     if (factTypeCensus['control-request-recorded'] !== observedRequests || factTypeCensus['control-decision-recorded'] !== observedDecisions) {
       throw new Error(`the durable reader is not reading the TeamDomain ledger: control-request-recorded count=${String(factTypeCensus['control-request-recorded'])} (observed ${String(observedRequests)}), control-decision-recorded count=${String(factTypeCensus['control-decision-recorded'])} (observed ${String(observedDecisions)}) census=${JSON.stringify(factTypeCensus)}`)
     }
@@ -2298,6 +2543,7 @@ async function probeOnce({ index, head, grant }) {
       refusal: refusalVerdict,
       askExecute: askExecuteVerdict,
       askExecute2: askExecute2Verdict,
+      askExecuteProcess: processAskVerdict,
       askDenied: deniedArm.verdict,
       askStopped: stoppedArm.verdict,
     }
@@ -2318,6 +2564,14 @@ async function probeOnce({ index, head, grant }) {
         askExecute2Bytes: askFile2.bytes,
         askExecute2Sha256: askFile2.sha256,
         askExecute2Settlement: askSettlement2.state,
+        // NOT a counter: the durable request id is freshly minted per boot (`ctrl-<random>`), so the
+        // two-boot agreement table must not compare it. The STABLE facts about the same execution are
+        // its bytes/sha256, the out-of-lane existence and the settlement state, all listed below.
+        askExecuteProcessRequestIdKnown: typeof ids.pendingProcessRequestId === 'string' && ids.pendingProcessRequestId !== '',
+        askExecuteProcessInLaneBytes: bashInLane.bytes,
+        askExecuteProcessInLaneSha256: bashInLane.sha256,
+        askExecuteProcessOutLaneExists: bashOutside.exists === true,
+        askExecuteProcessSettlement: bashSettlement.state,
         askDeniedBytes: deniedArm.file?.bytes ?? null,
         askDeniedSettlement: deniedArm.settlement?.state ?? null,
         askStoppedBytes: stoppedArm.file?.bytes ?? null,

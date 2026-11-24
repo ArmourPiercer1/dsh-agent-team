@@ -4,8 +4,8 @@
     {
       "key": "overall",
       "values": [
-        "\"PASS\"",
-        "\"PASS\""
+        "\"BLOCKED\"",
+        "\"BLOCKED\""
       ]
     },
     {
@@ -107,6 +107,13 @@
       ]
     },
     {
+      "key": "askExecuteProcess",
+      "values": [
+        "\"REFUTED\"",
+        "\"REFUTED\""
+      ]
+    },
+    {
       "key": "askDenied",
       "values": [
         "\"PROVEN\"",
@@ -130,8 +137,8 @@
     {
       "key": "wakeFacts",
       "values": [
-        "6",
-        "6"
+        "8",
+        "8"
       ]
     },
     {
@@ -195,6 +202,41 @@
       "values": [
         "\"COMPLETED\"",
         "\"COMPLETED\""
+      ]
+    },
+    {
+      "key": "askExecuteProcessRequestIdKnown",
+      "values": [
+        "true",
+        "true"
+      ]
+    },
+    {
+      "key": "askExecuteProcessInLaneBytes",
+      "values": [
+        "null",
+        "null"
+      ]
+    },
+    {
+      "key": "askExecuteProcessInLaneSha256",
+      "values": [
+        "null",
+        "null"
+      ]
+    },
+    {
+      "key": "askExecuteProcessOutLaneExists",
+      "values": [
+        "false",
+        "false"
+      ]
+    },
+    {
+      "key": "askExecuteProcessSettlement",
+      "values": [
+        "\"FAILED\"",
+        "\"FAILED\""
       ]
     },
     {
@@ -263,15 +305,15 @@
     {
       "key": "routedWakes",
       "values": [
-        "3",
-        "3"
+        "4",
+        "4"
       ]
     },
     {
       "key": "deliveredWakes",
       "values": [
-        "3",
-        "3"
+        "4",
+        "4"
       ]
     },
     {
@@ -303,5 +345,5 @@
       ]
     }
   ],
-  "text": "TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)\nfact                              boot1                               boot2                               \noverall                              \"PASS\"                               \"PASS\"                              \nenablement                           \"PROVEN\"                             \"PROVEN\"                            \nofficerUp                            \"PROVEN\"                             \"PROVEN\"                            \nofficerBinding                       \"PROVEN\"                             \"PROVEN\"                            \nroutedWake                           \"PROVEN\"                             \"PROVEN\"                            \ncaseCreated                          \"PROVEN\"                             \"PROVEN\"                            \nrouterOfficer                        \"PROVEN\"                             \"PROVEN\"                            \nwakeDelivered                        \"PROVEN\"                             \"PROVEN\"                            \nofficerDecides                       \"PROVEN\"                             \"PROVEN\"                            \naskExecutesAfterReview               \"PROVEN\"                             \"PROVEN\"                            \nduplicateRoute                       \"PROVEN\"                             \"PROVEN\"                            \nstickyStop                           \"PROVEN\"                             \"PROVEN\"                            \nrefusal                              \"PROVEN\"                             \"PROVEN\"                            \naskExecute                           \"PROVEN\"                             \"PROVEN\"                            \naskExecute2                          \"PROVEN\"                             \"PROVEN\"                            \naskDenied                            \"PROVEN\"                             \"PROVEN\"                            \naskStopped                           \"PROVEN\"                             \"PROVEN\"                            \naskAppeared                          true                                 true                                \nwakeFacts                            6                                    6                                   \nwakeIntentFiles                      0                                    0                                   \nreviewWakeHits                       0                                    0                                   \nofficerAllowFacts                    1                                    1                                   \naskExecuteBytes                      27                                   27                                  \naskExecuteSha256                     \"ced10112e5b82a2b1b6bca1b85b1dff24   \"ced10112e5b82a2b1b6bca1b85b1dff24  \naskExecuteSettlement                 \"COMPLETED\"                          \"COMPLETED\"                         \naskExecute2Bytes                     29                                   29                                  \naskExecute2Sha256                    \"2d71ffdd499955a34ec86af1c25c00f83   \"2d71ffdd499955a34ec86af1c25c00f83  \naskExecute2Settlement                \"COMPLETED\"                          \"COMPLETED\"                         \naskDeniedBytes                       null                                 null                                \naskDeniedSettlement                  \"REFUSED\"                            \"REFUSED\"                           \naskStoppedBytes                      null                                 null                                \naskStoppedSettlement                 \"REFUSED\"                            \"REFUSED\"                           \nlegOrdinal                           1                                    1                                   \nrouteKind                            \"recipient\"                          \"recipient\"                         \nrouteRole                            \"officer\"                            \"officer\"                           \nselfAskRouteKind                     \"recipient\"                          \"recipient\"                         \nselfAskRouteRole                     \"leader\"                             \"leader\"                            \nroutedWakes                          3                                    3                                   \ndeliveredWakes                       3                                    3                                   \nmanagementExecutions                 0                                    0                                   \nofficerResolveSettlement             \"COMPLETED\"                          \"COMPLETED\"                         \nduplicateWakeInputs                  1                                    1                                   \nstickyStopMarkerCount                1                                    1                                   \n\nagreeing=true differing=[]"
+  "text": "TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)\nfact                              boot1                               boot2                               \noverall                              \"BLOCKED\"                            \"BLOCKED\"                           \nenablement                           \"PROVEN\"                             \"PROVEN\"                            \nofficerUp                            \"PROVEN\"                             \"PROVEN\"                            \nofficerBinding                       \"PROVEN\"                             \"PROVEN\"                            \nroutedWake                           \"PROVEN\"                             \"PROVEN\"                            \ncaseCreated                          \"PROVEN\"                             \"PROVEN\"                            \nrouterOfficer                        \"PROVEN\"                             \"PROVEN\"                            \nwakeDelivered                        \"PROVEN\"                             \"PROVEN\"                            \nofficerDecides                       \"PROVEN\"                             \"PROVEN\"                            \naskExecutesAfterReview               \"PROVEN\"                             \"PROVEN\"                            \nduplicateRoute                       \"PROVEN\"                             \"PROVEN\"                            \nstickyStop                           \"PROVEN\"                             \"PROVEN\"                            \nrefusal                              \"PROVEN\"                             \"PROVEN\"                            \naskExecute                           \"PROVEN\"                             \"PROVEN\"                            \naskExecute2                          \"PROVEN\"                             \"PROVEN\"                            \naskExecuteProcess                    \"REFUTED\"                            \"REFUTED\"                           \naskDenied                            \"PROVEN\"                             \"PROVEN\"                            \naskStopped                           \"PROVEN\"                             \"PROVEN\"                            \naskAppeared                          true                                 true                                \nwakeFacts                            8                                    8                                   \nwakeIntentFiles                      0                                    0                                   \nreviewWakeHits                       0                                    0                                   \nofficerAllowFacts                    1                                    1                                   \naskExecuteBytes                      27                                   27                                  \naskExecuteSha256                     \"ced10112e5b82a2b1b6bca1b85b1dff24   \"ced10112e5b82a2b1b6bca1b85b1dff24  \naskExecuteSettlement                 \"COMPLETED\"                          \"COMPLETED\"                         \naskExecute2Bytes                     29                                   29                                  \naskExecute2Sha256                    \"2d71ffdd499955a34ec86af1c25c00f83   \"2d71ffdd499955a34ec86af1c25c00f83  \naskExecute2Settlement                \"COMPLETED\"                          \"COMPLETED\"                         \naskExecuteProcessRequestIdKnown      true                                 true                                \naskExecuteProcessInLaneBytes         null                                 null                                \naskExecuteProcessInLaneSha256        null                                 null                                \naskExecuteProcessOutLaneExists       false                                false                               \naskExecuteProcessSettlement          \"FAILED\"                             \"FAILED\"                            \naskDeniedBytes                       null                                 null                                \naskDeniedSettlement                  \"REFUSED\"                            \"REFUSED\"                           \naskStoppedBytes                      null                                 null                                \naskStoppedSettlement                 \"REFUSED\"                            \"REFUSED\"                           \nlegOrdinal                           1                                    1                                   \nrouteKind                            \"recipient\"                          \"recipient\"                         \nrouteRole                            \"officer\"                            \"officer\"                           \nselfAskRouteKind                     \"recipient\"                          \"recipient\"                         \nselfAskRouteRole                     \"leader\"                             \"leader\"                            \nroutedWakes                          4                                    4                                   \ndeliveredWakes                       4                                    4                                   \nmanagementExecutions                 0                                    0                                   \nofficerResolveSettlement             \"COMPLETED\"                          \"COMPLETED\"                         \nduplicateWakeInputs                  1                                    1                                   \nstickyStopMarkerCount                1                                    1                                   \n\nagreeing=true differing=[]"
 }

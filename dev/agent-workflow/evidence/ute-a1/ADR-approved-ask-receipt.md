@@ -1,14 +1,16 @@
 # ADR — the ApprovedAskReceipt (R3 of owner ruling 20261124-0151 §2)
 
-- **Status:** ACCEPTED and EXTENDED (round 96, owner ruling to extend R3 method by method).
-  R2 (`guarded` coupling) is REJECTED. R4 stays the fail-closed default for every operation not
+- **Status:** ACCEPTED and EXTENDED twice — round 96 (every FS mutation, method by method) and
+  round 99 (the PROCESS face: `bash` over the confined subprocess face and the governed persistent
+  PTY). R2 (`guarded` coupling) is REJECTED. R4 stays the fail-closed default for every operation not
   named here.
-- **Date:** 2026-11-24 (round 94, branch `vnext/a1-cut`) · extension 2026-11-24 (round 96).
+- **Date:** 2026-11-24 (round 94, branch `vnext/a1-cut`) · extension 2026-11-24 (round 96) ·
+  extension 2026-11-24 (round 99, process face).
 - **Scope:** the FIVE native FS mutations — `write`→`writeText`, `edit`→`editText`,
-  `patch_text`→`patchText`, `delete_file`→`deleteFile`, `move_file`→`moveFile`. Each has its own
-  operation kind and its own scope binding (§"Per-method scope binding"). The `subprocess`/PTY face
-  and every other tool keep `IO_ASK_REQUIRES_APPROVAL` — an OS-sandbox approval path is NOT assumed
-  to inherit the FS proof.
+  `patch_text`→`patchText`, `delete_file`→`deleteFile`, `move_file`→`moveFile` — plus ONE process
+  kind, `process-exec`, for the `bash` tool the product compiles a process disposition for. Each has
+  its own operation kind and its own scope binding (§"Per-method scope binding" and §"The PROCESS
+  face"). Every other tool keeps `IO_ASK_REQUIRES_APPROVAL`.
 
 ## Context
 
@@ -42,8 +44,11 @@ proves **this** effect belongs to **this** approved execution; everything else s
   `takePendingApprovedAskReceipt(executionObject)` — execution-object-keyed staging.
 - `runWithApprovedAskExecutionScope(receipt, run)` / `currentApprovedAskExecutionScope()` — the
   authorization carrier (a dedicated `AsyncLocalStorage`, **not** the attribution store).
-- `authorizeAskWithReceipt(input)` — the Provider-side verifier; returns a typed refusal code from
-  `APPROVED_ASK_RECEIPT_REFUSAL_CODES` or `{ok:true, resolved}`.
+- `authorizeAskWithReceipt(input)` — the FS Provider-side verifier; returns a typed refusal code
+  from `APPROVED_ASK_RECEIPT_REFUSAL_CODES` or `{ok:true, resolved}`.
+- `prepareApprovedProcessOperation({toolName, arguments, execution, processClass})` — round 99's
+  process-face preparation (the only process tool shape is `bash`); `authorizeProcessAskWithReceipt`
+  is the SPAWN-POINT verifier. Both are described in §"The PROCESS face".
 
 ### Binding fields (all frozen)
 
@@ -140,6 +145,100 @@ unavailable/mismatch, unresolvable path, deny, bounds violation, or a different 
 codes deliberately do NOT start with `ADMISSION_`, so a refusal raised after body entry settles as
 `FAILED` at the real phase — never `REFUSED / not-started` (ADM-160).
 
+## The PROCESS face (round 99)
+
+A persistent shell is the widest effect a Member has, and it is NOT a path operation: the authority
+is the compiled `toolBindings[].authorization` (`allow|ask|deny`) plus
+`execution.executionBoundary`, never a cwd and never a path lane (`admission.ts`, axis
+`process.exec`). Extending the receipt to it is therefore a separate operation kind, not a fifth
+column in the FS table.
+
+### The operation the receipt binds
+
+`process-exec`, for tool `bash` only (`APPROVED_ASK_PROCESS_TOOL_SHAPES`, a closed table like the FS
+one). The fingerprint is a `sha256` over:
+
+| field | meaning | why |
+| --- | --- | --- |
+| `toolName` | `bash` | the declared tool this approval is for |
+| `executionBoundary` | the COMPILED boundary (`confined-subprocess`) | a receipt for one executor can never spawn under another (ADM-175) |
+| `implementationOrigin` | the compiled origin (`dsh-native`) | same reason: the declared implementation is part of the operation |
+| `processClass.program` / `.programs` | the composition's FIXED shell class (`/bin/bash`, `[bash]`) | a receipt for one shell class can never spawn another program (ADM-174/175) |
+| `commandSha256` | digest of the exact `command` string, or `null` when the call carried none | the approved command text, when the spawn point can see it |
+| `cwd` | the AUTHORED `workdir` (empty when absent) | **context only** — a shell's cwd bounds nothing, and the verifier never treats it as a grant |
+
+### Where it is verified, and what that means
+
+The verifier runs at the **governed spawn point, before any process exists**:
+
+- confined subprocess face — `packages/runtime/team-services/src/subprocess.ts`,
+  `createConfinedSubprocessClass`'s `spawn` admission (the `shellInvocation !== undefined` branch,
+  before `provider.spawnStreaming`). `deny` throws first; `ask` calls
+  `authorizeProcessAskWithReceipt` and throws `SUBPROCESS_PROCESS_DENIED` /
+  `SUBPROCESS_PROCESS_RECEIPT_REFUSED` before the provider is called — the process count provably
+  stays 0 (ADM-178).
+- governed persistent PTY — `packages/runtime/team-services/src/terminal-pty.ts`,
+  `createGovernedPtyTerminalFace`'s `spawn`, before `raw.spawn` creates any process. Same order:
+  `deny` wins (`PTY_PROCESS_DENIED`), then the receipt (`PTY_PROCESS_RECEIPT_REFUSED`).
+
+### What the receipt DOES NOT grant
+
+- **No capability.** The verifier returns no policy. The OS profile is compiled before it runs, from
+  the Member's own three lanes, exactly as before: `compileExecutionProfile(effective)` on the
+  confined face and `narrowSandboxPolicy(base, effective)` on the PTY. `narrowSandboxPolicy` still
+  clamps `danger-full-access` to at most `workspace-write` and keeps `read-only` read-only. An
+  approval can therefore never add a writable, executable or kernel bit (ADM-176/177).
+- **No lane promotion.** It does not turn `ask` into `allow` anywhere, does not touch `bounds`, and
+  does not widen `allowPaths` — the arm compares the request's `allowPaths` with the lane-compiled
+  profile plus the pre-round program-dir allowance, byte for byte.
+- **No second authority.** The authority remains the durable Control decision + the consumed
+  one-shot grant; the receipt is a proof that THIS execution's consumption happened.
+- **No execution of its own.** It authorizes exactly one spawn for the execution that staged it.
+
+### LIVE status of the process face (round 99, measured)
+
+**The mechanism is proven; the LIVE positive is NOT.** Stated as measured, not inferred:
+
+- **Proven in-process over the REAL parts** (real confined provider over the landlock launcher, real
+  binder, real durable `ControlService`, real settlement store): the whole chain
+  `ask → inline allow → grant consumed → receipt minted → spawn-point verify → spawn → real command →
+  COMPLETED`, plus every negative (`ADM-174`…`ADM-179`).
+- **LIVE (D4, booted rc.2): the ask chain completes and the SHELL never appears.** The worker's `bash`
+  (`authorization: 'ask'`) raises a real durable Control request, the router qualifies it as an
+  Alpha.6 case and the Officer allows it through the real control path, the grant is consumed — and
+  the tool then fails with `no PTY backend registered for "a5sf-governed-shell"`. That error is raised
+  by the persistent-`bash` tool's own backend lookup on the scope it resolves `terminals` from, BEFORE
+  the governed PTY face's `spawn` runs, so on this boot the receipt verifier was never reached. Zero
+  bytes, no process, settlement `FAILED` — fail-closed, not widened.
+- **Ruled out by measurement:** an empty `a5sfNativeToolModules` (it breaks Member activation: the
+  Officer never comes up), and the ceiling shape (an ask nested inside an allow is not expressible and
+  the Member does not activate). `dsh.subprocess` (D3's proven owner) does not change the outcome.
+- **Not determined:** whether the v5 per-tool `bash` binding is the specific trigger for the missing
+  face. The v4 D3 world mounts the SAME face successfully with a bash binding whose disposition is
+  `allow`, so the difference is in the composition/activation path, not in the receipt.
+
+The consequence for this ADR is narrow and explicit: **no live claim is made for the process face.**
+The spawn-point verification is a proven MECHANISM (with the FS face's live precedent), and the live
+`ask` leg for a process tool is BLOCKED by an assembly gap named above, which is a product decision,
+not a receipt defect.
+
+### Limits, stated exactly
+
+1. **The PTY cannot compare the command digest.** The persistent PTY creates its shell before any
+   command text exists, so its spawn point has no `command` to digest and therefore cannot compare
+   `commandSha256`; it verifies everything else (execution, member, policy generation, binding
+   identity, epochs, declared boundary, shell class). The confined subprocess face, which spawns
+   `argv[program,'-c',command]`, DOES compare it (`RECEIPT_COMMAND_MISMATCH`, ADM-179). This is the
+   same seam that makes a persistent shell persistent, not an omission.
+2. **A receipt covers the SPAWN, not every command typed into an existing session.** Once the
+   governed PTY session exists, later commands are sent into that already-confined shell and are not
+   re-verified against a receipt (there is no per-command process to gate). The session's OS profile
+   is unchanged, so the confinement still holds; the per-command approval does not.
+3. **`cwd` is not authority.** It is bound as context so two approvals cannot be confused, and the
+   verifier intentionally does not consult it.
+4. **One process tool.** `bash` is the only shipped process tool whose execution authorization this
+   product compiles; a process ask on any other name prepares nothing and keeps R4.
+
 ## Rejected alternatives
 
 1. **`guarded` coupling / a second approval consumption path (R2).** Two authorities over one
@@ -191,12 +290,13 @@ attribution-ALS reuse, no second authority, no admission-duty expansion, no upst
 
 ## What this ADR does NOT prove
 
-- **Scope.** The five FS mutations are covered; the **subprocess/PTY face is NOT** and is the next
-  owner-ruled step. An OS-sandbox approval is a different plane (its authority is the
-  `SandboxExecutionPolicy`, not a file lane), so it does not inherit this proof and still refuses
-  (R4). rc.5's real multi-file `apply_patch` tool is deliberately NOT wired: it expands into several
-  per-file Provider effects, and a receipt can bind ONE operation, so admitting it would either
-  duplicate upstream's parser or let one approval authorize N effects. It stays unbound (R4).
+- **Scope.** The five FS mutations are covered live; the `bash` process face is covered at MECHANISM
+  level only, and its live leg is blocked (see §"LIVE status of the process face"). Every other tool
+  keeps R4. The process proof is a SPAWN-POINT proof (§"Limits"), not a per-command proof for an
+  already-running persistent session. rc.5's real multi-file `apply_patch` tool is deliberately NOT
+  wired: it expands into several per-file Provider effects, and a receipt can bind ONE operation, so
+  admitting it would either duplicate upstream's parser or let one approval authorize N effects. It
+  stays unbound (R4).
 - **Declared shapes.** `delete_file`/`move_file`/`patch_text` are argument shapes for rc.5 Provider
   methods with no shipped native tool this round: the arms drive them through the real admission
   port with the declared shape, and the confined Provider, binder, Control and settlement are real,

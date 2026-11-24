@@ -1,0 +1,4 @@
+{
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"d4res-ask-denied-6pshs8magt\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}"
+}

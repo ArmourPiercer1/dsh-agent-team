@@ -3422,3 +3422,65 @@ face in the closed vocabulary) remains the only shape that can express a nested 
 
 **Not proven:** a boot-level AgentSetup arm for the realmless refusal (in-process rule + source placement
 only); any PRODUCT-PROVEN status (no bound executable gate exercises these rows; the level is MECHANISM).
+
+## Round 99 (2026-11-24) — the R3 receipt reaches the PROCESS face: MECHANISM proven, the LIVE process leg blocked by a named assembly gap
+
+Owner ruling: extend `ApprovedAskReceipt` to the process face (persistent `bash` / governed shell,
+disposition `ask`) as the operation kind `process-exec`. Nothing was relaxed: no new authority, no lane
+promotion, no widened assertion, no widened timeout.
+
+**What the receipt binds on this face.** `toolName`, the COMPILED `executionBoundary`,
+`implementationOrigin`, the composition's fixed shell class (`program`/`programs`), the exact
+`commandSha256` (or `null` when the call carried no command), and the authored `cwd` as CONTEXT only.
+The fingerprint is a `sha256` over exactly those fields.
+
+**Where it is verified (before any process exists).** `team-services/src/subprocess.ts`
+(`createConfinedSubprocessClass`'s spawn admission, `shellInvocation` branch) and
+`team-services/src/terminal-pty.ts` (`createGovernedPtyTerminalFace.spawn`, before `raw.spawn`).
+`deny` is decided first; an ask receipt that does not cover THIS spawn refuses with
+`SUBPROCESS_PROCESS_RECEIPT_REFUSED` / `PTY_PROCESS_RECEIPT_REFUSED`, and the provider is never called.
+
+**What is proven (MECHANISM, real parts).** `ADM-174` positive chain (ask → inline allow → consumed
+grant → receipt → spawn → real bytes → `COMPLETED`, ONE provider call); `ADM-175` cross-execution /
+cross-face / reuse; `ADM-176` no widening (out-of-lane write refused by the OS, exit≠0, no file; the
+request's `allowPaths` deep-equal the lane-compiled profile); `ADM-177` no escalation
+(`danger-full-access` still clamps to at most `workspace-write`, a pure-ask lane stays `read-only`);
+`ADM-178` deny wins before any receipt and revocation refuses, both with ZERO provider calls;
+`ADM-179` phase honesty (a command different from the approved one refuses pre-spawn with
+`RECEIPT_COMMAND_MISMATCH`; a post-spawn kernel denial settles by its real phase). Full
+`vnext-admission.test.mjs`: exit 0, 162 pass, 0 fail.
+
+**What is NOT proven, and why (LIVE).** `d4:ask-execute-process` is **REFUTED**: on two D4 boots the ask
+chain is REAL (durable Control request → Alpha.6 case → Officer allow → grant consumed) and then the
+persistent `bash` tool fails at ITS OWN backend lookup with
+`no PTY backend registered for "a5sf-governed-shell"` — before the governed PTY face's `spawn`, i.e.
+before the receipt verifier. Zero bytes, no process, settlement `FAILED` (fail-closed). Two world-shape
+fixes were measured and recorded as failures, not worked around: `a5sfNativeToolModules: []` breaks
+Member activation; a ceiling that asks inside an allow is not expressible and the Member never
+activates. The FS live arms are unaffected and remain PROVEN.
+
+**Final two-boot evidence (`--boots 2`, booted rc.2 `639ed015…`).** `allBooted=true`,
+`evidence-complete=true`, agreeing pair with `differing=[]`. **Thirteen named judges PROVEN on both
+boots** (`officer-up`, `officer-binding`, `ask-execute`, `ask-execute-2`, `case-created`,
+`router-officer`, `wake-delivered`, `officer-decides`, `ask-executes-after-review`, `duplicate-route`,
+`sticky-stop`, `routed-wake`, `refusal`, `enablement`, `ask-denied`, `ask-stopped`), and exactly ONE
+REFUTED — the process arm, with the three clauses that follow from the named backend gap. Counters on
+both boots: `askExecuteBytes=27` / `COMPLETED`; `askExecuteProcessInLaneBytes=null`,
+`askExecuteProcessOutLaneExists=false`, `askExecuteProcessSettlement=FAILED`; `askDeniedBytes=null`
+/`REFUSED`; `askStoppedBytes=null`/`REFUSED`.
+
+**Two driver MEASUREMENT fixes were needed to make that evidence deterministic, and both are
+disclosed as such (no assertion changed):**
+1. leg 1's ask is now discovered on the DURABLE ledger as well as the pending projection. Measured: a
+   boot where the ask was already decided before the projection was read; the judge then reported "no
+   request raised" while the write really executed (27 bytes) — the same fix round 97 applied to the
+   second ask.
+2. the routed CASE row is snapshotted the moment its id is known (a disk read, no HTTP), before any
+   reviewer can decide it. Measured: reading it after the ask-appearance HTTP roundtrip let the Officer
+   settle first, so the round-97 clause "the case has no decision yet" failed on a correct product.
+The two-boot agreement table also no longer compares the freshly minted `ctrl-…` request id (volatile
+by construction); it compares the stable facts about the same execution (bytes/sha/out-of-lane/settlement).
+
+**Levels.** No row moves to PRODUCT-PROVEN. FS: unchanged. Process: MECHANISM only. The live process
+gap is the next owner-ruled step and is stated verbatim in `ADR-approved-ask-receipt.md`
+§"LIVE status of the process face".

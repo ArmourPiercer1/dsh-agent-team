@@ -390,6 +390,24 @@ export function createGovernedRealmProvider(options = {}) {
       const compiled = createProductRealmProvider(plan).compiledFor(member)
       if (compiled === undefined) return undefined
 
+      // ROUND 99 — THE PROCESS DISPOSITION, exactly as the Centre will read it. The face needs the
+      // DECLARED authorization (allow/ask/deny) for the shell tool it serves, because that is what
+      // decides whether the spawn point must require an approved-ask receipt. It is taken from the
+      // SAME compiled `bindings[]` the centre projects from (last entry for `bash` wins, mirroring
+      // `bindingFromCompiledMember`); nothing is re-derived and no default is invented. A world that
+      // declares no `bash` binding yields `undefined` — the centre refuses that call anyway.
+      const shellBinding = (Array.isArray(compiled.bindings) ? compiled.bindings : [])
+        .filter((entry) => entry?.toolName === 'bash')
+        .at(-1)
+      const processAuthority = shellBinding === undefined ||
+        typeof shellBinding.authorization !== 'string' ||
+        shellBinding.execution?.executionBoundary === undefined
+        ? undefined
+        : Object.freeze({
+            authorization: shellBinding.authorization,
+            executionBoundary: String(shellBinding.execution.executionBoundary),
+          })
+
       const compiledMember = Array.isArray(compiled.members) ? compiled.members[0] : undefined
       const policy = compiledMember === undefined ? undefined : compiledMember.policy
       if (policy === undefined || policy.ok !== true) {
@@ -461,6 +479,7 @@ export function createGovernedRealmProvider(options = {}) {
           bindingId: GOVERNED_SHELL_BINDING,
           memberScope: effective.memberIdentity,
           shellClass,
+          ...(processAuthority === undefined ? {} : { processAuthority }),
         }),
         // NATIVE-BASH-PRESERVATION (2026-11-11): the terminal face is a
         // GOVERNED PERSISTENT PTY, not PD-13's per-command confined child.
@@ -475,11 +494,13 @@ export function createGovernedRealmProvider(options = {}) {
               maxOutputBytes,
               graceMs,
               ...(nonBlank(sessionId) ? { memberSessionId: sessionId } : {}),
+              ...(processAuthority === undefined ? {} : { processAuthority }),
             })
           : Object.freeze({
               program,
               maxOutputBytes,
               graceMs,
+              ...(processAuthority === undefined ? {} : { processAuthority }),
             }),
       })
     },

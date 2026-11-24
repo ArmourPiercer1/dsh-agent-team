@@ -267,6 +267,10 @@ export async function installMemberIoProviders(input) {
             const ConfinedSubprocess = createConfinedSubprocessClass(SubprocessBase, {
                 ...input.subprocess,
                 onGuardConsult: input.onGuardConsult,
+                // ROUND 99 — the SAME binder the centre spends grants through, so a process `ask` can
+                // prove its receipt is still live at the governed spawn point. Omitted = the face refuses
+                // a process `ask` it cannot prove (fail-closed).
+                ...(input.approvedAskAuthority === undefined ? {} : { approvedAskAuthority: input.approvedAskAuthority }),
             });
             try {
                 // Cordis' `plugin` overloads are keyed on the plugin's literal shape;
@@ -322,6 +326,8 @@ export async function installMemberIoProviders(input) {
                 sandboxProvider: () => root.get('sandbox'),
                 ...(ptyTerminalSpec.backendConfig === undefined ? {} : { backendConfig: ptyTerminalSpec.backendConfig }),
                 ...(ptyTerminalSpec.revisionNow === undefined ? {} : { revisionNow: ptyTerminalSpec.revisionNow }),
+                ...(ptyTerminalSpec.processAuthority === undefined ? {} : { processAuthority: ptyTerminalSpec.processAuthority }),
+                ...(input.approvedAskAuthority === undefined ? {} : { approvedAskAuthority: input.approvedAskAuthority }),
             });
             try {
                 const mountPlugin = scoped.plugin;

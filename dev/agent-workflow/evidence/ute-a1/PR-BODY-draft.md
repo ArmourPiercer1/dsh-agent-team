@@ -770,3 +770,70 @@ Officer can settle a leg inside one poll).
 **Not proven.** Only `write`/`writeText` carry the live R3 receipt; subprocess/PTY and `apply_patch`
 remain R4; the scripted model is the only double; the duplicate-route attempt itself leaves no durable
 fact (the judge proves convergence and records the two call sites).
+
+## ROUND 99 — the R3 receipt reaches the PROCESS face: MECHANISM proven, the LIVE process leg REFUTED by a named assembly gap
+
+Owner ruling this round: the same `ApprovedAskReceipt` must cover the **process face** (persistent `bash`
+/ governed shell whose compiled disposition is `ask`), as a distinct operation kind `process-exec`, with
+the verifier at the governed spawn point **before any process exists**. Nothing was relaxed: no new
+authority, no lane promotion, no second authority, no widened assertion, no widened timeout, no retry.
+
+**What the receipt binds on this face.** `toolName`, the COMPILED `executionBoundary` and
+`implementationOrigin`, the composition's fixed shell class (`program`/`programs`), the exact
+`commandSha256` (or `null` when the call carried no command), and the authored `cwd` as CONTEXT only.
+The fingerprint is a `sha256` over exactly those fields. The operation is staged on the EXECUTION OBJECT
+(`WeakMap`) and the authorization is an `AsyncLocalStorage` scope on the Provider call — never a global
+`callId` map, never a second authority.
+
+**Where it is verified (file:line, before any process).**
+- confined subprocess: [subprocess.ts](packages/runtime/team-services/src/subprocess.ts#L1487-L1536) —
+  `deny` throws `SUBPROCESS_PROCESS_DENIED` first, `ask` runs
+  `authorizeProcessAskWithReceipt(...)` (L1515) and refuses with `SUBPROCESS_PROCESS_RECEIPT_REFUSED`
+  (L1532); both BEFORE the provider call and before the program-identity check.
+- governed persistent PTY: [terminal-pty.ts](packages/runtime/team-services/src/terminal-pty.ts#L470-L505)
+  — the same verifier before `raw.spawn`; it cannot compare `commandSha256` (the shell precedes any
+  command text — disclosed in the ADR).
+
+**Arms (real governed provider + real binder + real Control + real settlement).** `ADM-174`…`ADM-179`:
+positive chain (ask → inline allow → consumed grant → receipt → spawn → real command → `COMPLETED`, ONE
+provider call); cross-execution/cross-face/reuse refused; no widening (out-of-lane write refused by the
+OS, zero bytes; the request's `allowPaths` deep-equal the lane-compiled profile); no escalation
+(`danger-full-access` still clamps to at most `workspace-write`; a pure-ask lane stays `read-only`);
+`deny` wins before any receipt and revocation refuses, both with ZERO provider calls; phase honesty
+(approved command ≠ spawned command refuses pre-spawn with `RECEIPT_COMMAND_MISMATCH`; a post-spawn
+kernel denial settles by its real phase). `vnext-admission.test.mjs`: **162 pass, 0 fail**.
+
+**One real defect found and fixed by running it.** `completeAsk` classified a call as a process call by
+"its compiled binding carries an `execution` block" — but EVERY tool binding carries one (`trusted-host`
+for the FS tools too). Measured live: the granted worker `write` then refused with
+`RECEIPT_NOT_IN_SCOPE`, i.e. the fix for the process face would have BROKEN the live FS face. The
+classification is now the CLOSED TOOL TABLE `APPROVED_ASK_PROCESS_TOOL_SHAPES = ['bash']`
+([admission-port.mjs](packages/runtime/src/plugin/vnext/admission-port.mjs#L814-L826)), exactly like the
+FS table. After the fix the two FS live arms and all seven routed-wake judges are PROVEN again.
+
+**LIVE (D4, two boots): the process ask chain is real and the SHELL never appears.** The worker `bash`
+(`authorization: 'ask'`) raises a real durable Control request, the router qualifies it as an Alpha.6
+case, the Officer allows it through the real control path, the grant is consumed — and the persistent
+`bash` tool then fails with `no PTY backend registered for "a5sf-governed-shell"` from ITS OWN backend
+lookup, before the governed PTY `spawn`, i.e. before the verifier. Zero bytes, no process, settlement
+`FAILED`. `d4:ask-execute-process` is therefore **REFUTED**, and the other twelve named judges (including
+all eight pre-existing ones, the deny arm and Stop-while-pending) are **PROVEN** on both boots with
+identical rows.
+
+**Two driver MEASUREMENT fixes were required for a deterministic pair, and both are disclosed, not
+hidden:** leg 1's ask is now discovered on the DURABLE ledger as well as the pending projection (a boot
+was measured where the ask was already decided before the projection was read: the judge said "no
+request raised" while the write really executed — the fix round 97 applied to the second ask), and the
+routed CASE row is snapshotted the moment its id is known, before any reviewer can decide it (reading it
+after the ask-appearance HTTP roundtrip let the Officer settle first and tripped the round-97 clause "the
+case has no decision yet" on a correct product). The agreement table also stopped comparing the
+freshly-minted `ctrl-…` id. No assertion changed.
+
+**Two world-shape hypotheses measured and REFUSED rather than worked around:** `a5sfNativeToolModules: []`
+breaks Member activation (the Officer never comes up); a ceiling that asks for a subtree while allowing
+an enclosing root is not expressible to Landlock and the Member never activates. Neither was adopted; the
+world keeps its round-98 shape plus the bash declaration and a pure-allow workspace ceiling.
+
+**Not proven.** The live POSITIVE process execution (blocked by the assembly gap above — a product
+decision, not a receipt defect: the same face mounts in the v4 D3 world). `apply_patch` remains R4. The
+scripted model is the only double. No row is PRODUCT-PROVEN.

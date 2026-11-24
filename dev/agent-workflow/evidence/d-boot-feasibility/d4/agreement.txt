@@ -1,6 +1,6 @@
 TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)
 fact                              boot1                               boot2                               
-overall                              "PASS"                               "PASS"                              
+overall                              "BLOCKED"                            "BLOCKED"                           
 enablement                           "PROVEN"                             "PROVEN"                            
 officerUp                            "PROVEN"                             "PROVEN"                            
 officerBinding                       "PROVEN"                             "PROVEN"                            
@@ -15,10 +15,11 @@ stickyStop                           "PROVEN"                             "PROVE
 refusal                              "PROVEN"                             "PROVEN"                            
 askExecute                           "PROVEN"                             "PROVEN"                            
 askExecute2                          "PROVEN"                             "PROVEN"                            
+askExecuteProcess                    "REFUTED"                            "REFUTED"                           
 askDenied                            "PROVEN"                             "PROVEN"                            
 askStopped                           "PROVEN"                             "PROVEN"                            
 askAppeared                          true                                 true                                
-wakeFacts                            6                                    6                                   
+wakeFacts                            8                                    8                                   
 wakeIntentFiles                      0                                    0                                   
 reviewWakeHits                       0                                    0                                   
 officerAllowFacts                    1                                    1                                   
@@ -28,6 +29,11 @@ askExecuteSettlement                 "COMPLETED"                          "COMPL
 askExecute2Bytes                     29                                   29                                  
 askExecute2Sha256                    "2d71ffdd499955a34ec86af1c25c00f83   "2d71ffdd499955a34ec86af1c25c00f83  
 askExecute2Settlement                "COMPLETED"                          "COMPLETED"                         
+askExecuteProcessRequestIdKnown      true                                 true                                
+askExecuteProcessInLaneBytes         null                                 null                                
+askExecuteProcessInLaneSha256        null                                 null                                
+askExecuteProcessOutLaneExists       false                                false                               
+askExecuteProcessSettlement          "FAILED"                             "FAILED"                            
 askDeniedBytes                       null                                 null                                
 askDeniedSettlement                  "REFUSED"                            "REFUSED"                           
 askStoppedBytes                      null                                 null                                
@@ -37,8 +43,8 @@ routeKind                            "recipient"                          "recip
 routeRole                            "officer"                            "officer"                           
 selfAskRouteKind                     "recipient"                          "recipient"                         
 selfAskRouteRole                     "leader"                             "leader"                            
-routedWakes                          3                                    3                                   
-deliveredWakes                       3                                    3                                   
+routedWakes                          4                                    4                                   
+deliveredWakes                       4                                    4                                   
 managementExecutions                 0                                    0                                   
 officerResolveSettlement             "COMPLETED"                          "COMPLETED"                         
 duplicateWakeInputs                  1                                    1                                   

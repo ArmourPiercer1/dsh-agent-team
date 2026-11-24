@@ -4,7 +4,7 @@
   "resolveOutcome": null,
   "cancelStatus": 200,
   "file": {
-    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T01-15-55Z/workspace/lane/ask-stopped.txt",
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T05-32-38Z/workspace/lane/ask-stopped.txt",
     "exists": false,
     "content": null,
     "bytes": null,
@@ -12,7 +12,7 @@
   },
   "settlement": {
     "executionId": "exec-e14318d017ca1dc2ba9c1821dfa714eee89178b2",
-    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T01-15-55Z/centre/settlement/inst-0ty67u70r99a/exec-e14318d017ca1dc2ba9c1821dfa714eee89178b2.settlement.json",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T05-32-38Z/centre/settlement/inst-0ty67u70r99a/exec-e14318d017ca1dc2ba9c1821dfa714eee89178b2.settlement.json",
     "present": true,
     "state": "REFUSED",
     "bodyOutcome": "not-started",
@@ -21,7 +21,7 @@
       "ADMITTED",
       "REFUSED"
     ],
-    "terminalAt": "2026-11-24T01:18:21.673Z"
+    "terminalAt": "2026-11-24T05:35:03.751Z"
   },
   "facts": [
     {
@@ -32,9 +32,9 @@
       "instanceGeneration": 0,
       "toolName": "write",
       "axis": "fs.write",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T01-15-55Z/workspace/lane/ask-stopped.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T05-32-38Z/workspace/lane/ask-stopped.txt",
       "definitionSource": "",
-      "policyGeneration": "a5sf1:9ead11cc8d8944aeb49c2bd9b58155c0",
+      "policyGeneration": "a5sf1:b6dd3a7557baf422248d1309709019fd",
       "blueprintRevision": "",
       "owner": "session-dboot-d4-root",
       "decision": "deny",
@@ -42,7 +42,7 @@
       "refusalCode": "ADMISSION_STOPPED",
       "reason": "the execution \"call-d4-worker-write\" was aborted before its body; a Stop is not a lane denial, an expiry or a fault, and nothing that arrives after it may authorize this call",
       "kind": "invocation-authority",
-      "at": "2026-11-24T01:18:21.668Z"
+      "at": "2026-11-24T05:35:03.746Z"
     },
     {
       "callId": "call-d4-worker-write",
@@ -52,9 +52,9 @@
       "outcome": "admission-refusal",
       "isError": true,
       "refusalCode": "ADMISSION_STOPPED",
-      "policyGeneration": "a5sf1:9ead11cc8d8944aeb49c2bd9b58155c0",
+      "policyGeneration": "a5sf1:b6dd3a7557baf422248d1309709019fd",
       "kind": "execution",
-      "at": "2026-11-24T01:18:21.678Z"
+      "at": "2026-11-24T05:35:03.757Z"
     }
   ],
   "verdict": {

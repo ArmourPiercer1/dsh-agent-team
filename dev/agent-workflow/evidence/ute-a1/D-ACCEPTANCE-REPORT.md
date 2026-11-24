@@ -1801,3 +1801,37 @@ own evidence contract, not that gate. No gate was invented; the level is capped 
 are mechanism-level; subprocess/PTY and `apply_patch` refuse at R4). The model is scripted. The
 duplicate-route attempt itself leaves no durable fact — the judge proves convergence (one wake), and
 records the two product call sites that produced the attempt. No production code changed in round 97.
+
+## ROUND 99 ADDENDUM (2026-11-24) — G2 reaches the PROCESS face: MECHANISM proven, LIVE leg blocked by a named assembly gap
+
+Owner ruling: extend the SAME `ApprovedAskReceipt` to the process face (persistent `bash` / governed
+shell with disposition `ask`), as a distinct operation kind `process-exec`, and do NOT assume an
+OS-sandbox approval inherits the FS proof.
+
+**Per-face status of G2/BL-30 after this round**
+
+| face | ask→? | what is proven | level |
+| --- | --- | --- | --- |
+| FS (`write`/`writeText`) | executes | round 95 live chain (real ask → real allow → consume → receipt → real bytes → `COMPLETED`), unchanged this round | **DEV-LIVE** |
+| FS (`edit`/`patch_text`/`delete_file`/`move_file`) | executes | round 96 mechanism arms over the real Provider/binder/Control/settlement | **MECHANISM** |
+| **process — confined subprocess face** | spawns under the receipt, no new capability | `ADM-174`…`ADM-179`: real provider over the landlock launcher; receipt bound to tool + compiled `executionBoundary` + `implementationOrigin` + fixed shell class + `commandSha256`; verified BEFORE the provider call; cross-execution/cross-face/reuse refused; out-of-lane write refused by the OS with the request's `allowPaths` byte-identical to the lane-compiled profile; `danger-full-access` still clamps to at most `workspace-write`; deny wins; revocation; command mismatch refused pre-spawn; post-spawn kernel denial settles by its real phase | **MECHANISM** |
+| **process — governed persistent PTY** | verification wired at the spawn point | the same `process-exec` verifier runs in `createGovernedPtyTerminalFace.spawn` before `raw.spawn`; it verifies everything except `commandSha256` (the shell precedes any command text — disclosed in the ADR) | **MECHANISM** |
+| **process — LIVE (booted rc.2)** | **BLOCKED** | `d4:ask-execute-process`: the REAL ask, the REAL Alpha.6 case routing, the REAL Officer allow and the REAL grant consumption all happen; the persistent `bash` tool then reports `no PTY backend registered for "a5sf-governed-shell"` from its OWN backend lookup, BEFORE the governed PTY `spawn` — so the receipt verifier is never reached on a boot. Zero bytes, no process, settlement `FAILED`: fail-closed. | **REFUTED (named gap)** |
+
+**Why the live gap is not a receipt defect, and not papered over.** The same governed PTY face mounts
+and serves in the v4 D3 world (`d3:persistent-subprocess`, PROVEN live in round 76); the difference on
+this boot is the composition/activation path of a v5 per-tool `bash` binding, not any receipt rule.
+Two world-shape hypotheses were MEASURED and are recorded as failures rather than worked around:
+`a5sfNativeToolModules: []` breaks Member activation (the Officer never comes up), and a ceiling that
+asks for a subtree while allowing an enclosing root is not expressible (the Member never activates).
+No assertion was weakened and no timeout widened to make the live cell look green.
+
+**The final pair (`--boots 2`).** `allBooted=true`, `evidence-complete=true`, `agreeing=true
+differing=[]`; thirteen named judges PROVEN on both boots and ONE REFUTED (`d4:ask-execute-process`).
+Its counters are identical on both boots and are the whole claim: in-lane bytes `null`, out-of-lane
+existence `false`, settlement `FAILED` — no process, no bytes, nothing widened.
+
+**G2 statement, exact:** closed live for `write`/`writeText`; proven at mechanism level for the other
+four FS mutations and for BOTH process faces (spawn-point verification, all negatives); the live
+process leg is BLOCKED by the named assembly gap and is the next owner-ruled step. `apply_patch`
+remains unbound (R4). No row is PRODUCT-PROVEN.

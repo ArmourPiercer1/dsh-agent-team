@@ -1,5 +1,22 @@
 # HANDOFF — resume here (written round 44, HEAD `0b997aa90`)
 
+> **ROUND 99 (2026-11-24) — READ THIS FIRST; the round-44 text below is HISTORICAL.** The R3
+> `ApprovedAskReceipt` now covers the PROCESS face at MECHANISM level: new kind `process-exec` in
+> `member-io-policy/src/approved-ask-receipt.ts`, verified at the governed spawn point in
+> `team-services/src/subprocess.ts` (L1487-L1536) and `team-services/src/terminal-pty.ts` (L470-L505),
+> arms `ADM-174`…`ADM-179` (162 pass / 0 fail). The LIVE process leg is **REFUTED by a named assembly
+> gap**: the D4 worker's real ask → real Alpha.6 case → real Officer allow → consumed grant all happen,
+> then the persistent `bash` tool fails at ITS OWN backend lookup with
+> `no PTY backend registered for "a5sf-governed-shell"` — before the governed PTY `spawn`, so before the
+> verifier. Zero bytes, no process, settlement `FAILED` (fail-closed). **Next round's first job: decide
+> (owner) whether a v5 per-tool `bash` binding must carry the governed PTY face onto its binding realm.**
+> Two world-shape fixes were measured and rejected: `a5sfNativeToolModules: []` breaks Member activation;
+> a ceiling that asks inside an allow is not expressible. Do NOT weaken the live judge to make it green.
+> Also fixed this round: `completeAsk` used to classify a process call by "has an `execution` block",
+> which every FS binding has — that broke the LIVE write arm with `RECEIPT_NOT_IN_SCOPE`; the
+> classification is now the closed table `APPROVED_ASK_PROCESS_TOOL_SHAPES = ['bash']`.
+
+
 Worktree: `.worktrees/vnext-a1-cut`, branch `vnext/a1-cut`, draft PR #822 (never auto-merge).
 Read first: this file, then `MIGRATED-SUITE-STATUS.md` (last three sections), then
 `ESCALATION-realmless-admission.md`, then `CAPABILITY-MATRIX-C.md` (the two RED/ESCALATED blocks).

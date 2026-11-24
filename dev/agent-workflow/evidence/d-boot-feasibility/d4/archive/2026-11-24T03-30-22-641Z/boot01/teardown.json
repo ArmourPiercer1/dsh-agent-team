@@ -1,0 +1,23 @@
+{
+  "teardown": {
+    "host": {
+      "wasRunning": true,
+      "pid": 78,
+      "killed": true,
+      "portFree": true
+    },
+    "homeDeleted": null,
+    "releasedPorts": [
+      3195,
+      13057,
+      3195
+    ],
+    "killedPids": [
+      78
+    ],
+    "notes": [
+      "home kept as evidence: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T03-19-04Z"
+    ]
+  },
+  "refusalTeardown": null
+}

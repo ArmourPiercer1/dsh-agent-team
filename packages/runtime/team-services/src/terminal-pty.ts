@@ -49,12 +49,13 @@
  * @module @dsh-agent-team/runtime/team-services/terminal-pty
  */
 
-import { isAbsolute, resolve as resolvePath } from 'node:path'
+import { basename, isAbsolute, resolve as resolvePath } from 'node:path'
 import type { Context } from '@deepseek-ai/cordis'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { TerminalSessionService } from '@deepseek-ai/dsh-terminal'
 import { Config as BashTerminalConfig, apply as applyBashTerminalBackend } from '@deepseek-ai/dsh-terminal-bash'
 import type { PathRuleSet } from '../../member-io-policy/src/types.js'
+import { authorizeProcessAskWithReceipt } from '../../member-io-policy/src/approved-ask-receipt.js'
 
 /** The closed refusal vocabulary of THIS face (never a bare `Error`). */
 export const PTY_FACE_REFUSAL_CODES = [
@@ -74,6 +75,10 @@ export const PTY_FACE_REFUSAL_CODES = [
   'ENFORCEMENT_UNAVAILABLE',
   /** The pinned PTY backend refused to register or the service is not live. */
   'PTY_BACKEND_UNAVAILABLE',
+  /** ROUND 99: the compiled process authorization is `deny`; a receipt is never consulted. */
+  'PTY_PROCESS_DENIED',
+  /** ROUND 99: a process `ask` had no valid receipt covering THIS execution. */
+  'PTY_PROCESS_RECEIPT_REFUSED',
 ] as const
 
 export type PtyFaceRefusalCode = (typeof PTY_FACE_REFUSAL_CODES)[number]
@@ -182,6 +187,31 @@ export interface GovernedPtyTerminalFaceOptions {
   readonly sandboxProvider?: () => { confine(argv: readonly string[], policy: PtySandboxExecutionPolicy, signal?: AbortSignal): Promise<{ argv: readonly string[] }> } | undefined
   /** Extra pinned-backend config (rows/cols/timeouts); never policy. */
   readonly backendConfig?: Record<string, unknown>
+  /**
+   * ROUND 99 — the COMPILED process disposition for the shell tool this face serves, taken from
+   * the SAME `toolBindings[]` entry the Centre admits the call on. `deny` refuses every spawn here
+   * (defence in depth: `deny` wins before any receipt), `ask` requires an approved-ask receipt that
+   * covers THIS execution, `allow` is the pre-round behaviour. Omitted = no declaration reached this
+   * face (the Centre refuses the call anyway); the face does not invent one.
+   *
+   * THE RECEIPT ADDS NO CAPABILITY. `narrowSandboxPolicy` below compiles the OS profile from the
+   * Member's three lanes exactly as before; this field selects whether a receipt must be verified,
+   * and nothing else.
+   */
+  readonly processAuthority?: {
+    readonly authorization: 'allow' | 'ask' | 'deny'
+    readonly executionBoundary: string
+  }
+  /**
+   * The SAME invocation binder the Centre spends one-shot grants through. Supplied only when the
+   * ask path is wired; omitted means a process `ask` cannot prove liveness and is refused.
+   */
+  readonly approvedAskAuthority?: {
+    readonly binder?: {
+      currentEpoch(): number
+      currentMemberEpoch(memberIdentity: string): number
+    }
+  }
 }
 
 /** One recorded PTY domain: the policy generation it was opened under. */
@@ -440,6 +470,39 @@ export function createGovernedPtyTerminalFace(options: GovernedPtyTerminalFaceOp
         async spawn(owner: Agent, request: { readonly type: string; readonly cwd?: string; readonly name?: string }, signal?: AbortSignal) {
           expectBoundOwner(owner)
           assertRevisionCurrent()
+          // ROUND 99 — THE GOVERNED SPAWN POINT, before `raw.spawn` creates any process.
+          //
+          // `deny` wins here, before any receipt is read. `ask` requires an approved-ask receipt
+          // covering THIS execution; `allow` is the pre-round behaviour. The receipt is verified
+          // BEFORE the PTY exists and returns no policy: the OS profile below is still
+          // `narrowSandboxPolicy(base, effective)`, compiled from the Member's three lanes, so an
+          // approval can never widen it. The PTY creates its shell before any command text exists,
+          // so the receipt's `commandSha256` is recorded but NOT compared here (see the ADR).
+          const processAuthority = options.processAuthority
+          if (processAuthority !== undefined) {
+            if (processAuthority.authorization === 'deny') {
+              throw new PtyFaceRefusal(
+                'PTY_PROCESS_DENIED',
+                `the compiled process authorization for this Member's shell is 'deny'; no approval can turn a deny into a spawn`,
+              )
+            }
+            if (processAuthority.authorization === 'ask') {
+              const verified = authorizeProcessAskWithReceipt({
+                memberIdentity,
+                policyRevision,
+                toolName: 'bash',
+                executionBoundary: processAuthority.executionBoundary,
+                processClass: { program, programs: [basename(program)] },
+                authority: options.approvedAskAuthority,
+              })
+              if (!verified.ok) {
+                throw new PtyFaceRefusal(
+                  'PTY_PROCESS_RECEIPT_REFUSED',
+                  `${verified.code}: ${verified.detail}`,
+                )
+              }
+            }
+          }
           admitted.add(owner)
           const result = await raw.spawn(owner, request, signal)
           const base = options.sandboxPolicy.resolve({ session: owner?.session })

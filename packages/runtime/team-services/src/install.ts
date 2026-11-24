@@ -182,6 +182,11 @@ export interface GovernedPtyTerminalRealmSpec {
   readonly backendConfig?: Readonly<Record<string, unknown>>
   /** Reads the CURRENT policy revision at a call boundary (default: install revision). */
   readonly revisionNow?: () => string
+  /** ROUND 99 — the compiled process disposition for the PTY shell (see the face). */
+  readonly processAuthority?: {
+    readonly authorization: 'allow' | 'ask' | 'deny'
+    readonly executionBoundary: string
+  }
 }
 
 /** Any terminal face a Member realm may mount. */
@@ -214,6 +219,8 @@ export interface ConfinedSubprocessRealmSpec {
    * launcher pin and the process provider.
    */
   readonly shellClass?: Parameters<typeof createConfinedSubprocessClass>[1]['shellClass']
+  /** ROUND 99 — the compiled process disposition for a declared shell spawn (see the face). */
+  readonly processAuthority?: Parameters<typeof createConfinedSubprocessClass>[1]['processAuthority']
 }
 
 /** The mounted confined `subprocess` service (structural, provider-private). */
@@ -550,6 +557,10 @@ export async function installMemberIoProviders(
       const ConfinedSubprocess = createConfinedSubprocessClass(SubprocessBase as never, {
         ...input.subprocess,
         onGuardConsult: input.onGuardConsult,
+        // ROUND 99 — the SAME binder the centre spends grants through, so a process `ask` can
+        // prove its receipt is still live at the governed spawn point. Omitted = the face refuses
+        // a process `ask` it cannot prove (fail-closed).
+        ...(input.approvedAskAuthority === undefined ? {} : { approvedAskAuthority: input.approvedAskAuthority }),
       })
       try {
         // Cordis' `plugin` overloads are keyed on the plugin's literal shape;
@@ -611,6 +622,8 @@ export async function installMemberIoProviders(
         sandboxProvider: () => root.get('sandbox') as never,
         ...(ptyTerminalSpec.backendConfig === undefined ? {} : { backendConfig: ptyTerminalSpec.backendConfig }),
         ...(ptyTerminalSpec.revisionNow === undefined ? {} : { revisionNow: ptyTerminalSpec.revisionNow }),
+        ...(ptyTerminalSpec.processAuthority === undefined ? {} : { processAuthority: ptyTerminalSpec.processAuthority }),
+        ...(input.approvedAskAuthority === undefined ? {} : { approvedAskAuthority: input.approvedAskAuthority }),
       })
       try {
         const mountPlugin = scoped.plugin as unknown as (plugin: unknown, config?: unknown) => Promise<{ dispose(): Promise<void> }>

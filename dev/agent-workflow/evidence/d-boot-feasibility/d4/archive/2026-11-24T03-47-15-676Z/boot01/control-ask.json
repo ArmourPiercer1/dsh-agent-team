@@ -1,0 +1,49 @@
+{
+  "askAppeared": true,
+  "ids": {
+    "officer": "inst-1crltnl0089j",
+    "worker": "inst-0ty67u70r99a",
+    "pendingRequestId": "ctrl-0acqaca10be6yp0chq2lg0nc",
+    "pendingRequestId2": null,
+    "pendingRequestId3": null,
+    "pendingProcessRequestId": null
+  },
+  "askRow": {
+    "requestId": "ctrl-0acqaca10be6yp0chq2lg0nc",
+    "kind": "leader-approval",
+    "targetInstanceId": "inst-0ty67u70r99a",
+    "actionName": "admission-ask",
+    "toolName": "write",
+    "correlation": "admission:call-d4-worker-write",
+    "status": "pending",
+    "createdAt": "2026-11-24T03:45:13.719Z",
+    "subject": {
+      "kind": "instance",
+      "instanceId": "inst-0ty67u70r99a"
+    },
+    "executionCoupling": "inline",
+    "requestSequence": 9,
+    "operationFingerprint": "sha256:ef3b2930b8650e5bddcbda2dab403ec604c9e0d729eb354edb6db2919df9b762",
+    "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T03-42-46Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:6592267db730fb23cc4fb2a9242c3356)"
+  },
+  "requests": [
+    {
+      "requestId": "ctrl-0acqaca10be6yp0chq2lg0nc",
+      "kind": "leader-approval",
+      "targetInstanceId": "inst-0ty67u70r99a",
+      "actionName": "admission-ask",
+      "toolName": "write",
+      "correlation": "admission:call-d4-worker-write",
+      "status": "pending",
+      "createdAt": "2026-11-24T03:45:13.719Z",
+      "subject": {
+        "kind": "instance",
+        "instanceId": "inst-0ty67u70r99a"
+      },
+      "executionCoupling": "inline",
+      "requestSequence": 9,
+      "operationFingerprint": "sha256:ef3b2930b8650e5bddcbda2dab403ec604c9e0d729eb354edb6db2919df9b762",
+      "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T03-42-46Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:6592267db730fb23cc4fb2a9242c3356)"
+    }
+  ]
+}

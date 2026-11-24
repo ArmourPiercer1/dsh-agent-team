@@ -145,6 +145,11 @@ export interface GovernedPtyTerminalRealmSpec {
     readonly backendConfig?: Readonly<Record<string, unknown>>;
     /** Reads the CURRENT policy revision at a call boundary (default: install revision). */
     readonly revisionNow?: () => string;
+    /** ROUND 99 — the compiled process disposition for the PTY shell (see the face). */
+    readonly processAuthority?: {
+        readonly authorization: 'allow' | 'ask' | 'deny';
+        readonly executionBoundary: string;
+    };
 }
 /** Any terminal face a Member realm may mount. */
 export type TerminalRealmSpec = ConfinedTerminalRealmSpec | GovernedPtyTerminalRealmSpec;
@@ -175,6 +180,8 @@ export interface ConfinedSubprocessRealmSpec {
      * launcher pin and the process provider.
      */
     readonly shellClass?: Parameters<typeof createConfinedSubprocessClass>[1]['shellClass'];
+    /** ROUND 99 — the compiled process disposition for a declared shell spawn (see the face). */
+    readonly processAuthority?: Parameters<typeof createConfinedSubprocessClass>[1]['processAuthority'];
 }
 /** The mounted confined `subprocess` service (structural, provider-private). */
 export interface ConfinedSubprocessSurface {

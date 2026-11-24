@@ -39,6 +39,8 @@ import {
   closeApprovedAskReceipt,
   mintApprovedAskReceipt,
   prepareApprovedFsOperation,
+  APPROVED_ASK_PROCESS_TOOL_SHAPES,
+  prepareApprovedProcessOperation,
   registerPendingApprovedAskReceipt,
   runWithApprovedAskExecutionScope,
   takePendingApprovedAskReceipt,
@@ -803,16 +805,36 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
     }
     // R3 PREPARATION. The approved operation is canonicalized NOW, while the approval is still the
     // subject of the decision: the Provider will later re-resolve the real path(s) and must be able
-    // to compare them with what was approved. The dispatch is EXACT (a closed table of native tool
-    // shapes — write/edit/patch_text/delete_file/move_file); any other tool prepares nothing and
-    // keeps the R4 fail-closed `IO_ASK_REQUIRES_APPROVAL` refusal, and a recognised tool whose
-    // arguments cannot be canonicalized is refused outright rather than executed under an approval
-    // no receipt can name. The subprocess face is deliberately NOT in this table (R4).
+    // to compare them with what was approved. The dispatch is EXACT (closed tables of native tool
+    // shapes — write/edit/patch_text/delete_file/move_file for the FS face, `bash` for the PROCESS
+    // face); any other tool prepares nothing and keeps the R4 fail-closed
+    // `IO_ASK_REQUIRES_APPROVAL` refusal, and a recognised tool whose arguments cannot be
+    // canonicalized is refused outright rather than executed under an approval no receipt can name.
+    //
+    // ROUND 99: the process face is a CLOSED TOOL TABLE (`APPROVED_ASK_PROCESS_TOOL_SHAPES`), exactly
+    // like the FS face — NOT a predicate over `execution`. Every declared tool binding carries an
+    // `execution` block (`trusted-host` for the FS tools too), so "has an execution" would classify a
+    // `write` as a process call; round 99 measured that misclassification: the FS ask then prepared a
+    // process operation, minted nothing, and the Provider refused a granted write with
+    // `RECEIPT_NOT_IN_SCOPE`. The operation PREPARATION decides the kind, and only the process kind
+    // additionally binds the declared `executionBoundary`, the fixed shell class and the command digest
+    // — never the OS profile, which the spawn point still compiles from the Member's three lanes.
+    const perTool = binding.perTool?.[exec.name]
+    const processExecution = APPROVED_ASK_PROCESS_TOOL_SHAPES.includes(exec.name) ? perTool?.execution : undefined
+    const isProcessCall = processExecution !== undefined && processExecution !== null &&
+      typeof processExecution.executionBoundary === 'string' && processExecution.executionBoundary !== ''
     let receiptMaterial
-    const prepared = await prepareApprovedFsOperation({
-      toolName: exec.name,
-      arguments: exec.arguments,
-    })
+    const prepared = isProcessCall
+      ? prepareApprovedProcessOperation({
+        toolName: exec.name,
+        arguments: exec.arguments,
+        execution: processExecution,
+        processClass: binding.processClass,
+      })
+      : await prepareApprovedFsOperation({
+        toolName: exec.name,
+        arguments: exec.arguments,
+      })
     if (prepared.ok === false) {
       if (prepared.code !== 'IO_ASK_RECEIPT_TOOL_UNSUPPORTED') {
         return commit(exec, {
@@ -826,7 +848,6 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
         })
       }
     } else {
-      const perTool = binding.perTool?.[exec.name]
       receiptMaterial = {
         executionId: typeof executionIdOf === 'function'
           ? String(executionIdOf(exec))

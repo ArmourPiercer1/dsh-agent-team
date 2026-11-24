@@ -1,0 +1,1 @@
+RUN-SUMMARY run=a5sf-live-d4-2026-11-24T01-18-22-916Z-b2 suite=a5sf-live-d4-probe overall=PASS cases=10 PASS:10 worlds=none subset=true arms=<unspecified> selected=8/10 recordClass=DEV-LIVE (not candidate evidence)

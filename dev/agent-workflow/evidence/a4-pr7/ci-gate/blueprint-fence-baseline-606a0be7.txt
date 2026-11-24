@@ -208,4 +208,8 @@ OFFENDING packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts :: 
 #   - vnext-admission.test.mjs moved L4646 -> L4709 and L7700 -> L7763 because round 98 (realmless Option B)
 #     inserted ADM-44b (+63 lines) ABOVE both fixtures; the two v5 documents are byte-unchanged. Same two
 #     fixture identities, re-recorded from the gate's own report.
-OFFENDING packages/runtime/test/vnext-admission.test.mjs :: L4709=v5, L7763=v5
+#   - vnext-admission.test.mjs moved L7763 -> L7768 because round 99 (R3 on the process face) edited the
+#     ADM-127/ADM-128 fixture block (+5 lines) BETWEEN the two fixtures; the C-alpha6 document at L4709 and
+#     the C93 document at the new L7768 are byte-unchanged. Re-recorded from the gate's own report, not by
+#     hand-guessing an offset: no blueprint content was authored, edited or resolved by this round.
+OFFENDING packages/runtime/test/vnext-admission.test.mjs :: L4709=v5, L7768=v5

@@ -48,9 +48,10 @@
  *
  * @module @dsh-agent-team/runtime/team-services/terminal-pty
  */
-import { isAbsolute, resolve as resolvePath } from 'node:path';
+import { basename, isAbsolute, resolve as resolvePath } from 'node:path';
 import { TerminalSessionService } from '@deepseek-ai/dsh-terminal';
 import { Config as BashTerminalConfig, apply as applyBashTerminalBackend } from '@deepseek-ai/dsh-terminal-bash';
+import { authorizeProcessAskWithReceipt } from '../../member-io-policy/src/approved-ask-receipt.js';
 /** The closed refusal vocabulary of THIS face (never a bare `Error`). */
 export const PTY_FACE_REFUSAL_CODES = [
     /** The caller presented no owner session identity at all. */
@@ -69,6 +70,10 @@ export const PTY_FACE_REFUSAL_CODES = [
     'ENFORCEMENT_UNAVAILABLE',
     /** The pinned PTY backend refused to register or the service is not live. */
     'PTY_BACKEND_UNAVAILABLE',
+    /** ROUND 99: the compiled process authorization is `deny`; a receipt is never consulted. */
+    'PTY_PROCESS_DENIED',
+    /** ROUND 99: a process `ask` had no valid receipt covering THIS execution. */
+    'PTY_PROCESS_RECEIPT_REFUSED',
 ];
 /** The typed refusal this face raises. Carries the code a consumer compares. */
 export class PtyFaceRefusal extends Error {
@@ -295,6 +300,33 @@ export function createGovernedPtyTerminalFace(options) {
                 async spawn(owner, request, signal) {
                     expectBoundOwner(owner);
                     assertRevisionCurrent();
+                    // ROUND 99 — THE GOVERNED SPAWN POINT, before `raw.spawn` creates any process.
+                    //
+                    // `deny` wins here, before any receipt is read. `ask` requires an approved-ask receipt
+                    // covering THIS execution; `allow` is the pre-round behaviour. The receipt is verified
+                    // BEFORE the PTY exists and returns no policy: the OS profile below is still
+                    // `narrowSandboxPolicy(base, effective)`, compiled from the Member's three lanes, so an
+                    // approval can never widen it. The PTY creates its shell before any command text exists,
+                    // so the receipt's `commandSha256` is recorded but NOT compared here (see the ADR).
+                    const processAuthority = options.processAuthority;
+                    if (processAuthority !== undefined) {
+                        if (processAuthority.authorization === 'deny') {
+                            throw new PtyFaceRefusal('PTY_PROCESS_DENIED', `the compiled process authorization for this Member's shell is 'deny'; no approval can turn a deny into a spawn`);
+                        }
+                        if (processAuthority.authorization === 'ask') {
+                            const verified = authorizeProcessAskWithReceipt({
+                                memberIdentity,
+                                policyRevision,
+                                toolName: 'bash',
+                                executionBoundary: processAuthority.executionBoundary,
+                                processClass: { program, programs: [basename(program)] },
+                                authority: options.approvedAskAuthority,
+                            });
+                            if (!verified.ok) {
+                                throw new PtyFaceRefusal('PTY_PROCESS_RECEIPT_REFUSED', `${verified.code}: ${verified.detail}`);
+                            }
+                        }
+                    }
                     admitted.add(owner);
                     const result = await raw.spawn(owner, request, signal);
                     const base = options.sandboxPolicy.resolve({ session: owner?.session });

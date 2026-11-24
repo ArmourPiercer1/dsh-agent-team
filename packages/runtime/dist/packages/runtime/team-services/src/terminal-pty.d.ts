@@ -51,7 +51,7 @@
 import type { Context } from '@deepseek-ai/cordis';
 import type { PathRuleSet } from '../../member-io-policy/src/types.js';
 /** The closed refusal vocabulary of THIS face (never a bare `Error`). */
-export declare const PTY_FACE_REFUSAL_CODES: readonly ["PTY_OWNER_UNBOUND", "PTY_OWNER_MISMATCH", "PTY_CEILING_UNAVAILABLE", "PTY_CEILING_STALE", "PTY_POLICY_STALE", "PTY_WRITE_ROOT_UNAVAILABLE", "ENFORCEMENT_UNAVAILABLE", "PTY_BACKEND_UNAVAILABLE"];
+export declare const PTY_FACE_REFUSAL_CODES: readonly ["PTY_OWNER_UNBOUND", "PTY_OWNER_MISMATCH", "PTY_CEILING_UNAVAILABLE", "PTY_CEILING_STALE", "PTY_POLICY_STALE", "PTY_WRITE_ROOT_UNAVAILABLE", "ENFORCEMENT_UNAVAILABLE", "PTY_BACKEND_UNAVAILABLE", "PTY_PROCESS_DENIED", "PTY_PROCESS_RECEIPT_REFUSED"];
 export type PtyFaceRefusalCode = (typeof PTY_FACE_REFUSAL_CODES)[number];
 /** The typed refusal this face raises. Carries the code a consumer compares. */
 export declare class PtyFaceRefusal extends Error {
@@ -151,6 +151,31 @@ export interface GovernedPtyTerminalFaceOptions {
     } | undefined;
     /** Extra pinned-backend config (rows/cols/timeouts); never policy. */
     readonly backendConfig?: Record<string, unknown>;
+    /**
+     * ROUND 99 — the COMPILED process disposition for the shell tool this face serves, taken from
+     * the SAME `toolBindings[]` entry the Centre admits the call on. `deny` refuses every spawn here
+     * (defence in depth: `deny` wins before any receipt), `ask` requires an approved-ask receipt that
+     * covers THIS execution, `allow` is the pre-round behaviour. Omitted = no declaration reached this
+     * face (the Centre refuses the call anyway); the face does not invent one.
+     *
+     * THE RECEIPT ADDS NO CAPABILITY. `narrowSandboxPolicy` below compiles the OS profile from the
+     * Member's three lanes exactly as before; this field selects whether a receipt must be verified,
+     * and nothing else.
+     */
+    readonly processAuthority?: {
+        readonly authorization: 'allow' | 'ask' | 'deny';
+        readonly executionBoundary: string;
+    };
+    /**
+     * The SAME invocation binder the Centre spends one-shot grants through. Supplied only when the
+     * ask path is wired; omitted means a process `ask` cannot prove liveness and is refused.
+     */
+    readonly approvedAskAuthority?: {
+        readonly binder?: {
+            currentEpoch(): number;
+            currentMemberEpoch(memberIdentity: string): number;
+        };
+    };
 }
 /**
  * Intersect the deployment's resolved policy with the Member ceiling.

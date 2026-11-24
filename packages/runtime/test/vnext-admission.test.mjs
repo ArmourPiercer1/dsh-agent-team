@@ -6619,6 +6619,11 @@ const processBinding = (authorization, over = {}) => binding({
   templateId: 'worker',
   executors: { 'confined-subprocess': 'ready' },
   perTool: { bash: processTool(authorization) },
+  // ROUND 99: a process `ask` must bind the composition's FIXED shell class. A world that declares
+  // a process execution but fixes no class prepares no receipt and is refused (fail-closed), so the
+  // fixture declares the class this composition's face serves — exactly what a real compiled answer
+  // now carries.
+  processClass: { program: '', programs: ['bash'] },
   ...over,
 })
 
@@ -8979,4 +8984,512 @@ test('ADM-153 — the SAME case shape is still refused for the Officer asking ab
   function failForTest (message) {
     throw new Error(message)
   }
+}
+
+// ===================================================================================================
+// R3c — ADM-174…ADM-179: the owner-ruled EXTENSION of the approved-ask receipt to the PROCESS face.
+//
+// Owner ruling (round 99): the receipt must cover the process face too, because a persistent shell is
+// the widest effect a Member has. This block is the executable PoC over the REAL confined subprocess
+// face (`createConfinedSubprocessClass`) + the REAL Landlock provider + the real one-shot binder, the
+// real durable ControlService, the real admission port and the real settlement store. Only the HOST
+// LOOP is a double (pinned order pre-execute → guard → execute → result), the ADM-19/20 precedent.
+//
+// WHAT THESE ARMS PROVE, AND WHAT THEY DO NOT.
+//   * the receipt is bound to the tool, the DECLARED `executionBoundary`, the composition's fixed
+//     shell class and the exact command digest;
+//   * it is verified at the GOVERNED SPAWN POINT, before any provider call/process;
+//   * `deny` wins before any receipt; a revoked member/binder, a reused receipt, a receipt outside
+//     its execution scope and a receipt for another operation all refuse;
+//   * it adds NO capability: the OS profile and `allowPaths` are byte-identical to the profile the
+//     three lanes compile, and an out-of-lane write produces nothing (round-76 style).
+//   * NOT proven here: the persistent PTY's per-command text (its shell is created before command
+//     text exists) — that limit is stated in the ADR and measured by the live G2 judge.
+// ===================================================================================================
+
+{
+  const { createP6T4World, createP6T4Service, constantAuthorityRecheck, leaderCaller, P6T4_ROOT, P6T4_SEEDS, destroyP6T1World } = await import('./p6t4-helpers.ts')
+  const { createConfinedSubprocessClass, confinedSpawnAllowPaths } = await import('../team-services/src/subprocess.ts')
+  const { narrowSandboxPolicy } = await import('../team-services/src/terminal-pty.ts')
+  const { compileExecutionProfile } = await import('../team-sandbox/src/profile.ts')
+  const { createConfinedProcessProvider } = await import('../sandbox-provider/index.ts')
+  const { Context, Service } = await import('@deepseek-ai/cordis')
+
+  /** The INHERITED service the confined face shadows: a call reaching it is a confinement failure. */
+  class BaseShell extends Service {
+    constructor (ctx, config = {}) {
+      super(ctx, 'subprocess')
+      this.config = config
+    }
+
+    spawn () { throw new Error('BASE_SPAWN_TRIPWIRE: the inherited subprocess service ran under a Member call') }
+
+    async spawnTerminal () { throw new Error('BASE_TERMINAL_TRIPWIRE: the inherited subprocess service ran under a Member call') }
+  }
+
+  const P2_ROOT = pathJoin(DOMAIN_ROOT, '.artifacts', 'tmp', 'adm-r3c-process')
+  const P2_WORKER = String(P6T4_SEEDS.worker.instanceId)
+  const P2_REVISION = 'rev-r3c-process'
+  const P2_BOUNDARY = 'confined-subprocess'
+  const P2_LAUNCHER = pathJoin(DOMAIN_ROOT, 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py')
+
+  /** A HOST-loop double: pinned order + the ctx surface the centre needs (the R3 double, local copy). */
+  function p2FakeHost () {
+    const listeners = new Map()
+    let guardFn
+    const tools = { guard (fn) { guardFn = fn; return () => {} } }
+    const ctx = {
+      get: (name) => (name === 'tools' ? tools : undefined),
+      on: (event, fn) => {
+        const list = listeners.get(event) ?? []
+        list.push(fn)
+        listeners.set(event, list)
+        return () => {
+          const index = list.indexOf(fn)
+          if (index >= 0) list.splice(index, 1)
+        }
+      },
+    }
+    const waterfall = async (event, exec, base) => {
+      const list = [...(listeners.get(event) ?? [])]
+      let index = -1
+      const next = async () => {
+        index += 1
+        if (index >= list.length) return base(exec)
+        return list[index](exec, next)
+      }
+      return next()
+    }
+    return {
+      ctx,
+      preExecute: (exec) => waterfall('tools/pre-execute', exec, async () => ({ kind: 'allow' })),
+      guard: (exec) => guardFn(exec),
+      execute: (exec, body) => waterfall('tools/execute', exec, async () => body()),
+      result: (exec, result) => {
+        for (const fn of listeners.get('tools/result') ?? []) fn(exec, result)
+      },
+    }
+  }
+
+  /**
+   * The rig: a REAL confined subprocess face over a REAL Landlock provider, the Member's compiled
+   * lanes as the ONLY profile source, and the process disposition (`ask`) as a SEPARATE field — the
+   * whole point of the round is that the authorization is not a lane.
+   */
+  async function p2Rig (label, options = {}) {
+    const dir = pathJoin(P2_ROOT, label)
+    rmSync(dir, { recursive: true, force: true })
+    nodeFs.mkdirSync(dir, { recursive: true })
+    const inside = pathJoin(dir, 'inside')
+    nodeFs.mkdirSync(inside, { recursive: true })
+    const outside = pathJoin(dir, 'outside')
+    nodeFs.mkdirSync(outside, { recursive: true })
+    const write = options.write ?? lane([inside])
+    const read = options.read ?? lane([inside])
+    const policy = { memberIdentity: P2_WORKER, toolBindingIdentity: 'dsh.exec/bash', policyRevision: P2_REVISION, read, write }
+    const binding = {
+      agentId: P2_WORKER,
+      sessionId: `session-${label}`,
+      instanceGeneration: 1,
+      read,
+      write,
+      workspaceRoot: inside,
+      definitionSource: '@deepseek-ai/dsh-tool-exec',
+      policyGeneration: P2_REVISION,
+      blueprintRevision: 'bp-r3c-process',
+      owner: P6T4_ROOT,
+      templateId: 'worker',
+      executors: { 'trusted-host': 'ready', 'confined-subprocess': 'ready', 'delegated-remote': 'unavailable' },
+      processClass: { program: '', programs: ['bash'] },
+      perTool: {
+        bash: {
+          read,
+          write,
+          toolBindingIdentity: 'dsh.exec/bash',
+          authorization: 'ask',
+          execution: { implementationOrigin: 'dsh-native', executionBoundary: P2_BOUNDARY },
+        },
+      },
+    }
+    const binder = createInvocationBinder()
+    nodeFs.rmSync(pathJoin(DOMAIN_ROOT, 'packages', 'testkit', 'test', '.tmp-fault', `r3c-${label}`), { recursive: true, force: true })
+    const world = await createP6T4World(`r3c-${label}`, ['leader', 'worker'])
+    const recheck = constantAuthorityRecheck()
+    const service = createP6T4Service(world, { authorityRevalidation: recheck.port })
+    const requests = []
+    const completedCallIds = new Set()
+    const approvals = createControlApprovalPort({
+      controlOf: () => service,
+      rootSessionIdOf: () => P6T4_ROOT,
+      onRequested: (record) => { requests.push(record) },
+    })
+    const host = p2FakeHost()
+    const store = createExecutionSettlementStore({ dir: pathJoin(dir, 'settlement') })
+    const identityOf = (exec) => ({
+      executionId: dispatchExecutionId({ rootSessionId: 'session-r3c', agentInstanceId: P2_WORKER }, exec.callId),
+      actorId: P2_WORKER,
+      worldId: 'world-r3c',
+    })
+    // THE REAL PROVIDER, counted at its OWN boundary: a refused admission must leave the count at
+    // zero, which is the only honest proof that NO process existed.
+    const osProvider = createConfinedProcessProvider({
+      realmId: `r3c-${label}`,
+      trustRoot: `sha256:${P2_LAUNCHER}`,
+      scratchRoot: pathJoin(dir, 'scratch'),
+      assembly: { launcherPath: P2_LAUNCHER, minAbiVersion: 3 },
+    })
+    const spawns = { count: 0, allowPaths: [] }
+    const provider = {
+      async spawnStreaming (request, streaming) {
+        spawns.count += 1
+        spawns.allowPaths.push(request.allowPaths)
+        return osProvider.spawnStreaming(request, streaming)
+      },
+      probe: () => osProvider.probe(),
+    }
+    const effective = {
+      memberIdentity: P2_WORKER,
+      toolBindingIdentity: 'dsh.exec/bash',
+      policyRevision: P2_REVISION,
+      read,
+      write,
+      network: { access: 'allow' },
+    }
+    const cls = createConfinedSubprocessClass(BaseShell, {
+      effective,
+      provider,
+      realmId: `r3c-${label}`,
+      bindingId: 'dsh.exec/bash',
+      memberScope: P2_WORKER,
+      shellClass: { programs: ['bash'] },
+      processAuthority: { authorization: options.authorization ?? 'ask', executionBoundary: options.boundary ?? P2_BOUNDARY },
+      approvedAskAuthority: { binder },
+    })
+    const root = new Context()
+    await root.plugin(cls, {})
+    const subprocess = root.get('subprocess')
+    const admissions = []
+    const executions = []
+    const centre = installMemberCentre({
+      ctx: host.ctx,
+      binding,
+      resolveBinding: () => binding,
+      recordAdmission: (fact) => admissions.push(fact),
+      recordExecution: (fact) => executions.push(fact),
+      isReplay: (callId) => completedCallIds.has(callId),
+      grants: {
+        binder,
+        memberOf: () => ({ teamId: 'team-r3c', memberInstanceId: P2_WORKER, templateId: 'worker', instanceGeneration: 1 }),
+      },
+      approvals,
+      store,
+      identityOf,
+    })
+    return {
+      dir, inside, outside, policy, binding, binder, world, service, host, subprocess, store, centre,
+      requests, admissions, executions, identityOf, completedCallIds, spawns, effective, provider,
+      cleanup: async () => {
+        try { centre.dispose() } catch { /* already closed */ }
+        try { await root.dispose?.() } catch { /* the root has no dispose on this cordis */ }
+        await destroyP6T1World(world)
+      },
+    }
+  }
+
+  const BASH = '/bin/bash'
+
+  /** Spawn ONE declared shell command through the real confined face (the body of a dispatch). */
+  function p2Spawn (rig, command, cwd = rig.inside) {
+    const handle = rig.subprocess.spawn({
+      argv: [BASH, '-c', command],
+      cwd,
+      stdio: { stdin: 'ignore', stdout: { mode: 'collect', maxBytes: 64 * 1024 }, stderr: { mode: 'collect', maxBytes: 64 * 1024 } },
+      graceMs: 10_000,
+      shell: { program: 'bash', reads: [cwd], writes: [cwd] },
+    })
+    return handle
+  }
+
+  async function p2Dispatch (rig, exec, hooks = {}) {
+    const before = rig.requests.length
+    const pending = rig.host.preExecute(exec)
+    for (let i = 0; i < 2000 && rig.requests.length <= before; i += 1) await new Promise((resolve) => setTimeout(resolve, 1))
+    const request = rig.requests[before]
+    if (request !== undefined) {
+      await rig.service.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: leaderCaller(),
+        requestId: request.requestId,
+        decision: hooks.decision ?? 'allow',
+      })
+    }
+    const pre = await pending
+    if (pre.kind !== 'allow') {
+      rig.completedCallIds.add(exec.callId)
+      return { phase: 'pre-execute', pre, recordedRequest: request }
+    }
+    const guard = await rig.host.guard(exec)
+    if (guard !== undefined) {
+      rig.host.result(exec, { isError: true, error: { message: guard }, content: [] })
+      rig.completedCallIds.add(exec.callId)
+      return { phase: 'guard', reason: guard, recordedRequest: request }
+    }
+    let bodyError
+    let bodyResult
+    try {
+      bodyResult = await rig.host.execute(exec, async () => (hooks.body === undefined ? undefined : hooks.body(rig, exec)))
+    } catch (error) {
+      bodyError = error
+    }
+    rig.host.result(exec, bodyError !== undefined
+      ? { isError: true, error: { message: String(bodyError?.message ?? bodyError), code: bodyError?.code }, content: [] }
+      : { isError: false, content: [] })
+    rig.completedCallIds.add(exec.callId)
+    return bodyError !== undefined
+      ? { phase: 'body', error: bodyError, recordedRequest: request }
+      : { phase: 'body', result: bodyResult, recordedRequest: request }
+  }
+
+  const settledOf = (rig, callId) => rig.store.read(rig.identityOf({ callId }).executionId)
+
+  async function p2ScopeForTest () {
+    const mod = await import('../member-io-policy/src/approved-ask-receipt.ts')
+    return { scope: mod.currentApprovedAskExecutionScope(), commandSha256: mod.approvedAskCommandSha256 }
+  }
+
+  test('ADM-174 (R3c POSITIVE) — ask → inline allow → grant consumed → process receipt → REAL command under the confined profile → COMPLETED', async (t) => {
+    const rig = await p2Rig('positive')
+    t.after(rig.cleanup)
+    const command = 'printf "R3C-APPROVED" > effect.txt'
+    const exec = { name: 'bash', callId: 'call-r3c-positive', arguments: { command } }
+    let observed
+    const run = await p2Dispatch(rig, exec, {
+      body: async (world) => {
+        observed = await p2ScopeForTest()
+        const handle = p2Spawn(world, command)
+        return await handle.done
+      },
+    })
+    assert.equal(run.phase, 'body', `the approved spawn must reach the PROVIDER (got ${JSON.stringify({ phase: run.phase, pre: run.pre, error: run.error?.message })})`)
+    assert.equal(run.error, undefined, `the confined face must not refuse an approved spawn: ${run.error?.message}`)
+    assert.equal(run.result?.exitCode, 0, 'the REAL command exited 0')
+    assert.equal(nodeFs.readFileSync(pathJoin(rig.inside, 'effect.txt'), 'utf8'), 'R3C-APPROVED', 'the REAL in-lane effect exists')
+
+    // THE RECEIPT ITSELF: bound to this execution's tool, declared boundary, shell class and command.
+    const receipt = observed?.scope?.receipt
+    assert.ok(receipt !== undefined, 'the centre opened a receipt-bearing execution scope')
+    assert.equal(receipt.executionId, rig.identityOf({ callId: exec.callId }).executionId, 'receipt names THIS execution')
+    assert.equal(receipt.member.memberInstanceId, P2_WORKER)
+    assert.equal(receipt.policyGeneration, P2_REVISION)
+    assert.equal(receipt.toolName, 'bash')
+    assert.equal(receipt.operation.kind, 'process-exec')
+    assert.equal(receipt.operation.toolName, 'bash')
+    assert.equal(receipt.operation.executionBoundary, P2_BOUNDARY)
+    assert.equal(receipt.operation.implementationOrigin, 'dsh-native')
+    assert.deepEqual([...receipt.operation.processClass.programs], ['bash'])
+    assert.equal(receipt.operation.commandSha256, observed.commandSha256(command), 'the receipt binds the EXACT command digest')
+    assert.match(String(receipt.operation.fingerprint), /^sha256:/u)
+
+    const admission = rig.admissions.find((fact) => fact.callId === exec.callId)
+    assert.equal(admission?.decision, 'allow')
+    assert.equal(admission?.laneDecision, 'ask', 'the lane answer is preserved in the fact')
+    const settled = settledOf(rig, exec.callId)
+    assert.equal(settled?.state, 'COMPLETED')
+    assert.equal(rig.spawns.count, 1, 'exactly one process was created')
+  })
+
+  test('ADM-175 (R3c NEGATIVE) — the receipt is scoped to THIS execution: outside it, for another boundary, or a second time, no process exists', async (t) => {
+    const rig = await p2Rig('cross-execution')
+    t.after(rig.cleanup)
+
+    // (a) OUTSIDE any execution there is no scope at all, so a spawn is refused before the provider.
+    const bare = p2Spawn(rig, 'printf bare > bare.txt')
+    await assert.rejects(bare.done, (error) => error?.code === 'SUBPROCESS_PROCESS_RECEIPT_REFUSED' && /RECEIPT_NOT_IN_SCOPE/u.test(String(error?.message)))
+    assert.equal(rig.spawns.count, 0, 'no process exists for an unscoped spawn')
+
+    // (b) A receipt minted for a DIFFERENT declared operation cannot spawn this one.
+    const otherBoundary = createConfinedSubprocessClass(BaseShell, {
+      effective: rig.effective,
+      provider: rig.provider,
+      realmId: 'r3c-other-boundary',
+      bindingId: 'dsh.exec/bash',
+      memberScope: P2_WORKER,
+      shellClass: { programs: ['bash'] },
+      processAuthority: { authorization: 'ask', executionBoundary: 'confined-pty' },
+      approvedAskAuthority: { binder: rig.binder },
+    })
+    const otherRoot = new Context()
+    await otherRoot.plugin(otherBoundary, {})
+    const otherSubprocess = otherRoot.get('subprocess')
+    t.after(async () => { try { await otherRoot.dispose?.() } catch { /* no dispose */ } })
+
+    const command = 'printf "ONCE" > once.txt'
+    const exec = { name: 'bash', callId: 'call-r3c-cross', arguments: { command } }
+    let secondSpawnError
+    const run = await p2Dispatch(rig, exec, {
+      body: async (world) => {
+        // (b) the same Member, the same receipt, a face declaring another boundary.
+        const wrong = otherSubprocess.spawn({
+          argv: [BASH, '-c', command],
+          cwd: world.inside,
+          stdio: { stdin: 'ignore', stdout: { mode: 'collect', maxBytes: 4096 }, stderr: { mode: 'collect', maxBytes: 4096 } },
+          graceMs: 10_000,
+          shell: { program: 'bash', reads: [world.inside], writes: [world.inside] },
+        })
+        await wrong.done.catch((error) => { secondSpawnError = error })
+        // (c) the authorized spawn consumes the ONE receipt.
+        const first = await p2Spawn(world, command).done
+        // (d) a second spawn in the SAME execution is a reused receipt.
+        let reused
+        try {
+          await p2Spawn(world, command).done
+        } catch (error) {
+          reused = error
+        }
+        if (reused !== undefined) throw reused
+        return first
+      },
+    })
+    assert.equal(secondSpawnError?.code, 'SUBPROCESS_PROCESS_RECEIPT_REFUSED')
+    assert.match(String(secondSpawnError?.message), /RECEIPT_OPERATION_MISMATCH/u, 'another declared boundary is another operation')
+    assert.equal(run.phase, 'body')
+    assert.equal(run.error?.code, 'SUBPROCESS_PROCESS_RECEIPT_REFUSED')
+    assert.match(String(run.error?.message), /RECEIPT_REUSED/u, 'the consumed grant authorizes exactly one process')
+    assert.equal(rig.spawns.count, 1, 'only the one authorized process reached the provider')
+    assert.equal(nodeFs.readFileSync(pathJoin(rig.inside, 'once.txt'), 'utf8'), 'ONCE')
+  })
+
+  test('ADM-176 (R3c NEGATIVE) — the receipt CANNOT widen the OS profile: an out-of-lane write produces no bytes, and allowPaths are the lane-compiled bytes', async (t) => {
+    const rig = await p2Rig('no-widening')
+    t.after(rig.cleanup)
+    const leak = pathJoin(rig.outside, 'leak.txt')
+    const command = `printf "LEAK" > ${JSON.stringify(leak)}`
+    const exec = { name: 'bash', callId: 'call-r3c-no-widening', arguments: { command } }
+    const run = await p2Dispatch(rig, exec, {
+      body: async (world) => await p2Spawn(world, command).done,
+    })
+    assert.equal(run.phase, 'body')
+    // The PROCESS existed and ran: this is a kernel denial, not a receipt refusal.
+    assert.notEqual(run.result?.exitCode, 0, 'the shell could not write out of lane')
+    assert.equal(existsSync(leak), false, 'ZERO bytes were written outside the lane')
+
+    // THE PROFILE IS THE LANE'S: the request's allowPaths are byte-identical to the compiled lanes,
+    // so no receipt-derived path was added anywhere.
+    const compiled = compileExecutionProfile(rig.effective)
+    assert.equal(compiled.ok, true)
+    const requestPaths = JSON.stringify(rig.spawns.allowPaths[0])
+    for (const entry of compiled.value.allowPaths) {
+      assert.ok(requestPaths.includes(JSON.stringify(entry.path)), `the lane-compiled path ${entry.path} reached the provider`)
+    }
+    assert.ok(!requestPaths.includes(JSON.stringify(rig.outside)), 'the out-of-lane directory was NEVER in the OS allowance')
+    const settled = settledOf(rig, exec.callId)
+    assert.equal(settled?.state, 'COMPLETED', 'the authorized execution settled by its real phase')
+  })
+
+  test('ADM-177 (R3c NEGATIVE) — escalation mode is NOT granted by an ask receipt: the PTY clamp and the confined profile both stay lane-derived', async (t) => {
+    // (a) The PTY's own clamp: a host base of `danger-full-access` under a PURE-ASK write lane yields
+    // read-only, and under an allow lane yields at most `workspace-write` — the receipt path cannot
+    // reach this function at all (it takes the lanes, not an authorization).
+    const escalationInside = pathJoin(P2_ROOT, 'escalation', 'inside')
+    const askOnly = { memberIdentity: P2_WORKER, read: lane([escalationInside]), write: lane([], [escalationInside]) }
+    const clampedAsk = narrowSandboxPolicy({ mode: 'danger-full-access', workspaceRoot: escalationInside }, askOnly)
+    assert.equal(clampedAsk.policy.mode, 'read-only', 'an ask ceiling never upgrades to a writable mode')
+    assert.equal(clampedAsk.writeRoot, null)
+    const allowLane = { memberIdentity: P2_WORKER, read: lane([escalationInside]), write: lane([escalationInside]) }
+    const clampedAllow = narrowSandboxPolicy({ mode: 'danger-full-access', workspaceRoot: escalationInside }, allowLane)
+    assert.equal(clampedAllow.policy.mode, 'workspace-write', 'full access is CLAMPED to the Member ceiling, never inherited')
+    assert.equal(clampedAllow.policy.workspaceRoot, escalationInside)
+
+    // (b) The confined face: the request's allowPaths are exactly the lane profile, whatever the
+    // process authorization was. `workspace-write` is not a mode this face can be talked into.
+    const rig = await p2Rig('escalation')
+    t.after(rig.cleanup)
+    const command = 'printf OK > ok.txt'
+    const exec = { name: 'bash', callId: 'call-r3c-escalation', arguments: { command } }
+    const run = await p2Dispatch(rig, exec, { body: async (world) => await p2Spawn(world, command).done })
+    assert.equal(run.error, undefined)
+    assert.equal(run.result?.exitCode, 0)
+    const compiled = compileExecutionProfile(rig.effective)
+    const expected = confinedSpawnAllowPaths(compiled.value.allowPaths, BASH, [])
+    assert.deepEqual(JSON.parse(JSON.stringify(rig.spawns.allowPaths[0])), JSON.parse(JSON.stringify(expected)),
+      'the request is the LANE profile plus the pre-round program-dir allowance — nothing receipt-derived')
+  })
+
+  test('ADM-178 (R3c NEGATIVE) — `deny` wins before any receipt, and a revoked Member/binder cannot spend an already-consumed grant', async (t) => {
+    // (a) DENY: the face is compiled `deny` while the centre still asked (defence in depth). Even
+    // with a valid receipt in scope, the denial comes FIRST and the provider is never called.
+    const denyRig = await p2Rig('deny', { authorization: 'deny' })
+    t.after(denyRig.cleanup)
+    let denied
+    const denyRun = await p2Dispatch(denyRig, { name: 'bash', callId: 'call-r3c-deny', arguments: { command: 'printf X > x.txt' } }, {
+      body: async (world) => {
+        try {
+          await p2Spawn(world, 'printf X > x.txt').done
+        } catch (error) {
+          denied = error
+          throw error
+        }
+      },
+    })
+    assert.equal(denyRun.phase, 'body')
+    assert.equal(denied?.code, 'SUBPROCESS_PROCESS_DENIED', `a compiled deny is its own refusal (got ${denied?.code})`)
+    assert.equal(existsSync(pathJoin(denyRig.inside, 'x.txt')), false)
+    assert.equal(denyRig.spawns.count, 0, 'deny wins BEFORE any provider call')
+
+    // (b) REVOKED MEMBER: the grant was consumed at the guard, then the Member is revoked.
+    const revokeRig = await p2Rig('revoked')
+    t.after(revokeRig.cleanup)
+    let revoked
+    const revokeRun = await p2Dispatch(revokeRig, { name: 'bash', callId: 'call-r3c-revoked', arguments: { command: 'printf R > r.txt' } }, {
+      body: async (world) => {
+        revokeRig.binder.revoke(P2_WORKER)
+        try {
+          await p2Spawn(world, 'printf R > r.txt').done
+        } catch (error) {
+          revoked = error
+          throw error
+        }
+      },
+    })
+    assert.equal(revokeRun.phase, 'body')
+    assert.equal(revoked?.code, 'SUBPROCESS_PROCESS_RECEIPT_REFUSED')
+    assert.match(String(revoked?.message), /RECEIPT_REVOKED/u)
+    assert.equal(existsSync(pathJoin(revokeRig.inside, 'r.txt')), false, 'a revoked Member produced no process and no byte')
+    assert.equal(revokeRig.spawns.count, 0)
+  })
+
+  test('ADM-179 (R3c PHASE HONESTY) — a pre-spawn receipt refusal and a post-spawn kernel denial settle by their REAL phases', async (t) => {
+    const rig = await p2Rig('phase')
+    t.after(rig.cleanup)
+    // (a) PRE-SPAWN refusal: the body is never reached with a spawn, the provider count stays 0, and
+    // the settlement records the execution as REFUSED (the real phase), never as COMPLETED.
+    const refusedRun = await p2Dispatch(rig, { name: 'bash', callId: 'call-r3c-phase-refused', arguments: { command: 'printf M > m.txt' } }, {
+      body: async () => {
+        // The approval names `m.txt`; the body tries a DIFFERENT command. The receipt is valid and
+        // in scope, so only the operation binding can refuse it — and it does, before the provider.
+        const bare = p2Spawn(rig, 'printf N > n.txt')
+        return await bare.done
+      },
+    })
+    assert.equal(refusedRun.error?.code, 'SUBPROCESS_PROCESS_RECEIPT_REFUSED')
+    assert.match(String(refusedRun.error?.message), /RECEIPT_COMMAND_MISMATCH/u)
+    assert.equal(existsSync(pathJoin(rig.inside, 'n.txt')), false, 'the unapproved command produced nothing')
+    assert.equal(rig.spawns.count, 0)
+    const refused = settledOf(rig, 'call-r3c-phase-refused')
+    assert.notEqual(refused?.state, 'COMPLETED', 'a refused execution never settles COMPLETED')
+    assert.equal(refused?.observation?.bodyOutcome === 'completed', false)
+
+    // (b) POST-SPAWN denial: the SAME face, a consumed receipt and a real process — the settlement is
+    // COMPLETED with a real non-zero exit. The receipt refusal code cannot be used to excuse it.
+    const command = `printf LEAK > ${JSON.stringify(pathJoin(rig.outside, 'phase-leak.txt'))}`
+    const ranRun = await p2Dispatch(rig, { name: 'bash', callId: 'call-r3c-phase-ran', arguments: { command } }, {
+      body: async (world) => await p2Spawn(world, command).done,
+    })
+    assert.equal(ranRun.error, undefined, 'no receipt refusal exists once the process was authorized')
+    assert.notEqual(ranRun.result?.exitCode, 0)
+    assert.equal(existsSync(pathJoin(rig.outside, 'phase-leak.txt')), false)
+    const ran = settledOf(rig, 'call-r3c-phase-ran')
+    assert.equal(ran?.state, 'COMPLETED')
+    assert.equal(rig.spawns.count, 1, 'exactly one process existed, under the real kernel outcome')
+  })
 }
