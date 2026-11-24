@@ -28,6 +28,19 @@ The workflow now triggers on `pull_request: [labeled, synchronize, reopened]` fo
 every candidate HEAD gets its own result) and binds the check to `github.sha`; it is still not a
 layer of `ci-required` and not a branch-protection context.
 
+### Round 110 — the rc.5 test POPULATION (no level moves, no gate change)
+
+Round 110 measured the rc.5 behaviour of the broader test population (not the four drivers) —
+[`RC5-TEST-MATRIX.md`](./RC5-TEST-MATRIX.md). On rc.5 through the ONE selector (or the suite's own rc.5
+pin): **759 tests / 737 pass / 21 fail / 1 skip**. The 21 reds: 18 `vnext-b-probe-ladder` arms (rc.5
+removed `ToolRuntime`'s `mode` config; still an open arm design), 1 `a5sf-fs-contract` arm that measures
+the rc.2 tool package, 2 `m7a-real-slice-host-state` arms that boot the rc.2 census base. Two test-side
+rc.5 drifts were adapted with observation only (ADM-96/97 `AbortSignal`; selected-host module resolution
++ rc.5 executor plugin + batch dispatch in `a5sf-harness` / `a5sf-native-route-c`), taking those suites to
+0 fail on **both** hosts. **No row below changes level; no PRODUCT-PROVEN row is added.** Disclosed gap:
+40 vitest suites that load host code remain rc.2-only (Vite resolves the repo install before the Node
+host loader — measured; a Vite alias would be a second selection mechanism, so it was not added).
+
 | C row | candidate-gate judge(s) | rc.2 | rc.5 |
 | --- | --- | --- | --- |
 | C-member | `d2:stop`, `d2:remote-delivery` | PROVEN | **PROVEN** (round 108: both judges green on rc.5, 2/2 boots; round 109 dual-host gate `pass`, `d2:remote-delivery` 20/20 clauses each boot, full typed replies recorded) |

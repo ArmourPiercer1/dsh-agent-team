@@ -1,0 +1,63 @@
+M7B1-WINDOW-NOT-CLOSED tag=phase=pre reason=WINDOW_NOT_CLOSED detail=window win-probe is phase=pre closedAt=2026-11-18T00:00:00.000Z; a verdict needs the POST snapshot taken after the execution, so an armed-bu
+M7B1-WINDOW-NOT-CLOSED tag=closedAt=null reason=WINDOW_NOT_CLOSED detail=window win-probe is phase=post closedAt=null; a verdict needs the POST snapshot taken after the execution, so an armed-but-unclosed window c
+M7B1-WINDOW-NOT-CLOSED tag=closedAt="" reason=WINDOW_NOT_CLOSED detail=window win-probe is phase=post closedAt=; a verdict needs the POST snapshot taken after the execution, so an armed-but-unclosed window can n
+M7B1-IDENTITY-MISMATCH field=world_id reason=IDENTITY_MISMATCH detail=the window is bound to world_id="mutated-world_id" but the contract declares "m7b1-probe"; an observation of one identity cannot corroborate a contract about an
+M7B1-DERIVED-CONTRACT field=world_id reason=CONTRACT_IDENTITY_UNPROVEN
+M7B1-IDENTITY-MISMATCH field=agent_id reason=IDENTITY_MISMATCH detail=the window is bound to agent_id="mutated-agent_id" but the contract declares "agent-probe"; an observation of one identity cannot corroborate a contract about a
+M7B1-DERIVED-CONTRACT field=agent_id reason=CONTRACT_IDENTITY_UNPROVEN
+M7B1-IDENTITY-MISMATCH field=execution_id reason=IDENTITY_MISMATCH detail=the window is bound to execution_id="mutated-execution_id" but the contract declares "exec-probe"; an observation of one identity cannot corroborate a contract
+M7B1-DERIVED-CONTRACT field=execution_id reason=CONTRACT_IDENTITY_UNPROVEN
+M7B1-EXECUTION-ID-NOT-IN-TRACE reason=EXECUTION_ID_NOT_IN_TRACE detail=the contract declares execution_id="exec-probe" but no tool/call or tool/result event in the host's durable trace carries it (ids present: some-other-call); the
+M7B1-ROW-SEAL verdict=INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED (oracle, witnessed mode)
+M7B1-FORGED-ENVELOPE ok=false reason=WITNESS_NOT_SEALED
+▶ M7-B1 contract: every unestablished window is a NAMED INSTRUMENT_ERROR, never SATISFIED
+  ✔ host absent -> INSTRUMENT_ERROR reason=HOST_ABSENT, and the verdict is not SATISFIED (1.015463ms)
+  ✔ an unpinned host tree -> HOST_TREE_UNPINNED (the pin is read, never assumed) (20.128057ms)
+  ✔ a tree at the pin with UNPROVEN native assets -> HOST_ASSETS_UNPROVEN (16.993034ms)
+  ✔ the scope algebra refuses everything it cannot bind (1.799204ms)
+  ✖ the scope is RE-RESOLVED at open time, and the host preconditions keep their order (2.809368ms)
+  ✔ M7-B1b: the binding validator refuses an unclosed window, a mutated identity and an unobserved execution (1.053214ms)
+  ✔ M7-B1b: both halves of the provenance seal are live (row seal, window seal, and a second module instance) (67.525063ms)
+  ✔ M7-B1b: a caller-assembled envelope is refused before any instrument is trusted (1.19383ms)
+✖ M7-B1 contract: every unestablished window is a NAMED INSTRUMENT_ERROR, never SATISFIED (116.329248ms)
+✖ M7-B1 real-host window: inside/outside/same-directory controls, verbatim denial, forged and foreign witnesses (26.327135ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 7
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 207.252492
+
+✖ failing tests:
+
+test at tests/world-factory/m7b1-observation-window.test.mjs:226:11
+✖ the scope is RE-RESOLVED at open time, and the host preconditions keep their order (2.809368ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'HOST_ASSETS_UNPROVEN'
+  - 'SCOPE_SYMLINK'
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/m7b1-observation-window.test.mjs:240:14)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/m7b1-observation-window.test.mjs:226:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'HOST_ASSETS_UNPROVEN',
+    expected: 'SCOPE_SYMLINK',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/m7b1-observation-window.test.mjs:380:1
+✖ M7-B1 real-host window: inside/outside/same-directory controls, verbatim denial, forged and foreign witnesses (26.327135ms)
+  Error [HostBaseError]: host base guard: before: HEAD 639ed015397290b3745d163aafe02ffee4aa3f84 != next pin 9c2670d3bce5275e0d1610272958121af87787bb (tests/paths.mjs#NEXT_HOST)
+      at TestWorldFactory.assertHostBase (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/lib/world-factory.mjs:332:13)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/m7b1-observation-window.test.mjs:428:36)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)

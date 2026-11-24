@@ -1,0 +1,31 @@
+✔ key: the canonical digest is stable under field order (1.538592ms)
+✔ key: EVERY single-field change changes the key (parameterised over all nine) (0.986817ms)
+✔ key: a missing field is a refusal, never a placeholder (0.333381ms)
+✔ key: derivation reads real files — pin, lockfiles, tsconfig, build steps, HEAD tree (22.913764ms)
+✔ key: a fact that cannot be derived refuses (exit 2) instead of substituting (83.113734ms)
+✔ verify: OK for a freshly recorded artifact, and the identity is the recorded one (1.390702ms)
+✔ verify: a missing entry point is INFRA_ERROR/ENTRY_POINT_MISSING (0.573856ms)
+✔ verify: an entry point that is a directory is INFRA_ERROR/ENTRY_POINT_NOT_A_FILE (0.395639ms)
+✔ verify: a one-byte change is INFRA_ERROR/CONTENT_DIGEST_MISMATCH (0.820733ms)
+✔ verify: an added file is INFRA_ERROR (file count + digest both disagree) (0.666812ms)
+✔ verify: a wrong host_commit is INFRA_ERROR/IDENTITY_MISMATCH (and names the field) (0.378476ms)
+✔ verify: a wrong composite key is INFRA_ERROR even when the identity fields agree (0.443119ms)
+✔ verify: a missing expected fact is INFRA_ERROR — never "anything matches" (0.565039ms)
+✔ verify: an absent directory is MISS, not INFRA_ERROR (0.102314ms)
+✔ verify: content without a recorded manifest is INFRA_ERROR, never assumed to match (0.216159ms)
+✔ manifest: `.git` is excluded and the recorded manifest never hashes itself (0.742976ms)
+✔ cli: --record / --verify / MISS exit codes are 0 / 0 / 3, and a tampered tree is 1 (137.27889ms)
+✔ cli: --self-test pins its own parser and controls (exit 0) (48.68193ms)
+✔ workflow step extraction: the host build step carries the measured chain, not the prose (0.30074ms)
+✔ key: the HOST key does not move with the product tree (that is what makes Host reuse possible) (0.557145ms)
+✔ key: a host lockfile edit changes the host key (the digest is not a constant) (12.6861ms)
+✔ key: an off-pin host checkout is DRIFT; a dirty checkout AT the pin is DIRTY (38.120801ms)
+✔ verify: a platform mismatch is INFRA_ERROR even without host_key (0.550191ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 411.443265

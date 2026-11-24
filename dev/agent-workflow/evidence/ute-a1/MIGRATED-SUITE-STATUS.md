@@ -3663,3 +3663,69 @@ target. The clause predicate was not relaxed — it grew strictly more observabi
 
 **Levels:** no row moves. Both rows stay DEV-LIVE on rc.5. The gate remains non-required, so no row
 becomes PRODUCT-PROVEN.
+
+---
+
+## Round 110 (2026-11-25) — the rc.5 test POPULATION, measured (not the four drivers)
+
+Review `20261125-0058` Stage B asked for the broader rc.5 matrix, not a fifth driver round. The
+measured table, the enumeration method and every failure disposition are in
+[`RC5-TEST-MATRIX.md`](./RC5-TEST-MATRIX.md); this entry records the outcome and the counts.
+
+**Population, enumerated from code** (imports of bare `@deepseek-ai/*` *values*, `tests/paths.mjs`
+pins, the host loader, `TEAM_TEST_HOST` reads): the catalog's **785 entries** (733 collected, 38
+uncollected, 14 excluded) were classified over its **771 non-excluded** files. **93 carry a host
+signal** (47 host-import, 41 host-tree, 13 boot); **678 are host-free** and are not counted as rc.5
+coverage. The matrix keeps three populations apart: host-generic (boots/imports the *selected* host),
+rc.2-subject (pins the legacy host as its subject), rc.5-pinned (imports `NEXT_HOST` directly).
+
+**Executed on rc.5: 759 tests / 737 pass / 21 fail / 1 skip.** Breakdown and every red:
+
+| population | rc.2 | rc.5 |
+| --- | --- | --- |
+| `ute-vnext-a1` leg (7 files, selector) | 251 / 248 / 0 / 3 skip | 251 / 232 / 18 / 1 skip |
+| UTE G1 exact CI argv (9 files, rc.5-pinned) | N/A | **89 / 89 / 0 / 0** |
+| `tests/next-host` + boot/provisioning (2 files) | N/A | **26 / 26** |
+| next-host/settlement/closure lane as CI (11 files) | N/A | **184 / 184 / 0 / 0** |
+| leg-declared `node:test` under the selector (14 files) | green in `ci-integration` | 232 / 3 / 0 |
+
+- **18** = all `vnext-b-probe-ladder` arms: `vnext-b-probe-ladder.test.mjs:273` mounts
+  `ToolRuntime { mode: 'both' }`, rc.5 `packages/core/tools/lib/index.js:407` declares `mode:
+  z.never()`. The `before` hook rejects → deterministic **failure in ~0.5 s**, not a hang. The
+  historical hang is that rejection with no per-test timeout; with `--test-timeout=45000` the bundled
+  leg completes (251/232/18/1). **No gate timeout changed, no suite skipped.** Adaptation surface
+  (executor service instead of `mode`, batch dispatch, `PtcExecutor.requirePtcTransport()`) is an open
+  arm design, deliberately not rewritten inside a matrix round.
+- **1** = `a5sf-fs-contract` FSB-IMG-1b: measures the **rc.2** tool package (`:297`) → rc.2-subject.
+- **2** = `m7a-real-slice-host-state`: boots the **rc.2 census** slice in a child process → rc.2-subject.
+
+**Two rc.5 drifts adapted, observation only (assertions untouched):**
+
+1. `packages/runtime/test/vnext-admission.test.mjs` ADM-96/97: the fabricated `exec` frame now carries
+   `signal: new AbortController().signal`; rc.5's MCP client calls `AbortSignal.any` (`mcp-client/lib/
+   index.js:496`) and rejects a missing signal (`ERR_INVALID_ARG_TYPE`). `admission` → **163 tests /
+   162 pass / 0 fail / 1 skip on BOTH hosts**.
+2. `tests/world-factory/a5sf-harness.test.mjs:243` now asserts the candidate pin equals the **selected**
+   pin (`selectedHostPin(REPO_ROOT).sha`) and that the 40-hex literal is absent, instead of comparing to
+   the rc.2 constant → **10/10 both hosts**.
+3. `tests/world-factory/a5sf-native-route-c.test.mjs`: host modules now resolve through
+   `resolveSelectedHostModule` under the selector (the rc.2 `createRequire` had put two `dsh-scope`
+   namespaces in one process → `scopeOf` undefined → `a5sf-realm-row.mjs:782`), the rc.5 executor is
+   mounted as its exported `{ name, inject, apply }` plugin (the bare class skips `inject` →
+   `tool-executor-native/lib/index.js:10`), and dispatch uses the **existing**
+   `executeToolDispatch(..., { hostMode })` helper. → **8/8 both hosts**.
+
+**Not covered, stated:** 18 B-ladder arms (above); **40 vitest suites that load host code** — Vite
+resolves the repo install before the Node loader (measured: a probe imported `@deepseek-ai/dsh-scope`
+`0.2.0-rc.2` under `TEAM_TEST_HOST=next` + host-loader), so rc.5 cannot grade them without a Vite alias
+= a second selection mechanism; 38 uncollected files (catalog ratchet); the remaining leg-declared node
+suites that are rc.2-lane by design.
+
+**Counts that moved:** none in the catalog — `test-catalog` is **byte-identical** to round 109
+(`tests=785`, digest `sha256:da8a452d65130a3a7f62ef90b549a5289909e689e1ff619c4b3e0c45d5f5ed32`).
+`ute-vnext-a1` leg digest unchanged (`sha256:edd4f1c4…`). No new scannable test file (three edited
+files are existing; the evidence is markdown) ⇒ no p4t6 booking delta. `ute-p0-assets`
+`modules=37 files=180 lines=69512` unchanged.
+
+**Levels:** no row moves. No PRODUCT-PROVEN row is added; the four D drivers were not re-run and their
+round-109 verdicts stand.

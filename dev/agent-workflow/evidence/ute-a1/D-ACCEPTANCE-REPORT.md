@@ -4,6 +4,40 @@
 <!-- ROUND 109 — THE CURRENT ACCEPTANCE STATUS. Read this before anything else. -->
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
+## ROUND 110 — the rc.5 TEST MATRIX (no capability row moves)
+
+Round 110 (review `20261125-0058` Stage B) did **not** re-run the four D drivers and did **not** move
+any row below. It answered the different question the review asked: *what is the whole test population,
+and what does rc.5 do to it?* The measured table is
+[`RC5-TEST-MATRIX.md`](./RC5-TEST-MATRIX.md).
+
+Executed on rc.5 through the ONE selector (or the suite's own rc.5 pin): **759 tests, 737 pass, 21 fail,
+1 skip**. The 21 reds are dispositioned, not hidden:
+
+- **18** = every arm of `vnext-b-probe-ladder`, which still mounts `ToolRuntime { mode: 'both' }`
+  (`vnext-b-probe-ladder.test.mjs:273`) — rc.5 removed `mode` (`packages/core/tools/lib/index.js:407`).
+  The recorded "hang" is this `before`-hook rejection; with `--test-timeout=45000` it is a deterministic
+  failure in ~0.5 s, and the world rewrite (executor + batch dispatch + PTC transport) is an open arm
+  design, not a timeout. **No gate timeout was changed.**
+- **1** = `a5sf-fs-contract` FSB-IMG-1b, which measures the **rc.2** tool package (`:297`) → rc.2-subject,
+  N/A for rc.5.
+- **2** = `m7a-real-slice-host-state`, the **rc.2 census** slice in a child process → rc.2-subject.
+
+Two genuine rc.5 drifts were adapted with the **observation only** (assertions untouched): the ADM-96/97
+fabricated `exec` frames gained a real `AbortSignal` (rc.5 `AbortSignal.any` rejects a missing one), and
+two leg suites now resolve the **selected** host modules / mount the rc.5 executor plugin / use the
+existing batch-dispatch helper. Result: `admission` 162 pass / 1 skip / **0 fail on both hosts**;
+`a5sf-harness` **10/10 both**; `a5sf-native-route-c` **8/8 both** (route C is now measured on rc.5, not
+just rc.2).
+
+Disclosed gap, unchanged by this round: **40 vitest suites that load host code** cannot be graded on
+rc.5 through the selector — Vite resolves the repo install before Node's loader (measured: a probe still
+imported `dsh-scope` `0.2.0-rc.2` under `TEAM_TEST_HOST=next` + host-loader). A `resolve.alias` would be
+a second selection mechanism, so those 40 stay rc.2-only and are **not** counted as rc.5 coverage.
+
+**Levels: no row moves.** No PRODUCT-PROVEN row is added; the D-driver verdicts below remain the
+round-109 ones.
+
 ## CURRENT ACCEPTANCE STATUS — the single table (round 109, 2026-11-24)
 
 > **This table is the current verdict. Every later section of this file is HISTORICAL.** Where a

@@ -1,0 +1,43 @@
+UTE-G1-UISTATE-CORPUS members=ask_user_question,present,todo_write,get_goal,create_goal,update_goal,exit_plan_mode vectors=69 host=0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84
+RETIRED-ABSENT subject=dsh.ui-family paths=2
+RETIRED-ABSENT subject=appended-shadow symbol=none
+RETIRED-ABSENT subject=team-shadow successor=vnext-host-modules
+RETIRED-SUCCESSORS subject=dsh.ui-family named=3
+GOLDEN-FROZEN fixture=tests/ute-g1-uistate/golden/old-path.tsv vectors=69
+UTE-G1-UISTATE-RETIRED-BY-A0 subject=dsh.ui-family citation=5d1349767+93ba0a1d1 absent=2 successors=3
+RETIRED-ABSENT subject=dsh.agent-state-family paths=1
+RETIRED-ABSENT subject=team-shadow successor=vnext-host-modules
+RETIRED-SUCCESSORS subject=dsh.agent-state-family named=2
+UTE-G1-UISTATE-RETIRED-BY-A0 subject=dsh.agent-state-family citation=5d1349767+93ba0a1d1 absent=1 successors=2
+UTE-G1-UISTATE-STABLE vectors=69 state=FROZEN re-records=0
+UTE-G1-UISTATE-EXCLUDED category=read-before-write reason=no read-then-write contract exists in either family: todo_write replaces a whole list, the goal rows read fresh state INSIDE the store transaction (so a stale observation is `stale-version`, measured by AS-U8), and neither row exposes a write that requires a prior read
+UTE-G1-UISTATE-EXCLUDED category=route-unresolved reason=the two families refuse a missing backend at MOUNT time (PLANE_AGENT_STATE_STORE_MISSING / an unbuilt family), so no CALL-level route-unresolved refusal is observable from the rows themselves; the ui port absence is refused by the ROW (unsupported-mode, measured by UI-A8) because the row exists and answers
+UTE-G1-UISTATE-EXCLUDED category=unknown reason=every code the corpus observes is explicitly mapped with a citation; the map has no default bucket and no prose fallback, so an unmapped value raises REFUSAL_VOCABULARY_INCOMPLETE instead of landing here
+UTE-G1-UISTATE-VOCABULARY codes=32 reached=cancelled|denied-by-lane|invalid-argument|missing-path|stale-version|unsupported-mode excluded=read-before-write|route-unresolved|unknown
+UTE-G1-UISTATE-CONTROLS verdict=GREEN controls=15 transcript=exact
+UTE-G1-UISTATE-SEMANTIC-DIFF two-implementations klass=definition-surface blocking=true approval=none
+UTE-G1-UISTATE-SEMANTIC-DIFF refusal-vocabulary klass=refusal-code blocking=true approval=none
+UTE-G1-UISTATE-SEMANTIC-DIFF result-envelope klass=result-shape blocking=true approval=none
+UTE-G1-UISTATE-SEMANTIC-DIFF present-receipt-turn klass=lifecycle blocking=true approval=none
+UTE-G1-UISTATE-SEMANTIC-DIFF timed-pending-shape klass=deadline blocking=true approval=none
+UTE-G1-UISTATE-SEMANTIC-DIFF state-sink klass=state-sink blocking=true approval=none
+UTE-G1-UISTATE-SEMANTIC-DIFF product-route-absent klass=unit-ownership blocking=true approval=none
+UTE-G1-UISTATE-SEMANTIC declared=7 blocking=all approval=none measurement=RETIRED-BY-A0
+PROBE-TRANSCRIPT path=dev/agent-workflow/evidence/ute3-uistate-b1-20261121/composition-probe.txt members=7 many
+✔ the fixture is bound to the pinned host and the census books the corpus (1.603716ms)
+✔ RETIRED-BY-A0: both governed family bodies are gone and the fixture is the frozen baseline (3.503292ms)
+✔ every golden row satisfies its corpus design claim (0.518822ms)
+✔ the refusal mapping is total, closed, and every category is reached or excluded (0.679666ms)
+✔ effects are corroborated independently of the row (0.270351ms)
+✔ the POST-CUT control battery holds and the committed transcript is exact (49.625027ms)
+✔ the semantic differences stay DECLARED, blocking and unapproved; their measurement retired with the source (0.913449ms)
+✔ the Stage-0 composition probe transcript is committed and answers every member (0.45424ms)
+✔ no member is claimed retireable: this lane delivers no new path (1.119028ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 164.191666

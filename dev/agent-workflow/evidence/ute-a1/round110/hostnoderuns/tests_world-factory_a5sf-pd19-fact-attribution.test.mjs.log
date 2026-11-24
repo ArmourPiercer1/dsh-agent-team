@@ -1,0 +1,87 @@
+✖ FA1 allow fact names the real tool and callId (14.874845ms)
+✖ FA2 deny fact is attributed to the same call, and the decision is unchanged (6.8524ms)
+✖ FA3 overlapping dispatches keep their own call ids (6.495506ms)
+✖ FA4 a direct Provider read records null tool/callId (5.328604ms)
+✔ FA5 old-format facts parse; malformed attribution is refused (2.175248ms)
+✖ FA6 binding-realm facts also carry tool + callId (29.481492ms)
+✔ FA7 no guard module reads the attribution carrier (1.013107ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 2
+ℹ fail 5
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 501.778181
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-pd19-fact-attribution.test.mjs:272:1
+✖ FA1 allow fact names the real tool and callId (14.874845ms)
+  Error [TeamServiceInstallError]: SERVICE_MOUNT_FAILED: native tool module re-mount failed: prompt section "tool:read" is already registered (for a per-agent override, register through that agent's `agent.ctx` instead)
+      at Object.mountNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/team-services/src/mount.ts:1966:17)
+      at async Module.attachA5sfNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1249:18)
+      at async mountRealm (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-pd19-fact-attribution.test.mjs:239:3)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-pd19-fact-attribution.test.mjs:276:24)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    code: 'SERVICE_MOUNT_FAILED',
+    reveal: 'members',
+    detail: 'native tool module re-mount failed: prompt section "tool:read" is already registered (for a per-agent override, register through that agent\'s `agent.ctx` instead)'
+  }
+
+test at tests/world-factory/a5sf-pd19-fact-attribution.test.mjs:295:1
+✖ FA2 deny fact is attributed to the same call, and the decision is unchanged (6.8524ms)
+  Error [TeamServiceInstallError]: SERVICE_MOUNT_FAILED: native tool module re-mount failed: prompt section "tool:read" is already registered (for a per-agent override, register through that agent's `agent.ctx` instead)
+      at Object.mountNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/team-services/src/mount.ts:1966:17)
+      at async Module.attachA5sfNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1249:18)
+      at async mountRealm (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-pd19-fact-attribution.test.mjs:239:3)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-pd19-fact-attribution.test.mjs:299:24)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'SERVICE_MOUNT_FAILED',
+    reveal: 'members',
+    detail: 'native tool module re-mount failed: prompt section "tool:read" is already registered (for a per-agent override, register through that agent\'s `agent.ctx` instead)'
+  }
+
+test at tests/world-factory/a5sf-pd19-fact-attribution.test.mjs:318:1
+✖ FA3 overlapping dispatches keep their own call ids (6.495506ms)
+  Error [TeamServiceInstallError]: SERVICE_MOUNT_FAILED: native tool module re-mount failed: prompt section "tool:read" is already registered (for a per-agent override, register through that agent's `agent.ctx` instead)
+      at Object.mountNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/team-services/src/mount.ts:1966:17)
+      at async Module.attachA5sfNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1249:18)
+      at async mountRealm (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-pd19-fact-attribution.test.mjs:239:3)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-pd19-fact-attribution.test.mjs:322:24)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'SERVICE_MOUNT_FAILED',
+    reveal: 'members',
+    detail: 'native tool module re-mount failed: prompt section "tool:read" is already registered (for a per-agent override, register through that agent\'s `agent.ctx` instead)'
+  }
+
+test at tests/world-factory/a5sf-pd19-fact-attribution.test.mjs:344:1
+✖ FA4 a direct Provider read records null tool/callId (5.328604ms)
+  Error [TeamServiceInstallError]: SERVICE_MOUNT_FAILED: native tool module re-mount failed: prompt section "tool:read" is already registered (for a per-agent override, register through that agent's `agent.ctx` instead)
+      at Object.mountNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/team-services/src/mount.ts:1966:17)
+      at async Module.attachA5sfNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1249:18)
+      at async mountRealm (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-pd19-fact-attribution.test.mjs:239:3)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-pd19-fact-attribution.test.mjs:348:21)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'SERVICE_MOUNT_FAILED',
+    reveal: 'members',
+    detail: 'native tool module re-mount failed: prompt section "tool:read" is already registered (for a per-agent override, register through that agent\'s `agent.ctx` instead)'
+  }
+
+test at tests/world-factory/a5sf-pd19-fact-attribution.test.mjs:407:1
+✖ FA6 binding-realm facts also carry tool + callId (29.481492ms)
+  Error [TeamServiceInstallError]: SERVICE_MOUNT_FAILED: native tool module re-mount failed: prompt section "tool:write" is already registered (for a per-agent override, register through that agent's `agent.ctx` instead)
+      at Object.mountNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/team-services/src/mount.ts:1966:17)
+      at async Module.attachA5sfNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1249:18)
+      at async mountRealm (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-pd19-fact-attribution.test.mjs:239:3)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-pd19-fact-attribution.test.mjs:411:24)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'SERVICE_MOUNT_FAILED',
+    reveal: 'members',
+    detail: 'native tool module re-mount failed: prompt section "tool:write" is already registered (for a per-agent override, register through that agent\'s `agent.ctx` instead)'
+  }

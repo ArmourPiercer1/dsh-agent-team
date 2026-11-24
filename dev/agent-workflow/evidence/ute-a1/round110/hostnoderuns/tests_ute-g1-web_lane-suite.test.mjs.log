@@ -1,0 +1,26 @@
+RETIRED-ABSENT subject=dsh.web-family paths=3
+RETIRED-ABSENT subject=appended-shadow symbol=none
+RETIRED-ABSENT subject=team-shadow successor=vnext-host-modules
+RETIRED-SUCCESSORS subject=dsh.web-family named=4
+GOLDEN-FROZEN fixture=tests/ute-g1-web/golden/old-path.tsv vectors=15
+UTE-G1-WEB-RETIRED-BY-A0 subject=dsh.web-family citation=5d1349767+93ba0a1d1 absent=3 successors=4
+WEB-ATTACH appended=none
+✔ the fixture is bound to the pinned legacy host and a sanctioned port (0.64948ms)
+✔ the corpus covers every census member and the required vector kinds (0.407231ms)
+✔ RETIRED-BY-A0: the appended PD-27 web shadow is gone and the fixture is the frozen baseline (434.765005ms)
+✔ every golden row satisfies its corpus design claim (0.577934ms)
+✔ the refusal mapping is total and uses only the owner's closed vocabulary (0.225397ms)
+✔ every admitted call is corroborated by a real loopback socket and zero external attempts (0.143702ms)
+UTE-G1-WEB-CONTROLS GREEN controls=10 transcript=exact mutated=RED
+UTE-G1-WEB-SEMANTIC declared=3 blocking=3 approval=none measurement=RETIRED-BY-A0
+✔ the socket witness reads the real undici destination, not a default (14.78746ms)
+✔ the POST-CUT control battery re-runs, its committed transcript is exact, and a mutation reds (915.746099ms)
+✔ the semantic differences stay DECLARED, blocking, and unapproved; their measurement retired with the source (3.370295ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1438.522249

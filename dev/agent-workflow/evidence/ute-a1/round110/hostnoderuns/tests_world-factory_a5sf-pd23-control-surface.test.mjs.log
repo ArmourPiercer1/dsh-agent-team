@@ -1,0 +1,13 @@
+﹣ PD23-PIN: the BASE commit carries the control rows and the skill loader (PRE-FIX, pinned) (0.402322ms) # SKIP
+✔ PD23-SURFACE-CLOSED (SUPERSEDED BY PD-26): the composition this lane measured declares NO control row and NO skill loader/provider (30.902452ms)
+✔ PD23-SURFACE-POSITIVE-CONTROL: the retained rows (jobs, todo, goal, confined faces) are untouched (4.023404ms)
+✔ PD23-SURFACE-SURGICAL: the pinned standard preset still declares the control tools and the skill loader (2.231554ms)
+✔ PD23-TYPED-REFUSAL: send_message/interrupt_agent/list_agents/skill are UNKNOWN_TOOL and execute nothing (18.836789ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 106.204907

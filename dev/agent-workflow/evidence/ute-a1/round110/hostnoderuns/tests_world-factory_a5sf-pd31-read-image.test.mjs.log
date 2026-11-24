@@ -1,0 +1,15 @@
+✔ PD31-MODEL-SEAM: image capability is declarable through the public staticModel key, not an upstream patch (26.625216ms)
+✔ PD31-ROUTE-GATE: the pinned BUILT tool-fs still carries the capability gate, and the mutation needle is anchored (1.612332ms)
+✔ PD31-FIXTURES: the over-limit fixtures cross the store's own pinned laws, and the driver reads those laws rather than restating them (0.463246ms)
+✔ PD31-PRESET: the governed preset mounts the host tool-fs package and no Team fs-family plane, so the live read_image is the native row (7.737139ms)
+✔ PD31-ARMS: the pin selects the text-only arm and the two mutations move the allow verdict in named, opposite directions (0.202042ms)
+✔ PD31-EVIDENCE-BOUND: the driver binds its run to a real commit and declares DEV-LIVE (never a candidate claim) (0.24305ms)
+✔ PD31-INSTALL-GRAPH: the shipped surface is measured through the World graph, and the driver cannot silently outlive the shared provisioning (0.615221ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 91.240769

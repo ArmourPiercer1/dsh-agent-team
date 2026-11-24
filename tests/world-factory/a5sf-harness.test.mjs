@@ -39,7 +39,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { TEST_USE_BASELINE_SHA } from '../paths.mjs'
+import { selectedHostPin } from '../next-host/host-select.mjs'
 import { createRunRecord } from './lib/run-record.mjs'
 import {
   A5SF_HARNESS_CODES,
@@ -245,12 +245,19 @@ test('fixed candidate: the pin is READ from tests/paths.mjs, never copied into t
   try {
     const harness = harnessFor(dir, { runRecord: recordFor(dir, 'r2-pin') })
     const candidate = harness.candidate()
-    assert.equal(candidate.pin, TEST_USE_BASELINE_SHA)
+    // The candidate reports the SELECTED host's pin. On rc.2 that is
+    // `TEST_USE_BASELINE_SHA`; under `TEAM_TEST_HOST=next` it is `NEXT_HOST.sha`
+    // — both read from `tests/paths.mjs` through the ONE selector. The law this
+    // asserts ("the pin is read from the authority, never copied into the
+    // harness") is host-independent; binding it to the rc.2 constant made the
+    // arm fail only because the selected host changed.
+    const selected = selectedHostPin(REPO_ROOT)
+    assert.equal(candidate.pin, selected.sha, 'the candidate pin is the SELECTED host pin')
     assert.match(candidate.source, /tests\/paths\.mjs/)
     assert.equal(candidate.asserted, false, 'candidate() must not require a host tree')
     const source = harnessSourceText()
-    assert.equal(source.includes(TEST_USE_BASELINE_SHA), false, 'the 40-hex pin literal must not be copied into the harness')
-    assert.match(source, /TEST_USE_BASELINE_SHA/)
+    assert.equal(source.includes(selected.sha), false, 'the 40-hex pin literal must not be copied into the harness')
+    assert.match(source, /TEST_USE_BASELINE_SHA|NEXT_HOST|selectedHostPin/u, 'the harness must NAME the pin authority, not restate a SHA')
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }

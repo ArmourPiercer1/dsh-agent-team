@@ -1,0 +1,108 @@
+(node:3082) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+✔ M7-A real-host suite: an absent host refuses in words and skips, and the suite is not green (112.709561ms)
+✔ M7-A real-host suite: M7A_REQUIRE_PINNED_HOST=1 makes the same absence a hard failure (99.429653ms)
+✖ M7-A real-host suite: a host-start failure EXITS, names the precondition, and does not hang (115.584192ms)
+✖ M7-A real-host suite: the disclosure opt-in does NOT launder a different failure (the token is not a hole) (110.902909ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 2
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 489.417295
+
+✖ failing tests:
+
+test at tests/world-factory/m7a-real-slice-host-state.test.mjs:95:1
+✖ M7-A real-host suite: a host-start failure EXITS, names the precondition, and does not hang (115.584192ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /M7A-PRECONDITION host-start FAILED/u. Input:
+  
+  '✖ M7-A real-host slice: scripted model -> real DSH session -> real tool -> witness -> oracle (7.457164ms)\n' +
+    'ℹ tests 1\n' +
+    'ℹ suites 0\n' +
+    'ℹ pass 0\n' +
+    'ℹ fail 1\n' +
+    'ℹ cancelled 0\n' +
+    'ℹ skipped 0\n' +
+    'ℹ todo 0\n' +
+    'ℹ duration_ms 71.626551\n' +
+    '\n' +
+    '✖ failing tests:\n' +
+    '\n' +
+    'test at tests/world-factory/m7a-real-slice.test.mjs:109:1\n' +
+    '✖ M7-A real-host slice: scripted model -> real DSH session -> real tool -> witness -> oracle (7.457164ms)\n' +
+    '  Error [NextHostMissingError]: next host lane: NOT_A_GIT_CHECKOUT: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next is not a git checkout: \n' +
+    '      at verifyNextHostTree (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/next-host/host-next-lib.mjs:120:11)\n' +
+    '      at assertNextHostTree (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/next-host/host-next-lib.mjs:202:10)\n' +
+    '      at selectedHostPin (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/next-host/host-select.mjs:106:37)\n' +
+    '      at new TestWorldFactory (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/lib/world-factory.mjs:253:20)\n' +
+    '      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/m7a-real-slice.test.mjs:122:19)\n' +
+    '      at Test.runInAsyncScope (node:async_hooks:227:14)\n' +
+    '      at Test.run (node:internal/test_runner/test:1402:25)\n' +
+    '      at Test.start (node:internal/test_runner/test:1262:17)\n' +
+    '      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {\n' +
+    "    code: 'NOT_A_GIT_CHECKOUT'\n" +
+    '  }\n'
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/m7a-real-slice-host-state.test.mjs:119:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: "✖ M7-A real-host slice: scripted model -> real DSH session -> real tool -> witness -> oracle (7.457164ms)\nℹ tests 1\nℹ suites 0\nℹ pass 0\nℹ fail 1\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 71.626551\n\n✖ failing tests:\n\ntest at tests/world-factory/m7a-real-slice.test.mjs:109:1\n✖ M7-A real-host slice: scripted model -> real DSH session -> real tool -> witness -> oracle (7.457164ms)\n  Error [NextHostMissingError]: next host lane: NOT_A_GIT_CHECKOUT: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next is not a git checkout: \n      at verifyNextHostTree (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/next-host/host-next-lib.mjs:120:11)\n      at assertNextHostTree (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/next-host/host-next-lib.mjs:202:10)\n      at selectedHostPin (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/next-host/host-select.mjs:106:37)\n      at new TestWorldFactory (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/lib/world-factory.mjs:253:20)\n      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/m7a-real-slice.test.mjs:122:19)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1402:25)\n      at Test.start (node:internal/test_runner/test:1262:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {\n    code: 'NOT_A_GIT_CHECKOUT'\n  }\n",
+    expected: /M7A-PRECONDITION host-start FAILED/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/m7a-real-slice-host-state.test.mjs:127:1
+✖ M7-A real-host suite: the disclosure opt-in does NOT launder a different failure (the token is not a hole) (110.902909ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /M7A-STEP verdict=FAILED reason=REFUSAL_NOT_ACCEPTED/u. Input:
+  
+  '✖ M7-A real-host slice: scripted model -> real DSH session -> real tool -> witness -> oracle (3.927343ms)\n' +
+    'ℹ tests 1\n' +
+    'ℹ suites 0\n' +
+    'ℹ pass 0\n' +
+    'ℹ fail 1\n' +
+    'ℹ cancelled 0\n' +
+    'ℹ skipped 0\n' +
+    'ℹ todo 0\n' +
+    'ℹ duration_ms 68.074137\n' +
+    '\n' +
+    '✖ failing tests:\n' +
+    '\n' +
+    'test at tests/world-factory/m7a-real-slice.test.mjs:109:1\n' +
+    '✖ M7-A real-host slice: scripted model -> real DSH session -> real tool -> witness -> oracle (3.927343ms)\n' +
+    '  Error [NextHostMissingError]: next host lane: NOT_A_GIT_CHECKOUT: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next is not a git checkout: \n' +
+    '      at verifyNextHostTree (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/next-host/host-next-lib.mjs:120:11)\n' +
+    '      at assertNextHostTree (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/next-host/host-next-lib.mjs:202:10)\n' +
+    '      at selectedHostPin (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/next-host/host-select.mjs:106:37)\n' +
+    '      at new TestWorldFactory (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/lib/world-factory.mjs:253:20)\n' +
+    '      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/m7a-real-slice.test.mjs:122:19)\n' +
+    '      at Test.runInAsyncScope (node:async_hooks:227:14)\n' +
+    '      at Test.run (node:internal/test_runner/test:1402:25)\n' +
+    '      at Test.start (node:internal/test_runner/test:1262:17)\n' +
+    '      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {\n' +
+    "    code: 'NOT_A_GIT_CHECKOUT'\n" +
+    '  }\n'
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/m7a-real-slice-host-state.test.mjs:142:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: "✖ M7-A real-host slice: scripted model -> real DSH session -> real tool -> witness -> oracle (3.927343ms)\nℹ tests 1\nℹ suites 0\nℹ pass 0\nℹ fail 1\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 68.074137\n\n✖ failing tests:\n\ntest at tests/world-factory/m7a-real-slice.test.mjs:109:1\n✖ M7-A real-host slice: scripted model -> real DSH session -> real tool -> witness -> oracle (3.927343ms)\n  Error [NextHostMissingError]: next host lane: NOT_A_GIT_CHECKOUT: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next is not a git checkout: \n      at verifyNextHostTree (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/next-host/host-next-lib.mjs:120:11)\n      at assertNextHostTree (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/next-host/host-next-lib.mjs:202:10)\n      at selectedHostPin (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/next-host/host-select.mjs:106:37)\n      at new TestWorldFactory (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/lib/world-factory.mjs:253:20)\n      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/m7a-real-slice.test.mjs:122:19)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1402:25)\n      at Test.start (node:internal/test_runner/test:1262:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {\n    code: 'NOT_A_GIT_CHECKOUT'\n  }\n",
+    expected: /M7A-STEP verdict=FAILED reason=REFUSAL_NOT_ACCEPTED/u,
+    operator: 'match',
+    diff: 'simple'
+  }

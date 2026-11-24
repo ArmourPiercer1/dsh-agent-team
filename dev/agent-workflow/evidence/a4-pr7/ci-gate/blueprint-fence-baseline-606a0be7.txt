@@ -212,4 +212,9 @@ OFFENDING packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts :: 
 #     ADM-127/ADM-128 fixture block (+5 lines) BETWEEN the two fixtures; the C-alpha6 document at L4709 and
 #     the C93 document at the new L7768 are byte-unchanged. Re-recorded from the gate's own report, not by
 #     hand-guessing an offset: no blueprint content was authored, edited or resolved by this round.
-OFFENDING packages/runtime/test/vnext-admission.test.mjs :: L4709=v5, L7768=v5
+#   - vnext-admission.test.mjs moved L4709 -> L4721 and L7768 -> L7780 because round 110 (the rc.5 test
+#     matrix) added a real `AbortSignal` to the fabricated `exec` frames in ADM-96 and ADM-97 (+12 lines
+#     net, both ABOVE the two fixtures): rc.5's MCP client calls `AbortSignal.any` and rejects a missing
+#     signal (`ERR_INVALID_ARG_TYPE`). No blueprint document was authored, edited or resolved; the two v5
+#     fixture literals are byte-unchanged. Re-recorded from the gate's own report.
+OFFENDING packages/runtime/test/vnext-admission.test.mjs :: L4721=v5, L7780=v5

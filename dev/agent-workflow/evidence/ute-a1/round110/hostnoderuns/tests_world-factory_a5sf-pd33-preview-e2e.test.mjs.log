@@ -1,0 +1,22 @@
+✔ PD33-DRIVER: the driver is present, states the Preview stop semantic, and never builds a Team-wide stop (0.924509ms)
+✔ PD33-ROSTER: 19 preset + 15 team + 2 instrument = 36, and the deferred seven are absent (0.134665ms)
+✔ PD33-DEFERRED: the driver probes every deferred name and expects a typed unknown-tool refusal (0.600677ms)
+✔ PD33-SHELL: the shell case measures the DISCLOSED boundary, never claims the service axis refused (0.158621ms)
+✔ PD33-READ-IMAGE: a route case — 0 guard facts and 0 image bytes, or it does not pass (0.138351ms)
+✔ PD33-WEB-SEARCH: both shipped states are judged, and 0 POSTs is a valid branch (0.218503ms)
+✔ PD33-NO-BASE-WEB: the inherited host `web` is counted, not argued about (0.17942ms)
+✔ PD33-EVIDENCE: the report and the evidence README state the class and the anchor (0.167176ms)
+✔ PD33-SUPERSEDED: the governed-bash arm is disclosed, dated, and carried by named instruments (0.373016ms)
+✔ PD33-AGREEMENT: the pair comparator grades verdict equality, and the pass bar stays separate (0.333351ms)
+✔ PD33-SUBSET: NOT_SELECTED is outside the algebra; an all-NOT_SELECTED run is still FAIL (0.187104ms)
+✔ PD33-SUBSET: --arms e2e records 10 selected, 9 not-selected, overall from the selection only (1.240949ms)
+✔ PD33-SUBSET: a selected case with no verdict is still FAIL, and the validator re-derives overall (0.476993ms)
+✔ PD33-SUBSET: a full run still fails closed and never claims subset (0.216761ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 63.427184

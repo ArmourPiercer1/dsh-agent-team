@@ -1,0 +1,73 @@
+✔ N1 config reader: native module list absent ⇒ block unchanged; valid ⇒ frozen; malformed ⇒ loud (1.350807ms)
+✖ N2 route C: the native read on the isolated scope resolves the CONFINED provider (before: BASE) (9.548623ms)
+✖ N3 surface neutrality: a builtinToolDeny-hidden native tool is NOT re-enabled — the attach is refused (2.61525ms)
+✖ N4 teardown: disposing the realm removes the shadow (the preset definition is visible again on BASE) (2.129351ms)
+✖ N5 glue order: the production glue attaches the native shadow AFTER applyBuiltInToolDeny; the reverse order re-enables the denied tool (2.14476ms)
+✔ N6 one ceiling: mountNativeToolModules refuses a two-Member realm before registering anything (2.803827ms)
+✖ N7 teardown order + error reporting: native shadows go first, and a throwing disposal REJECTS realm.dispose() (2.128128ms)
+✔ N8 duplicate scope namespaces: the attach takes the canonical runtime Agent when scopeOf is blind; both paths empty still refuses (2.717524ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 3
+ℹ fail 5
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 621.802806
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-native-route-c.test.mjs:376:1
+✖ N2 route C: the native read on the isolated scope resolves the CONFINED provider (before: BASE) (9.548623ms)
+  TypeError: agent-bindings: the a5sf native tool re-mount needs a SCOPED agent Context (the tool plane is per-agent)
+      at a5sfAgentToolSurface (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:782:11)
+      at Module.attachA5sfNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1176:18)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-native-route-c.test.mjs:410:15)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/world-factory/a5sf-native-route-c.test.mjs:451:1
+✖ N3 surface neutrality: a builtinToolDeny-hidden native tool is NOT re-enabled — the attach is refused (2.61525ms)
+  Error: tools.restrict() requires a scoped context (agent.ctx): a context-global restriction would mask every agent — deny the tool for the intended agent instead
+      at Proxy.restrict (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.2.0-rc.2_52b5a8ab481be2b3d891c22a71641755/node_modules/@deepseek-ai/dsh-tools/lib/index.js:2897:31)
+      at Object.apply (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/node_modules/.pnpm/@deepseek-ai+cordis@4.0.4_@deepseek-ai+cordis-plugin-include@1.0.9_@deepseek-ai+cordis-plugin-loader@1.0.5/node_modules/@deepseek-ai/cordis/lib/index.js:120:36)
+      at applyBuiltInToolDeny (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/tools/src/builtin-deny.ts:50:31)
+      at Object.apply [as callback] (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-native-route-c.test.mjs:299:29)
+      at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/node_modules/.pnpm/@deepseek-ai+cordis@4.0.4_@deepseek-ai+cordis-plugin-include@1.0.9_@deepseek-ai+cordis-plugin-loader@1.0.5/node_modules/@deepseek-ai/cordis/lib/index.js:1071:28)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/node_modules/.pnpm/@deepseek-ai+cordis@4.0.4_@deepseek-ai+cordis-plugin-include@1.0.9_@deepseek-ai+cordis-plugin-loader@1.0.5/node_modules/@deepseek-ai/cordis/lib/index.js:1142:34
+      at applyRealDeny (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-native-route-c.test.mjs:296:18)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-native-route-c.test.mjs:459:30)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/world-factory/a5sf-native-route-c.test.mjs:492:1
+✖ N4 teardown: disposing the realm removes the shadow (the preset definition is visible again on BASE) (2.129351ms)
+  TypeError: agent-bindings: the a5sf native tool re-mount needs a SCOPED agent Context (the tool plane is per-agent)
+      at a5sfAgentToolSurface (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:782:11)
+      at Module.attachA5sfNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1176:18)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-native-route-c.test.mjs:509:13)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/world-factory/a5sf-native-route-c.test.mjs:523:1
+✖ N5 glue order: the production glue attaches the native shadow AFTER applyBuiltInToolDeny; the reverse order re-enables the denied tool (2.14476ms)
+  Error: tools.restrict() requires a scoped context (agent.ctx): a context-global restriction would mask every agent — deny the tool for the intended agent instead
+      at Proxy.restrict (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.2.0-rc.2_52b5a8ab481be2b3d891c22a71641755/node_modules/@deepseek-ai/dsh-tools/lib/index.js:2897:31)
+      at Object.apply (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/node_modules/.pnpm/@deepseek-ai+cordis@4.0.4_@deepseek-ai+cordis-plugin-include@1.0.9_@deepseek-ai+cordis-plugin-loader@1.0.5/node_modules/@deepseek-ai/cordis/lib/index.js:120:36)
+      at applyBuiltInToolDeny (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/tools/src/builtin-deny.ts:50:31)
+      at Object.apply [as callback] (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-native-route-c.test.mjs:299:29)
+      at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/node_modules/.pnpm/@deepseek-ai+cordis@4.0.4_@deepseek-ai+cordis-plugin-include@1.0.9_@deepseek-ai+cordis-plugin-loader@1.0.5/node_modules/@deepseek-ai/cordis/lib/index.js:1071:28)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/node_modules/.pnpm/@deepseek-ai+cordis@4.0.4_@deepseek-ai+cordis-plugin-include@1.0.9_@deepseek-ai+cordis-plugin-loader@1.0.5/node_modules/@deepseek-ai/cordis/lib/index.js:1142:34
+      at applyRealDeny (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-native-route-c.test.mjs:296:18)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-native-route-c.test.mjs:554:32)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/world-factory/a5sf-native-route-c.test.mjs:664:1
+✖ N7 teardown order + error reporting: native shadows go first, and a throwing disposal REJECTS realm.dispose() (2.128128ms)
+  TypeError: agent-bindings: the a5sf native tool re-mount needs a SCOPED agent Context (the tool plane is per-agent)
+      at a5sfAgentToolSurface (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:782:11)
+      at Module.attachA5sfNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1176:18)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-native-route-c.test.mjs:694:28)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)

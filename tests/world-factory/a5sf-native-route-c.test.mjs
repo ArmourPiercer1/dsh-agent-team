@@ -65,6 +65,9 @@ import { dirname, join } from 'node:path'
 import test, { after } from 'node:test'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
+import { resolveSelectedHostModule, testHostMode } from '../next-host/host-select.mjs'
+import { executeToolDispatch } from './lib/a5sf-fs-contract-world.mjs'
+
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = join(HERE, '..', '..')
 
@@ -75,11 +78,38 @@ register(pathToFileURL(join(REPO_ROOT, 'scripts', 'run-tests-hooks.mjs')).href)
 const row = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'a5sf-realm-row.mjs')).href)
 /** `@deepseek-ai/cordis` + the REAL tool runtime are devDependencies of `packages/runtime` (pnpm strict). */
 const runtimeRequire = createRequire(join(REPO_ROOT, 'packages', 'runtime', 'package.json'))
-const { Context, Service } = await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/cordis')).href)
-const ToolRuntime = (await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/dsh-tools')).href)).default
-const SystemPrompt = (await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/dsh-system-prompt')).href)).default
-const SCOPE_ENTRY = runtimeRequire.resolve('@deepseek-ai/dsh-scope')
-const { createScope, scopeOf, bindScopeParent } = await import(pathToFileURL(SCOPE_ENTRY).href)
+/**
+ * WHICH HOST's modules this unit world is built from. The product code under
+ * test resolves its bare `@deepseek-ai/*` imports through the ONE selector
+ * (`scripts/run-tests-hooks.mjs` → `tests/next-host/host-select.mjs`), so the
+ * world must resolve the SAME way or the process carries two copies of
+ * `@deepseek-ai/dsh-scope`: its scope tag is a module-private Symbol, and
+ * `scopeOf(root)` then reads `undefined` for a ctx the product just created
+ * (the duplicate-instance hazard `a5sfAgentToolSurface` names). Before this,
+ * the suite pinned the repo's rc.2 install with `createRequire` and could only
+ * ever grade rc.2.
+ */
+const HOST_MODE = testHostMode()
+const hostEntry = (spec) => pathToFileURL(HOST_MODE === 'next'
+  ? resolveSelectedHostModule(spec, REPO_ROOT)
+  : runtimeRequire.resolve(spec)).href
+const { Context, Service } = await import(hostEntry('@deepseek-ai/cordis'))
+const ToolRuntime = (await import(hostEntry('@deepseek-ai/dsh-tools'))).default
+const SystemPrompt = (await import(hostEntry('@deepseek-ai/dsh-system-prompt'))).default
+const { createScope, scopeOf, bindScopeParent } = await import(hostEntry('@deepseek-ai/dsh-scope'))
+/** The selected host's `dsh-scope` FILE, for the deliberate second-copy arm (N8). */
+const SCOPE_ENTRY = HOST_MODE === 'next'
+  ? resolveSelectedHostModule('@deepseek-ai/dsh-scope', REPO_ROOT)
+  : runtimeRequire.resolve('@deepseek-ai/dsh-scope')
+/** rc.5 splits dispatch behind an executor service; the legacy host has none. */
+const nativeExecutorPlugin = HOST_MODE === 'next'
+  ? await (async () => {
+      const mod = await import(hostEntry('@deepseek-ai/dsh-tool-executor-native'))
+      // rc.5 exports the plugin as `{ name, inject, apply }` (named, no default);
+      // mounting the class alone skips `inject` and the pipeline cannot see `tools`.
+      return { name: mod.name, inject: mod.inject, apply: mod.apply }
+    })()
+  : undefined
 /** The REAL capability mask adapter the product applies (packages/tools). */
 const { applyBuiltInToolDeny } = await import('../../packages/tools/src/index.js')
 
@@ -182,6 +212,8 @@ async function makeRoot() {
   const root = new Context()
   await root.plugin(SystemPrompt)
   await root.plugin(ToolRuntime)
+  // rc.5 selects a ToolExecutor before it can dispatch; the legacy host dispatches itself.
+  if (HOST_MODE === 'next') await root.plugin(nativeExecutorPlugin)
   await root.plugin(TestFileSystem, {})
   return root
 }
@@ -316,13 +348,15 @@ const sectionNames = async (root, scope) =>
   (await root.systemPrompt.assemble({ scope })).sections.map((section) => section.name)
 
 async function dispatch(root, agent, name, args) {
-  const settled = await root.tools.execute({
+  // The ONE dispatch-shape helper: rc.2 takes a single call, rc.5 a batch. Same
+  // world, same assertions — only the host's public call shape differs.
+  const settled = await executeToolDispatch(root.tools, {
     signal: new AbortController().signal,
     callId: `a5sf-route-c-${name}`,
     name,
     arguments: args,
     agent,
-  })
+  }, { hostMode: HOST_MODE })
   const text = Array.isArray(settled.content)
     ? settled.content.map((part) => (part?.type === 'text' ? part.text : '')).join('')
     : ''

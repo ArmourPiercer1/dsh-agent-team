@@ -4570,6 +4570,12 @@ test('ADM-96 — C-mcp: a REAL mounted MCP server’s tool call is ADMITTED by t
     assert.deepEqual(mcp.names(), ['mcp__p5t5mini__ping'], 'the model-visible surface is the server-qualified name')
 
     // (3) THE ONE CENTRE judges the mounted call, and the real body runs.
+    //     The frame carries the HOST's own call signal. rc.5's mounted MCP body composes the caller
+    //     signal with the server generation signal (`AbortSignal.any([execution.signal, opts.signal])`
+    //     in the host's `mcp-client/lib/index.js`), and `AbortSignal.any` rejects an `undefined`
+    //     member with `TypeError: signals[0] is not of type AbortSignal`. rc.2 tolerated the absent
+    //     field; a real host dispatch always supplies it, so this fabricated frame does too. Nothing
+    //     this arm asserts is changed.
     const exec = {
       name: 'mcp__p5t5mini__ping',
       callId: 'mcp-mount-1',
@@ -4577,6 +4583,7 @@ test('ADM-96 — C-mcp: a REAL mounted MCP server’s tool call is ADMITTED by t
       agent: { id: 'agent-1' },
       turn: 1,
       step: 1,
+      signal: new AbortController().signal,
     }
     const run = await cDispatchMountedMcp(world, mcp, exec)
     assert.equal(run.verdict.kind, 'allow')
@@ -4625,7 +4632,12 @@ test('ADM-97 — C-mcp negatives: the member’s compiled lane decides a MOUNTED
       owner: 'root-mcp',
     }),
   })
-  const execOf = (name, callId) => ({ name, callId, arguments: { msg: callId }, agent: { id: 'agent-1' }, turn: 1, step: 1 })
+  // Every fabricated frame carries a real AbortSignal for the same rc.5 reason as ADM-96: the
+  // mounted MCP body requires `execution.signal`, and a real host dispatch always provides it.
+  const execOf = (name, callId) => ({
+    name, callId, arguments: { msg: callId }, agent: { id: 'agent-1' }, turn: 1, step: 1,
+    signal: new AbortController().signal,
+  })
   try {
     // (1) The MOUNT GATE is a decision: `deny` mounts nothing, and an ungranted configured server is
     //     excluded even under allow.

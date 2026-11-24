@@ -1,0 +1,14 @@
+﹣ PD24-PIN: the BASE commit carries the `present` row, and the archived pre-fix composition is byte-identical to it (0.405357ms) # SKIP
+✔ PD24-SURFACE-CLOSED (SUPERSEDED BY PD-26): the composition this lane measured declares NO `present` row (by id or by package name) (27.779912ms)
+✔ PD24-SURFACE-POSITIVE-CONTROL: the retained rows are untouched (4.33234ms)
+✔ PD24-SURFACE-SURGICAL: the pinned standard preset still declares `present` (capability outside the governed preset) (2.114537ms)
+✔ PD24-TYPED-REFUSAL: present and the ten earlier fail-closed names are UNKNOWN_TOOL and execute nothing (21.322274ms)
+✔ PD24-LEDGER-IDENTITY: the committed ledger covers every measured name once and its bucket identity holds (4.072258ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 111.377528

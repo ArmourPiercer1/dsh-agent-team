@@ -1,0 +1,37 @@
+﹣ P0 PD-18 defect pin (PRE-FIX): the base preset carried tool-web and workflow-ptc/tool-workflow (0.524292ms) # SKIP
+✖ PD18-SURFACE-CLOSED: the governed preset declares NO web/workflow row, and it is not a blanket strip (26.120992ms)
+✔ PD18-SURFACE-POSITIVE-CONTROL: the pinned standard preset still declares the workflow/web capability (3.289887ms)
+✔ PD18-TYPED-REFUSAL: workflow/web_fetch are UNKNOWN_TOOL and execute nothing (25.064552ms)
+✔ PD18-WEB-ALLOW: the confined web face admits one allow-lane call to a controlled local endpoint (304.734356ms)
+✔ PD18-WEB-DENY: the same face refuses network=deny BEFORE the provider: typed code, zero requests, zero bytes (6.994909ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 422.248279
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-pd18-web-ptc.test.mjs:138:1
+✖ PD18-SURFACE-CLOSED: the governed preset declares NO web/workflow row, and it is not a blanket strip (26.120992ms)
+  AssertionError [ERR_ASSERTION]: PD-27 restored 'tool-web' as a name on the governed preset
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-pd18-web-ptc.test.mjs:147:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

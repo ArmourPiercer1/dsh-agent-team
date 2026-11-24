@@ -1,0 +1,12 @@
+﹣ P0 PD-21 defect pin (PRE-FIX): the base governed preset carried the subagent family (0.393495ms) # SKIP
+✔ PD21-SURFACE-CLOSED: no subagent row survives anywhere in the governed preset's plugin tree (27.059112ms)
+✔ PD21-SURFACE-POSITIVE-CONTROL: the pinned standard preset still declares the subagent capability (2.964321ms)
+✔ PD21-TYPED-REFUSAL: subagent/subagent_fork are UNKNOWN_TOOL and start zero children (18.189829ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 101.285522

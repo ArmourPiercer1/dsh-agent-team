@@ -1,0 +1,371 @@
+✔ an unchanged log passes with zero added (1.175462ms)
+✔ a genuine append passes and reports the count (0.167276ms)
+✔ CRLF vs LF and a missing trailing newline are not rewrites (0.159693ms)
+✔ MUTANT truncated log (the #800 shape: only the newest entries survive) is RED (0.300539ms)
+✔ MUTANT reworded historical line is RED (0.141337ms)
+✔ MUTANT reordered entries are RED (0.102855ms)
+✔ MUTANT a synthetic entry inserted in the middle is RED (append-only, not insert-anywhere) (0.145355ms)
+✔ non-vacuity: the pass arms above are the only shapes that pass (0.141508ms)
+✔ CLOSURE-1 — every reference form is seen: static, dynamic import, require, new URL (1.095343ms)
+✔ CLOSURE-2 — the dynamic URL form is the one a static scanner misses (a5sf-realm-row) (0.793161ms)
+✔ CLOSURE-3 — candidates are computed TEXTUALLY, so a deleted target still has a name (0.219836ms)
+✔ CLOSURE-4 — basename coincidence is NOT a reference (the noise control) (4179.983256ms)
+✔ CLOSURE-5 — dist parity: a deleted source names exactly the artifacts that must go with it (0.21145ms)
+✔ CLOSURE-6 — the dynamic shadows that killed the first inventory are actually reported (838.614959ms)
+✔ CLOSURE-7 — every surviving production referrer has a declared disposition (936.892373ms)
+✔ CLOSURE-8 — exemptions are per FILE, with a subject and a reason; no directory is exempt (795.712897ms)
+✔ CLOSURE-9 — THE POST-DELETION CONTROL: delete the target, keep the reference, the check must RED (205.609478ms)
+✔ CLOSURE-10 — a dist artifact left behind for a deleted source is a RED at cut time (74.496127ms)
+✔ CLOSURE-11 — an unregistered test referrer is a finding, not a directory-wide pass (117.036777ms)
+✔ CLOSURE-12 — duplicate declarants count production files only (39.940687ms)
+✔ CLOSURE-13 — the committed report and the tree agree (786.341916ms)
+fatal: path 'packages/tools/fs-family/src/deleted-in-a-ute4-pr.mjs' does not exist in 'a19d1df018e772f20602f93bc726694524bdeb2f'
+UTE-INVENTORY-MUTANTS total=32 red=32
+✔ the committed inventory grades clean (9 families, no findings) (729.455508ms)
+✔ a census family missing from the inventory is INVENTORY_FAMILY_MISSING (620.125992ms)
+✔ an inventory family the census does not book is INVENTORY_FAMILY_UNKNOWN (729.125965ms)
+✔ renaming a member is INVENTORY_MEMBER_DRIFT (the census is the unit) (717.307348ms)
+✔ member ORDER is irrelevant (set equality, both directions) (716.509219ms)
+✔ a lane that is not the census lane is INVENTORY_LANE_DRIFT (666.411641ms)
+✔ testOnly must agree with the census mount (INVENTORY_TESTONLY_DRIFT) (675.735519ms)
+✔ a definition that is not a member is INVENTORY_DEFINITION_DRIFT (667.535198ms)
+✔ a bound-definition flag that contradicts the census is INVENTORY_DEFINITION_DRIFT (679.511064ms)
+✔ a declared symbol absent from its file is INVENTORY_DEFINITION_DRIFT (677.746481ms)
+✔ pointing at a deleted file is INVENTORY_PATH_MISSING (687.550118ms)
+✔ a declared file outside the git index is INVENTORY_PATH_UNTRACKED (667.201708ms)
+✔ one file claimed by two families is INVENTORY_DUPLICATE_CLAIM (674.927701ms)
+✔ an implementation file no family claims is INVENTORY_FILE_UNOWNED (674.252944ms)
+✔ the SAME orphan is accepted when the ledger explicitly declares it shared (with a reason) (666.423495ms)
+✔ a shared declaration without a reason is INVENTORY_SHARED_UNREASONED (677.456608ms)
+✔ dropping a declared dependency that is still imported is INVENTORY_DEPENDENCY_UNDECLARED (686.244421ms)
+✔ a declared dependency no file imports is INVENTORY_DEPENDENCY_UNKNOWN (670.299802ms)
+✔ a cross-repo relative import that is dropped is INVENTORY_DEPENDENCY_UNDECLARED (682.611725ms)
+✔ a runtime step naming a nonexistent file is INVENTORY_RUNTIME_PATH_BROKEN (678.045012ms)
+✔ an external step that also names a repo file is INVENTORY_RUNTIME_PATH_BROKEN (673.186109ms)
+✔ a cross-family step that names the wrong owner is INVENTORY_RUNTIME_PATH_BROKEN (677.627538ms)
+✔ a product family whose authority omits ControlService is INVENTORY_AUTHORITY_INVALID (683.354169ms)
+✔ authority UNKNOWN with invented files is INVENTORY_AUTHORITY_INVALID (675.896002ms)
+✔ nativePath none with files is INVENTORY_NATIVE_DRIFT (669.57876ms)
+✔ a role outside the closed set is INVENTORY_ROLE_UNKNOWN (677.950571ms)
+✔ declaring a readiness the evidence does not support is INVENTORY_READINESS_DRIFT (680.231838ms)
+✔ the agent-control readiness is measured too (INVENTORY_READINESS_DRIFT) (2059.31806ms)
+✔ the web baseline readiness is measured too (INVENTORY_READINESS_DRIFT) (1365.814475ms)
+✔ the retirement ledger may not name a file the inventory disowns (INVENTORY_RETIREMENT_PATH_DRIFT) (675.804316ms)
+✔ imports are tokenized: comments, strings and templates cannot fake one (0.543088ms)
+✔ the C2 probe lane's URL-based public seams are read as imports (7.638238ms)
+✔ CLI: exit 0 on the committed ledger and a parseable --json verdict (350.360663ms)
+✔ CLI: a mutated ledger exits 1 with the named finding (175.546904ms)
+✔ CLI: a schema error exits 2 (cannot grade is not a pass) (37.609902ms)
+✔ the required CI leg invokes the inventory (no new workflow line, no new manifest leg) (415.312597ms)
+✔ UTE-INVENTORY-MUTANTS summary (0.371012ms)
+✔ P0-ASSETS-0 — the shipped ledger passes untouched (positive arm) (94.378825ms)
+✔ P0-ASSETS-1 — every file really exists on disk (the ledger was generated, not typed) (0.151277ms)
+✔ P0-ASSETS-2 — a listed file that is no longer on disk is a PARTIAL cut, never a pass (95.271676ms)
+✔ P0-ASSETS-3 — a file that grew under a module root but was never listed is UNLISTED (94.995567ms)
+✔ P0-ASSETS-4 — one file claimed by two modules is DOUBLE (94.937769ms)
+✔ P0-ASSETS-5 — bucket B without a paired deleteWith is refused (97.048837ms)
+✔ P0-ASSETS-6 — bucket B that claims to be KEEP-able is refused (only enforcement cannot be kept as a "retire later") (99.338766ms)
+✔ P0-ASSETS-7 — a deletable module with no wave is refused (99.998166ms)
+✔ P0-ASSETS-8 — a kept module that claims a deletion wave is refused (93.512936ms)
+✔ P0-ASSETS-9 — bucket C must state why: no names and no blockedBy is UNBACKED (92.115917ms)
+✔ P0-ASSETS-10 — blockedBy naming a module that does not exist is UNBACKED (93.946312ms)
+✔ P0-ASSETS-11 — typed totals that stop summing are refused (93.836704ms)
+✔ P0-ASSETS-12 — an unknown bucket or verdict is a schema refusal, not a silent pass (183.337327ms)
+✔ P0-ASSETS-13 — a KEEP module classed as old-execution is refused (what we build on is not a route) (92.343909ms)
+✔ P0-ASSETS-14 — an empty module is refused (a typo or already deleted, never both silent) (111.888986ms)
+✔ P0-ASSETS-15 — prose drift: a module missing from the generated inventory is refused (104.986256ms)
+✔ P0-ASSETS-15b — bucket D without a ruling (no deleteWith) is refused (93.794439ms)
+✔ P0-ASSETS-15c — a replaced module without a named replacement is refused (91.484837ms)
+✔ P0-ASSETS-17 — cutState names the three moments, and only `cut` is a finished deletion (0.416669ms)
+✔ P0-ASSETS-18 — the frozen digest covers exactly the boundary, and moves when the boundary moves (1.15719ms)
+✔ P0-ASSETS-16 — the module set itself is coherent: every delete module is either wave 1 or wave 2+ (0.124405ms)
+UTE-MUTATION id=P1 mutation="none (unit fully covered, all four terms satisfied by committed evidence)" expected=ALLOWED observed=ALLOWED recovered=ALLOWED
+UTE-MUTATION id=NC-1 mutation="oldBaseline.verdict=false" expected=REFUSED:UTE_OLD_BASELINE_MISSING observed=UTE_OLD_BASELINE_MISSING,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=NC-2 mutation="newPathVerified.verdict=false" expected=REFUSED:UTE_NEW_PATH_UNVERIFIED observed=UTE_NEW_PATH_UNVERIFIED,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=NC-3 mutation="blocking difference without an approval" expected=REFUSED:UTE_SEMANTIC_DIFFERENCES_UNRESOLVED observed=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=NC-4 mutation="negativeControlsPass.verdict=false" expected=REFUSED:UTE_NEGATIVE_CONTROLS_FAILING observed=UTE_NEGATIVE_CONTROLS_FAILING,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=NC-5 mutation="request family=pty (only synthetic-fs is in the ledger)" expected=REFUSED:UTE_LEDGER_UNKNOWN_FAMILY observed=UTE_LEDGER_UNKNOWN_FAMILY recovered=n/a (unknown family has no green state)
+UTE-MUTATION id=NC-6 mutation="evidence pointer → missing file; and → present-but-uncommitted file" expected=REFUSED:UTE_EVIDENCE_UNREADABLE observed=UTE_EVIDENCE_UNREADABLE,UTE_UNIT_UNGRADABLE,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=NC-7 mutation="expect token absent; and a verbatim contradicts token present" expected=REFUSED:UTE_EVIDENCE_CONTRADICTED observed=UTE_EVIDENCE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=NC-8 mutation="state=NOT_RETIREABLE with all terms true; state=RETIREABLE with a failed term" expected=REFUSED:UTE_STATE_CONTRADICTED observed=UTE_STATE_CONTRADICTED,UTE_NEGATIVE_CONTROLS_FAILING recovered=ALLOWED
+UTE-MUTATION id=NC-9 mutation="schema=ute-retirement/0" expected=REFUSED:UTE_LEDGER_SCHEMA observed=UTE_LEDGER_SCHEMA recovered=ALLOWED (correct schema)
+UTE-MUTATION id=NC-10 mutation="approval.record points at a committed file that never names the approver" expected=REFUSED:UTE_EVIDENCE_CONTRADICTED observed=UTE_EVIDENCE_CONTRADICTED,UTE_APPROVAL_RECORD_INVALID,UTE_APPROVAL_UNREFERENCED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=REAL mutation="seeded dev/agent-workflow/ledgers/ute-retirement.json row fs with a fabricated UNIT-MEMBER coverage note" expected=REFUSED:UTE_MEMBER_UNCOVERED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED observed=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED recovered=same verdict as the honest row
+UTE-MUTATION id=UNIT-1 mutation="no `unit` block at all" expected=REFUSED:UTE_UNIT_UNDECLARED observed=UTE_UNIT_UNDECLARED,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=UNIT-2 mutation="unit.familyId names a family the census does not book" expected=REFUSED:UTE_UNIT_UNKNOWN_FAMILY observed=UTE_UNIT_UNKNOWN_FAMILY,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=UNIT-3 mutation="declared unit drops read_image (the review finding shape)" expected=REFUSED:UTE_UNIT_UNDERCLAIMED observed=UTE_UNIT_UNDERCLAIMED,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=UNIT-4 mutation="declared unit adds a tool the census does not book" expected=REFUSED:UTE_UNIT_OVERCLAIMED observed=UTE_UNIT_OVERCLAIMED,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=UNIT-5 mutation="census rewritten as invalid JSON / deleted from the tree" expected=REFUSED:UTE_UNIT_UNGRADABLE observed=UTE_UNIT_UNGRADABLE,UTE_STATE_CONTRADICTED recovered=ALLOWED (valid committed census)
+UTE-MUTATION id=COV-1 mutation="baseline header `id|verdict` (no entry) and `vector|entry` (no id)" expected=REFUSED:UTE_UNIT_UNGRADABLE observed=UTE_UNIT_UNGRADABLE recovered=ALLOWED (header has id and entry)
+UTE-MUTATION id=COV-2 mutation="baseline TSV covers read/write/edit but has no read_image row" expected=REFUSED:UTE_MEMBER_UNCOVERED observed=UTE_MEMBER_UNCOVERED recovered=ALLOWED (four-member baseline)
+UTE-MUTATION id=COV-3 mutation="ledger note + selfAssertedCoverage name read_image, baseline has no vector" expected=REFUSED:UTE_MEMBER_UNCOVERED observed=UTE_MEMBER_UNCOVERED recovered=ALLOWED (real read_image vector)
+UTE-MUTATION id=COV-4 mutation="new-path transcript omits FS-4-image / marks FS-1-read FAIL" expected=REFUSED:UTE_VECTOR_UNREPRODUCED observed=UTE_VECTOR_UNREPRODUCED,UTE_MEMBER_UNCOVERED,UTE_EVIDENCE_UNREADABLE recovered=ALLOWED (all four PASS lines)
+UTE-MUTATION id=COV-5 mutation="NC transcript has no `NC-MEMBER read_image` line" expected=REFUSED:UTE_MEMBER_UNCOVERED observed=UTE_MEMBER_UNCOVERED recovered=ALLOWED (one NC-MEMBER line per covered member)
+UTE-MUTATION id=APPR-1 mutation="approval reference absent; and \"PR #1 @ deadbeef\"" expected=REFUSED:UTE_APPROVAL_UNREFERENCED observed=UTE_APPROVAL_RECORD_INVALID,UTE_APPROVAL_UNREFERENCED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_STATE_CONTRADICTED recovered=ALLOWED (bound 40-hex)
+UTE-MUTATION id=APPR-2 mutation="reference to 000…0 (no such commit)" expected=REFUSED:UTE_APPROVAL_UNREFERENCED observed=UTE_APPROVAL_RECORD_INVALID,UTE_APPROVAL_UNREFERENCED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_STATE_CONTRADICTED recovered=ALLOWED (the fixture commit sha)
+UTE-MUTATION id=APPR-3 mutation="injected isAncestor()=false for the bound commit" expected=REFUSED:UTE_APPROVAL_UNREFERENCED observed=UTE_APPROVAL_UNREFERENCED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_STATE_CONTRADICTED recovered=ALLOWED (ancestor)
+UTE-MUTATION id=DIFF-1 mutation="differences: [] with no SD-VERDICT differences=0 measurement" expected=REFUSED:UTE_DIFFERENCES_UNDECLARED observed=UTE_DIFFERENCES_UNDECLARED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=DIFF-1b mutation="differences=[] + exact token / a substring-only near miss" expected=ALLOWED / REFUSED:UTE_DIFFERENCES_UNDECLARED observed=UTE_DIFFERENCES_UNDECLARED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED recovered=ALLOWED (exact token)
+UTE-MUTATION id=DIFF-2 mutation="blocking: \"yes\" (truthy string)" expected=REFUSED:UTE_DIFFERENCE_SCHEMA_INVALID observed=UTE_DIFFERENCE_SCHEMA_INVALID,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=DIFF-3 mutation="the `blocking` key is absent" expected=REFUSED:UTE_DIFFERENCE_SCHEMA_INVALID observed=UTE_DIFFERENCE_SCHEMA_INVALID,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=DIFF-4 mutation="blocking:false with the approval removed; then a failed NC term" expected=ALLOWED / REFUSED:UTE_NEGATIVE_CONTROLS_FAILING observed=UTE_NEGATIVE_CONTROLS_FAILING recovered=ALLOWED (non-blocking, other terms true)
+UTE-MUTATION id=FAB-1 mutation="record=docs/RELEASE-REQUEST.md (contains \"owner\"), reference=root commit" expected=REFUSED:UTE_APPROVAL_RECORD_INVALID,UTE_APPROVAL_UNREFERENCED observed=UTE_APPROVAL_RECORD_INVALID,UTE_APPROVAL_UNREFERENCED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_STATE_CONTRADICTED recovered=ALLOWED (dedicated record at a non-root ancestor)
+UTE-MUTATION id=FAB-2a mutation="a schema-valid approval document under docs/ (outside the approvals dir)" expected=REFUSED:UTE_APPROVAL_RECORD_INVALID observed=UTE_APPROVAL_RECORD_INVALID,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_STATE_CONTRADICTED recovered=ALLOWED (inside the approvals dir)
+UTE-MUTATION id=FAB-2b mutation="committed record names another family / another difference" expected=REFUSED:UTE_APPROVAL_RECORD_INVALID observed=UTE_APPROVAL_RECORD_INVALID recovered=ALLOWED (matching family+difference)
+UTE-MUTATION id=FAB-2c mutation="reference=PR #1 @ f3afeb6a68140de65cd43507552e60f662323e56 (the root commit)" expected=REFUSED:UTE_APPROVAL_UNREFERENCED observed=UTE_APPROVAL_UNREFERENCED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_STATE_CONTRADICTED recovered=ALLOWED (non-root ancestor)
+UTE-MUTATION id=FAB-2d mutation="reference=PR #1 @ 30b296ffd27969b43f6bdd05d84b4304d778dcda (exists, sibling of HEAD)" expected=REFUSED:UTE_APPROVAL_UNREFERENCED observed=UTE_APPROVAL_UNREFERENCED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_STATE_CONTRADICTED recovered=ALLOWED (ancestor of HEAD)
+UTE-MUTATION id=FAB-2e mutation="committed record decision=deferred / rejected" expected=REFUSED:UTE_APPROVAL_RECORD_INVALID observed=UTE_APPROVAL_RECORD_INVALID recovered=ALLOWED (decision=approved)
+UTE-MUTATION id=FAB-3 mutation="a valid approval document that is not committed" expected=REFUSED:UTE_APPROVAL_RECORD_INVALID observed=UTE_EVIDENCE_UNREADABLE,UTE_APPROVAL_RECORD_INVALID,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_STATE_CONTRADICTED recovered=ALLOWED (tracked record)
+UTE-MUTATION id=APPR-4 mutation="committed ute-approval/1 record in the approvals dir bound to a real non-root ancestor" expected=ALLOWED observed=ALLOWED recovered=ALLOWED
+UTE-MUTATION id=APPROVALS mutation="count committed records for production families" expected=ZERO (only README + _selftest/) observed=NONE recovered=n/a (emptiness is the point)
+UTE-MUTATION id=OP-1 mutation="src/gone.mjs deleted from the tree while negativeControlsPass fails" expected=REFUSED:UTE_OLD_PATH_PARTIALLY_REMOVED observed=UTE_NEGATIVE_CONTROLS_FAILING,UTE_OLD_PATH_PARTIALLY_REMOVED recovered=row still not allowed, file present → no old-path finding
+UTE-MUTATION id=OP-2 mutation="src/gone.mjs absent while the row is allowed" expected=ALLOWED observed=ALLOWED recovered=ALLOWED (retirement is the expected absence)
+UTE-MUTATION id=OP-3 mutation="no `oldPath` block at all" expected=REFUSED:UTE_OLD_PATH_UNDECLARED observed=UTE_OLD_PATH_UNDECLARED recovered=ALLOWED
+UTE-MUTATION id=CLI-ALLOW mutation="none (committed synthetic fixture, unit fully covered, approval bound to a real ancestor)" expected=ALLOWED observed=ALLOWED recovered=ALLOWED
+UTE-MUTANT id=M1 rule="UTE_UNIT_UNDECLARED" mutation-applied=true control=RED
+UTE-MUTANT id=M2 rule="UTE_UNIT_UNKNOWN_FAMILY" mutation-applied=true control=RED
+UTE-MUTANT id=M3 rule="UTE_UNIT_UNDERCLAIMED" mutation-applied=true control=RED
+UTE-MUTANT id=M4 rule="UTE_UNIT_OVERCLAIMED" mutation-applied=true control=RED
+UTE-MUTANT id=M5 rule="UTE_UNIT_UNGRADABLE (baseline header)" mutation-applied=true control=RED
+UTE-MUTANT id=M6 rule="UTE_MEMBER_UNCOVERED (oldBaseline)" mutation-applied=true control=RED
+UTE-MUTANT id=M7 rule="UTE_VECTOR_UNREPRODUCED" mutation-applied=true control=RED
+UTE-MUTANT id=M8 rule="UTE_MEMBER_UNCOVERED (newPathVerified)" mutation-applied=true control=RED
+UTE-MUTANT id=M9 rule="UTE_MEMBER_UNCOVERED (negativeControlsPass)" mutation-applied=true control=RED
+UTE-MUTANT id=M10 rule="UTE_APPROVAL_UNREFERENCED (shape)" mutation-applied=true control=RED
+UTE-MUTANT id=M11 rule="UTE_APPROVAL_UNREFERENCED (ancestry)" mutation-applied=true control=RED
+UTE-MUTANT id=M12 rule="UTE_OLD_PATH_UNDECLARED" mutation-applied=true control=RED
+UTE-MUTANT id=M13 rule="UTE_OLD_PATH_PARTIALLY_REMOVED" mutation-applied=true control=RED
+UTE-MUTANT id=M14 rule="coverage finding demotes its term" mutation-applied=true control=RED
+UTE-MUTANT id=M15 rule="UTE_DIFFERENCE_SCHEMA_INVALID" mutation-applied=true control=RED
+UTE-MUTANT id=M16 rule="UTE_DIFFERENCES_UNDECLARED" mutation-applied=true control=RED
+UTE-MUTANT id=M17 rule="UTE_APPROVAL_RECORD_INVALID (dedicated directory)" mutation-applied=true control=RED
+UTE-MUTANT id=M18 rule="UTE_APPROVAL_RECORD_INVALID (family binding)" mutation-applied=true control=RED
+UTE-MUTANT id=M19 rule="UTE_APPROVAL_RECORD_INVALID (decision must be approved)" mutation-applied=true control=RED
+UTE-MUTANT id=M20 rule="UTE_APPROVAL_UNREFERENCED (root commit)" mutation-applied=true control=RED
+UTE-RETIREMENT-GATE-MUTANTS total=20 red=20
+✔ P1 — a fully satisfied synthetic family is ALLOWED (positive control) (108.893638ms)
+✔ NC-1 — oldBaseline.verdict=false → UTE_OLD_BASELINE_MISSING (119.764014ms)
+✔ NC-2 — newPathVerified.verdict=false → UTE_NEW_PATH_UNVERIFIED (121.698916ms)
+✔ NC-3 — blocking difference without an approval → UTE_SEMANTIC_DIFFERENCES_UNRESOLVED (112.764265ms)
+✔ NC-4 — negativeControlsPass.verdict=false → UTE_NEGATIVE_CONTROLS_FAILING (117.867317ms)
+✔ NC-5 — an unknown family is refused by name, never graded as absent-green (61.430819ms)
+✔ NC-6 — evidence must be a real COMMITTED file (missing and untracked both refuse) (141.264273ms)
+✔ NC-7 — a file that does not state the claimed verdict is CONTRADICTED evidence (144.287376ms)
+✔ NC-8 — state is a mirror, not a second authority (both directions refuse) (149.873988ms)
+✔ NC-9 — a ledger that cannot be graded exits NON-ZERO (never a pass) (63.271944ms)
+✔ NC-10 — a fabricated owner approval record is contradicted evidence (109.372795ms)
+✔ REAL — the seeded fs row is refused for new-path reproduction and unresolved differences, and fabricated claims change nothing (53.451591ms)
+✔ UNIT-1 — no `unit` block at all → UTE_UNIT_UNDECLARED (107.854076ms)
+✔ UNIT-2 — unit.familyId names a family the census does not book → UTE_UNIT_UNKNOWN_FAMILY (111.393665ms)
+✔ UNIT-3 — declared unit drops read_image (the review finding shape) → UTE_UNIT_UNDERCLAIMED (111.862588ms)
+✔ UNIT-4 — declared unit adds a tool the census does not book → UTE_UNIT_OVERCLAIMED (115.002096ms)
+✔ UNIT-5 — a missing or unparseable census fails closed (the unit cannot be invented) (119.699515ms)
+✔ COV-1 — a baseline TSV without `id` or `entry` is UNGRADABLE (never guessed) (120.866069ms)
+✔ COV-2 — read_image with no baseline vector is UTE_MEMBER_UNCOVERED on oldBaseline and newPathVerified (90.923149ms)
+✔ COV-3 — a ledger note claiming "read_image covered" is inert (coverage is measured) (114.247707ms)
+✔ COV-4 — a baseline vector the new path did not reproduce is UTE_VECTOR_UNREPRODUCED (117.613344ms)
+✔ COV-5 — a member with baseline evidence but no NC-MEMBER control is uncovered (89.092219ms)
+✔ APPR-1 — an approval with by/on/record but no reference is UNREFERENCED (103.195363ms)
+✔ APPR-2 — a 40-hex that does not exist in the repository is UNREFERENCED (85.904525ms)
+✔ APPR-3 — a commit that exists but is not an ancestor of HEAD is UNREFERENCED (108.533255ms)
+✔ DIFF-1 — differences: [] with no SD-VERDICT differences=0 measurement → UTE_DIFFERENCES_UNDECLARED (131.090693ms)
+✔ DIFF-1b — an empty list is licensed ONLY by a committed exact `SD-VERDICT differences=0` line (100.053646ms)
+✔ DIFF-2 — blocking: "yes" (truthy string) → UTE_DIFFERENCE_SCHEMA_INVALID (106.448841ms)
+✔ DIFF-3 — the `blocking` key is absent → UTE_DIFFERENCE_SCHEMA_INVALID (104.321044ms)
+✔ DIFF-4 — blocking:false is ignored for blocking purposes but does not satisfy the other terms (97.937417ms)
+✔ FAB-1 — the reviewer’s exact fabrication (any committed "owner" file + root commit) is REFUSED (91.501272ms)
+✔ FAB-2a — a record outside dev/agent-workflow/approvals/ is INVALID even when it is a valid approval document (112.038663ms)
+✔ FAB-2b — a record inside the directory but naming another family or difference is INVALID (142.709641ms)
+✔ FAB-2c — a reference to the ROOT commit is UNREFERENCED even though it is an ancestor (83.822144ms)
+✔ FAB-2d — a reference to a commit that exists but is not an ancestor is UNREFERENCED (87.172276ms)
+✔ FAB-2e — decision "deferred" (or rejected) is not an approval (137.934626ms)
+✔ FAB-3 — an approval record that is present but UNTRACKED is INVALID (a cold clone cannot read it) (85.007269ms)
+✔ APPR-4 — a GENUINE dedicated approval bound to a real non-root ancestor is ALLOWED (positive arm) (85.567638ms)
+✔ APPROVALS — the shipped approvals directory holds NO record for any production family (6.908982ms)
+✔ OP-1 — a declared old-path file absent while the row is not allowed is PARTIALLY_REMOVED (86.377906ms)
+✔ OP-2 — the same absence while the row is ALLOWED is retirement, not a finding (83.408242ms)
+✔ OP-3 — no `oldPath` block at all → UTE_OLD_PATH_UNDECLARED (109.526305ms)
+✔ CLI — --family fs exits 1 and prints JSON; --all never hides a refusal (1574.432138ms)
+✔ CLI — a committed, fully satisfied synthetic family is ALLOWED (exit 0) (134.853814ms)
+✔ MUTANTS — every new rule has a mutation that turns its control RED (1770.926235ms)
+NEXT-SMOKE BANDS ok legacy=3181-3199(19) next=13000-13049(50) overlap=0
+✔ host port bands are disjoint by generation: legacy 3181-3199, next host 13000-13049 only (2.202929ms)
+NEXT-SMOKE BOOT ok ms=1505 port=13000 treeHead=9c2670d3bce5275e0d1610272958121af87787bb version=0.2.2-rc.5 line="dsh web: http://127.0.0.1:13000/?token=<redacted>"
+NEXT-SMOKE SESSION ok sessionId=session-c0664d5c-e65d-49ae-9094-51c6401fdf7a createStatus=200 promptStatus=200 modelRequests=2
+NEXT-SMOKE SERVED ok home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/next-boot-2026-11-24T19-43-03-059Z-next sessionFiles=sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-.artifacts-tmp-next-host-lane-cwd-Jstqql--/session-c0664d5c-e65d-49ae-9094-51c6401fdf7a/session.lock,sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-.artifacts-tmp-next-host-lane-cwd-Jstqql--/session-c0664d5c-e65d-49ae-9094-51c6401fdf7a/session.v4.jsonl.zstd hostLogs=absent modelReplies=2
+✔ the pinned next host boots, serves a session, and its wire traffic is the scripted model (3521.390734ms)
+NEXT-SMOKE A1 ok resolve=ResolvedToolSet dispose=function admitted=observe
+NEXT-SMOKE A2 ok executor=selected tool=observe value=observed:one bodyObserved=["one"]
+NEXT-SMOKE A3 ok order=tools/pre-execute>tools/execute>tools/post-execute>tools/result
+✔ A1/A2/A3 — resolve, executor selection and pipeline order on the pinned host (27.700809ms)
+NEXT-SMOKE A4 ok transport=run_code innerBodyObserved=["nested"] sessionEvents=tool/ptc-dispatch-start,tool/ptc-dispatch outerResult={"logs":[],"result":"observed:nested"}
+✔ A4 — a PTC run_code nested call reaches a real inner executor (22.819937ms)
+NEXT-SMOKE A5 ok bodySawAbort=true resultIsError=true notified=1 resultText="Error: cooperative tool saw the abort"
+NEXT-SMOKE A6 ok lateSuccessOverridden=ABORTED preDispatch=ABORTED_BEFORE_DISPATCH dispatched=0
+NEXT-SMOKE HOST ok tag=0.2.2-rc.5 head=9c2670d3bce5275e0d1610272958121af87787bb tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next assets=bin/glibc/system.node:54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc|bin/landlock-run:a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31
+✔ A5/A6 — cancellation mid-flight, result notification, and the abort override (149.398244ms)
+✔ host identity — the tree and its native assets are the pinned bytes (0.378156ms)
+NEXT-CONTROL positive ok head=25feae86842ca6fb8e661e3d5c9ed33130c79185 files=2
+NEXT-CONTROL tree-missing refused code=TREE_MISSING message="next host lane: TREE_MISSING: no host tree at /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/tmp/next-host-lane/controls-missing-lQiq41/tests/deepseek-harness-next — provision it with `node scripts/provision-next-host.mjs --materialize` (or the documented clone in doc"
+NEXT-CONTROL not-built refused code=NOT_BUILT message="next host lane: NOT_BUILT: the host tree at /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/tmp/next-host-lane/controls-not-built-NpWTej is not BUILT (apps/cli/lib/bin.js missing) — run: node scripts/provision-next-host.mjs --materialize"
+NEXT-CONTROL not-a-git-checkout refused code=NOT_A_GIT_CHECKOUT message="next host lane: NOT_A_GIT_CHECKOUT: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/tmp/next-host-lane/controls-not-git-hJLa2J is not its own git checkout: git resolves its toplevel to /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut — a directory ne"
+NEXT-CONTROL head-drift refused code=HEAD_DRIFT message="next host lane: HEAD_DRIFT: the host tree at /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/tmp/next-host-lane/controls-head-drift-Pc3PBS is at f2cc644baa64eba48ec207e2d7e731fcc48eb2f9, the pin is 0000000000000000000000000000000000000000 (0.2.2-rc.5) — refusing to tes"
+NEXT-CONTROL version-drift refused code=VERSION_DRIFT message="next host lane: VERSION_DRIFT: the host tree at /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/tmp/next-host-lane/controls-version-drift-TTMTEV declares version 0.2.2-rc.3, the pin is 0.2.2-rc.5"
+NEXT-CONTROL version-unreadable refused code=VERSION_UNREADABLE message="next host lane: VERSION_UNREADABLE: could not read /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/tmp/next-host-lane/controls-version-unreadable-9699F3/package.json: Expected property name or '}' in JSON at position 2 (line 1 column 3)"
+NEXT-CONTROL pin-invalid-tree refused code=PIN_INVALID message="next host lane: PIN_INVALID: the expected pin is not a 40-hex commit (\"not-a-sha\") — the verifier refuses to grade against an unpinned expectation"
+NEXT-CONTROL pin-invalid-assets refused code=PIN_INVALID message="next host lane: PIN_INVALID: the asset pin is empty (no files) — an empty pin accepts every tree, which is never a pinned host"
+NEXT-CONTROL asset-missing refused code=ASSET_MISSING message="next host lane: ASSET_MISSING: pinned native asset landlock-run is ABSENT from the next host tree at /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/tmp/next-host-lane/controls-asset-missing-CmKOri — provision it: node scripts/provision-next-host.mjs --assets"
+NEXT-CONTROL asset-digest-drift refused code=ASSET_DIGEST_DRIFT message="next host lane: ASSET_DIGEST_DRIFT: pinned native asset glibc/system.node is DRIFTED: 4491495b60519a5ed579c324ca95c9a4a4710d496885c761b358adb995448840 (17360 B), pin is 54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc (17360 B) — a locally built binary is not the pinned host; re-prov"
+NEXT-CONTROL asset-bytes-drift refused code=ASSET_BYTES_DRIFT message="next host lane: ASSET_BYTES_DRIFT: pinned native asset landlock-run has the pinned sha256 but 27 B, pin is 28 B — the manifest's own row is inconsistent, so the pin cannot be trusted"
+NEXT-CONTROL asset-mode-drift refused code=ASSET_MODE_DRIFT message="next host lane: ASSET_MODE_DRIFT: pinned native asset landlock-run has mode 0o644, pin is 0o755 — the published bytes arrive executable or they are not the published artifact"
+NEXT-CONTROL host-pin ok tag=dsh-v0.2.2-rc.5 head=9c2670d3bce5275e0d1610272958121af87787bb version=0.2.2-rc.5 addon=0.1.2 ports=13000-13049
+✔ POSITIVE control: an honest fixture tree + its own pinned bytes pass (the refusals below are not vacuous) (60.278188ms)
+✔ TREE_MISSING — a lane with no host tree is RED and names the tree it looked for (1.507252ms)
+✔ NOT_BUILT — a pinned clone that was never built is RED, never "nothing to run" (31.497628ms)
+✔ NOT_A_GIT_CHECKOUT — a directory that is not a checkout cannot claim a commit (4.988231ms)
+✔ HEAD_DRIFT — a tree at the wrong commit is refused, and the message names both commits (35.394666ms)
+✔ VERSION_DRIFT — a tree that declares another version is not the pinned host (35.12211ms)
+✔ VERSION_UNREADABLE — an unreadable package.json refuses instead of guessing a version (31.681204ms)
+✔ PIN_INVALID — an unpinned expectation is refused before any file is read (26.585961ms)
+✔ ASSET_MISSING — absent native assets are RED and name the provisioning command (40.648908ms)
+✔ ASSET_DIGEST_DRIFT — a LOCALLY BUILT system.node is not the published pin (40.881879ms)
+✔ ASSET_BYTES_DRIFT — a manifest row whose length disagrees with its own sha256 is refused (38.562319ms)
+✔ ASSET_MODE_DRIFT — the pinned mode (0o755) is part of the pin (34.896018ms)
+✔ HOST PIN — the fixture controls grade the SAME pin the lane executes (0.337559ms)
+UTE3-ORDER stateAtBody=RUNNING transitions=ADMITTED,RUNNING,COMPLETED observed=1 unsettledAtBody=1
+UTE3-RESULT identical=true added-fields=0 definition-fields=by-reference
+UTE3-FAIL state=FAILED rethrown-identity=true errorCode=PROBE_FAILED
+UTE3-ABORT state=UNKNOWN reason=body-aborted-without-terminal-observation missing=terminal-observation|host-result|effect-evidence
+UTE3-DENY state=REFUSED decision=deny body-invoked=false
+UTE3-FAILCLOSED code=SETTLEMENT_WRITER_CONFLICT body-invoked=false records=0
+UTE3-OBSERVE invented=0 refused=EFFECT_CLAIM_WITHOUT_OBSERVATION blank-witness=A5_SETTLEMENT_OBSERVATION_REFUSED result-identical=true
+UTE2-WRITER-LOCK reclaimed previousPid=388 previousBootId=213cb31f-60a1-4435-bcc1-8f3983b37a0f at=2026-11-24T19:43:03.451Z
+UTE3-CRASH-WINDOW signal=SIGKILL effect-written=true durable=RUNNING recovered=UNKNOWN missing=terminal-observation|host-result|backend-receipt late-terminal=SETTLEMENT_CONFLICT projection=PASS-refused replay=A5_SETTLEMENT_REPLAY_REFUSED never-COMPLETED=true
+UTE3-SINGLE-WRITER bound-store=A second-store-empty=true cross-process=SETTLEMENT_WRITER_CONFLICT reentrant-in-process=true
+UTE3-NOT-WIRED production-imports=2 (id-helper consumers only) wrapper=0 test-referrers=3 grant-shaped=0
+UTE3-CONTROL ordering GREEN stateAtBody=RUNNING firstTransition=ADMITTED final=COMPLETED
+UTE3-MUTANT admission-after-dispatch RED stateAtBody=absent firstTransition=absent final=COMPLETED
+UTE3-CONTROL fabricated-effect GREEN effectEvidence=none-confirmed observed=0 ids=
+UTE3-MUTANT fabricate-effect RED effectEvidence=observed observed=1 ids=assumed-by-mutant
+UTE3-CONTROL result-changed GREEN identical=true addedFields=[]
+UTE3-MUTANT change-tool-result RED identical=false addedFields=[settlement]
+UTE3-CONTROL replay-fabricated GREEN outcome=threw/A5_SETTLEMENT_REPLAY_REFUSED bodyCalls=0 state=UNKNOWN
+UTE3-MUTANT replay-returns-fabricated RED outcome=returned/[object Object] bodyCalls=0 state=UNKNOWN
+UTE3-CONTROL store-binding GREEN storeA=1 storeB=0
+UTE3-MUTANT re-read-store-at-call-time RED storeA=0 storeB=1
+UTE3-MUTANTS total=5 red=5 scenarios=5
+✔ durable admission is written BEFORE the body is called (the body sees ADMITTED+RUNNING), then the real terminal fact (32.844899ms)
+✔ the model-facing surface is the body's own: identity, deep equality, zero added fields, unchanged definition fields (33.264571ms)
+✔ a thrown body settles FAILED (never RUNNING) and rethrows the SAME error by identity (34.013344ms)
+✔ an aborted body settles UNKNOWN with named missing evidence — never COMPLETED (30.938752ms)
+✔ a deny admission is durable, the body is NEVER entered, and the record settles REFUSED (23.041414ms)
+✔ a failed admission write fails CLOSED: the body is never called and the writer refusal is surfaced (7.494225ms)
+✔ no observer = nothing observed (never an invented effect), and a malformed observed claim is REFUSED, named, and cannot change the result (100.769411ms)
+✔ SIGKILL mid-effect: recovery yields UNKNOWN with missing evidence, and NO path can report COMPLETED/PASS for it (108.394666ms)
+✔ one wrapper is bound to ONE store, and the store lock refuses a second live writer process (110.704816ms)
+✔ off by default: no production path imports or registers the dispatch wrapper (372.187357ms)
+✔ negative controls: each mutation turns exactly its public-surface scenario RED (317.688035ms)
+✔ control wiring: every mutant targets a declared scenario (0.175382ms)
+UTE2-FACT executionId=exec-ute2-canonical transitions=3 state=COMPLETED duplicate=DUPLICATE_SETTLEMENT
+UTE2-CONFLICT conflicting-terminal=SETTLEMENT_CONFLICT conflicting-admission=SETTLEMENT_CONFLICT last-writer-wins=absent
+UTE2-TRANSITION ADMITTED->COMPLETED=ILLEGAL_TRANSITION terminal->RUNNING=ILLEGAL_TRANSITION settle(RUNNING)=SETTLEMENT_INPUT_INVALID backwards-time=SETTLEMENT_TIMESTAMP_REGRESSION
+UTE2-STOP before state=CANCELLED effect=none-confirmed stopPhase=pre-dispatch
+UTE2-STOP during state=CANCELLED observedEffects=1 unbacked-claim=EFFECT_CLAIM_WITHOUT_OBSERVATION
+UTE2-STOP after state=COMPLETED terminalReason=unchanged stopPhase=post-completion
+UTE2-WRITER-LOCK reclaimed previousPid=479 previousBootId=213cb31f-60a1-4435-bcc1-8f3983b37a0f at=2026-11-24T19:43:03.528Z
+UTE2-SIGKILL signal=SIGKILL durable=ADMITTED,RUNNING recovered=UNKNOWN reason=PROCESS_TERMINATED_WITHOUT_OUTCOME missing=terminal-observation|host-result|backend-receipt
+UTE2-EFFECT observed-without-observation=EFFECT_CLAIM_WITHOUT_OBSERVATION unknown-without-missing=UNCONFIRMED_WITHOUT_UNCERTAINTY
+UTE2-CROSSWIRE admission=SETTLEMENT_CROSS_WIRED running=SETTLEMENT_CROSS_WIRED settle=SETTLEMENT_CROSS_WIRED
+UTE2-ADMISSION allow+REFUSED=SETTLEMENT_ADMISSION_MISMATCH deny+REFUSED=recorded deny+RUNNING=SETTLEMENT_ADMISSION_MISMATCH
+UTE2-AUTHORITY exports=6 grant-shaped=0 store-methods=recordAdmission,recordRecheckDecision,enterRunning,recordStop,settle,recoverUnsettled,read,list control-imports=0 ref-frozen=true
+UTE2-CRASH temp-invisible=true truncated=SETTLEMENT_CORRUPT tampered=SETTLEMENT_CORRUPT stale-temp-does-not-disturb=true
+UTE2-ADAPTER canonical=true unsettled-gap=true cold-read=true reference-admission=true
+UTE2-ADAPTER-DUP duplicate=DUPLICATE_SETTLEMENT conflict=SETTLEMENT_CONFLICT bytes-unchanged=true
+UTE2-PROJECTION matched=true unmatched=PROJECTION_UNMATCHED mismatch=PROJECTION_OUTCOME_MISMATCH ambiguous=PROJECTION_AMBIGUOUS requestId-never-fabricated=true
+UTE2-WRITER-LOCK reclaimed previousPid=799 previousBootId=213cb31f-60a1-4435-bcc1-8f3983b37a0f at=2026-11-24T19:43:03.877Z
+UTE2-CRASH-WINDOW admission-returned=true sigkill=SIGKILL recovered=UNKNOWN never-absent=true never-completed=true
+UTE2-FSYNC order=rename,fsync,return states=ADMITTED,RUNNING,COMPLETED failure=SETTLEMENT_DIRECTORY_FSYNC_FAILED
+UTE2-LOCK live-foreign=SETTLEMENT_WRITER_CONFLICT holder-still-writes=true evicted=SETTLEMENT_WRITER_CONFLICT
+UTE2-WRITER-LOCK reclaimed previousPid=1012 previousBootId=213cb31f-60a1-4435-bcc1-8f3983b37a0f at=2026-11-24T19:43:04.087Z
+UTE2-LOCK-RECLAIMED previousPid=1012 state=reclaimed writable=true
+UTE2-CONTROL duplicate-conflict GREEN conflicting second settle -> SETTLEMENT_CONFLICT
+UTE2-CONTROL illegal-transition GREEN COMPLETED -> RUNNING -> ILLEGAL_TRANSITION; state now COMPLETED
+UTE2-CONTROL recovery-unknown GREEN recovered state -> UNKNOWN (must be UNKNOWN, never COMPLETED/REFUSED)
+UTE2-CONTROL effect-without-observation GREEN observed-effect claim with zero observations -> EFFECT_CLAIM_WITHOUT_OBSERVATION
+UTE2-CONTROL cross-wired GREEN execution A carrying execution B's admission reference -> SETTLEMENT_CROSS_WIRED
+UTE2-CONTROL corrupt-record GREEN checksum-mismatched record read -> SETTLEMENT_CORRUPT
+UTE2-CONTROL adapter-duplicate GREEN first=true second=false/DUPLICATE_SETTLEMENT conflict=false/SETTLEMENT_CONFLICT
+UTE2-CONTROL adapter-unsettled GREEN record=true unsettled=["exec-ute2-adapter-unsettled"] otherRoot=0 settled=true after=0 cold=completed
+UTE2-CONTROL projection-fabricate GREEN ambiguous projection -> recorded=false requestId=undefined reason=PROJECTION_AMBIGUOUS
+UTE2-CONTROL projection-outcome-mismatch GREEN matched=true/req-ute2-1 mismatched=false/PROJECTION_OUTCOME_MISMATCH
+UTE2-CONTROL adapter-cross-wire GREEN foreign-root fact -> false/SETTLEMENT_CROSS_WIRED
+UTE2-CONTROL writer-lock-conflict GREEN second process while acquired holder alive -> LOCK=SETTLEMENT_WRITER_CONFLICT
+UTE2-WRITER-LOCK reclaimed previousPid=1417 previousBootId=213cb31f-60a1-4435-bcc1-8f3983b37a0f at=2026-11-24T19:43:04.525Z
+UTE2-CONTROL writer-lock-reclaim GREEN stale lock of dead pid 1417 -> reclaimed previousPid=1417
+UTE2-CONTROL directory-fsync GREEN recordAdmission durable-before-return -> directory fsync calls=1
+UTE2-CONTROL authority-surface GREEN no grant-shaped export
+UTE2-MUTANT conflict-becomes-last-writer-wins RED conflicting second settle -> accepted (last-writer-wins)
+UTE2-MUTANT illegal-transition-allowed RED COMPLETED -> RUNNING -> accepted; state now CORRUPT:SETTLEMENT_CORRUPT
+UTE2-MUTANT fabricate-completed-on-recovery RED recovered state -> COMPLETED (must be UNKNOWN, never COMPLETED/REFUSED)
+UTE2-MUTANT trust-effect-claim RED observed-effect claim with zero observations -> accepted
+UTE2-MUTANT ignore-execution-identity RED execution A carrying execution B's admission reference -> accepted
+UTE2-MUTANT accept-bad-checksum RED checksum-mismatched record read -> read as complete
+UTE2-MUTANT adapter-duplicate-recorded-true RED first=true second=true/undefined conflict=false/SETTLEMENT_CONFLICT
+UTE2-MUTANT adapter-list-unsettled-empty RED record=true unsettled=[] otherRoot=0 settled=true after=0 cold=completed
+UTE2-MUTANT adapter-fabricate-request-id RED ambiguous projection -> recorded=true requestId=req-ute2-1 reason=undefined
+UTE2-MUTANT adapter-accept-outcome-mismatch RED matched=true/req-ute2-1 mismatched=true/undefined
+UTE2-MUTANT adapter-ignore-identity RED foreign-root fact -> true/undefined
+UTE2-MUTANT accept-live-foreign-writer RED second process while acquired holder alive -> UTE2-WRITER-LOCK reclaimed previousPid=52 previousBootId=213cb31f-60a1-4435-bcc1-8f3983b37a0f at=2026-11-24T19:43:04.911Z
+LOCK=acquired
+UTE2-MUTANT never-reclaim-dead-writer RED stale lock of dead pid 1975 -> SETTLEMENT_WRITER_CONFLICT (not reclaimed)
+UTE2-MUTANT skip-directory-fsync RED recordAdmission durable-before-return -> directory fsync calls=0
+UTE2-MUTANT expose-a-grant RED grant-shaped export(s): grantExecution
+UTE2-MUTANTS total=15 red=15 scenarios=15
+✔ one canonical record per physical execution, and the same facts twice is a named duplicate (37.843203ms)
+✔ writing twice with CONFLICTING facts is a named refusal, never last-writer-wins (48.30257ms)
+✔ illegal transitions are refused by NAME, never silently rewritten (68.060291ms)
+✔ Stop BEFORE the effect: recorded pre-dispatch, settles CANCELLED with zero effect (60.871709ms)
+✔ Stop DURING the effect: settles CANCELLED and carries only effects an observation supports (84.565979ms)
+✔ Stop AFTER completion: recorded additively; the achieved outcome is never rewritten (45.995588ms)
+✔ SIGKILL hard death: recovery yields UNKNOWN (never COMPLETED, never REFUSED), naming what is missing (107.711361ms)
+✔ a settlement claiming an effect with no observation is refused (13.648203ms)
+✔ two settlements cross-wired between executions are refused (30.773426ms)
+✔ admission coherence is recorded, never re-decided: REFUSED needs a deny reference (37.776961ms)
+✔ NO SECOND AUTHORITY: the module surface cannot grant, deny, or mint an admission reference (12.21366ms)
+✔ an interrupted write never reads as a complete record: temp files are invisible, corrupt bytes refuse (41.920865ms)
+✔ adapter: ONE fact per physical execution, the S1 completeness surface, and a cold read (23.589459ms)
+✔ adapter: duplicate and conflicting terminal facts are NAMED refusals, never overwrites (24.220433ms)
+✔ adapter: projectControlResult is a read-compatible projection that never fabricates a requestId (67.884719ms)
+✔ durable admission BEFORE dispatch: SIGKILL after recordAdmission returns still yields UNKNOWN, never absent/COMPLETED (99.041421ms)
+✔ durability: the parent directory is fsync'd AFTER the rename and BEFORE the call returns (16.598407ms)
+✔ writer lock: one writer per root, a live foreign writer is refused, and an evicted lock stops writes (94.33928ms)
+✔ writer lock: a demonstrably dead owner is reclaimed, with named evidence (103.442089ms)
+✔ negative controls: every mutated behaviour turns its public-surface scenario RED (949.402975ms)
+▶ F-10 a formal contract has its own identity, and the trace actor is bound
+  ✔ POSITIVE: the real declared contract is accepted, and its actor-bound trace is gradable (0.983662ms)
+  ✔ (a) Object.create(validContract) + overridden world_id is not a declared contract (0.263899ms)
+  ✔ (b) Object.create(validContract) with NO override is refused too (identity is the receipt) (0.212321ms)
+  ✔ (c) a Reflect.ownKeys / getOwnPropertySymbols reflection copy keeps the World symbol but not the identity (0.208054ms)
+  ✔ (d) a minted contract whose world_id moves after minting is CONTRACT_FIELDS_MISMATCH (0.764186ms)
+  ✔ (e) two Worlds' contracts cross-wired are refused (and a MINTED cross-wire fails the receipt check) (0.311078ms)
+  ✔ (f) execution_id matches but actor_id belongs to another agent -> ACTOR_ID_MISMATCH (0.196743ms)
+  ✔ the refusal vocabulary stays a closed set and names the F-10 codes (0.27467ms)
+✔ F-10 a formal contract has its own identity, and the trace actor is bound (10.441956ms)
+ℹ F10-POSITIVE ok=true contract=obs-251195a37994bd1f world=f10-world-a
+ℹ F10-A-DERIVED-OVERRIDE ok=false reason=CONTRACT_IDENTITY_UNPROVEN
+ℹ F10-B-DERIVED-UNCHANGED ok=false reason=CONTRACT_IDENTITY_UNPROVEN
+ℹ F10-C-SYMBOL-REFLECTION ok=false reason=CONTRACT_IDENTITY_UNPROVEN symbols=1
+ℹ F10-D-MUTATED-AFTER-MINT ok=false reason=CONTRACT_FIELDS_MISMATCH
+ℹ F10-D-ACCESSOR-SHADOW ok=false reason=CONTRACT_FIELDS_MISMATCH
+ℹ F10-E-CROSS-WIRED-DERIVED ok=false reason=CONTRACT_IDENTITY_UNPROVEN
+ℹ F10-E-CROSS-WIRED-MINTED ok=false reason=CONTRACT_FIELDS_MISMATCH
+ℹ F10-F-ACTOR-MISMATCH reason=ACTOR_ID_MISMATCH
+ℹ F10-F-ACTOR-MISSING reason=ACTOR_ID_MISMATCH
+ℹ tests 184
+ℹ suites 0
+ℹ pass 184
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 23633.292007

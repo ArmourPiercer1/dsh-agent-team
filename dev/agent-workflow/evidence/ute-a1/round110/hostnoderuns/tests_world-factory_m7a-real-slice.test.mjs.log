@@ -1,0 +1,42 @@
+[M7A] PRECONDITION host-base-before FAILED: HostBaseError: host base guard: before: HEAD 639ed015397290b3745d163aafe02ffee4aa3f84 != next pin 9c2670d3bce5275e0d1610272958121af87787bb (tests/paths.mjs#NEXT_HOST)
+    at TestWorldFactory.assertHostBase (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/lib/world-factory.mjs:332:13)
+    at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/m7a-real-slice.test.mjs:175:73
+    at step (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/m7a-real-slice.test.mjs:166:20)
+    at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/m7a-real-slice.test.mjs:175:34)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async Test.run (node:internal/test_runner/test:1409:7)
+    at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+[M7A] SUITE FAILED: HostBaseError: host base guard: before: HEAD 639ed015397290b3745d163aafe02ffee4aa3f84 != next pin 9c2670d3bce5275e0d1610272958121af87787bb (tests/paths.mjs#NEXT_HOST)
+    at TestWorldFactory.assertHostBase (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/lib/world-factory.mjs:332:13)
+    at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/m7a-real-slice.test.mjs:175:73
+    at step (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/m7a-real-slice.test.mjs:166:20)
+    at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/m7a-real-slice.test.mjs:175:34)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async Test.run (node:internal/test_runner/test:1409:7)
+    at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+M7A-STEP verdict=FAILED reason=REFUSAL_NOT_ACCEPTED detail=host base guard: before: HEAD 639ed015397290b3745d163aafe02ffee4aa3f84 != next pin 9c2670d3bce5275e0d1610272958121af87787bb (tests/paths.mjs#NEXT_HOST)
+✖ M7-A real-host slice: scripted model -> real DSH session -> real tool -> witness -> oracle (23.932549ms)
+ℹ M7A-PRECONDITION host-base-before FAILED: host base guard: before: HEAD 639ed015397290b3745d163aafe02ffee4aa3f84 != next pin 9c2670d3bce5275e0d1610272958121af87787bb (tests/paths.mjs#NEXT_HOST)
+ℹ M7A-FAILED host base guard: before: HEAD 639ed015397290b3745d163aafe02ffee4aa3f84 != next pin 9c2670d3bce5275e0d1610272958121af87787bb (tests/paths.mjs#NEXT_HOST)
+ℹ M7A-STEP verdict=FAILED reason=REFUSAL_NOT_ACCEPTED detail=host base guard: before: HEAD 639ed015397290b3745d163aafe02ffee4aa3f84 != next pin 9c2670d3bce5275e0d1610272958121af87787bb (tests/paths.mjs#NEXT_HOST)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 81.321983
+
+✖ failing tests:
+
+test at tests/world-factory/m7a-real-slice.test.mjs:109:1
+✖ M7-A real-host slice: scripted model -> real DSH session -> real tool -> witness -> oracle (23.932549ms)
+  Error [HostBaseError]: host base guard: before: HEAD 639ed015397290b3745d163aafe02ffee4aa3f84 != next pin 9c2670d3bce5275e0d1610272958121af87787bb (tests/paths.mjs#NEXT_HOST)
+      at TestWorldFactory.assertHostBase (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/lib/world-factory.mjs:332:13)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/m7a-real-slice.test.mjs:175:73
+      at step (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/m7a-real-slice.test.mjs:166:20)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/m7a-real-slice.test.mjs:175:34)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
