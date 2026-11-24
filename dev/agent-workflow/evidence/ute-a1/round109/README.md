@@ -26,7 +26,7 @@ the whole host envelope: `httpStatus`, `transportError`, the answered **`rpcId`*
 `result.value`, and a `truncated` flag (bound 16,384 chars; below it nothing is dropped). The same
 objects are printed in the driver log (`member.archive FULL reply: …`).
 
-**It is pure observability.** The diff against `41d579119` is 58 inserted lines and zero changed
+**It is pure observability.** The diff against `41d579119` is 61 inserted lines and zero changed
 lines; `judgeRemoteDelivery` (`:1165` region) is untouched, every clause asserts exactly the same
 fields, no judge is skipped, no timeout widened, no retry added, no `KNOWN_REFUTED` entry added.
 The committed driver is byte-identical to the one the gate ran: `sha256

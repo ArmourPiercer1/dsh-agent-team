@@ -26,7 +26,7 @@ Review `20261125-0058` named the remaining Stage-A items. They are closed here; 
    accepted (`rpcId d2rd-t7wbdnj5y7`, `lifecycle=ARCHIVED`, 6 extract steps) → send to ARCHIVED refused
    `TEAM_RUNTIME_WORK_STATE_REJECTED` (`requestsAdded=0`) → `member.restore` accepted
    (`lifecycle=SETTLED`) → send after restore accepted (`ok=true`, `delivered`). **Observation only:**
-   the diff is 58 inserted / 0 changed lines, `judgeRemoteDelivery` is untouched, no clause relaxed, no
+   the diff is 61 inserted / 0 changed lines, `judgeRemoteDelivery` is untouched, no clause relaxed, no
    judge skipped, no timeout widened, no retry added. The committed driver is byte-identical to the one
    the gate ran (`sha256 389b3343…`).
 2. **The dual-host Candidate Gate is `pass` on both pinned hosts in one run** — rc.2 and rc.5, 31 judges
