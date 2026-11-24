@@ -3520,3 +3520,45 @@ unchanged (`tests=785`, uncollected 38, excluded 14; no test file added). `ute-v
 **Levels.** No level moves: no capability was added or removed. FS ask-under-allow remains at its
 existing level; the product change only makes the OBSERVED LANE honest after R3 made the write-face
 refusal code richer. The R3 receipt contract, the pure-ask law and the G11 fix are unchanged.
+
+---
+
+## Round 102 (2026-11-24) — the D4 acceptance is measured on the TARGET host (rc.5)
+
+Branch `vnext/a1-cut` · PR #822 (DRAFT, unmerged) · measured at
+`10d8a67aeb7e189011faf2c131a73aa33b76fac3` · evidence `dev/agent-workflow/evidence/ute-a1/round102/`.
+The single current verdict table lives in `D-ACCEPTANCE-REPORT.md` (first section); this section is
+the suite-status delta.
+
+All prior D4 evidence was rc.2. This round makes `probe-d4-routed-wake.mjs` host-selectable the same
+way the three D drivers already are, and runs it on **0.2.2-rc.5** with `--boots 2`:
+
+* **The porting bug was real and one line**: the probe mounted the governed realm's native
+  `tool-fs` from the literal `tests/deepseek-harness-test-use/…` path. rc.5's `tool-fs` injects
+  `workingDirectory` and rc.2's does not (rc.2 `…/tool-fs/lib/index.js:1176-1180` vs rc.5
+  `…/index.js:2003-2008`), so under `TEAM_TEST_HOST=next` it graded an rc.5 Host with an rc.2
+  module. The path now comes from the SELECTED tree. Nothing else probe-side was host-specific:
+  ports/home suffix/child loader/pin all already follow the selector.
+* **Result**: 17 of 18 judges **PROVEN on rc.5** with counters and bytes identical to rc.2
+  (`askExecuteBytes=27`/`sha256:ced10112…`, `askExecute2Bytes=29`/`sha256:2d71ffdd…`, 8 wake facts,
+  4 routed / 4 delivered, 0 management executions, 0 wake-intent files, deny/Stop zero bytes and
+  `REFUSED`), `runRecordsValid=true`, world ids `…-next`, port `13000`. The two per-host
+  `agreement.txt` files are **byte-identical**.
+* **One REFUTED on both hosts, for a product reason**: `d4:ask-execute-process` —
+  `Error: no PTY backend registered for "a5sf-governed-shell"` (host:
+  `packages/terminal/terminal/src/index.ts:140`; product: the governed PTY face is created only with
+  a PTY terminal spec, `packages/runtime/team-services/src/install.ts:609-619`, and the v5 per-tool
+  `bash` binding realm carries none). Zero bytes, settlement `FAILED`, fail-closed. Owner decision.
+* **One measurement oracle made deterministic** (disclosed): `d4:case-created`'s
+  `case-has-no-decision-yet` read the ledger AFTER the capture and so measured the Officer's speed —
+  boot 2 at `5952c84` had the decision 176 ms after creation, faster than the probe's 300 ms poll,
+  and REFUTED a correct product. It is now `captured-case-precedes-any-decision`: the captured row
+  is the `control-request-recorded` fact and every decision has a strictly later ledger sequence.
+  No wake/byte/settlement clause changed.
+* **P0-2 is classified OPEN, not closed**: `pre-dispatch-abort.mjs` is not production-wired (the
+  host's agent loop owns `tools.execute`). Classified **OPEN TARGET-HOST ACCEPTANCE BLOCKER**; it
+  closes with a public batch-completion observation seam, or an owner ruling on the lawful
+  "no settlement" boundary for a call that never entered admission / started a body.
+
+**Levels**: no row moves. C-alpha6 and the R3 `write` receipt remain **DEV-LIVE** (now on both
+hosts). The governed process face remains **NOT-PRODUCT-PROVEN**. No row is PRODUCT-PROVEN.

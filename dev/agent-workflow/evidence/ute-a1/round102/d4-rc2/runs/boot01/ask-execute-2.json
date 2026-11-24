@@ -1,0 +1,133 @@
+{
+  "writeSettled": true,
+  "requestId": "ctrl-0sq13bc1ezpxlf0p463jm1ri",
+  "resolveOutcome": {
+    "call": {
+      "rootSessionId": "session-dboot-d4-root",
+      "requestToken": "dboot-d4-resolve-ctrl-0sq13bc1ezpxlf0p463jm1ri",
+      "requestId": "ctrl-0sq13bc1ezpxlf0p463jm1ri",
+      "decision": "allow"
+    },
+    "result": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-0sq13bc1ezpxlf0p463jm1ri\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-1crltnl0089j\",\"role\":\"member\"},\"scope\":{\"rootSessionId\":\"session-dboot-d4-root\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0ty67u70r99a\"},\"targetInstanceId\":\"inst-0ty67u70r99a\",\"actionName\":\"admission-ask\",\"correlation\":\"admission:call-d4-worker-write-2\",\"toolName\":\"write\",\"operationFingerprint\":\"sha256:61300231954443983b01a75dcc896924c3d39fa4c88ec3376ca02ade5d343877\",\"authorityScope\":{\"operationClass\":\"write\",\"matcher\":{\"kind\":\"exact\",\"resource\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T09-35-01Z/workspace/lane/worker-ask-2.txt\"}}},\"requestSequence\":13,\"decisionSequence\":16,",
+    "isError": false
+  },
+  "workerWriteCall": {
+    "callId": "call-d4-worker-write-2",
+    "name": "write",
+    "arguments": {
+      "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T09-35-01Z/workspace/lane/worker-ask-2.txt",
+      "content": "DBOOT_D4_WORKER_ASK_CALLED_2\n"
+    },
+    "result": {
+      "callId": "call-d4-worker-write-2",
+      "isError": false,
+      "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T09-35-01Z/workspace/lane/worker-ask-2.txt</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+    }
+  },
+  "file": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T09-35-01Z/workspace/lane/worker-ask-2.txt",
+    "exists": true,
+    "content": "DBOOT_D4_WORKER_ASK_CALLED_2\n",
+    "bytes": 29,
+    "sha256": "2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f"
+  },
+  "firstFile": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T09-35-01Z/workspace/lane/worker-ask.txt",
+    "exists": true,
+    "content": "DBOOT_D4_WORKER_ASK_CALLED\n",
+    "bytes": 27,
+    "sha256": "ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3"
+  },
+  "settlement": {
+    "executionId": "exec-84a42cc32990663f31c59823063f04b760490551",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T09-35-01Z/centre/settlement/inst-0ty67u70r99a/exec-84a42cc32990663f31c59823063f04b760490551.settlement.json",
+    "present": true,
+    "state": "COMPLETED",
+    "bodyOutcome": "completed",
+    "dispatch": "quiesced",
+    "transitions": [
+      "ADMITTED",
+      "RUNNING",
+      "COMPLETED"
+    ],
+    "terminalAt": "2026-11-24T09:38:04.689Z"
+  },
+  "facts": [
+    {
+      "callId": "call-d4-worker-write-2",
+      "agentId": "inst-0ty67u70r99a",
+      "instanceId": "inst-0ty67u70r99a",
+      "sessionId": "session-team-child-ecd32f24e3090ec60b7270eebdb92a6c",
+      "instanceGeneration": 0,
+      "toolName": "write",
+      "axis": "fs.write",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T09-35-01Z/workspace/lane/worker-ask-2.txt",
+      "definitionSource": "",
+      "policyGeneration": "a5sf1:2892fb37558e55d504c98b6d7864c40b",
+      "blueprintRevision": "",
+      "owner": "session-dboot-d4-root",
+      "decision": "allow",
+      "laneDecision": "ask",
+      "kind": "invocation-authority",
+      "at": "2026-11-24T09:38:04.659Z"
+    },
+    {
+      "callId": "call-d4-worker-write-2",
+      "executionId": "exec-84a42cc32990663f31c59823063f04b760490551",
+      "toolName": "write",
+      "agentId": "session-team-child-ecd32f24e3090ec60b7270eebdb92a6c",
+      "outcome": "completed",
+      "isError": false,
+      "policyGeneration": "a5sf1:2892fb37558e55d504c98b6d7864c40b",
+      "kind": "execution",
+      "at": "2026-11-24T09:38:04.689Z"
+    }
+  ],
+  "verdict": {
+    "proposition": "a SECOND Member `write` (different path, different bytes) raises its OWN Control request, is approved, and executes: the receipt is bound to THAT operation, both files hold the bytes of their own approval, settled COMPLETED",
+    "verdict": "PROVEN",
+    "clauses": [
+      {
+        "id": "second-control-request-raised",
+        "ok": true,
+        "detail": "requestRaised=true requestIsNew=true"
+      },
+      {
+        "id": "second-approved-through-real-control-path",
+        "ok": true,
+        "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-0sq13bc1ezpxlf0p463jm1ri\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write-2\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:61300231954443983b01a75dcc896924c3d39f\""
+      },
+      {
+        "id": "second-admission-fact-allow-lane-ask",
+        "ok": true,
+        "detail": "allow facts=[{\"callId\":\"call-d4-worker-write-2\",\"decision\":\"allow\",\"laneDecision\":\"ask\",\"axis\":\"fs.write\"}]"
+      },
+      {
+        "id": "second-write-tool-result-not-an-error",
+        "ok": true,
+        "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T09-35-01Z/workspace/lane/worker-ask-2.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+      },
+      {
+        "id": "second-real-bytes-on-disk",
+        "ok": true,
+        "detail": "file exists=true bytes=29 sha256=2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f expectedSha256=2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f"
+      },
+      {
+        "id": "first-file-unchanged-by-second-approval",
+        "ok": true,
+        "detail": "first sha256=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3 expectedSha256=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3"
+      },
+      {
+        "id": "content-binding-distinguishes-the-two-approvals",
+        "ok": true,
+        "detail": "second=2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f first=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3"
+      },
+      {
+        "id": "second-settlement-completed",
+        "ok": true,
+        "detail": "state=COMPLETED bodyOutcome=completed transitions=[\"ADMITTED\",\"RUNNING\",\"COMPLETED\"]"
+      }
+    ],
+    "failing": []
+  }
+}

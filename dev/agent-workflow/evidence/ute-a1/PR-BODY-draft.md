@@ -7,13 +7,55 @@ named in the same row or section.
 
 | field | value |
 | --- | --- |
-| **Head measured for every number below** | `a95be5f11f3d711929f27148bfb37147ccea2e31` (round 98; earlier sections that name `d322b17aa` / `97d7d7c8d` / `c29da52d3` keep their own round's numbers and are labelled as such) |
+| **Head measured for every number below** | **`10d8a67aeb7e189011faf2c131a73aa33b76fac3` (round 102, the current head of this section's evidence)**; the round-98/95/89 sections that name `a95be5f11` / `d322b17aa` / `97d7d7c8d` / `c29da52d3` keep their own round's numbers and are labelled as such |
 | **Base** | `master @ a19d1df01` (frozen A0, PR #821) |
 | **PR state** | **DRAFT**, `state=OPEN`, never merged (`gh pr view 822 --json isDraft,state,headRefOid`) |
 | **Record class** | every live claim is `DEV-LIVE` (a real host boot, **not a gate**); no capability row is PRODUCT-PROVEN |
-| **Read first** | `dev/agent-workflow/evidence/ute-a1/D-ACCEPTANCE-REPORT.md` (the reviewable report, with **§10 = the authoritative open-gap list**) and `dev/agent-workflow/evidence/ute-a1/CANDIDATE-AUDIT.md` (the round-86 adversarial audit: corrections, capability table, fresh gate block, verdict) |
+| **Read first** | `dev/agent-workflow/evidence/ute-a1/D-ACCEPTANCE-REPORT.md` (**its FIRST section is the single current acceptance-status table, round 102; everything later is historical where it disagrees**) and `dev/agent-workflow/evidence/ute-a1/CANDIDATE-AUDIT.md` (the round-86 adversarial audit: corrections, capability table, fresh gate block, verdict) |
 | **How to review** | (1) read the audit's corrections table first — it lists every number the report used to get wrong; (2) re-run the gate block in §"Verification on this HEAD" (single commands, ~8 min with the census) and diff the verdict lines; (3) for any capability row, follow its `file:line`/evidence path and check it says what the row claims; (4) treat every `DEV-LIVE` row as unproven for acceptance purposes; (5) read `D-ACCEPTANCE-REPORT.md` §10 before forming a view — the two round-87/88 seams and the four rulings they need are there; (6) do **not** mark this PR ready or merge it — that is the owner's act. |
 | **Gate status at this head** | **Round 98 / `a95be5f11`:** local `ci-pr-gate --full --census-captures 2` = **PASS 10/10** (277.6 s); bound `ci-security` 222 and `ci-integration` 238; UTE G1 argv 89/89; `ute-vnext-a1` leg 242 tests (239 pass, 3 skipped); docs/matrix/D-report updated for the two decided rulings. Earlier (round 95 / `d322b17aa`): local `ci-pr-gate --full --census-captures 2` = **PASS 10/10** (275.4 s); bound vitest `ci-security` 222 / `ci-integration` 238; UTE G1 argv 89/89; the hosted verdicts below belong to the round-89 head and are re-queried after this push. Earlier round-89 local status: all required gates green, including `ci-pr-gate --full --census-captures 2` = **PASS 10/10** (275.7 s). Hosted: `pr-gate`, `ci-fast`, `ci-security`, `ci-product`, `synthesize-merge-tree`, `candidate-protection` green; **`ci-integration` FAILURE** on leg `tinf-instruments` (no named failing assertion; not reproduced locally — see "Open gaps" G10); `ci-census` **SKIPPED (draft)**; `ci-required` **RED for `ci-integration:failure,ci-census:skipped`**; `pr-settlement-gate` red until the round-89 settlement comment. On the docs-only follow-up head `d1506acd1` the same hosted job set re-ran with **`ci-integration` SUCCESS**, so the `97d7d7c8d` abort was transient; `ci-required` remains red there only for the draft census skip. |
+
+## ROUND 102 — the D4 acceptance runs on the TARGET host (0.2.2-rc.5), judge by judge
+
+**This section supersedes the D-stage sentences above and the round-87/93/97 D4 wording.** The single
+current verdict table is the first section of `dev/agent-workflow/evidence/ute-a1/D-ACCEPTANCE-REPORT.md`;
+everything older in that file is historical where it disagrees.
+
+Measured at `10d8a67aeb7e189011faf2c131a73aa33b76fac3`, branch `vnext/a1-cut`, PR **#822 DRAFT**.
+Evidence: `dev/agent-workflow/evidence/ute-a1/round102/` (`d4-rc2/`, `d4-rc5/`, the two transcripts).
+
+* **The probe is host-selectable now, like the other three D drivers.** One genuine porting bug was
+  found and fixed: `probe-d4-routed-wake.mjs` mounted the governed realm's native `tool-fs` from a
+  literal rc.2 path, so under `TEAM_TEST_HOST=next` an **rc.2 module** ran inside an **rc.5 Host**.
+  Measurable, not stylistic: rc.5's `tool-fs` injects `workingDirectory` and rc.2's does not
+  (rc.5 `…/tool-fs/lib/index.js:2003-2008`, rc.2 `…:1176-1180`). It now comes from the selected tree;
+  ports/home suffix/child loader/pin already followed `tests/next-host/host-select.mjs`.
+* **rc.5 result, `--boots 2`**: 17 of 18 judges **PROVEN**, with counters and bytes **identical** to
+  rc.2 — 8 wake facts, 4 routed / 4 delivered, **0** management executions, **0** wake-intent files,
+  `write` under an approval 27 B `sha256:ced10112…` and 29 B `sha256:2d71ffdd…`, both `COMPLETED`;
+  deny and Stop-while-pending leave **0 bytes** and settle `REFUSED`; `runRecordsValid=true`; world
+  ids `…-next`, port `13000`, rc.5 tree porcelain `[]` before/after. The two per-host `agreement.txt`
+  files are **byte-identical**.
+* **One REFUTED on BOTH hosts, for a product reason**: `d4:ask-execute-process` —
+  `Error: no PTY backend registered for "a5sf-governed-shell"` (host
+  `packages/terminal/terminal/src/index.ts:140`; product: the governed PTY face is created only when
+  a PTY terminal spec is passed, `packages/runtime/team-services/src/install.ts:609-619`, and a v5
+  per-tool `bash` binding lands on a realm that carries none). Zero bytes, settlement `FAILED`,
+  fail-closed. Owner decision; **not** an rc.5 drift.
+* **One measurement oracle made deterministic (disclosed, no capability relaxed)**: `d4:case-created`'s
+  `case-has-no-decision-yet` read the ledger AFTER the capture, so it measured how fast the Officer
+  decides — boot 2 at `5952c84` had the decision 176 ms after creation, faster than the probe's
+  300 ms poll, refuting a correct product. It is now `captured-case-precedes-any-decision`: the
+  captured row is the `control-request-recorded` fact and every decision has a strictly later
+  sequence in the append-only ledger.
+* **P0-2, classified OPEN — not closed.** `packages/runtime/src/plugin/vnext/pre-dispatch-abort.mjs`
+  is not production-wired: in a real host the caller of `tools.execute` is the host's agent loop,
+  which the product does not own. **OPEN TARGET-HOST ACCEPTANCE BLOCKER.** It closes with (a) a public
+  batch-completion observation seam, or (b) an owner ruling defining the lawful "no settlement"
+  boundary for a call that never entered admission and never started a body. The product's visible
+  `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` report is not a settlement.
+* **Levels:** no row moves; no row is PRODUCT-PROVEN. `C-alpha6` and the R3 `write` receipt are
+  **DEV-LIVE on both hosts**; the governed process face is **NOT-PRODUCT-PROVEN**.
 
 ## What this candidate is (one paragraph)
 

@@ -836,3 +836,27 @@ process to gate), and the PTY cannot compare `commandSha256` because its shell e
 text does. Both limits are stated in `ADR-approved-ask-receipt.md` §"The PROCESS face". `apply_patch`
 stays unbound (R4), and no `CORE_SEAM_BLOCKER` was needed — no upstream patch, no new axis, no second
 authority.
+
+## ROUND 102 (2026-11-24) — the D4 acceptance runs on the TARGET host (0.2.2-rc.5): same 18 judges, identical facts
+
+The table rows above are rc.2 measurements (plus round-78 rc.5 for the three D drivers). Round 102
+closes the remaining **target-host** gap for the D4 probe: `probe-d4-routed-wake.mjs` is now
+host-selectable through `tests/next-host/host-select.mjs` **including the realm `tool-fs` module it
+mounts** (it used to be hardcoded to rc.2 — an rc.2 module in an rc.5 host, which rc.5's extra
+`workingDirectory` injection makes measurable). Full evidence: `RC5-MIGRATION.md` §13 and
+`D-ACCEPTANCE-REPORT.md` (the single current status table).
+
+**rc.5 column, measured at `10d8a67aeb7e189011faf2c131a73aa33b76fac3`, `--boots 2`:**
+
+| row (this matrix) | rc.2 | rc.5 (round 102) | level after this round |
+| --- | --- | --- | --- |
+| C-alpha6 (routed review wake: case → router → wake → decision → execute) | PROVEN (round 97) | **PROVEN** — 8 wake facts, 4 routed / 4 delivered, 0 management executions, 27 B / `sha256:ced10112…` | **DEV-LIVE** (unchanged; now on both hosts) |
+| C-tools / C-fs `write` under an approval (R3 receipt) | PROVEN (round 95) | **PROVEN** — 27 B and 29 B writes, both `COMPLETED`, byte-identical to rc.2 | **DEV-LIVE** (unchanged; now on both hosts) |
+| the two negative live arms (deny, Stop-while-pending) | PROVEN | **PROVEN** — zero bytes, `REFUSED` | DEV-LIVE (unchanged) |
+| governed `bash` under an approval | **REFUTED** | **REFUTED, same three clauses** | **NOT-PRODUCT-PROVEN** — product assembly gap, not a host drift: `no PTY backend registered for "a5sf-governed-shell"`; the governed PTY face is only created when a PTY terminal spec is passed (`packages/runtime/team-services/src/install.ts:609-619`) and the v5 per-tool binding realm passes none |
+| P0-2 pre-dispatch abort observation | MECHANISM | **MECHANISM** | **OPEN TARGET-HOST ACCEPTANCE BLOCKER** (not production-wired; needs a public batch-completion seam or a ruling on the lawful "no settlement" boundary) |
+
+**No level moves.** One measurement oracle was made deterministic (`d4:case-created`'s
+"no decision yet" clause measured the Officer's speed — a decision landed 176 ms after creation vs a
+300 ms poll — and is now an append-only-ledger ordering assertion, rc.2 and rc.5 alike). The two
+`agreement.txt` files are byte-identical across hosts.

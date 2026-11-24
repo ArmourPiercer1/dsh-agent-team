@@ -1,5 +1,124 @@
 # D acceptance report — UTE vNext A1 cut + centre (candidate)
 
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- ROUND 102 — THE CURRENT ACCEPTANCE STATUS. Read this before anything else.  -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+## CURRENT ACCEPTANCE STATUS — the single table (round 102, 2026-11-24)
+
+> **This table is the current verdict. Every later section of this file is HISTORICAL.** Where a
+> later section disagrees with this table — the round-78 rc.5 note that "only these three scripted
+> drivers ran on rc.5", the round-87/93 `d4:routed-wake` **REFUTED** rows, the round-89 §6.5/§10
+> G1/G2 register, the round-97 "rc.2 only" statements, the round-99 "BLOCKED" process row — **this
+> table wins**. The older text is kept unchanged as the record of what was measured then; it is not
+> a current claim and must not be quoted as one.
+
+**HEAD measured:** `10d8a67aeb7e189011faf2c131a73aa33b76fac3` (the commit carrying the two probe
+fixes of this round; this documentation commit is its child, named in the settlement comment).
+Worktree `.worktrees/vnext-a1-cut`, branch `vnext/a1-cut`, PR **#822 DRAFT — unmerged**.
+Record class: `DEV-LIVE` for every boot, in-process `MECHANISM` where marked. **No row is
+PRODUCT-PROVEN** and no row can be: `V@B=yes` is reserved for a capability exercised by a BOUND
+executable gate, and a scripted driver is not that gate.
+
+Hosts, exactly as the drivers printed them (`candidate:` row, first log line of every boot):
+
+| | rc.2 (control) | rc.5 (TARGET host) |
+| --- | --- | --- |
+| selector input | `TEAM_TEST_HOST` unset | `TEAM_TEST_HOST=next` |
+| candidate row | `host:"legacy"`, `source:"tests/paths.mjs#TEST_USE_BASELINE_SHA"` | `host:"next"`, `source:"tests/paths.mjs#NEXT_HOST"` |
+| pin | `639ed015397290b3745d163aafe02ffee4aa3f84` (`0.2.0-rc.2`) | `9c2670d3bce5275e0d1610272958121af87787bb` (`dsh-v0.2.2-rc.5`) |
+| tree | `tests/deepseek-harness-test-use` | `tests/deepseek-harness-next` |
+| world / home | `u5u5a5sfdev1-…` / `tests/homes/<world>` | `u5u5a5sfdev1-…-next` / `tests/homes/<world>-next` |
+| port leased | `3195` (band 3181-3199) | `13000` (band 13000-13049) |
+| porcelain before/after | `[]` / `[]` | `[]` / `[]` |
+
+### Levels — the closed vocabulary used below
+
+| level | meaning |
+| --- | --- |
+| **MECHANISM** | Proven in-process over the REAL pinned components (product provider/binder/Control/settlement, real host modules); no boot. |
+| **DEV-LIVE** | Proven on a BOOTED, pinned host by a driver with two agreeing boots. Development evidence; never candidate evidence, never a gate. |
+| **ENV-LIMITED** | The host/platform genuinely lacks the capability (e.g. a kernel/OS feature absent); recorded as a limit, not as a pass. |
+| **REFUSED BY RULING** | The cut's ruling IS that the surface refuses; the judge asserts the refusal shape, not a working capability. |
+| **NOT-PRODUCT-PROVEN** | No live proof at the pin (refuted, unrecorded, or observation exists but is not production-wired). Carries the open item that would prove it. |
+
+### The table
+
+| # | capability | level | rc.2 verdict | rc.5 verdict | open item |
+| --- | --- | --- | --- | --- | --- |
+| 1 | `d:member-read-admitted` (`run-boot.mjs`) | DEV-LIVE | **PROVEN** (2/2 boots) | **PROVEN** (2/2, round 78) | no bound gate ⇒ never PRODUCT-PROVEN |
+| 2 | `d:guard-facts` / `d:centre-facts` | DEV-LIVE | **PROVEN** — 2 allow facts, 2 admissions, 2 executions | **PROVEN** — same counters | same |
+| 3 | `d:native-read-surface` | DEV-LIVE | **PROVEN** (6 clauses) | **PROVEN** | same |
+| 4 | `d:member-read-denied` | DEV-LIVE | **PROVEN** (deciding channel + zero bytes/not-ENOENT) | **PROVEN** (round 78 port: batch + `workingDirectory`) | provider-channel refusal is in-process only (`ADM-100`) |
+| 5 | `d:remote-creation` | DEV-LIVE | **PROVEN** (round 91 judge repair) | **PROVEN at the round-78 clause shape — NOT re-run after the round-91 repair** | re-run `run-boot.mjs` on rc.5 to carry the repaired clause |
+| 6 | `d2:multi-member-concurrency` | DEV-LIVE | **PROVEN** | **PROVEN** (round 78/79) | no bound gate |
+| 7 | `d2:revocation` (4 directions) | DEV-LIVE | **PROVEN** | **PROVEN** (9/9 + 9/9, 14/14 guard facts) | same |
+| 8 | `d2:stop` | DEV-LIVE | **PROVEN** | **PROVEN** (`stopSettlementState=REFUSED`) | same |
+| 9 | `d2:remote-delivery` | DEV-LIVE | **PROVEN** (round 83) | **NOT RECORDED** | run `run-boot-d2.mjs` on rc.5 after round 83 |
+| 10 | `d3:persistent-subprocess` | DEV-LIVE | **PROVEN** (round 76) | **PROVEN** (round 78/79) | same |
+| 11 | `d3:crash-cold-recovery` | DEV-LIVE | **PROVEN** | **PROVEN** | same |
+| 12 | `d3:work-delivery` | DEV-LIVE | **PROVEN** | **PROVEN** (`collectStatus=succeeded`; `inflightAfter=UNKNOWN` by contract) | cross-process in-flight truth not established |
+| 13 | `d3:alpha6` (the V4 path's typed refusal) | REFUSED BY RULING | **PROVEN** | **PROVEN** | `ADMISSION_ALPHA6_UNAVAILABLE` is the cut's ruling; the D4 rows below are the lawful v5 replacement |
+| 14 | `d4:enablement` | DEV-LIVE | **PROVEN** (round 102) | **PROVEN** (round 102) | no bound gate |
+| 15 | `d4:officer-up` | DEV-LIVE | **PROVEN** | **PROVEN** | same |
+| 16 | `d4:officer-binding` | DEV-LIVE | **PROVEN** (1 allow fact, its own instanceId) | **PROVEN** (identical) | same |
+| 17 | `d4:routed-wake` (conjunction of the 7 rows below) | DEV-LIVE | **PROVEN** | **PROVEN** | same |
+| 18 | `d4:case-created` (9 clauses) | DEV-LIVE | **PROVEN** | **PROVEN** | the `captured-case-precedes-any-decision` clause was made deterministic this round (§round-102 note) |
+| 19 | `d4:router-officer` | DEV-LIVE | **PROVEN** (`recipient`/`officer`; self-ask → `leader`) | **PROVEN** (identical) | same |
+| 20 | `d4:wake-delivered` | DEV-LIVE | **PROVEN** — 8 wake facts, 4 routed, 4 delivered, **0** wake-intent files, **0** management executions | **PROVEN** — identical counters | the management plane executed zero tools, by design |
+| 21 | `d4:officer-decides` | DEV-LIVE | **PROVEN** (`COMPLETED`, its own session + binding) | **PROVEN** (identical) | same |
+| 22 | `d4:ask-executes-after-review` | DEV-LIVE | **PROVEN** — 27 bytes, `sha256:ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3` | **PROVEN** — byte-identical | same |
+| 23 | `d4:duplicate-route` | DEV-LIVE | **PROVEN** (1 intent, 1 confirmation, 1 input) | **PROVEN** (identical) | same |
+| 24 | `d4:sticky-stop` | DEV-LIVE | **PROVEN** (marker survives a machine wake; human resume only) | **PROVEN** (identical) | same |
+| 25 | `d4:refusal` (incoherent v5 row) | DEV-LIVE | **PROVEN** | **PROVEN** | same |
+| 26 | `d4:ask-execute` (`write`, 27 B) | DEV-LIVE | **PROVEN** (`COMPLETED`) | **PROVEN** (identical bytes) | other FS methods are MECHANISM (§6.15) |
+| 27 | `d4:ask-execute-2` (`write`, 29 B, different path) | DEV-LIVE | **PROVEN** — `sha256:2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f` | **PROVEN** — byte-identical | same |
+| 28 | `d4:ask-denied` | DEV-LIVE | **PROVEN** — 0 bytes, settlement `REFUSED` | **PROVEN** (identical) | same |
+| 29 | `d4:ask-stopped` | DEV-LIVE | **PROVEN** — 0 bytes, settlement `REFUSED` | **PROVEN** (identical) | same |
+| 30 | `d4:ask-execute-process` (governed `bash` under an approval) | **NOT-PRODUCT-PROVEN** (REFUTED) | **REFUTED** | **REFUTED — same 3 clauses, same error** | **product assembly gap**: no PTY backend on the v5 per-tool `bash` binding realm (`Error: no PTY backend registered for "a5sf-governed-shell"`, thrown by the host at `tests/deepseek-harness-next/packages/terminal/terminal/src/index.ts:140`; rc.2 `…test-use/…/index.ts:159`). The governed PTY face is created only when a PTY terminal spec is passed (`packages/runtime/team-services/src/install.ts:609-619`), and this realm carries none. Zero bytes, settlement `FAILED` — fail-closed. Owner decision required; **not** an rc.5 drift |
+| 31 | P0-2 pre-dispatch abort observation (`pre-dispatch-abort.mjs`) | **MECHANISM** | **MECHANISM** (`SLICE-21/30/37/38`, assertions unchanged) | **MECHANISM** (same arms, both hosts) | **OPEN TARGET-HOST ACCEPTANCE BLOCKER** — not production-wired; see below |
+| 32 | OS confinement negative controls (§3.1) | ENV-LIMITED where the OS capability is absent | measured | measured (round 78 shape) | the host/OS limit is the limit; no product switch exists |
+| 33 | search face, Shape B (in-lane `grep`, out-of-lane refused) | DEV-LIVE | **PROVEN** (round 64/98) | **PROVEN** (round 78) | Shape B is the declared support level; not full dynamic permission governance |
+
+### The P0-2 open item, classified precisely
+
+`packages/runtime/src/plugin/vnext/pre-dispatch-abort.mjs` **exists, is exported by the product
+composition, and is driven end to end in the slice composition — but it is NOT production-wired.**
+In a real host the caller of `tools.execute` is the host's own agent loop, which the product does
+not own; the observer is never invoked there. It is therefore classified:
+
+> **OPEN TARGET-HOST ACCEPTANCE BLOCKER** (not closed, not mechanism-only-forgotten, and not a
+> `CORE_SEAM_BLOCKER` yet — the seam question is exactly what is unresolved).
+
+What would close it, and nothing less:
+
+1. a **public batch-completion observation seam** the host exposes to a plugin (the product would
+   read the settlement value at the boundary, as it already does in the slice composition), **or**
+2. an **owner ruling that defines the lawful "no settlement" boundary** for a call that never
+   entered admission and never started a body — i.e. what the product owes a reader when the host
+   owes it no event at all. Today the product reports `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION`
+   visibly, which is a report, not a settlement.
+
+Until one of those lands, no booted rc.5 (or rc.2) member's pre-dispatch cancel is recorded by
+production wiring, and this table does not claim it is.
+
+### What moved in round 102
+
+1. **The D4 acceptance now exists on the TARGET host.** All 18 D4 judges were run on rc.5
+   (`--boots 2`, `TEAM_TEST_HOST=next`): 17 PROVEN with facts and bytes **identical** to rc.2, one
+   REFUTED for the product reason above. The two `agreement.txt` files are **byte-identical**.
+2. **The probe is host-selectable** through the ONE selector (`tests/next-host/host-select.mjs`),
+   including its realm `tool-fs` module, which used to be hardcoded to rc.2 (§RC5-MIGRATION §13).
+3. **One measurement oracle was made deterministic** (`d4:case-created`), because it had been
+   refuting a correct product for a 176 ms race (§RC5-MIGRATION §13.3).
+4. **P0-2 is classified as an open blocker** instead of being described as closed.
+
+### What did NOT move
+
+No level was upgraded. No row is PRODUCT-PROVEN. `d4:ask-execute-process` is still REFUTED. The
+rc.5 column of `d:remote-creation` and `d2:remote-delivery` is still not recorded (rows 5 and 9) —
+those are the two driver judges that need a re-run on rc.5, not product work.
+
 **Worktree:** `.worktrees/vnext-a1-cut` · **Branch:** `vnext/a1-cut` ·
 **HEAD measured for every number below (round 89):**
 `97d7d7c8d1bb0410dac9dedac77dee97143851bf` · **Base for the cut:** `a19d1df01` (frozen A0, PR #821) ·

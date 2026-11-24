@@ -318,7 +318,9 @@ Measured requirements for a real rc.5 deployment of the governed preset:
 - Only these three scripted drivers were run on rc.5. The rest of the vitest
   population (238) and the other node:test slices were NOT executed on rc.5;
   ADM-100 is the only in-process test re-run on rc.5 (and it was re-run
-  individually, not as part of a full rc.5 test leg).
+  individually, not as part of a full rc.5 test leg). **Superseded in part by §8
+  (round 102): the D4 probe is now a fourth scripted driver measured on rc.5;
+  the vitest/node:test statement still stands as written.**
 - The model is the scripted mock on both hosts; no real model, provider
   routing, retries, token accounting or streaming behaviour is exercised.
 - Two-boot agreement proves determinism of these scripted scenarios on this
@@ -468,3 +470,41 @@ RED-first sensitivity controls still pass (20/20 in that file). After the bookin
 The census counts note (`COUNTS MOVED, SET DID NOT`) is the standing condition the gate itself
 resolves: the counts are context, the identity set is the verdict, and the set is IDENTICAL to the
 published baseline in both captures.
+
+## 8. Round 102 — the D4 acceptance probe on rc.5 (the fourth driver joins the first three)
+
+Round 78 migrated `run-boot.mjs`, `run-boot-d2.mjs` and `run-boot-d3.mjs` (§2). The D4 acceptance
+probe (`probe-d4-routed-wake.mjs`) stayed rc.2-only until now, so the D4 evidence behind the R3
+receipt and the Alpha.6 routed wake was measured on the WRONG host generation for acceptance.
+Round 102 closes that. Measured at `10d8a67aeb7e189011faf2c131a73aa33b76fac3`; evidence
+`dev/agent-workflow/evidence/ute-a1/round102/`; the single current status table is the first section
+of `D-ACCEPTANCE-REPORT.md`; the per-judge detail and the drift resolution are `RC5-MIGRATION.md` §13.
+
+| | rc.2 | rc.5 |
+| --- | --- | --- |
+| command | `node …/probe-d4-routed-wake.mjs --boots 2` | `TEAM_TEST_HOST=next node … --boots 2` |
+| candidate/source | `host:"legacy"`, `tests/paths.mjs#TEST_USE_BASELINE_SHA` | `host:"next"`, `tests/paths.mjs#NEXT_HOST` |
+| pin | `639ed01539…` | `9c2670d3bc…` |
+| world / port | `u5u5a5sfdev1-…`, 3195 | `u5u5a5sfdev1-…-next`, 13000 |
+| result line | `evidence-complete=true allBooted=true blocked=true runRecordsValid=true (2/2; agreeing pair=true)` | identical |
+| judges | 17 PROVEN + 1 REFUTED | **identical** (same clause ok-flags, same failing ids) |
+| counters | 8 wake facts, 4 routed / 4 delivered, 0 management executions, 0 wake-intent files, 27 B `ced10112…`, 29 B `2d71ffdd…`, deny/Stop 0 B / `REFUSED` | **byte-identical** (`agreement.txt` diff = empty) |
+
+**P0-2 (pre-dispatch abort) is NOT closed by this round.** The observer
+(`packages/runtime/src/plugin/vnext/pre-dispatch-abort.mjs`) is still not production-wired, because
+the host agent loop owns `tools.execute`. It is classified **OPEN TARGET-HOST ACCEPTANCE BLOCKER**:
+it closes with a public batch-completion observation seam, or an owner ruling that defines the
+lawful "no settlement" boundary for a call that never entered admission and never started a body.
+The visible `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` report is a report, not a settlement.
+
+**One measurement fix, disclosed.** `d4:case-created`'s `case-has-no-decision-yet` read the ledger
+AFTER the capture, so it measured the Officer's decision speed: at `5952c84` boot 2 the decision
+landed 176 ms after creation, faster than the probe's 300 ms poll, and the clause refuted a correct
+product. It is now `captured-case-precedes-any-decision` (append-only-ledger ordering). No wake,
+byte, settlement or negative-arm clause changed.
+
+**What §3's "NOT proven" list loses and keeps.** It loses "only these three scripted drivers were
+run on rc.5" — the D4 probe is now a fourth. It keeps everything else: the wider vitest/node:test
+population is still not re-run on rc.5 (only `ADM-100` and the slice arms are), the model is still
+the scripted mock, and `d4:ask-execute-process` is still REFUTED on BOTH hosts for the product
+assembly gap named in `RC5-MIGRATION.md` §13.4.

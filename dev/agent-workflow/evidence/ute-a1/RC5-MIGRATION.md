@@ -1,7 +1,8 @@
 # RC5-MIGRATION — the rc.5 lane actually RUNS: B1–B4 measured, B5 CLOSED (round 77), B6 (Stop semantics) CLOSED (round 79)
 
 Round 72b, 2026-11-22; round 77 (2026-11-23) closes B5 — see §6.1 and §11; round 79 (2026-11-23)
-closes B6 — see §7 and §12. Worktree `.worktrees/vnext-a1-cut`, branch `vnext/a1-cut`,
+closes B6 — see §7 and §12; **round 102 (2026-11-24) puts the D4 routed-wake acceptance probe on
+rc.5 — see §13** (and the single current verdict table in `D-ACCEPTANCE-REPORT.md`). Worktree `.worktrees/vnext-a1-cut`, branch `vnext/a1-cut`,
 base `6350d04b0` (+ this round's commit). Read first: `NEXT-HOST-RC5-FEASIBILITY.md` (the
 feasibility this round executes), `docs/TEST_METHODS.md` §2/§5/§7/§11.
 
@@ -654,3 +655,137 @@ arm; `RC5-ACCEPTANCE.md` §7 keeps both runs.
 - The three D drivers exercise the pipeline path (their Stops land in-flight), so the re-run
   confirms no regression from the shared fact writer, NOT that a driver observes a pre-dispatch
   abort. The pre-dispatch observation is proven in-process on both hosts (SLICE-21/30/37/38).
+
+## 13. Round 102 (2026-11-24) — the D4 routed-wake probe on rc.5, judge by judge
+
+The three D drivers were migrated in round 78; the **D4 acceptance probe** was not. Round 102 makes
+it host-selectable through the SAME selector and runs it on the TARGET host. HEAD measured:
+`10d8a67aeb7e189011faf2c131a73aa33b76fac3`. Evidence: `dev/agent-workflow/evidence/ute-a1/round102/`
+(`d4-rc2/`, `d4-rc5/`: the probe's own `agreement.txt`/`results.json`/`runs/` per host, plus the two
+`*.log` transcripts).
+
+### 13.1 The one genuine porting bug (fixed)
+
+`tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs` already took its tree and
+pin from `tests/next-host/host-select.mjs`, but it mounted the governed realm's native module from a
+LITERAL rc.2 path:
+
+```
+- const BASELINE_TOOL_FS = join(REPO_ROOT, 'tests', 'deepseek-harness-test-use', 'packages', 'fs', 'tool-fs', 'lib', 'index.js')
++ const HOST_TOOL_FS = join(HOST_TREE, 'packages', 'fs', 'tool-fs', 'lib', 'index.js')
+```
+
+Under `TEAM_TEST_HOST=next` that handed an **rc.2 `tool-fs` module to an rc.5 Host**. It is not
+cosmetic: the two generations declare different injected services —
+
+```
+rc.2  tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js:1176-1180
+      const inject = ["tools", "fs", "systemPrompt"]
+rc.5  tests/deepseek-harness-next/packages/fs/tool-fs/lib/index.js:2003-2008
+      const inject = ["tools", "fs", "systemPrompt", "workingDirectory"]
+```
+
+— so the incriminated pairing is exactly the two-generation world `host-select.mjs` exists to
+prevent. The path is now derived from the SELECTED tree (the `fsContractHostLayout()` layout, same
+expression, no second mechanism). The module's existence is asserted with the host and pin named.
+
+No other probe change was needed: ports (`13000-13049`), the DSH_HOME suffix (`-next`), the child
+`--import tests/next-host/host-loader.mjs` preload and the tree-head/porcelain assertion are all
+already selector-driven (`world-factory.mjs:392,705`; `tests/characterization/lib/instance.mjs:38-43`).
+
+### 13.2 The rc.5 run (evidence, not inference)
+
+Command, verbatim, rc.5:
+
+```
+$ TEAM_TEST_HOST=next node tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs --boots 2
+[boot1] candidate: {"host":"next","pin":"9c2670d3bce5275e0d1610272958121af87787bb",
+  "source":"tests/paths.mjs#NEXT_HOST","hostTree":"…/tests/deepseek-harness-next","asserted":true}
+world=u5u5a5sfdev1-20261124T08-51-32Z-next port=13000 …
+… RESULT evidence-complete=true allBooted=true blocked=true runRecordsValid=true (2/2 boots; agreeing pair=true)
+```
+
+(The `08-51` rc.5 run above is the first rc.5 execution; the pair recorded in `round102/` is the
+re-run at the measured HEAD, same host, same verdicts.) rc.2 for the same command with the selector
+unset: `host:"legacy"`, `port=3195`, world `u5u5a5sfdev1-…` (no suffix), same RESULT line.
+
+Every judge, both hosts, two agreeing boots each:
+
+| judge | rc.2 | rc.5 | counted facts (identical on both hosts) |
+| --- | --- | --- | --- |
+| `d4:enablement` | PROVEN | PROVEN | row not refused; `/__p6t6/state` serves the TeamSession |
+| `d4:officer-up` | PROVEN | PROVEN | officer instance up with its own bound child session |
+| `d4:officer-binding` | PROVEN | PROVEN | `officerAllowFacts=1`, its own callId + instanceId |
+| `d4:routed-wake` | PROVEN | PROVEN | conjunction of the seven rows below |
+| `d4:case-created` | PROVEN | PROVEN | durable `control-request-recorded`, `approvalCaseId case-…`, `legOrdinal=1`, rung `leader` |
+| `d4:router-officer` | PROVEN | PROVEN | `routeKind=recipient`, `routeRole=officer`; self-ask → `leader` |
+| `d4:wake-delivered` | PROVEN | PROVEN | `wakeFacts=8`, `routedWakes=4`, `deliveredWakes=4`, `wakeIntentFiles=0`, `reviewWakeHits=0`, `managementExecutions=0` |
+| `d4:officer-decides` | PROVEN | PROVEN | `officerResolveSettlement=COMPLETED` |
+| `d4:ask-executes-after-review` | PROVEN | PROVEN | `askExecuteBytes=27`, `sha256:ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3`, `COMPLETED` |
+| `d4:duplicate-route` | PROVEN | PROVEN | `duplicateWakeInputs=1` |
+| `d4:sticky-stop` | PROVEN | PROVEN | `stickyStopMarkerCount=1`; zero wake inputs while stopped |
+| `d4:refusal` | PROVEN | PROVEN | incoherent v5 row refused by the closed enablement rule |
+| `d4:ask-execute` (`write`) | PROVEN | PROVEN | 27 B / `COMPLETED` |
+| `d4:ask-execute-2` (`write`, 2nd path) | PROVEN | PROVEN | `askExecute2Bytes=29`, `sha256:2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f`, `COMPLETED` |
+| `d4:ask-denied` | PROVEN | PROVEN | `askDeniedBytes=null`, settlement `REFUSED` |
+| `d4:ask-stopped` | PROVEN | PROVEN | `askStoppedBytes=null`, settlement `REFUSED` |
+| `d4:ask-execute-process` | **REFUTED** | **REFUTED** | `askExecuteProcessInLaneBytes=null`, `…OutLaneExists=false`, settlement `FAILED` — same three failing clauses, same error |
+
+`overall=BLOCKED` on both hosts is the probe's own contract for "some judge is REFUTED";
+`runRecordsValid=true` means each boot's RUN record also passed `scripts/eb3-run-manifest.mjs`.
+The two `agreement.txt` files (one per host) are **byte-identical**.
+
+### 13.3 `d4:case-created` — one measurement oracle made deterministic (disclosed)
+
+The first re-run at `5952c84` produced boot 2 `caseCreated=REFUTED` on **rc.2**, clause
+`case-has-no-decision-yet`: the durable request fact was sequence 9 at `…25.351Z` and the decision
+sequence 12 at `…25.527Z` — **176 ms**, faster than the probe's 300 ms poll — while the clause read
+the ledger AFTER the capture and asserted zero decisions. It measured the Officer's speed, not the
+captured row, and it refuted a correct product.
+
+The clause was rewritten in the open (the round-93/101 pattern: state the intent, assert it
+strictly):
+
+* **before:** `zero control-decision-recorded facts for the request in a ledger read after capture`.
+* **after** (`captured-case-precedes-any-decision`): the captured row IS the
+  `control-request-recorded` fact (its sequence pinned by the first clause), its `approvalCaseId`
+  equals the case id that creation fact recorded, and **every** decision fact for the request has a
+  **strictly later** sequence in the append-only ledger. A post-decision capture cannot satisfy that
+  ordering. The detail records the creation/decision sequences and timestamps for audit.
+* Nothing else in the verdict changed; the capability is not relaxed (no wake, byte or settlement
+  clause was touched). Replayed against both recorded boots it passes without a decision and with a
+  later decision, and fails an out-of-order one.
+
+### 13.4 The one product finding (rc.5 and rc.2, identical)
+
+`d4:ask-execute-process` — a Member `bash` declared with disposition `ask` — raises the real Control
+request, is approved through the real control path, and the centre writes the real `process.exec`
+`allow` fact… and then the tool fails:
+
+```
+Error: no PTY backend registered for "a5sf-governed-shell"
+```
+
+* Thrown by the HOST at `tests/deepseek-harness-next/packages/terminal/terminal/src/index.ts:140`
+  (rc.2: `tests/deepseek-harness-test-use/packages/terminal/terminal/src/index.ts:159`), code
+  `NO_BACKEND`.
+* Product reason: the governed PTY face is created only when the realm is handed a PTY terminal spec
+  (`packages/runtime/team-services/src/install.ts:609-619`, `backendType: … ?? 'a5sf-governed-shell'`),
+  and a **v5 per-tool `bash` binding lands on the BINDING realm**, which carries no such spec. The
+  receipt verifier is therefore never reached on a boot; zero bytes, settlement
+  `ADMITTED → RUNNING → FAILED` (fail-closed).
+* This is NOT an rc.5 drift: rc.5 produces the identical three failing clauses. It is the same named
+  assembly gap round 99 recorded, now measured on the target host too. Owner decision required.
+
+### 13.5 Everything NOT proven by this round
+
+* Two scripted boots per host on this machine prove determinism of these scenarios, not concurrency
+  or crash recovery; the model is the shared scripted mock, never a real model.
+* `d4:ask-execute-process` is not proven (product gap above); the governed PTY face IS proven live
+  in the v4 D3 world (`d3:persistent-subprocess`) — the gap is the v5 binding-realm composition.
+* The pre-dispatch abort observer (`pre-dispatch-abort.mjs`) is still NOT production-wired on either
+  host: **OPEN TARGET-HOST ACCEPTANCE BLOCKER** (see `D-ACCEPTANCE-REPORT.md`, "P0-2").
+* Only the D4 probe joins the three already-migrated D drivers on rc.5; the wider vitest/node:test
+  population is not re-run on rc.5 by this round.
+* The rc.5 tree stayed clean: `porcelain=[]` before and after every boot. No upstream patch, no
+  vendor copy, `:3080` and its DSH_HOME untouched.
