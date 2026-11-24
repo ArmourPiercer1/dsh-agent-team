@@ -5,7 +5,8 @@
   PTY). R2 (`guarded` coupling) is REJECTED. R4 stays the fail-closed default for every operation not
   named here. **The round-99 process extension is an in-process MECHANISM only and is NOT a declared
   support promise — see the scope boundary at the end of §"The PROCESS face" and
-  `SCOPE-subprocess-ask.md` (PENDING OWNER CONFIRMATION).**
+  `SCOPE-subprocess-ask.md` (**APPROVED BY OWNER, 2026-11-24**; Process Ask is
+  `UNSUPPORTED BY PRODUCT RULING`).**
 - **Date:** 2026-11-24 (round 94, branch `vnext/a1-cut`) · extension 2026-11-24 (round 96) ·
   extension 2026-11-24 (round 99, process face).
 - **Scope:** the FIVE native FS mutations — `write`→`writeText`, `edit`→`editText`,
@@ -224,10 +225,11 @@ The spawn-point verification is a proven MECHANISM (with the FS face's live prec
 `ask` leg for a process tool is BLOCKED by an assembly gap named above, which is a product decision,
 not a receipt defect.
 
-> **Scope boundary (2026-11-24, PENDING OWNER CONFIRMATION, review `20261124-1341` §3.1).** The
-> process-face extension above is a MECHANISM, not a support promise. This generation promises
-> **`allow`/`deny` only** for Subprocess/PTY; **per-call `ask` for process execution is NOT supported and
-> remains fail-closed**. The R3 receipt is **not** extended to the process face as a live promise: a
+> **Scope boundary (2026-11-24, APPROVED BY OWNER in review `20261124-2120` ruling 1).** The
+> process-face extension above is a MECHANISM, not a support promise, and the owner has now ratified the
+> declared scope as a product ruling. This generation promises **`allow`/`deny` only** for
+> Subprocess/PTY; **per-call `ask` for process execution is NOT supported and remains fail-closed**
+> (`UNSUPPORTED BY PRODUCT RULING`, the same class as PTC). The R3 receipt is **not** extended to the process face as a live promise: a
 > receipt minted for a file operation must never be read as permission to bypass the OS sandbox, and no
 > approval may widen the kernel profile. Declared wording, the process behaviours that *are* proven, and
 > the two preconditions a future generation would need (a governed PTY backend on the binding realm + a

@@ -1,19 +1,26 @@
 # SCOPE — the Subprocess/PTY promise: `allow`/`deny`, never per-call `ask`
 
-> ## STATUS: **PENDING OWNER CONFIRMATION**
+> ## STATUS: **APPROVED BY OWNER (2026-11-24)**
 >
-> This document records a **declared-promise** decision asked for by the external architecture review
-> `docs/reviews/20261124-1341.txt` §3.1. It changes **no behaviour**: the product already refuses the
-> process `ask` leg, and it will keep refusing it whichever way the owner rules. What is pending is only
-> **what this generation tells a reader it supports**. Until the owner confirms or rejects the wording
-> below, treat it as the review's proposed scope statement, not as a ratified contract.
+> The owner formally approved this scope statement in review `20261124-2120` ruling 1. The approved
+> promise, verbatim, is:
+>
+> > **This generation promises `allow`/`deny` for Subprocess/PTY. Per-call `ask` for process execution is
+> > NOT supported and remains fail-closed.**
+>
+> It is a **PRODUCT SCOPE** ruling, not a defect report, and it changes **no behaviour**: the product
+> already refuses the process `ask` leg and keeps refusing it. Process Ask is **`UNSUPPORTED BY PRODUCT
+> RULING`** — the same class as PTC (`ADR-ptc-unsupported.md`) — and no product byte, test assertion or
+> upstream patch is part of this scope statement. A future generation that wants per-call process `ask`
+> support needs **a new product contract and a process boundary design** (`OWNER-DECISIONS.md`,
+> round 106).
 
 - **Dated:** 2026-11-24 (real UTC) · branch `vnext/a1-cut` · PR **#822 DRAFT, unmerged**
-- **Measured at:** `f3b306e87f75694201bff286d93652e93249d56a` (the parent of the documentation commit that
-  adds this file); the refusal evidence it cites was measured on both pinned hosts at round 102's HEAD
-  `10d8a67aeb7e189011faf2c131a73aa33b76fac3`.
-- **Decision owner:** owner (this file is the ask). **Implementers must not read it as a licence to change
-  code.** No product byte, no test assertion, no upstream patch is part of this scope statement.
+- **Approved at:** HEAD `563feac139e87e7cc3269d3d4d799afc0b676568` (round 106; the documentation commit
+  implementing the approval is its child). The refusal evidence this file cites was measured on both pinned
+  hosts at round 102's HEAD `10d8a67aeb7e189011faf2c131a73aa33b76fac3`.
+- **Decision owner:** owner. **Implementers must not read it as a licence to change code.** No product byte,
+  no test assertion, no upstream patch is part of this scope statement.
 - **Related, unchanged:** the receipt ADR (`ADR-approved-ask-receipt.md`), the acceptance report
   (`D-ACCEPTANCE-REPORT.md`, current table row 30), the capability matrix (`CAPABILITY-MATRIX-C.md`,
   C-subprocess / C-pty / the `ask` row), and the PR draft (`PR-BODY-draft.md`, scope section).
@@ -47,10 +54,15 @@ not a defect report:
   persistent-`bash` tool's own backend lookup fails — the realm that the v5 **per-tool** `bash` binding
   lands on carries **no PTY terminal spec**, so no backend is registered under the name the tool asks for.
   The failure is raised **before** the governed PTY face's `spawn`, and therefore **before** the process
-  receipt verifier can run.
+  receipt verifier can run. The chain that DID run is real and must not be described otherwise: a real
+  durable ask was raised, the real Officer allowed it through the real control path, and the one-shot
+  grant **was consumed**; then the PTY spawn failed with the host's own `NO_BACKEND` error **before any
+  process existed**.
 - **The refusal is fail-closed, and that is the desired safe direction.** Zero bytes are written, no
   process is created, and the settlement is `FAILED`. Nothing is auto-approved, nothing is widened, and no
-  lane is promoted.
+  lane is promoted. **The settlement is `FAILED`, not `REFUSED`/`not-started`:** this was not a call that
+  never started — its ask→approval→grant consumption happened for real, and the body failed at the
+  backend lookup. Claiming `REFUSED`/`not-started` would erase the evidence that the approval was spent.
 - **This is not an rc.5 drift.** The identical error occurs on rc.2 and rc.5, at the same product
   composition point; it is an assembly gap in this candidate, not a regression introduced by the target
   host upgrade.
@@ -82,7 +94,7 @@ Boundaries that limit the table above, stated so the promise is not over-read:
 - The governed PTY cannot compare a per-command digest (the shell exists before the command text); only the
   confined child face, which spawns `argv[program, '-c', command]`, can bind `commandSha256`.
 - The model on every live row is the scripted mock; no real-model interleaving of a process call is measured.
-- `P0-2` (pre-dispatch Stop observation) is **OPEN** — see §6.
+- `P0-2` (pre-dispatch Stop observation) is **CLOSED by owner ruling (round 106)** — see §6.
 
 ## 4. The exact current refusal evidence (both hosts)
 
@@ -134,31 +146,37 @@ Two further facts any future promise must carry: the **PTY and confined child ar
 with different verifier capabilities, and a receipt covers **the spawn, not subsequent commands** typed
 into an existing governed session.
 
-## 6. The two P0-2 lines this scope statement relies on
+## 6. P0-2 is CLOSED by the owner's ruling (round 106)
 
-`P0-2` is independent of the process `ask` decision, but a reader of this scope statement must not mistake
-it for a closed item:
+`P0-2` was independent of the process `ask` decision. It is **no longer open**: the owner ruled the
+lawful "no settlement" boundary (review `20261124-2120` ruling 2, recorded verbatim in
+`OWNER-DECISIONS.md`), which is alternative (b) below, so no upstream seam is needed:
 
-- **`P0-2` — OPEN TARGET-HOST ACCEPTANCE BLOCKER — pre-dispatch Stop observation not production-wired.**
-  `packages/runtime/src/plugin/vnext/pre-dispatch-abort.mjs` exists, is exported by the product
-  composition, and is driven end to end in the slice composition, but a real host's own agent loop is the
-  caller of `tools.execute` and the product does not own it; the observer is never invoked there.
-- **What closes `P0-2`:** (a) a **public batch-completion observation seam** the host exposes to a plugin
-  (so the product can read the settlement value at the boundary, as the slice composition already does),
-  **or** (b) an **owner ruling defining the lawful "no settlement" boundary** for a call that never
-  entered admission and never started a body. The product's visible
-  `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` is a report, not a settlement.
+- **The owner's law, verbatim:**
+  `No Admission + No Body Start => No UTE Settlement (lawful)`; `Admission Exists => Terminal Settlement
+  Required`; `Body started + unconfirmable => UNKNOWN (existing rule)`.
+- **What the product does, tested:** the host's `ABORTED_BEFORE_DISPATCH` return is read, never replaced
+  (no fabricated `tools/result`); `LEDGER_EXECUTION_UNBOUND` still refuses an execution fact without an
+  admission; `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` is a **diagnostic report only**, never a settlement;
+  a pre-admission cancel leaves no body, no provider call, no grant consumption and no centre state row
+  (`SLICE-40`); and an admitted-then-stopped call must record its Stop and reach the terminal `CANCELLED`
+  settlement (`SLICE-41`), with a source-level pin that no code path can write an execution fact without
+  an admission (`SLICE-42`).
+- **Residual:** the observer is still not wired into a booted host's own agent loop. That is a **coverage
+  limit, not an acceptance blocker**: the ruling defines what the product owes a reader when the host owes
+  it no event, and the tests above implement exactly that. `RC5-MIGRATION.md` §7 keeps the wiring gap on
+  the record.
 
 ## 7. What changes, and what does not
 
 - **Behaviour: nothing.** The process `ask` leg is refused today and keeps being refused. This document
   writes the promise down; it does not move a byte of product code, a test assertion, or a capability
   level.
-- **Declared promise: this is the change, and it is pending.** The review asks this generation to stop
-  implying that process `ask` is supported. Once the owner confirms this wording, the promise table in
-  `PR-BODY-draft.md`, the C-subprocess/C-pty/`ask` rows in `CAPABILITY-MATRIX-C.md`, the single acceptance
-  status table in `D-ACCEPTANCE-REPORT.md`, and the process-face paragraph in
-  `ADR-approved-ask-receipt.md` all point here, and none of them may claim more.
+- **Declared promise: APPROVED, and this is the change.** The owner approved the wording in review
+  `20261124-2120` ruling 1. The promise table in `PR-BODY-draft.md`, the C-subprocess/C-pty/`ask` rows in
+  `CAPABILITY-MATRIX-C.md`, the single acceptance status table in `D-ACCEPTANCE-REPORT.md`, and the
+  process-face paragraph in `ADR-approved-ask-receipt.md` all point here, and none of them may claim
+  more. Process Ask carries the same machine-visible class as PTC: **`UNSUPPORTED BY PRODUCT RULING`**.
 - **No upgrade path is promised.** §5 lists the two preconditions; it does not schedule them, size them,
   or claim they are close. A future generation that lands only one of them still has no process `ask`
   promise.

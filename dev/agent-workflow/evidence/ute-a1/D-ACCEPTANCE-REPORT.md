@@ -1,10 +1,10 @@
 # D acceptance report — UTE vNext A1 cut + centre (candidate)
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-<!-- ROUND 102 — THE CURRENT ACCEPTANCE STATUS. Read this before anything else.  -->
+<!-- ROUND 106 — THE CURRENT ACCEPTANCE STATUS. Read this before anything else. -->
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
-## CURRENT ACCEPTANCE STATUS — the single table (round 102, 2026-11-24)
+## CURRENT ACCEPTANCE STATUS — the single table (round 106, 2026-11-24)
 
 > **This table is the current verdict. Every later section of this file is HISTORICAL.** Where a
 > later section disagrees with this table — the round-78 rc.5 note that "only these three scripted
@@ -13,8 +13,10 @@
 > table wins**. The older text is kept unchanged as the record of what was measured then; it is not
 > a current claim and must not be quoted as one.
 
-**HEAD measured:** `10d8a67aeb7e189011faf2c131a73aa33b76fac3` (the commit carrying the two probe
-fixes of this round; this documentation commit is its child, named in the settlement comment).
+**HEAD measured:** `563feac139e87e7cc3269d3d4d799afc0b676568` (round 106; this documentation commit is
+its child, named in the settlement comment). Round 102's judge-by-judge table below was measured at
+`10d8a67aeb7e189011faf2c131a73aa33b76fac3` and is unchanged; round 106 adds two owner rulings and three
+tested arms, not new live measurements.
 Worktree `.worktrees/vnext-a1-cut`, branch `vnext/a1-cut`, PR **#822 DRAFT — unmerged**.
 Record class: `DEV-LIVE` for every boot, in-process `MECHANISM` where marked. **No row is
 PRODUCT-PROVEN** and no row can be: `V@B=yes` is reserved for a capability exercised by a BOUND
@@ -75,48 +77,103 @@ Hosts, exactly as the drivers printed them (`candidate:` row, first log line of 
 | 27 | `d4:ask-execute-2` (`write`, 29 B, different path) | DEV-LIVE | **PROVEN** — `sha256:2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f` | **PROVEN** — byte-identical | same |
 | 28 | `d4:ask-denied` | DEV-LIVE | **PROVEN** — 0 bytes, settlement `REFUSED` | **PROVEN** (identical) | same |
 | 29 | `d4:ask-stopped` | DEV-LIVE | **PROVEN** — 0 bytes, settlement `REFUSED` | **PROVEN** (identical) | same |
-| 30 | `d4:ask-execute-process` (governed `bash` under an approval) | **NOT-PRODUCT-PROVEN** (REFUTED) | **REFUTED** | **REFUTED — same 3 clauses, same error** | **product assembly gap**: no PTY backend on the v5 per-tool `bash` binding realm (`Error: no PTY backend registered for "a5sf-governed-shell"`, thrown by the host at `tests/deepseek-harness-next/packages/terminal/terminal/src/index.ts:140`; rc.2 `…test-use/…/index.ts:159`). The governed PTY face is created only when a PTY terminal spec is passed (`packages/runtime/team-services/src/install.ts:609-619`), and this realm carries none. Zero bytes, settlement `FAILED` — fail-closed. Owner decision required; **not** an rc.5 drift. **Declared scope (2026-11-24, PENDING OWNER CONFIRMATION, review `20261124-1341` §3.1): this generation promises `allow`/`deny` for Subprocess/PTY; per-call `ask` for process execution is NOT supported and remains fail-closed — see `SCOPE-subprocess-ask.md`.** |
-| 31 | P0-2 pre-dispatch abort observation (`pre-dispatch-abort.mjs`) | **MECHANISM** | **MECHANISM** (`SLICE-21/30/37/38`, assertions unchanged) | **MECHANISM** (same arms, both hosts) | **OPEN TARGET-HOST ACCEPTANCE BLOCKER** — not production-wired; see below |
+| 30 | `d4:ask-execute-process` (governed `bash` under an approval) | **NOT-PRODUCT-PROVEN** (REFUTED) | **REFUTED** | **REFUTED — same 3 clauses, same error** | **product assembly gap**: no PTY backend on the v5 per-tool `bash` binding realm (`Error: no PTY backend registered for "a5sf-governed-shell"`, thrown by the host at `tests/deepseek-harness-next/packages/terminal/terminal/src/index.ts:140`; rc.2 `…test-use/…/index.ts:159`). The governed PTY face is created only when a PTY terminal spec is passed (`packages/runtime/team-services/src/install.ts:609-619`), and this realm carries none. Zero bytes, settlement `FAILED` — fail-closed. Owner decision required; **not** an rc.5 drift. The real ask→approval→grant consumption DID occur; then the PTY spawn failed with `NO_BACKEND` **before any process existed**. **Declared scope — `UNSUPPORTED BY PRODUCT RULING` (APPROVED BY OWNER 2026-11-24, review `20261124-2120` ruling 1; same class as PTC): this generation promises `allow`/`deny` for Subprocess/PTY; per-call `ask` for process execution is NOT supported and remains fail-closed — see `SCOPE-subprocess-ask.md`.** |
+| 31 | P0-2 pre-dispatch abort observation (`pre-dispatch-abort.mjs`) | **MECHANISM** | **MECHANISM** (`SLICE-21/30/37/38`, assertions unchanged) | **MECHANISM** (same arms, both hosts; round 106 adds the ruled-law controls `SLICE-40/41/42` on both hosts) | **CLOSED BY OWNER RULING (round 106, review `20261124-2120` ruling 2)** — the lawful no-settlement boundary is ruled and tested; `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` remains a diagnostic report, never a settlement. The observer is still not wired into a booted host's own agent loop: a coverage limit, not an acceptance blocker |
 | 32 | OS confinement negative controls (§3.1) | ENV-LIMITED where the OS capability is absent | measured | measured (round 78 shape) | the host/OS limit is the limit; no product switch exists |
 | 33 | search face, Shape B (in-lane `grep`, out-of-lane refused) | DEV-LIVE | **PROVEN** (round 64/98) | **PROVEN** (round 78) | Shape B is the declared support level; not full dynamic permission governance |
 
-**The two P0-2 lines, visible in this status table (review `20261124-1341` §3.1/P0-2; not closed):**
+**P0-2, visible in this status table — CLOSED by the owner's ruling (review `20261124-2120` ruling 2):**
 
-- **`P0-2` — OPEN TARGET-HOST ACCEPTANCE BLOCKER — pre-dispatch Stop observation not production-wired.**
-  See row 31; `packages/runtime/src/plugin/vnext/pre-dispatch-abort.mjs` is exported and driven in the
-  slice composition, but a real host's agent loop is the `tools.execute` caller and the product does not
-  own it.
-- **What closes `P0-2`:** (a) a public batch-completion observation seam the host exposes to a plugin, or
-  (b) an owner ruling defining the lawful "no settlement" boundary for a call that never entered admission
-  and never started a body. `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` is a visible report, not a settlement.
+- **`P0-2` — CLOSED — the lawful no-settlement boundary is ruled.** The owner chose the ruling route (b),
+  so no upstream seam and no second authority is needed. The law, recorded verbatim in
+  `OWNER-DECISIONS.md` (round 106):
+
+  ```
+  No Admission + No Body Start  =>  No UTE Settlement   (lawful)
+  Admission Exists              =>  Terminal Settlement Required
+  Body started + unconfirmable  =>  UNKNOWN (existing rule)
+  ```
+
+  See row 31. `packages/runtime/src/plugin/vnext/pre-dispatch-abort.mjs` is still not wired into a real
+  host's own agent loop (the product does not own that `tools.execute` call site) — that is now recorded
+  as a **coverage limit**, not an acceptance blocker, because the ruling states exactly what the product
+  owes a reader when the host owes it no event.
+- **What is tested (both pinned hosts):** the host's `ABORTED_BEFORE_DISPATCH` return is read and never
+  replaced (no fabricated `tools/result`); `LEDGER_EXECUTION_UNBOUND` still refuses an execution fact
+  without an admission; `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` is a **report only**; a pre-admission
+  cancel leaves no body, no provider call, no grant consumption and no centre state row (`SLICE-40`); an
+  admitted-then-stopped call records its Stop and reaches the terminal `CANCELLED` settlement, impossible
+  to classify as "no settlement" (`SLICE-41`); a source-level pin makes "no execution fact without an
+  admission" structural (`SLICE-42`). No existing refusal code was removed or renamed.
 
 **The process-face scope, visible here too:** this generation promises **`allow`/`deny`** for
-Subprocess/PTY; **per-call `ask` for process execution is NOT supported and remains fail-closed**. The
-refusal in row 30 is the promise, not a pending fix. Wording, the proven process behaviours and the two
-preconditions a future generation would need: `SCOPE-subprocess-ask.md` (**PENDING OWNER
-CONFIRMATION**).
+Subprocess/PTY; **per-call `ask` for process execution is `UNSUPPORTED BY PRODUCT RULING`** (APPROVED BY
+OWNER 2026-11-24, the same class as PTC) and remains fail-closed. The refusal in row 30 is the promise,
+not a pending fix; the real ask→approval→grant consumption is preserved as measured. Wording, the proven
+process behaviours and the two preconditions a future generation would need — a new product contract and
+a process boundary design — are in `SCOPE-subprocess-ask.md` (APPROVED BY OWNER) and
+`OWNER-DECISIONS.md` (round 106).
 
-### The P0-2 open item, classified precisely
+### The P0-2 item — CLOSED (round 106), and what remains
 
 `packages/runtime/src/plugin/vnext/pre-dispatch-abort.mjs` **exists, is exported by the product
-composition, and is driven end to end in the slice composition — but it is NOT production-wired.**
-In a real host the caller of `tools.execute` is the host's own agent loop, which the product does
-not own; the observer is never invoked there. It is therefore classified:
+composition, and is driven end to end in the slice composition — but it is NOT wired into a real host's
+own agent loop.** In a real host the caller of `tools.execute` is the host's own agent loop, which the
+product does not own; the observer is never invoked there. The owner ruled route 2 of the former ask
+(review `20261124-2120` ruling 2): **the lawful "no settlement" boundary is defined**, so this is no
+longer an acceptance blocker. It is recorded as:
 
-> **OPEN TARGET-HOST ACCEPTANCE BLOCKER** (not closed, not mechanism-only-forgotten, and not a
-> `CORE_SEAM_BLOCKER` yet — the seam question is exactly what is unresolved).
+> **COVERAGE LIMIT** — a booted rc.5 (or rc.2) member's pre-dispatch cancel is not recorded by
+> production wiring; the ruled law and its tested controls say what is owed when the host owes no event.
+> This table does not claim the wiring exists.
 
-What would close it, and nothing less:
+The law and its implementation are recorded verbatim in `OWNER-DECISIONS.md` (round 106) and driven by
+`SLICE-40`/`SLICE-41`/`SLICE-42` on both pinned hosts. No `CORE_SEAM_BLOCKER` remains, no upstream patch
+is proposed, and no second authority is introduced.
 
-1. a **public batch-completion observation seam** the host exposes to a plugin (the product would
-   read the settlement value at the boundary, as it already does in the slice composition), **or**
-2. an **owner ruling that defines the lawful "no settlement" boundary** for a call that never
-   entered admission and never started a body — i.e. what the product owes a reader when the host
-   owes it no event at all. Today the product reports `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION`
-   visibly, which is a report, not a settlement.
+### What moved in round 106 — the two owner rulings implemented
 
-Until one of those lands, no booted rc.5 (or rc.2) member's pre-dispatch cancel is recorded by
-production wiring, and this table does not claim it is.
+1. **Ruling 1 — the Subprocess/PTY scope is APPROVED (product scope only).**
+   `SCOPE-subprocess-ask.md` is **APPROVED BY OWNER (2026-11-24)** with the exact promise: `allow`/`deny`
+   for Subprocess/PTY supported; per-call `ask` for process execution **NOT supported and fail-closed**.
+   Process Ask is now **`UNSUPPORTED BY PRODUCT RULING`**, the same machine-visible class as PTC. Every
+   document that named the scope changed from PENDING to APPROVED (this table's rows 30/31, the process
+   paragraph above, `CAPABILITY-MATRIX-C.md` C-subprocess/C-pty/`ask`, `ADR-approved-ask-receipt.md`,
+   `OWNER-DECISIONS.md`, `PR-BODY-draft.md`), and the candidate gate's `knownRefuted` citation now names
+   the APPROVED ruling (still a literal id, never a pattern).
+   **The round-102 REFUTED evidence is preserved verbatim: 16/17 PROVEN, 1 REFUTED, zero process, zero
+   bytes, settlement `FAILED`.** The real ask→approval→grant consumption DID occur; the PTY spawn then
+   failed with `NO_BACKEND` **before any process existed**. It is not a positive test, it is not
+   `REFUSED`/`not-started`, and no historical row was rewritten.
+2. **Ruling 2 — P0-2 is CLOSED by the lawful no-settlement boundary** (review `20261124-2120` ruling 2).
+   The owner's law is recorded verbatim in `OWNER-DECISIONS.md` (round 106) and implemented as tested
+   behaviour by three new arms in the `ute-vnext-a1` leg, green on **both** pinned hosts:
+   - **`SLICE-40`** — a pre-admission cancel (on the ASK leg and on an effect-bearing `write`) leaves no
+     body, no provider call, no approval request, no minted/spent grant, no written byte and no centre
+     state row; the durable ledger keeps refusing (`LEDGER_EXECUTION_UNBOUND`) and
+     `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` is reported as a **diagnostic**, never as a settlement.
+   - **`SLICE-41`** — the exception cannot be used once an admission exists: an admitted-then-stopped call
+     records its Stop (`phase: 'pre-dispatch'`) and reaches the terminal `CANCELLED` settlement, with the
+     no-record report absent and no route to classify it as "no settlement".
+   - **`SLICE-42`** — a source-level pin that no code path can create an execution fact without an
+     admission: one execution-row writer in the durable ledger, guarded before its append; one production
+     call site; one `record(fact)` in the fact builder, after `admissionOf`.
+   No refusal code was removed or renamed; the host's `ABORTED_BEFORE_DISPATCH` return is untouched and no
+   `tools/result` is fabricated.
+
+### Still open — the owner's next list (NOT done this round)
+
+These are recorded so the candidate does not read as finished; none was attempted in round 106:
+
+- re-run `d:remote-creation` and `d2:remote-delivery` on rc.5 through the candidate gate, **including the
+  round-105 rc.5 refutation** (`d2:remote-delivery`'s `archived-member-refused-typed` clause:
+  `lifecycle=SETTLED code=null requestsAdded=0`, both boots) — the new measured rc.5 gap stays a finding
+  until a product/owner decision names it;
+- run the **full rc.5 test population** (the candidate gate currently exercises the four live drivers, not
+  the whole suite map on the target host);
+- a **real-model smoke test** (every live row still uses the scripted mock; no real-model interleaving of
+  any call is measured);
+- **C1–C18 sign-off** (the contract rows are disposed but not signed off as a closed set).
 
 ### What moved in round 102
 
@@ -128,10 +185,13 @@ production wiring, and this table does not claim it is.
 3. **One measurement oracle was made deterministic** (`d4:case-created`), because it had been
    refuting a correct product for a 176 ms race (§RC5-MIGRATION §13.3).
 4. **P0-2 is classified as an open blocker** instead of being described as closed.
+   *(Round-106 update: the owner has since CLOSED P0-2 by ruling the lawful no-settlement boundary; this
+   line records what round 102 did, and the current status is row 31 above.)*
 
 ### What did NOT move
 
-No level was upgraded. No row is PRODUCT-PROVEN. `d4:ask-execute-process` is still REFUTED. The two
+No level was upgraded. No row is PRODUCT-PROVEN. `d4:ask-execute-process` is still REFUTED (and is now
+`UNSUPPORTED BY PRODUCT RULING`, round 106). The two
 driver judges that needed an rc.5 re-run are now recorded by the candidate gate (round 105):
 `d:remote-creation` is **PROVEN** on rc.5, and `d2:remote-delivery` is **REFUTED** on rc.5 in ONE
 clause (`archived-member-refused-typed`: `lifecycle=SETTLED code=null requestsAdded=0`, both boots)

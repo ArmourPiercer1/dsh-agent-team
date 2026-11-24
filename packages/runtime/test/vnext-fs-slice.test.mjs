@@ -28,7 +28,7 @@
  */
 
 import assert from 'node:assert/strict'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -94,7 +94,7 @@ const IDENTITY = Object.freeze({
 const lane = (allow, deny = [], ask = []) => Object.freeze({ mode: 'restricted', allow: Object.freeze([...allow]), ask: Object.freeze([...ask]), deny: Object.freeze([...deny]) })
 
 /** Build one world. `mountRealm: false` is the negative control, not a second composition. */
-async function buildWorld ({ mountRealm, dir, admission, durable, askPath, observation, approvalMode = 'allowed-once', search = false, web = false, webNetwork = 'allow', webTestEndpoints, bash = false, revokeAfterDecision = false, nestedDeny, subprocessNetwork = 'deny' }) {
+async function buildWorld ({ mountRealm, dir, admission, durable, askPath, observation, approvalMode = 'allowed-once', search = false, web = false, webNetwork = 'allow', webTestEndpoints, bash = false, revokeAfterDecision = false, nestedDeny, subprocessNetwork = 'deny', abortAfterAdmission = false }) {
   const seams = await loadFsContractSeams(REPO_ROOT, HOST_MODE)
   const { Context, ToolRuntime, SystemPrompt, LocalFileSystem, NativeToolExecutor, createScope, bindScopeParent, nativeToolModules, row } = seams
 
@@ -375,16 +375,34 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
   // the smallest thing that proves the centre's half: mint when the ask is raised, spend exactly
   // once at the guard. It is a TEST double for `ctx.get('approval')`, not product wiring.
   let grants
+  // THE ASK LEG'S TWO COUNTERS. A pre-admission Stop must not reach either of them: no approval is
+  // requested, and no one-shot capability is minted (let alone spent). The binder is the PRODUCT
+  // binder; the wrapper only counts, it never answers a decision.
+  let approvalRequests = 0
+  const grantTally = { minted: 0, consumed: 0 }
   if (admission === 'ask-granted') {
     // The approval channel's answer is a parameter because Stop is measured through it: a cancelled
     // approval must end the call before the body, with the grant left unspent.
-    root.provide('approval', { request: async () => approvalMode })
+    root.provide('approval', { request: async () => { approvalRequests += 1; return approvalMode } })
     const binder = createInvocationBinder()
     grants = {
-      binder,
+      binder: {
+        ...binder,
+        bind: (input) => { grantTally.minted += 1; return binder.bind(input) },
+        consume: (capability, request) => {
+          const result = binder.consume(capability, request)
+          if (result?.ok === true) grantTally.consumed += 1
+          return result
+        },
+      },
       memberOf: (binding) => ({ teamId: 'team-vnext-slice', memberInstanceId: binding.agentId, templateId: 'tmpl-vnext-slice', instanceGeneration: binding.instanceGeneration }),
     }
   }
+  // THE STOP THAT LANDS AFTER THE DECISION AND BEFORE THE BODY (SLICE-41). The window the owner's
+  // law is about: an admission record EXISTS, so the no-settlement exception is unavailable. The
+  // abort is a REAL AbortSignal, fired from the one place the test can know the decision was
+  // recorded — the admission fact's own sink. Nothing about the product changes.
+  const admissionAbort = abortAfterAdmission ? new AbortController() : undefined
   // SETTLEMENT. One store per world, keyed by the product's own execution id, observed at the host's
   // tools/result - the same place the ledger observes it.
   const settlementStore = createExecutionSettlementStore({ dir: join(dir, 'settlement') })
@@ -460,6 +478,9 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
       record: (record) => {
         facts.push(record)
         if (ledger !== undefined) ledger.recordAdmission(record)
+        // Only AFTER the record exists: a Stop that lands here is admitted-then-stopped, never a
+        // pre-admission cancel, so the arm measures the branch the law says must settle.
+        if (admissionAbort !== undefined && !admissionAbort.signal.aborted) admissionAbort.abort()
       },
       ...(ledger === undefined ? {} : { isReplay: (callId) => ledger.has(callId), recordReplay: (input) => ledger.recordReplayRefusal(input) }),
       ...(grants === undefined ? {} : { grants }),
@@ -557,6 +578,9 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
     realm,
     mountRefusal,
     webFetchCalls: () => webFetchCalls,
+    approvalRequests: () => approvalRequests,
+    grantTally: () => ({ ...grantTally }),
+    stopSignal: admissionAbort?.signal,
     settlementStore,
     settlement,
     fsInstances,
@@ -1617,4 +1641,181 @@ test('SLICE-38 — a DURABLE centre refuses to invent a record for a pre-dispatc
   } finally {
     await world.dispose()
   }
+})
+
+test('SLICE-40 — the lawful no-settlement boundary: a pre-admission cancel leaves no body, no grant spend, no effect, no state row', async () => {
+  // THE OWNER'S LAW (round 106, ruling 2), measured as behaviour rather than restated:
+  //   No Admission + No Body Start => No UTE Settlement   (lawful)
+  // This arm is the NEGATIVE half: a call the host cancelled BEFORE any admission point ran may not
+  // create a settlement record, and the exception may not be used as cover for anything else either.
+  // The world is wired for the ASK leg, so "no grant" is a measured count, not an absence of code:
+  // if the call had reached admission it would have requested an approval and minted a capability.
+  const askDir = join(dir, 'stop-no-settle', 'asked')
+  mkdirSync(askDir, { recursive: true })
+  const askedFile = join(askDir, 'approval-required.txt')
+  writeFileSync(askedFile, 'alpha beta\n', 'utf8')
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'stop-no-settle'), admission: 'ask-granted', askPath: askDir })
+  const controller = new AbortController()
+  controller.abort()
+  try {
+    const member = world.realm.installation.members[0].fs
+    // (1) The ASK leg: reaching admission would raise an approval and mint a one-shot grant.
+    const abortedAsk = await world.dispatch('read', { file_path: askedFile }, 'no-settle-ask-1', { signal: controller.signal })
+    assert.equal(abortedAsk.isError, true, `a pre-admission cancel must not succeed: ${abortedAsk.text}`)
+    assert.match(String(abortedAsk.errorMessage), /aborted before dispatch/iu, 'the host\'s own pre-dispatch result must survive untouched')
+    assert.equal(world.completions()[0].observed, 1, 'the host\'s OWN ABORTED_BEFORE_DISPATCH code is what the observer recognised (never a fabricated event)')
+    // (2) A call that WOULD have a physical effect: the write must not land.
+    const abortedWrite = await world.dispatch('write', { file_path: world.insideFile, content: 'MUST NOT LAND\n' }, 'no-settle-write-1', { signal: controller.signal })
+    assert.equal(abortedWrite.isError, true, 'a pre-admission cancelled write must not succeed')
+
+    // NO BODY, NO PROVIDER CALL.
+    assert.equal(member.calls.stat + member.calls.readText + member.calls.streamText + member.calls.writeText + member.calls.editText, 0, 'the provider must never be touched')
+    assert.equal(readFileSync(world.insideFile, 'utf8'), 'alpha beta\n', 'no byte may be written by a cancelled call')
+    // NO GRANT AND NO APPROVAL: the one-shot capability is neither minted nor spent.
+    assert.equal(world.approvalRequests(), 0, 'a call cancelled before admission must not raise an approval request')
+    assert.deepEqual(world.grantTally(), { minted: 0, consumed: 0 }, 'a cancelled call must neither mint nor consume a one-shot grant')
+    // NO CENTRE STATE ROW: no admission record, no settlement record, no execution settlement.
+    assert.equal(world.facts().length, 0, 'no admission decision may be invented')
+    assert.equal(world.settlementStore.list().length, 0, 'no settlement record may be invented for a call that never reached admission')
+    // THE DIAGNOSTIC IS A REPORT, NOT A SETTLEMENT. Two calls ended with no record; both are reported
+    // by ExecutionId, and neither report is a terminal state.
+    const gaps = world.faults().filter((fault) => fault.code === 'SETTLEMENT_NO_RECORD_BEFORE_ADMISSION')
+    // One report per cancelled call is the minimum; BOTH observation paths may report the SAME call
+    // (a report is idempotent by nature - it is not a record), so the count is >=, and the identity
+    // that matters is the ExecutionId.
+    const gapIds = [...new Set(gaps.map((fault) => fault.executionId))]
+    assert.equal(gapIds.length, 2, `both pre-admission cancels must be REPORTED, got ${JSON.stringify(world.faults())}`)
+    for (const gap of gaps) assert.match(String(gap.message), /exec-[0-9a-f]{40}/u, 'the report must name the ExecutionId it could not settle')
+    // The Stop still has a home: the in-memory execution fact, which is neither a settlement nor a
+    // durable centre-state row (the durable half below asserts ZERO ledger rows).
+    assert.deepEqual(world.executions().map((fact) => fact.outcome), ['aborted', 'aborted'])
+    assert.equal(world.executions().every((fact) => fact.abortPhase === 'pre-dispatch'), true, 'a pre-dispatch Stop must stay distinguishable from an in-flight one')
+  } finally {
+    await world.dispose()
+  }
+
+  // THE DURABLE EDGE: the authoritative ledger keeps failing closed. A fact it cannot join to an
+  // admission record is refused (LEDGER_EXECUTION_UNBOUND) and REPORTED, never written as a row.
+  const ledgerPath = join(dir, 'stop-no-settle-durable', 'facts.jsonl')
+  const durableWorld = await buildWorld({ mountRealm: true, dir: join(dir, 'stop-no-settle-durable'), admission: 'bound', durable: ledgerPath })
+  try {
+    const durableController = new AbortController()
+    durableController.abort()
+    const cancelled = await durableWorld.dispatch('read', { file_path: durableWorld.insideFile }, 'no-settle-durable-1', { signal: durableController.signal })
+    assert.equal(cancelled.isError, true)
+    assert.equal(openFactLedger({ path: ledgerPath }).readAll().length, 0, 'neither an admission nor an execution row may reach the authoritative ledger')
+    assert.equal(durableWorld.executions().length, 0, 'a refused execution fact must not surface in memory either')
+    assert.equal(durableWorld.settlementStore.list().length, 0, 'no settlement row may be created for it')
+    const unbound = durableWorld.faults().filter((fault) => fault.code === 'LEDGER_EXECUTION_UNBOUND')
+    assert.ok(unbound.length >= 1, `the unbound fact must be REPORTED, got ${JSON.stringify(durableWorld.faults())}`)
+    assert.equal(unbound.every((fault) => fault.callId === 'no-settle-durable-1'), true, 'the report must name the call it could not bind')
+  } finally {
+    await world.dispose()
+    await durableWorld.dispose()
+  }
+})
+
+test('SLICE-41 — the exception cannot be used once an admission exists: admitted-then-stopped settles CANCELLED with its Stop', async () => {
+  // THE OWNER'S LAW, POSITIVE HALF:
+  //   Admission Exists => Terminal Settlement Required
+  // The Stop is fired from the admission record's own sink, i.e. AFTER the decision exists and BEFORE
+  // the body. It is a real AbortSignal; nothing about the product is simulated. What must hold: the
+  // call records the Stop, settles CANCELLED, and there is NO route by which a reader can call this
+  // "no settlement".
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'stop-admitted'), admission: 'bound', abortAfterAdmission: true })
+  try {
+    assert.notEqual(world.stopSignal, undefined, 'the world must expose the real signal the Stop lands on')
+    const member = world.realm.installation.members[0].fs
+    const stopped = await world.dispatch('read', { file_path: world.insideFile }, 'stop-admitted-1', { signal: world.stopSignal })
+    assert.equal(stopped.isError, true, `an admitted-then-stopped call must not run: ${stopped.text}`)
+    assert.match(String(stopped.errorMessage), /ADMISSION_STOPPED/u, 'the refusal must name the Stop, not a lane or a fault')
+
+    // THE ADMISSION EXISTS. That is exactly what makes the no-settlement exception unavailable.
+    const facts = world.facts()
+    assert.equal(facts.length, 1, `the admission decision must exist, got ${JSON.stringify(facts)}`)
+    assert.equal(facts[0].decision, 'allow')
+    const executions = world.executions()
+    assert.equal(executions.length, 1, 'the call must produce exactly one execution fact')
+    assert.equal(executions[0].outcome, 'admission-refusal', 'the guard stopped a call whose decision was already an allow; the provenance is the centre\'s')
+    assert.equal(executions[0].refusalCode, 'ADMISSION_STOPPED', 'the fact must carry the Stop code')
+    assert.equal(member.calls.stat + member.calls.readText + member.calls.streamText, 0, 'the body must never start')
+
+    // TERMINAL SETTLEMENT REQUIRED, and it is CANCELLED - not REFUSED (forbidden against an allow),
+    // not UNKNOWN (nothing is unobserved), and not absent.
+    const records = world.settlementStore.list()
+    assert.equal(records.length, 1, 'an admitted call MUST have a terminal settlement, even when it never started')
+    const record = records[0]
+    assert.equal(record.state, 'CANCELLED', 'the product\'s own state for a Stop')
+    assert.equal(record.observation.dispatch, 'not-started')
+    assert.equal(record.observation.bodyOutcome, 'not-started')
+    assert.deepEqual(record.stops.map((stop) => stop.phase), ['pre-dispatch'], 'the Stop fact must be recorded, with the phase that says it preceded the body')
+
+    // IMPOSSIBLE TO CLASSIFY AS "NO SETTLEMENT": the pre-admission report is absent and the record is
+    // readable and terminal under its own ExecutionId.
+    assert.equal(world.faults().some((fault) => fault.code === 'SETTLEMENT_NO_RECORD_BEFORE_ADMISSION'), false, 'the no-record report may not fire when a record exists')
+    assert.equal(world.settlementStore.read(record.identity.executionId).state, 'CANCELLED')
+    // The exception cannot be re-entered either: re-stating the Stop finds the record and returns it
+    // unchanged (idempotent), instead of treating the call as one that never had a settlement.
+    const again = world.settlement.stoppedBeforeBody({ exec: { callId: 'stop-admitted-1', name: 'read' }, stopId: 'stop:re-stated', observedAt: 'test-re-statement' })
+    assert.equal(again.state, 'CANCELLED', 'the re-statement must return the existing terminal record')
+    assert.equal(world.settlementStore.list().length, 1, 'no second record may appear')
+    assert.equal(world.settlementStore.list()[0].stops.length, 1, 'the re-statement must not add a second Stop')
+  } finally {
+    await world.dispose()
+  }
+})
+
+test('SLICE-42 — SOURCE PIN: no code path can create an execution fact without an admission', async () => {
+  // The two arms above measure the law at the boundary. This arm pins the SHAPE that makes the law
+  // structural: the authoritative ledger has exactly ONE execution-row writer, and it refuses an
+  // unbound call before it appends; the product has exactly ONE production call site into it; and the
+  // fact builder reads the admission before it hands a fact to any sink. A future refactor that adds
+  // a second writer, or moves the append above the guard, goes red here by name.
+  const ledgerPath = join(REPO_ROOT, 'packages/runtime/src/plugin/vnext/fact-ledger.mjs')
+  const ledgerSource = readFileSync(ledgerPath, 'utf8')
+  const executionRowLines = ledgerSource.split('\n').filter((line) => /kind: 'execution'/u.test(line))
+  assert.equal(executionRowLines.length, 1, 'the durable ledger must have exactly one place that writes an execution row')
+  const recordExecutionStart = ledgerSource.indexOf('recordExecution (facts) {')
+  const recordExecutionEnd = ledgerSource.indexOf('observe (callId) {')
+  assert.ok(recordExecutionStart >= 0 && recordExecutionEnd > recordExecutionStart, 'fact-ledger.mjs must still declare recordExecution before observe')
+  const recordExecution = ledgerSource.slice(recordExecutionStart, recordExecutionEnd)
+  const guardAt = recordExecution.indexOf('admitted.has(facts.callId) === false')
+  const appendAt = recordExecution.indexOf("kind: 'execution'")
+  assert.ok(guardAt >= 0, 'recordExecution must consult the durable admission set')
+  assert.ok(appendAt > guardAt, 'the admission guard must run BEFORE the execution row is appended')
+  assert.match(recordExecution.slice(guardAt, guardAt + 500), /LEDGER_EXECUTION_UNBOUND/u, 'an unbound execution must be refused by its own code, not silently dropped')
+
+  // ONE PRODUCTION CALL SITE. Tests may call the ledger directly (they measure its refusal); product
+  // code may not reach past the centre. A new production writer must be added here deliberately.
+  const walk = (root) => {
+    const found = []
+    for (const entry of readdirSync(root, { withFileTypes: true })) {
+      if (entry.isDirectory()) {
+        if (entry.name === 'node_modules' || entry.name === 'dist' || entry.name === 'test') continue
+        found.push(...walk(join(root, entry.name)))
+        continue
+      }
+      if (/\.(mjs|ts)$/u.test(entry.name)) found.push(join(root, entry.name))
+    }
+    return found
+  }
+  const writers = walk(join(REPO_ROOT, 'packages'))
+    .filter((file) => /\.recordExecution\(/u.test(readFileSync(file, 'utf8')))
+    .map((file) => file.slice(REPO_ROOT.length).replace(/^[\\/]/u, ''))
+  assert.deepEqual(writers.sort(), ['packages/runtime/src/plugin/vnext/member-execution.mjs'], 'exactly one production module may write an execution row, on the member\'s own ledger')
+
+  // THE FACT BUILDER reads the admission before any sink sees the fact, and exposes one `record(fact)`
+  // call. A second call site would be a second way to write a fact and must be reviewed as one.
+  const factsPath = join(REPO_ROOT, 'packages/runtime/src/plugin/vnext/execution-facts.mjs')
+  const factsSource = readFileSync(factsPath, 'utf8')
+  const recordCalls = factsSource.split('\n').filter((line) => /\brecord\(fact\)/u.test(line))
+  assert.equal(recordCalls.length, 1, 'there must be exactly one record(fact) call in the fact builder')
+  const admissionAt = factsSource.indexOf('admissionOf(callId)')
+  const recordAt = factsSource.indexOf('record(fact)')
+  assert.ok(admissionAt >= 0 && admissionAt < recordAt, 'the admission must be resolved BEFORE the fact is recorded')
+  // The two observation entry points both route through the ONE `write`; neither appends itself.
+  assert.equal(factsSource.split('\n').filter((line) => /\bwrite\(exec, /u.test(line)).length, 2, 'both host observation paths must go through the one fact writer')
+  const subscriptions = factsSource.split('\n').filter((line) => /ctx\.on\(['"]tools\/result['"]/u.test(line))
+  assert.equal(subscriptions.length, 1, 'exactly ONE tools/result subscription may exist in the fact builder')
+  assert.match(subscriptions[0], /facts\.observeHostResult/u, 'the subscription must call the one host-result writer, never append a fact itself')
 })

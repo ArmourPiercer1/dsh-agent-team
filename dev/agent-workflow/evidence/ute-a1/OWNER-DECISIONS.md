@@ -79,6 +79,77 @@ deny aimed at ordinary file reads does **NOT** automatically deny `grep`/`glob`;
 
 ---
 
+## ROUND 106 (2026-11-24) — the owner approved the three pending decisions; rulings 1 and 2 implemented
+
+**Owner rulings: review `20261124-2120`, rulings 1 and 2** (ruling 3 is approved but not implemented this
+round). Round 106 changes **no product behaviour beyond ruling 2**, which is a tested-law implementation,
+not a new feature: no second authority, no upstream patch, no weakened assertion, no widened timeout, no
+retry loop, no rewrite of historical evidence.
+
+### Ruling 1 — the Subprocess/PTY scope is APPROVED (product scope only)
+
+`SCOPE-subprocess-ask.md` is **APPROVED BY OWNER (2026-11-24)**. The approved promise, exactly:
+
+> **This generation promises `allow`/`deny` for Subprocess/PTY. Per-call `ask` for process execution is
+> NOT supported and remains fail-closed.**
+
+- **Process Ask is `UNSUPPORTED BY PRODUCT RULING`** — the same machine-visible class as PTC
+  (`ADR-ptc-unsupported.md`), not a defect and not a pending feature. The typed fail-closed refusal is the
+  supported behaviour.
+- **The historical `d4:ask-execute-process` REFUTED evidence is preserved verbatim** (round 102): 16/17
+  PROVEN, 1 REFUTED, **zero process, zero bytes, settlement `FAILED`**. The real ask→approval→grant
+  consumption **did occur**; the PTY spawn then failed with the host's `NO_BACKEND` **before any process
+  existed**. It is not a positive test and it is not `REFUSED`/`not-started`.
+- **A future generation that wants per-call process `ask` support requires a NEW PRODUCT CONTRACT plus a
+  PROCESS BOUNDARY DESIGN.** Concretely (and nothing less): a governed PTY backend on the binding realm,
+  and a process-scoped receipt that cannot widen the kernel profile, verified at the governed spawn point
+  before any process exists (`SCOPE-subprocess-ask.md` §5). Neither is scheduled by this ruling; landing
+  only one of them still leaves no process `ask` promise.
+
+### Ruling 2 — P0-2 CLOSED: the lawful no-settlement boundary (no upstream seam needed)
+
+The owner's formal law, recorded **verbatim**:
+
+```
+No Admission + No Body Start  =>  No UTE Settlement   (lawful)
+Admission Exists              =>  Terminal Settlement Required
+Body started + unconfirmable  =>  UNKNOWN (existing rule)
+```
+
+Route (b) of the former P0-2 ask is therefore ruled, and **no public batch-completion seam is required**.
+The five implementation requirements and where each is measured:
+
+1. **The host's `ABORTED_BEFORE_DISPATCH` return stays untouched; never fabricate a `tools/result`.**
+   `pre-dispatch-abort.mjs` is a reader of the host's returned value; it emits no tool event.
+   `SLICE-40` asserts the host's own pre-dispatch result survives and that the observer recognised its
+   code (`completions()[0].observed === 1`).
+2. **`LEDGER_EXECUTION_UNBOUND` keeps failing closed.** `fact-ledger.mjs#recordExecution` refuses an
+   execution fact with no admission record before it appends; `SLICE-40`'s durable half asserts zero rows
+   plus the reported refusal; `SLICE-42` pins the guard-before-append order in source.
+3. **`SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` remains a diagnostic report only, never a settlement.**
+   `settlement-port.mjs` reports the gap and writes nothing; `SLICE-40` asserts the report names each
+   ExecutionId and that the store holds zero records.
+4. **Pre-admission cancel negative controls (`SLICE-40`).** On the ASK leg and on an effect-bearing
+   `write`: no body, no provider call, no approval request, no minted/spent one-shot grant, no written
+   byte, no admission/settlement/execution-settlement state row; the durable ledger holds zero rows.
+5. **The exception cannot be used once an admission exists (`SLICE-41`).** A Stop fired from the
+   admission record's own sink (a real `AbortSignal`) is admitted-then-stopped: the admission fact exists
+   (`decision: 'allow'`), the Stop is recorded with `phase: 'pre-dispatch'`, the record reaches the
+   terminal `CANCELLED` settlement (`dispatch`/`bodyOutcome` `not-started`), the no-record report is
+   absent, and re-stating the Stop is idempotent rather than a second/no settlement.
+6. **Source-level pin (`SLICE-42`).** Exactly one execution-row writer in the durable ledger, guarded by
+   the admission check before its append; exactly one production `recordExecution(` call site
+   (`member-execution.mjs`, on the member's own ledger); exactly one `record(fact)` in the fact builder,
+   after `admissionOf`; one `tools/result` subscription that calls the one writer.
+
+**P0-2 is CLOSED** in the single status table (`D-ACCEPTANCE-REPORT.md` row 31) with this ruling cited.
+`SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` stays described as a **report**. No existing refusal code was
+removed or renamed. The observer is still not wired into a real host's own agent loop: recorded as a
+**coverage limit, not an acceptance blocker**, because the law now defines what is owed when the host owes
+no event.
+
+---
+
 ## ROUND 89 ADDENDUM — four rulings the two new in-repo seams need
 
 Rounds 87/88 measured two seams that are **Team-side, not upstream** (`D-ACCEPTANCE-REPORT.md` §10

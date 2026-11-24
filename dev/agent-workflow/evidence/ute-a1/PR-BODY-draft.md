@@ -7,18 +7,19 @@ named in the same row or section.
 
 | field | value |
 | --- | --- |
-| **Head measured for every number below** | **`10d8a67aeb7e189011faf2c131a73aa33b76fac3` (round 102, the current head of this section's evidence)**; the round-98/95/89 sections that name `a95be5f11` / `d322b17aa` / `97d7d7c8d` / `c29da52d3` keep their own round's numbers and are labelled as such |
+| **Head measured for every number below** | **`563feac139e87e7cc3269d3d4d799afc0b676568` (round 106; this documentation commit is its child, named in the settlement comment)**; the round-102/98/95/89 sections that name `10d8a67ae` / `a95be5f11` / `d322b17aa` / `97d7d7c8d` / `c29da52d3` keep their own round's numbers and are labelled as such |
 | **Base** | `master @ a19d1df01` (frozen A0, PR #821) |
 | **PR state** | **DRAFT**, `state=OPEN`, never merged (`gh pr view 822 --json isDraft,state,headRefOid`) |
 | **Record class** | every live claim is `DEV-LIVE` (a real host boot, **not a gate**); no capability row is PRODUCT-PROVEN |
-| **Read first** | `dev/agent-workflow/evidence/ute-a1/D-ACCEPTANCE-REPORT.md` (**its FIRST section is the single current acceptance-status table, round 102; everything later is historical where it disagrees**) and `dev/agent-workflow/evidence/ute-a1/CANDIDATE-AUDIT.md` (the round-86 adversarial audit: corrections, capability table, fresh gate block, verdict) |
+| **Read first** | `dev/agent-workflow/evidence/ute-a1/D-ACCEPTANCE-REPORT.md` (**its FIRST section is the single current acceptance-status table, round 106; everything later is historical where it disagrees**) and `dev/agent-workflow/evidence/ute-a1/CANDIDATE-AUDIT.md` (the round-86 adversarial audit: corrections, capability table, fresh gate block, verdict) |
 | **How to review** | (1) read the audit's corrections table first — it lists every number the report used to get wrong; (2) re-run the gate block in §"Verification on this HEAD" (single commands, ~8 min with the census) and diff the verdict lines; (3) for any capability row, follow its `file:line`/evidence path and check it says what the row claims; (4) treat every `DEV-LIVE` row as unproven for acceptance purposes; (5) read `D-ACCEPTANCE-REPORT.md` §10 before forming a view — the two round-87/88 seams and the four rulings they need are there; (6) do **not** mark this PR ready or merge it — that is the owner's act. |
-| **Gate status at this head** | **Round 98 / `a95be5f11`:** local `ci-pr-gate --full --census-captures 2` = **PASS 10/10** (277.6 s); bound `ci-security` 222 and `ci-integration` 238; UTE G1 argv 89/89; `ute-vnext-a1` leg 242 tests (239 pass, 3 skipped); docs/matrix/D-report updated for the two decided rulings. Earlier (round 95 / `d322b17aa`): local `ci-pr-gate --full --census-captures 2` = **PASS 10/10** (275.4 s); bound vitest `ci-security` 222 / `ci-integration` 238; UTE G1 argv 89/89; the hosted verdicts below belong to the round-89 head and are re-queried after this push. Earlier round-89 local status: all required gates green, including `ci-pr-gate --full --census-captures 2` = **PASS 10/10** (275.7 s). Hosted: `pr-gate`, `ci-fast`, `ci-security`, `ci-product`, `synthesize-merge-tree`, `candidate-protection` green; **`ci-integration` FAILURE** on leg `tinf-instruments` (no named failing assertion; not reproduced locally — see "Open gaps" G10); `ci-census` **SKIPPED (draft)**; `ci-required` **RED for `ci-integration:failure,ci-census:skipped`**; `pr-settlement-gate` red until the round-89 settlement comment. On the docs-only follow-up head `d1506acd1` the same hosted job set re-ran with **`ci-integration` SUCCESS**, so the `97d7d7c8d` abort was transient; `ci-required` remains red there only for the draft census skip. |
+| **Gate status at this head** | **Round 106 / `563feac13`:** `dispatch-tests --run --leg ute-vnext-a1` **251 tests / 248 pass / 0 fail / 3 skipped** (digest `sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975`); `test-catalog --max-uncollected 41 --max-excluded 7` **tests=785, uncollected=38, excluded=14, findings=0** (digest unchanged); `ute-cut-closure --check` **pass** `cut(0/148)`; `ute-p0-assets --check` **pass** `cut(148/148)`; `docs-sync --check` **docs=193 findings=0 blocking=0**; `place-dist-glue` **35 placements** byte-identical; `eb3-ci-required` **pass workflows=11 findings=0**; bound vitest (`ci-integration`, 15 suites) **PASS 238 passed / 0 failed**; UTE G1 nine-file argv **89/89**; `EB3-RUN-MANIFEST` **pass records=546 strict=0 incomplete=11 findings=0**; `ute-a1-window --check` **pass red=0/0**; `ci-pr-gate --full --census-captures 2` **PASS 10/10** (310.1 s, census 599f/7422l, two captures with identical identity sets). Earlier, **Round 98 / `a95be5f11`:** local `ci-pr-gate --full --census-captures 2` = **PASS 10/10** (277.6 s); bound `ci-security` 222 and `ci-integration` 238; UTE G1 argv 89/89; `ute-vnext-a1` leg 242 tests (239 pass, 3 skipped); docs/matrix/D-report updated for the two decided rulings. Earlier (round 95 / `d322b17aa`): local `ci-pr-gate --full --census-captures 2` = **PASS 10/10** (275.4 s); bound vitest `ci-security` 222 / `ci-integration` 238; UTE G1 argv 89/89; the hosted verdicts below belong to the round-89 head and are re-queried after this push. Earlier round-89 local status: all required gates green, including `ci-pr-gate --full --census-captures 2` = **PASS 10/10** (275.7 s). Hosted: `pr-gate`, `ci-fast`, `ci-security`, `ci-product`, `synthesize-merge-tree`, `candidate-protection` green; **`ci-integration` FAILURE** on leg `tinf-instruments` (no named failing assertion; not reproduced locally — see "Open gaps" G10); `ci-census` **SKIPPED (draft)**; `ci-required` **RED for `ci-integration:failure,ci-census:skipped`**; `pr-settlement-gate` red until the round-89 settlement comment. On the docs-only follow-up head `d1506acd1` the same hosted job set re-ran with **`ci-integration` SUCCESS**, so the `97d7d7c8d` abort was transient; `ci-required` remains red there only for the draft census skip. |
 
 ## SCOPE — the Subprocess/PTY promise (`allow`/`deny`; per-call `ask` is NOT supported)
 
-**PENDING OWNER CONFIRMATION (review `20261124-1341` §3.1). Behaviour does not change either way; only the
-declared promise does.** Full statement: [`SCOPE-subprocess-ask.md`](SCOPE-subprocess-ask.md).
+**APPROVED BY OWNER (2026-11-24, review `20261124-2120` ruling 1).** This is a **product scope** ruling:
+behaviour does not change, only the declared promise does. Process Ask is **`UNSUPPORTED BY PRODUCT
+RULING`**, the same class as PTC. Full statement: [`SCOPE-subprocess-ask.md`](SCOPE-subprocess-ask.md).
 
 > **This generation promises `allow`/`deny` for Subprocess/PTY. Per-call `ask` for process execution is
 > NOT supported and remains fail-closed.**
@@ -26,16 +27,50 @@ declared promise does.** Full statement: [`SCOPE-subprocess-ask.md`](SCOPE-subpr
 - **What stands:** live persistent `bash` under the OS sandbox (two turns on one shell, `d3:persistent-subprocess`,
   both hosts), out-of-lane refusal by the OS profile (`Read-only file system`, 0 bytes), PTY confinement
   (`OWNER_NOT_LIVE`, `PTY_PROCESS_DENIED`, `PTY_PROCESS_RECEIPT_REFUSED`), and Stop (`d2:stop`; `d4:ask-stopped`).
-- **What does not:** `d4:ask-execute-process` is **REFUTED on BOTH hosts** — the v5 per-tool `bash` binding
-  lands on a realm with no governed PTY backend (`no PTY backend registered for "a5sf-governed-shell"`),
-  the receipt verifier is never reached, **zero bytes**, settlement **`FAILED`**. The R3 receipt is **not**
-  extended to the process face: a file-operation receipt must never be read as permission to bypass the OS
-  sandbox.
+- **What does not:** `d4:ask-execute-process` is **REFUTED on BOTH hosts** — the real ask→approval→grant
+  consumption DID occur, then the v5 per-tool `bash` binding landed on a realm with no governed PTY
+  backend (`no PTY backend registered for "a5sf-governed-shell"`), so the PTY spawn failed with
+  `NO_BACKEND` **before any process existed**: **zero process, zero bytes, settlement `FAILED`** (never
+  `REFUSED`/`not-started`), receipt verifier never reached. The R3 receipt is **not** extended to the
+  process face: a file-operation receipt must never be read as permission to bypass the OS sandbox.
+  Preserved verbatim: 16/17 PROVEN, 1 REFUTED.
 - **A future generation would need:** a governed PTY backend on the binding realm **and** a process-scoped
   receipt that cannot widen the kernel profile (`SCOPE-subprocess-ask.md` §5). Neither is scheduled.
-- **P0-2 stays OPEN** — **OPEN TARGET-HOST ACCEPTANCE BLOCKER — pre-dispatch Stop observation not
-  production-wired**; it closes with a public batch-completion observation seam **or** an owner ruling on
-  the lawful "no settlement" boundary (`D-ACCEPTANCE-REPORT.md`, status table).
+- **P0-2 is CLOSED BY OWNER RULING (round 106)** — the lawful "no settlement" boundary, no upstream seam
+  and no second authority (`D-ACCEPTANCE-REPORT.md` row 31; `OWNER-DECISIONS.md` round 106). The law:
+  `No Admission + No Body Start => No UTE Settlement (lawful)`; `Admission Exists => Terminal Settlement
+  Required`; `Body started + unconfirmable => UNKNOWN`. Tested on both hosts by `SLICE-40`/`SLICE-41`/
+  `SLICE-42`; `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` remains a report, never a settlement. The observer
+  still not being wired into a booted host's own agent loop is a **coverage limit**, not a blocker.
+
+## ROUND 106 — the two owner rulings implemented (scope APPROVED; P0-2 CLOSED by the lawful no-settlement boundary)
+
+Owner review `20261124-2120`, rulings 1 and 2 (ruling 3 approved, not implemented this round). **No product
+behaviour change beyond ruling 2**, which is a tested-law implementation: no second authority, no upstream
+patch, no weakened assertion, no widened timeout, no retry loop, no rewritten historical evidence.
+Measured at `563feac139e87e7cc3269d3d4d799afc0b676568`. Evidence: `dev/agent-workflow/evidence/ute-a1/round106/`.
+
+- **Ruling 1 — the Subprocess/PTY scope is APPROVED (product scope only).** `SCOPE-subprocess-ask.md` is
+  APPROVED BY OWNER (2026-11-24); Process Ask is `UNSUPPORTED BY PRODUCT RULING` (same class as PTC). All
+  documents that named it changed PENDING → APPROVED (`CAPABILITY-MATRIX-C.md` C-subprocess/C-pty/`ask`,
+  the single status table in `D-ACCEPTANCE-REPORT.md`, `ADR-approved-ask-receipt.md`, `OWNER-DECISIONS.md`,
+  this body); the candidate gate's `knownRefuted` citation now names the APPROVED ruling (literal id, never
+  a pattern). The historical `d4:ask-execute-process` REFUTED evidence is preserved verbatim: **16/17
+  PROVEN, 1 REFUTED, zero process, zero bytes, settlement `FAILED`**; the real ask→approval→grant
+  consumption DID occur, then the PTY spawn failed with `NO_BACKEND` before any process existed — not a
+  positive test, not `REFUSED`/`not-started`. Future per-call process `ask` support requires a **new
+  product contract + process boundary design** (`OWNER-DECISIONS.md` round 106).
+- **Ruling 2 — P0-2 CLOSED.** The law is recorded verbatim in `OWNER-DECISIONS.md` and implemented as
+  tested behaviour by three arms, green on **both** pinned hosts:
+  `SLICE-40` (pre-admission cancel: no body, no provider call, no approval, no minted/spent grant, no
+  written byte, no centre state row; durable ledger still refuses `LEDGER_EXECUTION_UNBOUND`;
+  `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` is a report), `SLICE-41` (admitted-then-stopped records its Stop
+  and must reach terminal `CANCELLED`, impossible to classify as "no settlement"), `SLICE-42` (source pin:
+  no code path can write an execution fact without an admission). No refusal code removed or renamed; the
+  host's `ABORTED_BEFORE_DISPATCH` return is untouched and no `tools/result` is fabricated.
+- **Not done this round (the owner's next list):** rc.5 re-runs of `d:remote-creation` and
+  `d2:remote-delivery` including the round-105 rc.5 refutation, the full rc.5 test population, a real-model
+  smoke test, and C1–C18 sign-off.
 
 ## ROUND 102 — the D4 acceptance runs on the TARGET host (0.2.2-rc.5), judge by judge
 
@@ -70,12 +105,12 @@ Evidence: `dev/agent-workflow/evidence/ute-a1/round102/` (`d4-rc2/`, `d4-rc5/`, 
   300 ms poll, refuting a correct product. It is now `captured-case-precedes-any-decision`: the
   captured row is the `control-request-recorded` fact and every decision has a strictly later
   sequence in the append-only ledger.
-* **P0-2, classified OPEN — not closed.** `packages/runtime/src/plugin/vnext/pre-dispatch-abort.mjs`
-  is not production-wired: in a real host the caller of `tools.execute` is the host's agent loop,
-  which the product does not own. **OPEN TARGET-HOST ACCEPTANCE BLOCKER.** It closes with (a) a public
-  batch-completion observation seam, or (b) an owner ruling defining the lawful "no settlement"
-  boundary for a call that never entered admission and never started a body. The product's visible
-  `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` report is not a settlement.
+* **P0-2, classified OPEN in round 102 — CLOSED by owner ruling in round 106.** The ruling chose (b), the
+  lawful "no settlement" boundary, so no public batch-completion seam is needed and no upstream patch is
+  proposed. `pre-dispatch-abort.mjs` is still not wired into a real host's agent loop — now a **coverage
+  limit**, not an acceptance blocker (see the round-106 section at the top of
+  `D-ACCEPTANCE-REPORT.md`). The product's `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` remains a report and
+  never a settlement.
 * **Levels:** no row moves; no row is PRODUCT-PROVEN. `C-alpha6` and the R3 `write` receipt are
   **DEV-LIVE on both hosts**; the governed process face is **NOT-PRODUCT-PROVEN**.
 
