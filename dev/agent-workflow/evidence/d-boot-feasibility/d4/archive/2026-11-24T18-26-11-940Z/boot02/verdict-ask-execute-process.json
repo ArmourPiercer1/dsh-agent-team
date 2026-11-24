@@ -1,0 +1,46 @@
+{
+  "proposition": "a Member `bash` whose disposition is `ask` raises a REAL Control request, is approved through the REAL control path, and then executes under the confined profile: the in-lane write lands with the exact bytes, the out-of-lane write produces NOTHING, and the execution settles COMPLETED",
+  "verdict": "REFUTED",
+  "clauses": [
+    {
+      "id": "control-request-raised",
+      "ok": true,
+      "detail": "requestRaised=true"
+    },
+    {
+      "id": "approved-through-real-control-path",
+      "ok": true,
+      "detail": "durable control-decision-recorded decision=allow decider={\"instanceId\":\"inst-1crltnl0089j\",\"kind\":\"instance\",\"role\":\"member\"} requestId=ctrl-0ix8smw0tnnb771ra0qm21qp"
+    },
+    {
+      "id": "process-admission-fact-allow",
+      "ok": true,
+      "detail": "process.exec allow facts=[{\"callId\":\"call-d4-worker-bash\",\"decision\":\"allow\",\"laneDecision\":\"ask\",\"axis\":\"process.exec\"}]"
+    },
+    {
+      "id": "bash-tool-result-not-an-error",
+      "ok": false,
+      "detail": "bash result isError=true text=\"Error: no PTY backend registered for \\\"a5sf-governed-shell\\\"\""
+    },
+    {
+      "id": "in-lane-write-lands",
+      "ok": false,
+      "detail": "file exists=false bytes=null sha256=null expectedSha256=861a17a712b274c843416fe7f9bab16e3399bbe6137e3b36bb832252a13420c2"
+    },
+    {
+      "id": "out-of-lane-write-produces-nothing",
+      "ok": true,
+      "detail": "out-of-lane file exists=false bytes=null (the OS profile refused it; the receipt added no writable bit)"
+    },
+    {
+      "id": "settlement-completed",
+      "ok": false,
+      "detail": "state=FAILED bodyOutcome=failed transitions=[\"ADMITTED\",\"RUNNING\",\"FAILED\"]"
+    }
+  ],
+  "failing": [
+    "bash-tool-result-not-an-error",
+    "in-lane-write-lands",
+    "settlement-completed"
+  ]
+}

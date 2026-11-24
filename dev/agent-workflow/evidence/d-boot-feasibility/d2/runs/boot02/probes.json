@@ -5,20 +5,20 @@
         "callId": "call-d2-a-own",
         "name": "read",
         "arguments": {
-          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-a/in-lane-a.txt"
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-a/in-lane-a.txt"
         },
         "result": {
           "callId": "call-d2-a-own",
           "isError": false,
-          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-a/in-lane-a.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_A_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
-          "at": 1795538209766
+          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-a/in-lane-a.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_A_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+          "at": 1795544260688
         }
       },
       "result": {
         "callId": "call-d2-a-own",
         "isError": false,
-        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-a/in-lane-a.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_A_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
-        "at": 1795538209766
+        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-a/in-lane-a.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_A_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+        "at": 1795544260688
       }
     },
     "cross": {
@@ -26,20 +26,20 @@
         "callId": "call-d2-a-cross",
         "name": "read",
         "arguments": {
-          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt"
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/in-lane-b.txt"
         },
         "result": {
           "callId": "call-d2-a-cross",
           "isError": true,
-          "text": "Error: LANE_DENY: fs.read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt\" is outside the binding's fs.read lane (policy generation a5sf1:b7fe3ea21aad39ca3f884b823b3f597c)",
-          "at": 1795538210328
+          "text": "Error: LANE_DENY: fs.read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/in-lane-b.txt\" is outside the binding's fs.read lane (policy generation a5sf1:4044d0cd2e8a8587288013a7e719d011)",
+          "at": 1795544261218
         }
       },
       "result": {
         "callId": "call-d2-a-cross",
         "isError": true,
-        "text": "Error: LANE_DENY: fs.read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt\" is outside the binding's fs.read lane (policy generation a5sf1:b7fe3ea21aad39ca3f884b823b3f597c)",
-        "at": 1795538210328
+        "text": "Error: LANE_DENY: fs.read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/in-lane-b.txt\" is outside the binding's fs.read lane (policy generation a5sf1:4044d0cd2e8a8587288013a7e719d011)",
+        "at": 1795544261218
       }
     }
   },
@@ -49,20 +49,20 @@
         "callId": "call-d2-b-own",
         "name": "read",
         "arguments": {
-          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt"
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/in-lane-b.txt"
         },
         "result": {
           "callId": "call-d2-b-own",
           "isError": false,
-          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
-          "at": 1795538210035
+          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+          "at": 1795544260905
         }
       },
       "result": {
         "callId": "call-d2-b-own",
         "isError": false,
-        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
-        "at": 1795538210035
+        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+        "at": 1795544260905
       }
     },
     "after": {
@@ -70,20 +70,20 @@
         "callId": "call-d2-b-after",
         "name": "read",
         "arguments": {
-          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt"
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/in-lane-b.txt"
         },
         "result": {
           "callId": "call-d2-b-after",
           "isError": false,
-          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
-          "at": 1795538211076
+          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+          "at": 1795544261929
         }
       },
       "result": {
         "callId": "call-d2-b-after",
         "isError": false,
-        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
-        "at": 1795538211076
+        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+        "at": 1795544261929
       }
     }
   },
@@ -94,20 +94,20 @@
         "callId": "call-d2-b-pre",
         "name": "read",
         "arguments": {
-          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/revocable.txt"
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/revocable.txt"
         },
         "result": {
           "callId": "call-d2-b-pre",
           "isError": false,
-          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/revocable.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_REVOCABLE_BYTES\n\n(End of file - total 1 lines)\n</content>",
-          "at": 1795538211733
+          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/revocable.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_REVOCABLE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+          "at": 1795544262638
         }
       },
       "result": {
         "callId": "call-d2-b-pre",
         "isError": false,
-        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/revocable.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_REVOCABLE_BYTES\n\n(End of file - total 1 lines)\n</content>",
-        "at": 1795538211733
+        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/revocable.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_REVOCABLE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+        "at": 1795544262638
       }
     },
     "mid": {
@@ -115,20 +115,20 @@
         "callId": "call-d2-b-mid",
         "name": "read",
         "arguments": {
-          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/revocable.txt"
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/revocable.txt"
         },
         "result": {
           "callId": "call-d2-b-mid",
           "isError": true,
           "text": "Error: ADMISSION_OVERLAY_DENY: a durable permission-plane restriction denies this call; the compiled binding allowed it, so the overlay wins (it can remove authority, never grant it)",
-          "at": 1795538212523
+          "at": 1795544263650
         }
       },
       "result": {
         "callId": "call-d2-b-mid",
         "isError": true,
         "text": "Error: ADMISSION_OVERLAY_DENY: a durable permission-plane restriction denies this call; the compiled binding allowed it, so the overlay wins (it can remove authority, never grant it)",
-        "at": 1795538212523
+        "at": 1795544263650
       }
     },
     "post": {
@@ -136,20 +136,20 @@
         "callId": "call-d2-b-post",
         "name": "read",
         "arguments": {
-          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/revocable.txt"
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/revocable.txt"
         },
         "result": {
           "callId": "call-d2-b-post",
           "isError": false,
-          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/revocable.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_REVOCABLE_BYTES\n\n(End of file - total 1 lines)\n</content>",
-          "at": 1795538213549
+          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/revocable.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_REVOCABLE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+          "at": 1795544264686
         }
       },
       "result": {
         "callId": "call-d2-b-post",
         "isError": false,
-        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/revocable.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_REVOCABLE_BYTES\n\n(End of file - total 1 lines)\n</content>",
-        "at": 1795538213549
+        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/revocable.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_REVOCABLE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+        "at": 1795544264686
       }
     },
     "preInLane": {
@@ -157,20 +157,20 @@
         "callId": "call-d2-b-pre-inlane",
         "name": "read",
         "arguments": {
-          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt"
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/in-lane-b.txt"
         },
         "result": {
           "callId": "call-d2-b-pre-inlane",
           "isError": false,
-          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
-          "at": 1795538211675
+          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+          "at": 1795544262581
         }
       },
       "result": {
         "callId": "call-d2-b-pre-inlane",
         "isError": false,
-        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
-        "at": 1795538211675
+        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+        "at": 1795544262581
       }
     },
     "midInLane": {
@@ -178,20 +178,20 @@
         "callId": "call-d2-b-mid-inlane",
         "name": "read",
         "arguments": {
-          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt"
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/in-lane-b.txt"
         },
         "result": {
           "callId": "call-d2-b-mid-inlane",
           "isError": false,
-          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
-          "at": 1795538212473
+          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+          "at": 1795544263607
         }
       },
       "result": {
         "callId": "call-d2-b-mid-inlane",
         "isError": false,
-        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
-        "at": 1795538212473
+        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+        "at": 1795544263607
       }
     },
     "postInLane": {
@@ -199,20 +199,20 @@
         "callId": "call-d2-b-post-inlane",
         "name": "read",
         "arguments": {
-          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt"
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/in-lane-b.txt"
         },
         "result": {
           "callId": "call-d2-b-post-inlane",
           "isError": false,
-          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
-          "at": 1795538213489
+          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+          "at": 1795544264632
         }
       },
       "result": {
         "callId": "call-d2-b-post-inlane",
         "isError": false,
-        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
-        "at": 1795538213489
+        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+        "at": 1795544264632
       }
     },
     "grant": {
@@ -228,7 +228,7 @@
               "operationClass": "read",
               "matcher": {
                 "kind": "exact",
-                "value": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/revocable.txt"
+                "value": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/revocable.txt"
               },
               "effect": "deny"
             }
@@ -254,7 +254,7 @@
               "operationClass": "read",
               "matcher": {
                 "kind": "exact",
-                "value": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-b/revocable.txt"
+                "value": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-b/revocable.txt"
               },
               "effect": "deny"
             }
@@ -282,7 +282,7 @@
               "operationClass": "read",
               "matcher": {
                 "kind": "exact",
-                "value": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-a/in-lane-a.txt"
+                "value": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-a/in-lane-a.txt"
               },
               "effect": "allow"
             }
@@ -300,20 +300,20 @@
         "callId": "call-d2-b-widen",
         "name": "read",
         "arguments": {
-          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-a/in-lane-a.txt"
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-a/in-lane-a.txt"
         },
         "result": {
           "callId": "call-d2-b-widen",
           "isError": true,
-          "text": "Error: LANE_DENY: fs.read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-a/in-lane-a.txt\" is outside the binding's fs.read lane (policy generation a5sf1:1515c3f5e7e8957940797de991ef4b33)",
-          "at": 1795538214547
+          "text": "Error: LANE_DENY: fs.read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-a/in-lane-a.txt\" is outside the binding's fs.read lane (policy generation a5sf1:4109aab617d44f3d5029c2fbe754c129)",
+          "at": 1795544265689
         }
       },
       "result": {
         "callId": "call-d2-b-widen",
         "isError": true,
-        "text": "Error: LANE_DENY: fs.read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-35-43Z-next/workspace/team-a/in-lane-a.txt\" is outside the binding's fs.read lane (policy generation a5sf1:1515c3f5e7e8957940797de991ef4b33)",
-        "at": 1795538214547
+        "text": "Error: LANE_DENY: fs.read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/workspace/team-a/in-lane-a.txt\" is outside the binding's fs.read lane (policy generation a5sf1:4109aab617d44f3d5029c2fbe754c129)",
+        "at": 1795544265689
       }
     }
   }

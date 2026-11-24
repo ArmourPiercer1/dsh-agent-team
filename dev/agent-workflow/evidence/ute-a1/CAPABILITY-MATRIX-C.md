@@ -10,18 +10,27 @@ Statuses used, and they are not interchangeable:
   round-82 section at the end of this file). ENV-LIMITED is never counted as PROVEN.
 - **UNPROVEN** — nothing here should be reported as working.
 
-### Candidate-gate coverage — round 105 (NON-REQUIRED; NO level moves)
+### Candidate-gate coverage — round 109 (NON-REQUIRED by owner ruling; NO level moves)
 
-`scripts/candidate-acceptance-gate.mjs` now runs the four D drivers as ONE executable layer per host
+`scripts/candidate-acceptance-gate.mjs` runs the four D drivers as ONE executable layer per host
 (`--boots 2`, host via `TEAM_TEST_HOST`, `--hosts both` for the pair) and emits one machine verdict.
 The column below is a **coverage note, not a level**: it says which driver judge executes the row in
-the gate and what round 105 measured. **No cell moves to PRODUCT-PROVEN.** A row becomes gate-backed
-only when the gate is REQUIRED by branch protection AND green; this layer is deliberately
-non-required, so it cannot upgrade anything.
+the gate and what the latest measurement says. **No cell moves to PRODUCT-PROVEN.** A row becomes
+gate-backed only when the gate is REQUIRED by branch protection AND green at the final head; **the
+gate stays NON-REQUIRED by owner ruling**, so a green gate here cannot upgrade anything.
+
+**Round 109 — the dual-host gate is `pass` on BOTH pinned hosts in one run** (HEAD `41d579119` + the
+round-109 arm; measured **83 m 48 s**): rc.2 31 judges / **30 proven** / 1 known-refuted / 0
+env-limited; rc.5 31 / **30** / 1 / 0; totals **62 / 60 / 2 / 0**. The only non-PROVEN verdict is the
+single enumerated `d4:ask-execute-process` (counted once per host). Machine verdict
+`dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-24T17-17-46-158Z/verdict.json`.
+The workflow now triggers on `pull_request: [labeled, synchronize, reopened]` for a labelled PR (so
+every candidate HEAD gets its own result) and binds the check to `github.sha`; it is still not a
+layer of `ci-required` and not a branch-protection context.
 
 | C row | candidate-gate judge(s) | rc.2 | rc.5 |
 | --- | --- | --- | --- |
-| C-member | `d2:stop`, `d2:remote-delivery` | PROVEN | **PROVEN** (round 108: both judges green on rc.5, 2/2 boots; `d2:remote-delivery` 20/20 clauses after the drain-seam fix) |
+| C-member | `d2:stop`, `d2:remote-delivery` | PROVEN | **PROVEN** (round 108: both judges green on rc.5, 2/2 boots; round 109 dual-host gate `pass`, `d2:remote-delivery` 20/20 clauses each boot, full typed replies recorded) |
 | C-tools | `d4:ask-execute`, `d4:ask-execute-2` (write only), `d4:ask-denied`, `d4:ask-stopped` | PROVEN | PROVEN |
 | C-fs | `d:member-read-admitted`, `d:member-read-denied`, `d:native-read-surface`, `d:guard-facts`, `d:centre-facts` | PROVEN | PROVEN |
 | C-remote | `d:remote-creation`, `d2:multi-member-concurrency`, `d2:revocation` | PROVEN | PROVEN |
@@ -36,7 +45,9 @@ non-required, so it cannot upgrade anything.
 The only non-PROVEN verdict the gate may accept is the literal enumerated
 `d4:ask-execute-process` (citation `SCOPE-subprocess-ask.md` §2/§4). Round-105 verdicts (historical):
 rc.2 `pass` (31 judges / 30 proven / 1 known-refuted / 0 env-limited); rc.5 `fail` (31 / 29 / 1 / 0),
-because the rc.5 `d2:remote-delivery` refutation was not exempt.
+because the rc.5 `d2:remote-delivery` refutation was not exempt. **Round 109 supersedes that rc.5
+`fail` with `pass` — on both hosts — after the round-108 product fix below; the exemption set was not
+touched.**
 
 **Round 108 closed that refutation with a product fix, not an allowance.** rc.5 renamed the public
 `subagents.drainContinuableDescendants` to `subagents.drainDescendants`; the drain seam required only
@@ -44,8 +55,9 @@ the rc.2 name, so `member.archive` aborted at `drain-descendants` with zero dura
 member stayed `SETTLED` (hence the observed `code=null` on the subsequent send). The seam now resolves
 either public name (`stop-drain-lane.mjs` `resolveDrainSeam`), armed by M3-6/M3-7. rc.5 re-runs:
 `d` 6/6 judges and `d2` 4/4 judges PROVEN on both boots; no judge was relaxed, skipped or exempted and
-no id was added to `KNOWN_REFUTED`. The rc.5 column of the candidate gate is green in round 108 (see
-`D-ACCEPTANCE-REPORT.md` for the exact verdict line).
+no id was added to `KNOWN_REFUTED`. The rc.5 column of the candidate gate is green (round 108 on
+rc.5; round 109 on both hosts in one run — see `D-ACCEPTANCE-REPORT.md` and
+`round109/README.md` for the exact verdict lines).
 
 This worktree **does** boot the product at this HEAD (measured rounds 58–60, `D-BOOT-FEASIBILITY.md` §2/§11/
 §12): the `node_modules` link resolves, `tsc` runs from the main install, and a real `dsh web` host serves a

@@ -10,13 +10,32 @@
 #   * It is registered in the manifest as an explicitly NON-REQUIRED job so
 #     `scripts/eb3-ci-required.mjs` sees it declared rather than silently
 #     undeclared (CANDIDATE-AUDIT.md counts one more workflow, ten → eleven).
-#   * It is manual (`workflow_dispatch`) and label-triggered
-#     (`pull_request: labeled`, label `candidate-acceptance`). A green run here
-#     means "the four D drivers ran on both pinned hosts with two agreeing boots
-#     and only the enumerated known-refuted judge is REFUTED". It does NOT mean
-#     a capability row is PRODUCT-PROVEN: a row becomes gate-backed only when a
-#     gate is REQUIRED by branch protection AND green, and this layer is
-#     deliberately non-required.
+#   * It is manual (`workflow_dispatch`) and label-scoped: it runs on
+#     `pull_request: [labeled, synchronize, reopened]` and the JOB gates on the
+#     `candidate-acceptance` label being PRESENT (not on the label-add event
+#     alone). Review `20261125-0058` §4.2: the old `labeled`-only trigger left a
+#     later push with no result for the new HEAD while a check context from the
+#     previous HEAD stayed visible. Now every candidate HEAD of a labelled PR
+#     gets its own run. A green run here means "the four D drivers ran on both
+#     pinned hosts with two agreeing boots and only the enumerated known-refuted
+#     judge is REFUTED". It does NOT mean a capability row is PRODUCT-PROVEN: a
+#     row becomes gate-backed only when a gate is REQUIRED by branch protection
+#     AND green, and this layer is deliberately non-required (owner ruling).
+#
+# HEAD BINDING (`20261125-0058` §4.2). The job name carries the SHA it graded,
+# the gate's own summary prints `head=<sha>`, and the `Bind the graded head`
+# step asserts that SHA equals `github.sha` AND that the checked-out HEAD
+# equals `github.sha`. A verdict artifact from another commit can therefore
+# never be read as a result for this HEAD: the run fails typed instead.
+#
+# COST (`20261125-0058` §4.3), measured, not estimated: one dual-host run is
+# **~84 minutes of wall clock** on a warm machine (round 109: 17:17:46 →
+# 18:41:34 = 83 m 48 s; an earlier pair measured 74 m 41 s, a single rc.5 host
+# run ~19-28 min). It provisions and builds BOTH pinned pristine hosts and
+# boots the product four times per host. That is deliberately heavier than the
+# whole daily Required set (the ten-leg `ci-pr-gate --full` is a few minutes),
+# which is exactly why this layer is NOT Required: it must never become a merge
+# gate for an unrelated PR.
 #
 # The single verdict is `scripts/candidate-acceptance-gate.mjs`'s own; this
 # workflow only provisions the two pinned hosts and runs it. The gate performs
@@ -27,30 +46,45 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [master]
-    types: [labeled]
+    types: [labeled, synchronize, reopened]
 
 permissions:
   contents: read
+  pull-requests: read
 
 concurrency:
-  group: candidate-acceptance-${{ github.ref }}
+  # One run per graded HEAD. `cancel-in-progress` stays false: superseding a
+  # head's evidence is better than cancelling it, and the `head=` assertion
+  # makes a stale result impossible to mistake for the current one.
+  group: candidate-acceptance-${{ github.sha }}
   cancel-in-progress: false
 
 jobs:
   candidate-acceptance:
-    name: candidate-acceptance (candidate acceptance layer, NOT Required CI)
+    name: candidate-acceptance (NOT Required) head=${{ github.sha }}
     runs-on: ubuntu-latest
     # FOUR boots per driver set, both hosts: ~33 min/host measured locally
-    # (D4 alone is 2 x ~6.5 min), plus two host builds. This is a ceiling for
-    # the whole non-required run, not a driver-timeout widening: the driver
-    # timeout remains `DRIVER_TIMEOUT_MS` inside the gate script.
+    # (D4 alone is 2 x ~6.5 min; the measured full dual-host pair is ~75 min),
+    # plus two host builds. This is a ceiling for the whole non-required run,
+    # not a driver-timeout widening: the driver timeout remains
+    # `DRIVER_TIMEOUT_MS` inside the gate script.
     timeout-minutes: 120
-    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'candidate-acceptance'
+    # HEAD BINDING: the label must be PRESENT on the PR, for every trigger type
+    # (`labeled`, `synchronize`, `reopened`). The event's own label name only
+    # exists on `labeled`, so the presence test is the durable one.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       contains(github.event.pull_request.labels.*.name, 'candidate-acceptance'))
     steps:
       - name: Checkout (full history; the RUN record binds a real commit)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # Bind to the SHA this run will grade (the PR merge commit for
+          # `pull_request` events), so the checked-out tree and `github.sha`
+          # are the same commit by construction.
+          ref: ${{ github.sha }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -152,14 +186,48 @@ jobs:
           pnpm run build
           pnpm build:composition
 
+      - name: Mark the gate start (stale-artifact guard)
+        shell: bash
+        run: |
+          set -euo pipefail
+          touch "$RUNNER_TEMP/candidate-gate-start"
+          echo "marker=$RUNNER_TEMP/candidate-gate-start at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
       - name: Candidate acceptance gate — both pinned hosts, one machine verdict
         shell: bash
         run: node scripts/candidate-acceptance-gate.mjs --hosts both
+
+      # HEAD BINDING (`20261125-0058` §4.2). The verdict artifact names the SHA
+      # it graded; this step prints that SHA and REFUSES the run unless it is
+      # exactly `github.sha`, the checked-out HEAD is the same commit, and the
+      # artifact was WRITTEN BY THIS RUN. A verdict copied or left over from
+      # another HEAD therefore cannot satisfy this context for the current one.
+      - name: Bind the graded head to this run's github.sha
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHECKED_OUT=$(git rev-parse HEAD)
+          VERDICT=$(find dev/agent-workflow/evidence/candidate-acceptance-gate -name verdict.json -newer "$RUNNER_TEMP/candidate-gate-start" -printf '%T@ %p\n' | sort -nr | head -n 1 | cut -d' ' -f2-)
+          if [ -z "${VERDICT:-}" ]; then
+            echo "::error::CANDIDATE-GATE wrote no fresh verdict.json in this run; nothing to bind to a HEAD"
+            exit 1
+          fi
+          GRADED=$(node -e "const j=require(process.argv[1]); process.stdout.write(String(j.head))" "$VERDICT")
+          echo "CANDIDATE-GATE head=${GRADED} github.sha=${GITHUB_SHA} checked-out=${CHECKED_OUT} machine=${VERDICT}"
+          if [ "$CHECKED_OUT" != "$GITHUB_SHA" ]; then
+            echo "::error::STALE CHECKOUT: git HEAD ${CHECKED_OUT} != github.sha ${GITHUB_SHA}"
+            exit 1
+          fi
+          if [ "$GRADED" != "$GITHUB_SHA" ]; then
+            echo "::error::STALE CANDIDATE-GATE: the verdict grades ${GRADED} but this run is for ${GITHUB_SHA}"
+            exit 1
+          fi
+          echo "CANDIDATE-GATE head=${GITHUB_SHA} bound (graded head == github.sha, artifact fresh)"
 
       - name: Upload the gate's verdict and its per-host evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: candidate-acceptance-${{ github.run_id }}
+          name: candidate-acceptance-${{ github.sha }}-${{ github.run_id }}
           path: dev/agent-workflow/evidence/candidate-acceptance-gate/
           if-no-files-found: warn

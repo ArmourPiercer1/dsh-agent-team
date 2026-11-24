@@ -1,0 +1,19 @@
+CANDIDATE-GATE start host=legacy drivers=d,d2,d3,d4 boots=2 timeout=2700000ms
+CANDIDATE-GATE start host=next drivers=d,d2,d3,d4 boots=2 timeout=2700000ms
+CANDIDATE-GATE PASS at 2026-11-24T17:17:46.158Z
+head=41d5791195d199190c8d808d321aaa8e4dbca030 hosts=legacy,next timeout=2700000ms boots=2
+
+CANDIDATE-GATE pass host=legacy judges=31 proven=30 known-refuted=1 env-limited=0 drivers=4 records=8 agreement=true
+  d   pass judges=6 proven=6 known-refuted=0 env-limited=0 exit=0 [2026-11-24T17:24:03.295Z] RESULT PASS (2/2 boots; agreeing pair=true)
+  d2  pass judges=4 proven=4 known-refuted=0 env-limited=0 exit=0 [2026-11-24T17:30:45.457Z] RESULT PASS (2/2 boots; agreeing pair=true)
+  d3  pass judges=4 proven=4 known-refuted=0 env-limited=0 exit=0 [2026-11-24T17:44:04.336Z] RESULT evidence-complete=true allProven=true (2/2 boots; agreeing pair=true)
+  d4  pass judges=17 proven=16 known-refuted=1 env-limited=0 exit=3 [2026-11-24T18:09:40.047Z] RESULT evidence-complete=true allBooted=true blocked=true runRecordsValid=true (2/2 boots; agreeing pair=true)
+
+CANDIDATE-GATE pass host=next judges=31 proven=30 known-refuted=1 env-limited=0 drivers=4 records=8 agreement=true
+  d   pass judges=6 proven=6 known-refuted=0 env-limited=0 exit=0 [2026-11-24T18:13:41.164Z] RESULT PASS (2/2 boots; agreeing pair=true)
+  d2  pass judges=4 proven=4 known-refuted=0 env-limited=0 exit=0 [2026-11-24T18:17:49.166Z] RESULT PASS (2/2 boots; agreeing pair=true)
+  d3  pass judges=4 proven=4 known-refuted=0 env-limited=0 exit=0 [2026-11-24T18:25:59.764Z] RESULT evidence-complete=true allProven=true (2/2 boots; agreeing pair=true)
+  d4  pass judges=17 proven=16 known-refuted=1 env-limited=0 exit=3 [2026-11-24T18:41:34.838Z] RESULT evidence-complete=true allBooted=true blocked=true runRecordsValid=true (2/2 boots; agreeing pair=true)
+
+CANDIDATE-GATE pass hosts=legacy,next judges=62 proven=60 known-refuted=2 env-limited=0
+CANDIDATE-GATE verdict=pass machine=dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-24T17-17-46-158Z/verdict.json summary=dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-24T17-17-46-158Z/summary.txt

@@ -1,0 +1,32 @@
+{
+  "askAppeared": true,
+  "ids": {
+    "officer": "inst-1crltnl0089j",
+    "worker": "inst-0ty67u70r99a",
+    "pendingRequestId": "ctrl-187d2i21o4dcwp019qq501vv",
+    "pendingRequestId2": null,
+    "pendingRequestId3": null,
+    "pendingProcessRequestId": null
+  },
+  "askRow": null,
+  "requests": [
+    {
+      "requestId": "ctrl-187d2i21o4dcwp019qq501vv",
+      "kind": "leader-approval",
+      "targetInstanceId": "inst-0ty67u70r99a",
+      "actionName": "admission-ask",
+      "toolName": "write",
+      "correlation": "admission:call-d4-worker-write",
+      "status": "decided",
+      "createdAt": "2026-11-24T17:47:26.356Z",
+      "subject": {
+        "kind": "instance",
+        "instanceId": "inst-0ty67u70r99a"
+      },
+      "executionCoupling": "inline",
+      "requestSequence": 9,
+      "operationFingerprint": "sha256:c66487d2da3134d93ea9dcb16a80dc7034a90e72013d33f9b4238290c0c3918d",
+      "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T17-44-18Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:752de313f51d87ee889f5dc9dc2ed76d)"
+    }
+  ]
+}

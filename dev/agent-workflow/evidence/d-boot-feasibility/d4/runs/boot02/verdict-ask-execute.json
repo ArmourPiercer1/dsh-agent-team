@@ -10,7 +10,7 @@
     {
       "id": "approved-through-real-control-path",
       "ok": true,
-      "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-14680mx0n6lh7q1djicij1d0\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:71b89d713f428db6690c62e19f68688caf6585eb\""
+      "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-0dsdv911gm0hfm0uf0svv02m\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:3de2d70fd3e3b6ac1e8da222b0882d114316c1a0\""
     },
     {
       "id": "admission-fact-allow-lane-ask",
@@ -20,7 +20,7 @@
     {
       "id": "write-tool-result-not-an-error",
       "ok": true,
-      "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-46-58Z-next/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+      "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-33-51Z-next/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
     },
     {
       "id": "real-bytes-on-disk",

@@ -17,15 +17,15 @@
     "stoppedRefusalCode": "ADMISSION_STOPPED"
   },
   "mockRequests": 62,
-  "memberModelRequests": 30,
+  "memberModelRequests": 29,
   "aWindow": {
-    "first": "2026-11-24T16:35:34.518Z",
-    "last": "2026-11-24T16:35:35.117Z",
+    "first": "2026-11-24T18:15:41.530Z",
+    "last": "2026-11-24T18:15:42.181Z",
     "count": 10
   },
   "bWindow": {
-    "first": "2026-11-24T16:35:34.738Z",
-    "last": "2026-11-24T16:35:34.847Z",
+    "first": "2026-11-24T18:15:41.708Z",
+    "last": "2026-11-24T18:15:41.893Z",
     "count": 3
   }
 }

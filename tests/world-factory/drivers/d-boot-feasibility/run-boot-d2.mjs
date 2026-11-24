@@ -251,6 +251,47 @@ const redact = (t) => String(t ?? '').replace(/\?token=[A-Za-z0-9_-]+/gu, '?toke
 const utcStamp = () => new Date().toISOString().replace(/[:.]/gu, '-')
 
 /**
+ * ROUND 109 — FULL TYPED REPLY OBSERVABILITY (observation only).
+ *
+ * `member.archive`, `member.send` and `member.restore` answer in ONE envelope:
+ * `{ type, rpcId, result: { ok, value } | { ok:false, error: { code, message, … } } }`.
+ * The judge consumed only derived booleans (`ok`, `code`), which is how the
+ * round-105/106 rc.5 archive refusal stayed invisible: its WHY was in
+ * `result.error`, and the durable row was the only trace left. This records
+ * the complete reply the driver actually received — the answered RPC id, the
+ * typed error object VERBATIM (every field the host put there, not just
+ * `code`/`message`), and the full `value` — so the evidence file, not a
+ * re-derivation, carries the channel. A single oversized payload is bounded by
+ * `OBSERVED_REPLY_MAX_CHARS` with `truncated:true` so the record stays
+ * reviewable; below the bound nothing is dropped.
+ *
+ * NO PREDICATE READS THIS. Every clause still asserts exactly the fields it
+ * asserted before; `judgeRemoteDelivery` is untouched. This is a strictly
+ * additive observation, added so a future refusal cannot be discarded again.
+ */
+const OBSERVED_REPLY_MAX_CHARS = 16_384
+function observedReply(response) {
+  const body = response?.body ?? null
+  const result = body?.result ?? null
+  const serialized = body === null ? null : JSON.stringify(body)
+  const truncated = typeof serialized === 'string' && serialized.length > OBSERVED_REPLY_MAX_CHARS
+  return {
+    httpStatus: response?.status ?? null,
+    transportError: response?.error ?? null,
+    rpcId: body?.rpcId ?? null,
+    envelopeType: body?.type ?? null,
+    ok: result?.ok === true,
+    code: result?.error?.code ?? null,
+    message: result?.error?.message ?? null,
+    // the FULL typed objects, verbatim
+    error: result?.error ?? null,
+    value: result?.value ?? null,
+    truncated,
+    ...(truncated ? { rawPrefix: serialized.slice(0, OBSERVED_REPLY_MAX_CHARS) } : {}),
+  }
+}
+
+/**
  * HOST-SELECTABLE (round 78). Tree + pin come from the ONE lane selector
  * (`tests/next-host/host-select.mjs`): rc.2 by default, rc.5 under
  * `TEAM_TEST_HOST=next`. Realpath'd so the native-asset pre-flight's
@@ -1656,6 +1697,9 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
       status: deliveryResponse.status,
       ok: deliveryEnvelope?.ok === true,
       code: deliveryEnvelope?.error?.code ?? null,
+      // ROUND 109 — the full typed `member.send` reply (the accepted leg).
+      requestToken: DELIVERY_TOKEN,
+      reply: observedReply(deliveryResponse),
       outcome: deliveryOutcome,
       centreB: parseJsonl(ledgerBPath).length,
       requests: requests().length,
@@ -1759,15 +1803,25 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
       // "why the member is not ARCHIVED" observable instead of discarding it.
       archiveCode: archiveResponse.body?.result?.error?.code ?? null,
       archiveMessage: archiveResponse.body?.result?.error?.message ?? null,
+      // ROUND 109 — the COMPLETE typed `member.archive` reply: the answered
+      // rpcId, `result.ok`, the verbatim `result.error` object (every field,
+      // not just code/message) and the full `result.value`. Observation only.
+      archiveReply: observedReply(archiveResponse),
       lifecycle: archivedLifecycle,
       archiveLifecycle: archivedLifecycle,
       status: archivedResponse.status,
       ok: archivedResponse.body?.result?.ok === true,
       code: archivedResponse.body?.result?.error?.code ?? null,
+      // ROUND 109 — the complete typed `member.send` reply to the archived
+      // target (the refusal channel the clause grades).
+      archivedSendToken: 'dboot-d2-remote-send-archived',
+      sendReply: observedReply(archivedResponse),
       requestsAdded: requests().length - requestsBeforeArchived,
       executionsAfter: deliveryOf(ledgerBPath, CALL_RD).executions.length,
     }
     log(`[boot${String(index)}] member.send archived: archiveOk=${String(archivedDelivery.archiveOk)} archiveCode=${String(archivedDelivery.archiveCode)} archiveMessage=${String(archivedDelivery.archiveMessage)} lifecycle=${String(archivedDelivery.lifecycle)} ok=${String(archivedDelivery.ok)} code=${String(archivedDelivery.code)} requestsAdded=${String(archivedDelivery.requestsAdded)}`)
+    log(`[boot${String(index)}] member.archive FULL reply: ${JSON.stringify(archivedDelivery.archiveReply)}`)
+    log(`[boot${String(index)}] member.send(archived) FULL reply: ${JSON.stringify(archivedDelivery.sendReply)}`)
     const restoreResponse = await remoteCall(fetchJson, origin, cookie, 'member.restore', {
       teamSessionId: BOOT_ROOT,
       instanceId: ids.b,
@@ -1785,12 +1839,19 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
       restoreOk: restoreResponse.body?.result?.ok === true,
       restoreCode: restoreResponse.body?.result?.error?.code ?? null,
       restoreMessage: restoreResponse.body?.result?.error?.message ?? null,
+      // ROUND 109 — the complete typed `member.restore` reply, and the complete
+      // typed `member.send` reply that follows it (the re-enabled leg).
+      restoreReply: observedReply(restoreResponse),
       lifecycle: restoredLifecycle,
       status: restoredResponse.status,
       ok: restoredResponse.body?.result?.ok === true,
       code: restoredResponse.body?.result?.error?.code ?? null,
+      restoredSendToken: 'dboot-d2-remote-send-restored',
+      sendReply: observedReply(restoredResponse),
     }
     log(`[boot${String(index)}] member.send restored: lifecycle=${String(restoredDelivery.lifecycle)} ok=${String(restoredDelivery.ok)} code=${String(restoredDelivery.code)}`)
+    log(`[boot${String(index)}] member.restore FULL reply: ${JSON.stringify(restoredDelivery.restoreReply)}`)
+    log(`[boot${String(index)}] member.send(restored) FULL reply: ${JSON.stringify(restoredDelivery.sendReply)}`)
 
     // (d) STOP DURING A DELIVERED TURN: the delivery is acknowledged, the
     //     delivered turn parks on the ask lane, the product's Stop closes that

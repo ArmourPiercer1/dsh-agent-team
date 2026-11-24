@@ -1,5 +1,5 @@
 # D4 routed-wake probe — boot 1
-world=u5u5a5sfdev1-20261124T16-42-27Z-next home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-42-27Z-next port=13000 elapsedMs=271626
+world=u5u5a5sfdev1-20261124T18-26-12Z-next home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-26-12Z-next port=13000 elapsedMs=459181
 
 judge                verdict    failing
 enablement           PROVEN     []

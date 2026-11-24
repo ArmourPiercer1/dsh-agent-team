@@ -1,10 +1,10 @@
 # D acceptance report — UTE vNext A1 cut + centre (candidate)
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-<!-- ROUND 108 — THE CURRENT ACCEPTANCE STATUS. Read this before anything else. -->
+<!-- ROUND 109 — THE CURRENT ACCEPTANCE STATUS. Read this before anything else. -->
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
-## CURRENT ACCEPTANCE STATUS — the single table (round 108, 2026-11-24)
+## CURRENT ACCEPTANCE STATUS — the single table (round 109, 2026-11-24)
 
 > **This table is the current verdict. Every later section of this file is HISTORICAL.** Where a
 > later section disagrees with this table — the round-78 rc.5 note that "only these three scripted
@@ -13,19 +13,23 @@
 > table wins**. The older text is kept unchanged as the record of what was measured then; it is not
 > a current claim and must not be quoted as one.
 
-**HEAD measured:** `e30d22c6085b607890aba685ceeb4b7596445108` **plus the round-108 drain-seam arm** (this
-commit is its child, named in the settlement comment). Round 108 re-ran the two rc.5 gaps the round-106
-table still carried — `d:remote-creation` and `d2:remote-delivery` — and both are **PROVEN on rc.5**
-(2/2 boots, agreeing). The `d2` rc.5 refutation was a **real product/host-compat defect, now fixed**:
-rc.5 renamed the public `subagents.drainContinuableDescendants` to `subagents.drainDescendants`, the
-drain seam required only the rc.2 name, and `member.archive` therefore aborted at `drain-descendants`
-with `LIFECYCLE_LIVE_EFFECT_FAILED` — leaving the member `SETTLED`. `d:remote-creation` was simply not
-re-run on rc.5 since the round-91 judge repair; it passes unchanged. Round 102's judge-by-judge table
-below was measured at `10d8a67aeb7e189011faf2c131a73aa33b76fac3` and is unchanged.
+**HEAD measured:** `41d5791195d199190c8d808d321aaa8e4dbca030` **plus the round-109 arm** (the
+observation-only `d2` driver record + the workflow/manifest trigger change and docs; this commit is
+their child, named in the settlement comment). **Round 109 ran the candidate gate on BOTH pinned
+hosts in ONE run and it is `pass` on both.** Round 108 (below) had already closed the two rc.5 gaps
+(`d:remote-creation`, `d2:remote-delivery`) with a product fix — rc.5 renamed the public
+`subagents.drainContinuableDescendants` to `subagents.drainDescendants` and the drain seam required
+only the rc.2 name, so `member.archive` aborted at `drain-descendants` with
+`LIFECYCLE_LIVE_EFFECT_FAILED`; the seam now resolves by capability
+(`stop-drain-lane.mjs` `resolveDrainSeam`). Round 109 also made the `d2` driver record the **full
+typed** `member.archive` / `member.send` / `member.restore` replies (rpcId + verbatim
+`result.error`/`result.value`), so a future refusal cannot be reduced to a boolean again. Round 102's
+judge-by-judge table below was measured at `10d8a67aeb7e189011faf2c131a73aa33b76fac3` and is unchanged.
 Worktree `.worktrees/vnext-a1-cut`, branch `vnext/a1-cut`, PR **#822 DRAFT — unmerged**.
 Record class: `DEV-LIVE` for every boot, in-process `MECHANISM` where marked. **No row is
-PRODUCT-PROVEN** and no row can be: `V@B=yes` is reserved for a capability exercised by a BOUND
-executable gate, and a scripted driver is not that gate.
+PRODUCT-PROVEN.** The candidate gate is **NON-REQUIRED by owner ruling**, so a green dual-host gate is
+still `DEV-LIVE` evidence: a row becomes gate-backed only when the gate is REQUIRED by branch
+protection **and** green at the final head.
 
 Hosts, exactly as the drivers printed them (`candidate:` row, first log line of every boot):
 
@@ -61,7 +65,7 @@ Hosts, exactly as the drivers printed them (`candidate:` row, first log line of 
 | 6 | `d2:multi-member-concurrency` | DEV-LIVE | **PROVEN** | **PROVEN** (round 78/79) | no bound gate |
 | 7 | `d2:revocation` (4 directions) | DEV-LIVE | **PROVEN** | **PROVEN** (9/9 + 9/9, 14/14 guard facts) | same |
 | 8 | `d2:stop` | DEV-LIVE | **PROVEN** | **PROVEN** (`stopSettlementState=REFUSED`) | same |
-| 9 | `d2:remote-delivery` | DEV-LIVE | **PROVEN** (round 83) | **PROVEN** (round 108 rc.5 re-run after the drain-seam fix, 2/2 boots, 20/20 clauses each; archived send refused typed `TEAM_RUNTIME_WORK_STATE_REJECTED`, `requestsAdded=0`) | no bound gate ⇒ never PRODUCT-PROVEN; the round-105 rc.5 refutation is **closed by a product fix**, not by an allowance (see the round-108 section) |
+| 9 | `d2:remote-delivery` | DEV-LIVE | **PROVEN** (round 83) | **PROVEN** (round 108 rc.5 re-run after the drain-seam fix, 2/2 boots, 20/20 clauses each; archived send refused typed `TEAM_RUNTIME_WORK_STATE_REJECTED`, `requestsAdded=0`; **round 109** records the full typed `member.archive`/`member.send`/`member.restore` replies, rpcId + verbatim error/value — gate green on both hosts) | no bound gate ⇒ never PRODUCT-PROVEN; the round-105 rc.5 refutation is **closed by a product fix**, not by an allowance (see the round-108 section) |
 | 10 | `d3:persistent-subprocess` | DEV-LIVE | **PROVEN** (round 76) | **PROVEN** (round 78/79) | same |
 | 11 | `d3:crash-cold-recovery` | DEV-LIVE | **PROVEN** | **PROVEN** | same |
 | 12 | `d3:work-delivery` | DEV-LIVE | **PROVEN** | **PROVEN** (`collectStatus=succeeded`; `inflightAfter=UNKNOWN` by contract) | cross-process in-flight truth not established |
@@ -86,6 +90,25 @@ Hosts, exactly as the drivers printed them (`candidate:` row, first log line of 
 | 31 | P0-2 pre-dispatch abort observation (`pre-dispatch-abort.mjs`) | **MECHANISM** | **MECHANISM** (`SLICE-21/30/37/38`, assertions unchanged) | **MECHANISM** (same arms, both hosts; round 106 adds the ruled-law controls `SLICE-40/41/42` on both hosts) | **CLOSED BY OWNER RULING (round 106, review `20261124-2120` ruling 2)** — the lawful no-settlement boundary is ruled and tested; `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` remains a diagnostic report, never a settlement. The observer is still not wired into a booted host's own agent loop: a coverage limit, not an acceptance blocker |
 | 32 | OS confinement negative controls (§3.1) | ENV-LIMITED where the OS capability is absent | measured | measured (round 78 shape) | the host/OS limit is the limit; no product switch exists |
 | 33 | search face, Shape B (in-lane `grep`, out-of-lane refused) | DEV-LIVE | **PROVEN** (round 64/98) | **PROVEN** (round 78) | Shape B is the declared support level; not full dynamic permission governance |
+
+**The dual-host candidate gate — ROUND 109 result (NON-REQUIRED; this fact does not upgrade any row).**
+`node scripts/candidate-acceptance-gate.mjs --hosts both` at `41d579119` + the round-109 arm is
+**`pass` on both hosts**:
+
+| host | judges | proven | known-refuted | env-limited | verdict |
+| --- | --- | --- | --- | --- | --- |
+| rc.2 (`legacy`) | 31 | **30** | **1** | 0 | **pass** |
+| rc.5 (`next`) | 31 | **30** | **1** | 0 | **pass** |
+| **both** | **62** | **60** | **2** | **0** | **pass** |
+
+The only non-PROVEN verdict is the single enumerated literal `d4:ask-execute-process` (counted once per
+host). Nothing was added to `KNOWN_REFUTED`. Machine verdict
+`dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-24T17-17-46-158Z/verdict.json`; full
+transcript `round109/README.md` §2. **The gate stays NON-REQUIRED by owner ruling** — `ci-required`'s
+layer list is untouched and the job is `knownNonRequired` — so **no row in this table becomes
+PRODUCT-PROVEN until the gate is REQUIRED by branch protection AND green at the final head**. Measured
+cost of one dual-host run: **83 m 48 s** (round 109), deliberately heavier than the whole daily
+Required set.
 
 **P0-2, visible in this status table — CLOSED by the owner's ruling (review `20261124-2120` ruling 2):**
 
@@ -320,19 +343,31 @@ names it. The machine verdict is `verdict.json`; the human summary is `summary.t
 `dev/agent-workflow/evidence/candidate-acceptance-gate/<stamp>/`, with each driver's artifacts
 snapshotted per host under `<stamp>/<host>/<driver>/`.
 
-**Round-105 verdicts (HEAD `65481f2f6`, the round's measurement head):**
+**Round-109 verdicts (HEAD `41d579119` + the round-109 arm — the CURRENT gate state):**
+
+| host | selector | judges | proven | known-refuted | env-limited | verdict |
+| --- | --- | --- | --- | --- | --- | --- |
+| rc.2 (control) | `TEAM_TEST_HOST=legacy` | 31 | **30** | **1** | **0** | **pass** |
+| rc.5 (target) | `TEAM_TEST_HOST=next` | 31 | **30** | **1** | **0** | **pass** |
+| **both** | one run, both hosts | **62** | **60** | **2** | **0** | **pass** |
+
+Measured wall clock **83 m 48 s** (`17:17:46 → 18:41:34`), machine verdict
+`dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-24T17-17-46-158Z/verdict.json`; the
+single non-PROVEN id on each host is the enumerated `d4:ask-execute-process`. **The gate remains
+NON-REQUIRED by owner ruling**, so this green result still upgrades no row.
+
+**Round-105 verdicts (HEAD `65481f2f6`, kept as history — superseded by round 108's product fix):**
 
 | host | selector | judges | proven | known-refuted | env-limited | verdict |
 | --- | --- | --- | --- | --- | --- | --- |
 | rc.2 (control) | `TEAM_TEST_HOST=legacy` | 31 | **30** | **1** | **0** | **pass** |
 | rc.5 (target) | `TEAM_TEST_HOST=next` | 31 | **29** | **1** | **0** | **FAIL** |
 
-rc.5's FAIL is the honest verdict, not a gate defect: `d2:remote-delivery` is REFUTED while a judge
-outside the enumerated known-refuted list may not pass, and `d2` therefore exits 1. The failing
-clause is `archived-member-refused-typed` (`lifecycle=SETTLED code=null requestsAdded=0`), identical
-on both boots; every other `d2` clause and every other driver passed. The single known-refuted entry
-(`d4:ask-execute-process`) is REFUTED on both hosts exactly as above, and is the only non-PROVEN
-verdict the gate is allowed to accept.
+rc.5's round-105 FAIL was the honest verdict: `d2:remote-delivery` was REFUTED and a judge outside the
+enumerated known-refuted list may not pass. The failing clause was `archived-member-refused-typed`
+(`lifecycle=SETTLED code=null requestsAdded=0`), identical on both boots. Round 108 fixed the PRODUCT
+(the rc.5 public drain rename) rather than the judge, and round 109 re-ran the whole layer on both
+hosts: pass.
 
 **What the layer DOES change:** the whole acceptance set is now ONE command with ONE machine-readable
 verdict and one human summary; the drivers' two-boot agreement, RUN-record validity and known-refuted
@@ -340,11 +375,19 @@ scope are checked in one place, and a stale artifact cannot be quoted as a fresh
 
 **What it does NOT change:**
 
-- It is **NOT Required CI**. `ci-required`'s layer list is untouched; the new workflow
-  `.github/workflows/candidate-acceptance.yml` runs on `workflow_dispatch` and on the
-  `candidate-acceptance` PR label only, and its job is registered in
-  `dev/ci/eb3-ci-manifest.json#knownNonRequired` (with the reason) so `eb3-ci-required` sees it as an
-  explicitly non-required job. It is not a branch-protection context.
+- It is **NOT Required CI**. `ci-required`'s layer list is untouched; the workflow
+  `.github/workflows/candidate-acceptance.yml` runs on `workflow_dispatch` and on
+  `pull_request: [labeled, synchronize, reopened]` for a PR that CARRIES the `candidate-acceptance`
+  label (round 109 / review `20261125-0058` §4.2: a later push to a labelled PR now produces its own
+  result for the new HEAD). Its job is registered in
+  `dev/ci/eb3-ci-manifest.json#knownNonRequired` (with the reason, which names the trigger) so
+  `eb3-ci-required` sees it as an explicitly non-required job. It is not a branch-protection context.
+- **HEAD binding (round 109).** The check name and the artifact name carry the graded SHA; the job
+  checks out `github.sha`, and a `Bind the graded head` step fails the run unless both the checked-out
+  HEAD and the verdict's own `head` equal `github.sha` and the artifact was written by this run. A
+  stale verdict from another commit can therefore not be read as this HEAD's result.
+- **Cost (round 109, measured).** One dual-host run is **83 m 48 s** of wall clock — deliberately
+  heavier than the whole daily Required set, which is why this layer must not be a merge gate.
 - It does **not** upgrade a row. Every row in the table above stays at the level it had. A row
   becomes **gate-backed only when the gate is REQUIRED by branch protection AND green** — that is an
   owner decision, and this round does not claim it. A green non-required gate (rc.2 is green here)
@@ -353,8 +396,9 @@ scope are checked in one place, and a stale artifact cannot be quoted as a fresh
   already emit, and validates the records with the repository's existing validator.
 - It does **not** turn `d4:ask-execute-process` into a pass. The refutation stays enumerated with its
   citation, and removing the enumeration makes the gate red.
-- It does **not** claim a deliverable green on rc.5: the rc.5 verdict is FAIL until the
-  `d2:remote-delivery` clause is repaired or lawfully ruled, and no such rule exists this round.
+- It does **not** upgrade rc.5 by itself: the round-105 rc.5 FAIL was closed by the round-108
+  product fix (the drain seam), not by a rule or an exemption, and round 109's dual-host `pass` is
+  still non-required evidence.
 
 **Worktree:** `.worktrees/vnext-a1-cut` · **Branch:** `vnext/a1-cut` ·
 **HEAD measured for every number below (round 89):**

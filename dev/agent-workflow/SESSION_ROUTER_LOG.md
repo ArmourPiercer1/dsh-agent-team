@@ -11276,3 +11276,34 @@ upstream batch-completion seam or a ruled lawful "no settlement" boundary; (3) a
 the hosted census can run once (never merged). Everything else is green: leg 248/245+3, catalog 785, closure
 cut(0/148), p0-assets, docs-sync 0, 35 placements, ci-required 10, vitest 238, G1 89/89, manifest findings=0,
 ci-pr-gate 10/10; hosted ci-integration green, ci-required red only by the draft's census skip.
+
+### R109 — Stage-A closure: full typed replies, the DUAL-HOST candidate gate, and HEAD binding (review 20261125-0058)
+
+Worktree `.worktrees/vnext-a1-cut` only, branch `vnext/a1-cut`, HEAD `41d579119` + this round's arm; PR #822 stays
+DRAFT; `:3080`/its DSH_HOME untouched; no history rewrite, no merge, no non-topic push.
+
+1. **`d2:remote-delivery` now records the FULL typed replies** of `member.archive` / `member.send` /
+   `member.restore` (answered `rpcId`, `result.ok`, verbatim `result.error` incl. `details.cause`);
+   observation-only: 58 inserted / 0 changed lines, judge untouched, no clause relaxed, no skip, no timeout
+   widened, driver bytes = the gate's `driver-digest` (`sha256 389b3343…`). rc.5 both boots: archive accepted
+   (`ARCHIVED`, 6 steps) → send to ARCHIVED typed `TEAM_RUNTIME_WORK_STATE_REJECTED` / `requestsAdded=0` →
+   restore accepted (`SETTLED`) → send accepted.
+2. **Dual-host candidate gate PASS in one run** (`--hosts both`, measured **83 m 48 s**): rc.2 31/30/1/0,
+   rc.5 31/30/1/0, totals 62/60/2/0; the only non-PROVEN id is the single enumerated `d4:ask-execute-process`.
+   `KNOWN_REFUTED` not edited.
+3. **Workflow HEAD binding** (review §4.2): `pull_request: [labeled, synchronize, reopened]`, job gated on the
+   label being PRESENT, check name/artifact carry `github.sha`, and a `Bind the graded head` step asserts the
+   checkout + the verdict's own `head` both equal `github.sha` on a fresh artifact. Still `knownNonRequired`;
+   `ci-required`'s layer list untouched.
+4. **Cost disclosed** (review §4.3): ~84 min measured dual-host vs a few minutes for the whole daily Required set;
+   stated in the workflow header, manifest reason, D report and C matrix.
+5. Docs updated (single acceptance table + `CAPABILITY-MATRIX-C.md`: gate green on both hosts, stays
+   NON-REQUIRED by owner ruling, no row PRODUCT-PROVEN until required AND green); PR body refreshed from the
+   round-95 text to the round-108/109 state incl. the hosted all-green set with census (`a4a00fc81`).
+
+Gates: leg `ute-vnext-a1` 251/248/0/3 (`sha256:edd4f1c4…` unchanged); catalog `785 / 38 uncollected / 14
+excluded` findings=0 (no new scannable file, delta 0); cut-closure `cut(0/148)`; p0-assets `37/180/69512`;
+docs-sync `193 docs / 0 findings`; place-dist-glue 35 placements byte-identical; eb3-ci-required `11/0`; bound
+vitest `15 suites / 76 describes / 238 passed / 0 failed`; UTE G1 argv 89/89; `eb3-run-manifest` records=568
+findings=0; `ci-pr-gate --full --census-captures 2` `pass=10 fail=0` (285.7 s, census `599f/7424l`, identical
+identity sets). No capability row moves; no row is PRODUCT-PROVEN.

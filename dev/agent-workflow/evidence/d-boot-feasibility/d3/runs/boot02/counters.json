@@ -10,6 +10,6 @@
   "collectStatus": "succeeded",
   "bash1State": "COMPLETED",
   "bash2State": "COMPLETED",
-  "restartAt": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261124T16-40-47Z-next/instance-port13000.log",
-  "elapsedMs": 150678
+  "restartAt": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261124T18-23-51Z-next/instance-port13000.log",
+  "elapsedMs": 235782
 }

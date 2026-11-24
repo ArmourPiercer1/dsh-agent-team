@@ -7,15 +7,15 @@
     "instanceGeneration": 0,
     "toolName": "read",
     "axis": "fs.read",
-    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-38-14Z-next/workspace/team-a/in-lane-a.txt",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-19-50Z-next/workspace/team-a/in-lane-a.txt",
     "definitionSource": "",
-    "policyGeneration": "a5sf1:235bb3ddb203eb0b63993f095608f14e",
+    "policyGeneration": "a5sf1:ef78b6f33e8c9f9c9e0309fac0e77d09",
     "blueprintRevision": "",
     "owner": "session-dboot-d3-root",
     "decision": "allow",
     "overlayOutcome": "no-opinion",
     "kind": "invocation-authority",
-    "at": "2026-11-24T16:39:27.004Z"
+    "at": "2026-11-24T18:21:47.222Z"
   },
   {
     "callId": "call-d3-a-inlane",
@@ -24,9 +24,9 @@
     "agentId": "session-team-child-cdf16bb82ce585d862f447bf6cd8c80f",
     "outcome": "completed",
     "isError": false,
-    "policyGeneration": "a5sf1:235bb3ddb203eb0b63993f095608f14e",
+    "policyGeneration": "a5sf1:ef78b6f33e8c9f9c9e0309fac0e77d09",
     "kind": "execution",
-    "at": "2026-11-24T16:39:27.029Z"
+    "at": "2026-11-24T18:21:47.244Z"
   },
   {
     "callId": "call-d3-a-bash-write-state",
@@ -36,15 +36,15 @@
     "instanceGeneration": 0,
     "toolName": "bash",
     "axis": "process.exec",
-    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-38-14Z-next/workspace/team-a",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-19-50Z-next/workspace/team-a",
     "definitionSource": "",
-    "policyGeneration": "a5sf1:235bb3ddb203eb0b63993f095608f14e",
+    "policyGeneration": "a5sf1:ef78b6f33e8c9f9c9e0309fac0e77d09",
     "blueprintRevision": "",
     "owner": "session-dboot-d3-root",
     "decision": "allow",
     "overlayOutcome": "no-opinion",
     "kind": "invocation-authority",
-    "at": "2026-11-24T16:39:27.071Z"
+    "at": "2026-11-24T18:21:47.283Z"
   },
   {
     "callId": "call-d3-a-bash-write-state",
@@ -53,9 +53,9 @@
     "agentId": "session-team-child-cdf16bb82ce585d862f447bf6cd8c80f",
     "outcome": "completed",
     "isError": false,
-    "policyGeneration": "a5sf1:235bb3ddb203eb0b63993f095608f14e",
+    "policyGeneration": "a5sf1:ef78b6f33e8c9f9c9e0309fac0e77d09",
     "kind": "execution",
-    "at": "2026-11-24T16:39:27.382Z"
+    "at": "2026-11-24T18:21:47.586Z"
   },
   {
     "callId": "call-d3-a-bash-read-state",
@@ -65,15 +65,15 @@
     "instanceGeneration": 0,
     "toolName": "bash",
     "axis": "process.exec",
-    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-38-14Z-next/workspace/team-a",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-19-50Z-next/workspace/team-a",
     "definitionSource": "",
-    "policyGeneration": "a5sf1:235bb3ddb203eb0b63993f095608f14e",
+    "policyGeneration": "a5sf1:ef78b6f33e8c9f9c9e0309fac0e77d09",
     "blueprintRevision": "",
     "owner": "session-dboot-d3-root",
     "decision": "allow",
     "overlayOutcome": "no-opinion",
     "kind": "invocation-authority",
-    "at": "2026-11-24T16:39:28.285Z"
+    "at": "2026-11-24T18:21:48.420Z"
   },
   {
     "callId": "call-d3-a-bash-read-state",
@@ -82,9 +82,9 @@
     "agentId": "session-team-child-cdf16bb82ce585d862f447bf6cd8c80f",
     "outcome": "completed",
     "isError": false,
-    "policyGeneration": "a5sf1:235bb3ddb203eb0b63993f095608f14e",
+    "policyGeneration": "a5sf1:ef78b6f33e8c9f9c9e0309fac0e77d09",
     "kind": "execution",
-    "at": "2026-11-24T16:39:28.404Z"
+    "at": "2026-11-24T18:21:48.542Z"
   },
   {
     "callId": "call-d3-a-after-recovery",
@@ -94,15 +94,15 @@
     "instanceGeneration": 0,
     "toolName": "read",
     "axis": "fs.read",
-    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-38-14Z-next/workspace/team-a/in-lane-a.txt",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-19-50Z-next/workspace/team-a/in-lane-a.txt",
     "definitionSource": "",
-    "policyGeneration": "a5sf1:235bb3ddb203eb0b63993f095608f14e",
+    "policyGeneration": "a5sf1:ef78b6f33e8c9f9c9e0309fac0e77d09",
     "blueprintRevision": "",
     "owner": "session-dboot-d3-root",
     "decision": "allow",
     "overlayOutcome": "no-opinion",
     "kind": "invocation-authority",
-    "at": "2026-11-24T16:39:36.729Z"
+    "at": "2026-11-24T18:21:56.664Z"
   },
   {
     "callId": "call-d3-a-after-recovery",
@@ -111,8 +111,8 @@
     "agentId": "session-team-child-cdf16bb82ce585d862f447bf6cd8c80f",
     "outcome": "completed",
     "isError": false,
-    "policyGeneration": "a5sf1:235bb3ddb203eb0b63993f095608f14e",
+    "policyGeneration": "a5sf1:ef78b6f33e8c9f9c9e0309fac0e77d09",
     "kind": "execution",
-    "at": "2026-11-24T16:39:36.751Z"
+    "at": "2026-11-24T18:21:56.682Z"
   }
 ]

@@ -1,9 +1,9 @@
 {
   "schema": "u5-run-record/1",
-  "runId": "a5sf-live-member-2026-11-24T16-33-13-214Z-b2",
+  "runId": "a5sf-live-member-2026-11-24T18-11-47-315Z-b2",
   "suite": "a5sf-live-member",
   "recordClass": "DEV-LIVE",
-  "startedAt": "2026-11-24T16:33:13.215Z",
+  "startedAt": "2026-11-24T18:11:47.315Z",
   "selectedCases": [
     "d:member-read-admitted",
     "d:member-read-denied",
@@ -34,7 +34,7 @@
       "snapshotDigest": "9e2a211ff34196c68fd8db5a0d0d19af124df8fd949190c9c6b990cf3600ede8"
     },
     "candidate": {
-      "head": "acc72e58eef3e3d791dca3da2c13cbb3adf7feae",
+      "head": "41d5791195d199190c8d808d321aaa8e4dbca030",
       "hostSha": "9c2670d3bce5275e0d1610272958121af87787bb",
       "baseline": "9c2670d3bce5275e0d1610272958121af87787bb"
     },
@@ -48,18 +48,18 @@
     "compositionDrops": [],
     "layout": "centre",
     "installGraph": "provisioned",
-    "teamSha": "acc72e58eef3e3d791dca3da2c13cbb3adf7feae",
+    "teamSha": "41d5791195d199190c8d808d321aaa8e4dbca030",
     "hostSha": "9c2670d3bce5275e0d1610272958121af87787bb",
     "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
     "worldIds": [
-      "u5u5a5sfdev1-20261124T16-33-13Z-next"
+      "u5u5a5sfdev1-20261124T18-11-47Z-next"
     ]
   },
   "cases": [
     {
       "id": "d:member-read-admitted",
       "verdict": "PASS",
-      "at": "2026-11-24T16:34:16.508Z",
+      "at": "2026-11-24T18:13:38.869Z",
       "proposition": "the Member's model-visible NATIVE `read` admits an in-ceiling locator and returns the planted bytes",
       "failed": [],
       "clauses": [
@@ -76,7 +76,7 @@
         {
           "id": "native-arg",
           "ok": true,
-          "detail": "file_path=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-33-13Z-next/workspace/in-lane.txt"
+          "detail": "file_path=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-11-47Z-next/workspace/in-lane.txt"
         },
         {
           "id": "result-present",
@@ -103,7 +103,7 @@
     {
       "id": "d:member-read-denied",
       "verdict": "PASS",
-      "at": "2026-11-24T16:34:16.508Z",
+      "at": "2026-11-24T18:13:38.869Z",
       "proposition": "the same native `read` REFUSES an out-of-ceiling locator on ONE typed channel that names its authority (lane: `LANE_DENY` with ZERO provider guard facts for that call, or provider: `IO_READ_DENIED` with its own guard deny fact), with zero secret bytes — and the provider channel is evidenced in its own in-process population (ADM-100)",
       "failed": [],
       "clauses": [
@@ -120,7 +120,7 @@
         {
           "id": "native-arg",
           "ok": true,
-          "detail": "file_path=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-33-13Z-next/out-of-lane/secret-out-of-lane.txt"
+          "detail": "file_path=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-11-47Z-next/out-of-lane/secret-out-of-lane.txt"
         },
         {
           "id": "result-present",
@@ -155,14 +155,14 @@
         {
           "id": "provider-channel-in-process-ADM-100",
           "ok": true,
-          "detail": "file=packages/runtime/test/vnext-admission.test.mjs exit=0 pass=true providerDenyAssertionPresent=true tail=\" mounts the host native module BY DEFAULT, and the admitted read is served by the realm's confined provider (guard consulted) (924.649595ms)\\nℹ tests 1\\nℹ suites 0\\nℹ pass 1\\nℹ fail 0\\nℹ cancelled 0\\nℹ skipped 0\\nℹ todo 0\\nℹ duration_ms 1391.889249\""
+          "detail": "file=packages/runtime/test/vnext-admission.test.mjs exit=0 pass=true providerDenyAssertionPresent=true tail=\"r mounts the host native module BY DEFAULT, and the admitted read is served by the realm's confined provider (guard consulted) (700.733889ms)\\nℹ tests 1\\nℹ suites 0\\nℹ pass 1\\nℹ fail 0\\nℹ cancelled 0\\nℹ skipped 0\\nℹ todo 0\\nℹ duration_ms 891.234194\""
         }
       ]
     },
     {
       "id": "d:native-read-surface",
       "verdict": "PASS",
-      "at": "2026-11-24T16:34:16.508Z",
+      "at": "2026-11-24T18:13:38.869Z",
       "proposition": "the Member's model-visible `read` is the pinned host's OWN native definition, registered once, and the row carries no shadow module",
       "failed": [],
       "clauses": [
@@ -201,7 +201,7 @@
     {
       "id": "d:guard-facts",
       "verdict": "PASS",
-      "at": "2026-11-24T16:34:16.508Z",
+      "at": "2026-11-24T18:13:38.869Z",
       "proposition": "the confined Provider's guard was consulted for the ADMITTED native read (ALLOW facts naming the real Member identity) — a base-provider read would leave ZERO facts — and the out-of-lane read never reached a Provider at all",
       "failed": [],
       "clauses": [
@@ -235,7 +235,7 @@
     {
       "id": "d:centre-facts",
       "verdict": "PASS",
-      "at": "2026-11-24T16:34:16.508Z",
+      "at": "2026-11-24T18:13:38.869Z",
       "proposition": "the ONE centre ADMITTED the in-lane native read, REFUSED the out-of-lane one on the fs.read axis, and recorded both as durable facts (plus an execution fact for the admitted call)",
       "failed": [],
       "clauses": [
@@ -262,7 +262,7 @@
         {
           "id": "out-lane-refusal-code",
           "ok": true,
-          "detail": "refusalCode=LANE_DENY reason=fs.read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-33-13Z-next/out-of-lane/secret-out-of-lane.txt"
+          "detail": "refusalCode=LANE_DENY reason=fs.read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-11-47Z-next/out-of-lane/secret-out-of-lane.txt"
         },
         {
           "id": "out-lane-axis",
@@ -282,14 +282,14 @@
         {
           "id": "durable-source",
           "ok": true,
-          "detail": "ledger=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-33-13Z-next/centre/inst-0e23ryd1fmn2.facts.jsonl"
+          "detail": "ledger=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-11-47Z-next/centre/inst-0e23ryd1fmn2.facts.jsonl"
         }
       ]
     },
     {
       "id": "d:remote-creation",
       "verdict": "PASS",
-      "at": "2026-11-24T16:34:16.508Z",
+      "at": "2026-11-24T18:13:38.869Z",
       "proposition": "the S6 plane is a GOVERNED MANAGEMENT CONTROL PLANE on a centre row: `team.create` mints the Team at runtime through `createAndStartTeam()`, while unauthenticated, cross-team and duplicate creation fail closed with zero unauthorised creation, the two ROOT agent-execution commands stay REFUSED, and the work-delivery command is SERVED — typed, with zero provider requests, so nothing executed",
       "failed": [],
       "clauses": [
@@ -341,8 +341,8 @@
     "thisRunCount": 2,
     "thisRunEntries": [
       {
-        "at": "2026-11-24T16:33:13.280Z",
-        "runId": "a5sf-live-member-2026-11-24T16-33-13-214Z-b2",
+        "at": "2026-11-24T18:11:47.366Z",
+        "runId": "a5sf-live-member-2026-11-24T18-11-47-315Z-b2",
         "suite": "a5sf-read",
         "recordClass": "DEV-LIVE",
         "kind": "budget-intent",
@@ -353,15 +353,15 @@
         "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the FS Provider face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
         "face": "FS Provider",
         "worldLine": "u5a5sfdev1",
-        "headCommit": "acc72e58eef3e3d791dca3da2c13cbb3adf7feae",
+        "headCommit": "41d5791195d199190c8d808d321aaa8e4dbca030",
         "plannedStarts": 1
       },
       {
-        "at": "2026-11-24T16:34:10.812Z",
-        "runId": "a5sf-live-member-2026-11-24T16-33-13-214Z-b2",
+        "at": "2026-11-24T18:13:31.253Z",
+        "runId": "a5sf-live-member-2026-11-24T18-11-47-315Z-b2",
         "suite": "a5sf-live-member",
         "recordClass": "DEV-LIVE",
-        "world": "u5u5a5sfdev1-20261124T16-33-13Z-next",
+        "world": "u5u5a5sfdev1-20261124T18-11-47Z-next",
         "phase": "a5sf-live-member-boot2"
       }
     ]
@@ -369,17 +369,17 @@
   "boots": [
     {
       "phase": "a5sf-live-member-boot2",
-      "world": "u5u5a5sfdev1-20261124T16-33-13Z-next",
+      "world": "u5u5a5sfdev1-20261124T18-11-47Z-next",
       "port": 13000,
-      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/driver/logs/u5u5a5sfdev1-20261124T16-33-13Z-next/instance-port13000.log"
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/driver/logs/u5u5a5sfdev1-20261124T18-11-47Z-next/instance-port13000.log"
     }
   ],
   "candidateClaimEligibility": {
     "eligible": false,
     "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
-    "reason": "run 'a5sf-live-member-2026-11-24T16-33-13-214Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+    "reason": "run 'a5sf-live-member-2026-11-24T18-11-47-315Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
   },
   "overall": "PASS",
   "partial": false,
-  "finishedAt": "2026-11-24T16:34:16.510Z"
+  "finishedAt": "2026-11-24T18:13:38.870Z"
 }

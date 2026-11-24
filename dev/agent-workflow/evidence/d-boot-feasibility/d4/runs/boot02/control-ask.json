@@ -3,47 +3,30 @@
   "ids": {
     "officer": "inst-1crltnl0089j",
     "worker": "inst-0ty67u70r99a",
-    "pendingRequestId": "ctrl-14680mx0n6lh7q1djicij1d0",
+    "pendingRequestId": "ctrl-0dsdv911gm0hfm0uf0svv02m",
     "pendingRequestId2": null,
     "pendingRequestId3": null,
     "pendingProcessRequestId": null
   },
-  "askRow": {
-    "requestId": "ctrl-14680mx0n6lh7q1djicij1d0",
-    "kind": "leader-approval",
-    "targetInstanceId": "inst-0ty67u70r99a",
-    "actionName": "admission-ask",
-    "toolName": "write",
-    "correlation": "admission:call-d4-worker-write",
-    "status": "pending",
-    "createdAt": "2026-11-24T16:48:02.583Z",
-    "subject": {
-      "kind": "instance",
-      "instanceId": "inst-0ty67u70r99a"
-    },
-    "executionCoupling": "inline",
-    "requestSequence": 9,
-    "operationFingerprint": "sha256:71b89d713f428db6690c62e19f68688caf6585eb5f7bf407be35e88ea93a9f95",
-    "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-46-58Z-next/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:ad050f5399e078c4229980f0b31de227)"
-  },
+  "askRow": null,
   "requests": [
     {
-      "requestId": "ctrl-14680mx0n6lh7q1djicij1d0",
+      "requestId": "ctrl-0dsdv911gm0hfm0uf0svv02m",
       "kind": "leader-approval",
       "targetInstanceId": "inst-0ty67u70r99a",
       "actionName": "admission-ask",
       "toolName": "write",
       "correlation": "admission:call-d4-worker-write",
-      "status": "pending",
-      "createdAt": "2026-11-24T16:48:02.583Z",
+      "status": "decided",
+      "createdAt": "2026-11-24T18:35:43.190Z",
       "subject": {
         "kind": "instance",
         "instanceId": "inst-0ty67u70r99a"
       },
       "executionCoupling": "inline",
       "requestSequence": 9,
-      "operationFingerprint": "sha256:71b89d713f428db6690c62e19f68688caf6585eb5f7bf407be35e88ea93a9f95",
-      "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-46-58Z-next/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:ad050f5399e078c4229980f0b31de227)"
+      "operationFingerprint": "sha256:3de2d70fd3e3b6ac1e8da222b0882d114316c1a06e56937b69779b37d1bfdde0",
+      "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-33-51Z-next/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:90534b063a5502dbe868d6262818a176)"
     }
   ]
 }
