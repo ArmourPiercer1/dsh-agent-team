@@ -102,3 +102,33 @@ driver from scratch (no reuse of the discarded artifacts).
 * **A row becomes gate-backed only if the gate is REQUIRED by branch protection AND green.** That
   is an owner decision. This round makes the layer executable and reviewable; it does not make it
   required, and it does not upgrade a row.
+
+## Required-gate outputs at `e716d906b` (`*-postcommit.log`)
+
+| gate | measured |
+| --- | --- |
+| `dispatch-tests --run --leg ute-vnext-a1` | **248 tests / 245 pass / 0 fail / 3 skipped**, digest `sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975` |
+| `test-catalog --max-uncollected 41 --max-excluded 7` | tests=785, uncollected=38, excluded=14, digest `sha256:da8a452d65130a3a7f62ef90b549a5289909e689e1ff619c4b3e0c45d5f5ed32`, findings=0 |
+| `ute-cut-closure --check` | **pass** deleted=148 references=3 prodRefs=0 distResiduals=0 `cut(0/148)` |
+| `ute-p0-assets --check` | **pass** modules=37 files=180 lines=69512 `cut(148/148)` |
+| `docs-sync --check` | docs=193 findings=0 blocking=0 (authority pointer verified) |
+| `place-dist-glue` | **35 placements** byte-identical |
+| `eb3-ci-required` | **pass workflows=11 findings=0** (was 10; the +1 is this workflow, registered non-required) |
+| bound vitest (`ci-integration`, 15 suites) | **PASS 15 suites / 238 passed / 0 failed** — measured twice in isolation |
+| UTE G1 nine-file argv | **89 tests / 89 pass / 0 fail** |
+| `eb3-run-manifest` | **pass records=546** strict=0 incomplete=11 findings=0 (round 104: 520; +26 = the live modified records + the 16 committed per-host snapshots) |
+| `ci-pr-gate --full --census-captures 2` | **PASS 10/10** (316.3 s), census **599f/7422l**, 2 captures identical identity sets |
+| `ute-a1-window --check` | **pass** red=0/0 `cut=(148/52)` |
+
+Two disclosures about the log set:
+
+* The first `ci-pr-gate --full` attempt (`ci-pr-gate.log`, committed with the first commit) failed
+  `lint-identities` on `scripts/candidate-acceptance-gate.mjs`: the file carried four unused
+  `eslint-disable no-console` directives, and this repo's linter reports an unused directive with
+  `ruleId=null`, which `lint-identities` labels `(parse-fatal)`. The directives were removed (no
+  assertion or behaviour changed), `lint-identities` went green, and the post-commit full gate above
+  is **10/10**. The failed log is kept rather than deleted.
+* A first post-commit bound-vitest attempt failed one `a3p5-permission-splice` RESTORE assertion
+  while `ci-pr-gate`'s own vitest was running **concurrently**; the same command run alone passed
+  238/238, and a second isolated run passed 238/238 again. The failure is recorded here rather than
+  hidden; the gate claims only the isolated runs.
