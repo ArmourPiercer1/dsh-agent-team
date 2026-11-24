@@ -1,9 +1,9 @@
 {
   "schema": "u5-run-record/1",
-  "runId": "a5sf-live-member-2026-11-24T13-40-25-965Z-b2",
+  "runId": "a5sf-live-member-2026-11-24T16-22-03-827Z-b2",
   "suite": "a5sf-live-member",
   "recordClass": "DEV-LIVE",
-  "startedAt": "2026-11-24T13:40:25.966Z",
+  "startedAt": "2026-11-24T16:22:03.827Z",
   "selectedCases": [
     "d2:multi-member-concurrency",
     "d2:revocation",
@@ -30,7 +30,7 @@
       "snapshotDigest": "9e2a211ff34196c68fd8db5a0d0d19af124df8fd949190c9c6b990cf3600ede8"
     },
     "candidate": {
-      "head": "65481f2f6eb0bd684e83cfa1e43e3c5268eb9de9",
+      "head": "e30d22c6085b607890aba685ceeb4b7596445108",
       "hostSha": "9c2670d3bce5275e0d1610272958121af87787bb",
       "baseline": "9c2670d3bce5275e0d1610272958121af87787bb"
     },
@@ -44,18 +44,18 @@
     "compositionDrops": [],
     "layout": "centre",
     "installGraph": "provisioned",
-    "teamSha": "65481f2f6eb0bd684e83cfa1e43e3c5268eb9de9",
+    "teamSha": "e30d22c6085b607890aba685ceeb4b7596445108",
     "hostSha": "9c2670d3bce5275e0d1610272958121af87787bb",
     "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
     "worldIds": [
-      "u5u5a5sfdev1-20261124T13-40-26Z-next"
+      "u5u5a5sfdev1-20261124T16-22-03Z-next"
     ]
   },
   "cases": [
     {
       "id": "d2:multi-member-concurrency",
       "verdict": "PASS",
-      "at": "2026-11-24T13:42:09.229Z",
+      "at": "2026-11-24T16:23:48.868Z",
       "proposition": "TWO governed Members run at the same time; each native `read` is admitted inside its OWN compiled lane and served by its OWN controlled Provider, the centre ledgers stay separate, and Member A's out-of-lane read of Member B's file is refused with zero B bytes",
       "failed": [],
       "clauses": [
@@ -77,7 +77,7 @@
         {
           "id": "concurrent-overlap",
           "ok": true,
-          "detail": "A=[2026-11-24T13:42:02.311Z..2026-11-24T13:42:03.053Z] B=[2026-11-24T13:42:02.481Z..2026-11-24T13:42:02.801Z]"
+          "detail": "A=[2026-11-24T16:23:42.707Z..2026-11-24T16:23:43.333Z] B=[2026-11-24T16:23:42.894Z..2026-11-24T16:23:43.065Z]"
         },
         {
           "id": "a-guard-facts-own-identity",
@@ -147,14 +147,14 @@
         {
           "id": "ledgers-are-separate-files",
           "ok": true,
-          "detail": "A=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-40-26Z-next/centre/inst-1235q1w1rd1u.facts.jsonl B=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-40-26Z-next/centre/inst-12x4j4t1rn1g.facts.jsonl"
+          "detail": "A=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/centre/inst-1235q1w1rd1u.facts.jsonl B=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/centre/inst-12x4j4t1rn1g.facts.jsonl"
         }
       ]
     },
     {
       "id": "d2:revocation",
       "verdict": "PASS",
-      "at": "2026-11-24T13:42:09.229Z",
+      "at": "2026-11-24T16:23:48.868Z",
       "proposition": "REQUIRED: a durable permission DENY through the product's ONE permissionOverlay mutation lane refuses the previously admitted call (`ADMISSION_OVERLAY_DENY`, zero body, settlement REFUSED, fact naming the overlay and carrying a policy generation); removing that deny restores the SAME call (admitted + COMPLETED, a NEW fact); an untouched in-lane call is admitted at every phase; and the same durable lane CANNOT mint an `allow` beyond the compiled ceiling",
       "failed": [],
       "clauses": [
@@ -201,7 +201,7 @@
         {
           "id": "a-fact-carries-policy-generation",
           "ok": true,
-          "detail": "policyGeneration=a5sf1:7496de800d6a12a85c5baa6dbc6fef9c"
+          "detail": "policyGeneration=a5sf1:864bc3cece03597badd296a9efde9b4f"
         },
         {
           "id": "b-deny-removal-committed",
@@ -221,7 +221,7 @@
         {
           "id": "b-same-call-family-new-fact",
           "ok": true,
-          "detail": "callIds=[\"call-d2-b-pre\",\"call-d2-b-mid\",\"call-d2-b-post\"] preFact=call-d2-b-pre@2026-11-24T13:42:04.534Z midFact=call-d2-b-mid@2026-11-24T13:42:05.649Z postFact=call-d2-b-post@2026-11-24T13:42:06.846Z (same family, distinct durable facts — never a replay of the pre fact)"
+          "detail": "callIds=[\"call-d2-b-pre\",\"call-d2-b-mid\",\"call-d2-b-post\"] preFact=call-d2-b-pre@2026-11-24T16:23:44.702Z midFact=call-d2-b-mid@2026-11-24T16:23:45.544Z postFact=call-d2-b-post@2026-11-24T16:23:46.502Z (same family, distinct durable facts — never a replay of the pre fact)"
         },
         {
           "id": "c-in-lane-unaffected-throughout",
@@ -231,7 +231,7 @@
         {
           "id": "d-widening-attempt-issued",
           "ok": true,
-          "detail": "call=team_grant_permission effect=allow locator=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-40-26Z-next/workspace/team-a/in-lane-a.txt (outside Member B's compiled read lane) answer={\"status\":\"permission-mutated\",\"rootSessionId\":\"session-dboot-d2-root\",\"targetInstanceId\":\"inst-12x4j4t1rn1g\",\"verb\":\"grant\",\"changed\":false,\"reason\":\"mutation-proposal-pending\"}"
+          "detail": "call=team_grant_permission effect=allow locator=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-a/in-lane-a.txt (outside Member B's compiled read lane) answer={\"status\":\"permission-mutated\",\"rootSessionId\":\"session-dboot-d2-root\",\"targetInstanceId\":\"inst-12x4j4t1rn1g\",\"verb\":\"grant\",\"changed\":false,\"reason\":\"mutation-proposal-pending\"}"
         },
         {
           "id": "d-widening-not-minted",
@@ -241,7 +241,7 @@
         {
           "id": "d-widened-locator-still-refused",
           "ok": true,
-          "detail": "isError=true laneDeny=true A-bytes=false text=Error: LANE_DENY: fs.read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-40-26Z-next/workspace/team-a/in-lane-a.txt\" is o"
+          "detail": "isError=true laneDeny=true A-bytes=false text=Error: LANE_DENY: fs.read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-a/in-lane-a.txt\" is o"
         },
         {
           "id": "d-widened-locator-fact-still-deny",
@@ -253,7 +253,7 @@
     {
       "id": "d2:stop",
       "verdict": "PASS",
-      "at": "2026-11-24T13:42:09.229Z",
+      "at": "2026-11-24T16:23:48.868Z",
       "proposition": "a Member turn is STOPPED through the product's own Stop path, and the stopped call's outcome is the centre's ADMISSION_STOPPED — never a completion, never UNKNOWN — while a second Member unaffected by the Stop completes",
       "failed": [],
       "clauses": [
@@ -265,7 +265,7 @@
         {
           "id": "ask-request-was-durable-and-pending",
           "ok": true,
-          "detail": "pending control request={\"requestId\":\"ctrl-1uotk6813a7all00kru1a0cm\",\"kind\":\"leader-approval\",\"targetInstanceId\":\"inst-1235q1w1rd1u\",\"actionName\":\"admission-ask\",\"toolName\":\"read\",\"correlation\":\"admission:call-d2-a-ask\",\"status\":\"pending\",\"createdAt\":\"2026-11-24T13:42:03.769Z\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-1235q1w1rd1u\"},\"executionCoupling\":\"inline\",\"requestSequence\":15,\"summary\":\"admission ask: read (fs.read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-40-26Z-next/workspace/team-a-ask/ask-me.txt\\\" requires approval under policy generation a5sf1:9bea9dd8c32255cd6bf2474873e0892c)\"}"
+          "detail": "pending control request={\"requestId\":\"ctrl-1uotk6813a7all00kru1a0cm\",\"kind\":\"leader-approval\",\"targetInstanceId\":\"inst-1235q1w1rd1u\",\"actionName\":\"admission-ask\",\"toolName\":\"read\",\"correlation\":\"admission:call-d2-a-ask\",\"status\":\"pending\",\"createdAt\":\"2026-11-24T16:23:43.921Z\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-1235q1w1rd1u\"},\"executionCoupling\":\"inline\",\"requestSequence\":15,\"summary\":\"admission ask: read (fs.read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-a-ask/ask-me.txt\\\" requires approval under policy generation a5sf1:02ce2f3dd6b21e24a47754a584283efd)\"}"
         },
         {
           "id": "pending-targets-stopped-member",
@@ -316,12 +316,10 @@
     },
     {
       "id": "d2:remote-delivery",
-      "verdict": "FAIL",
-      "at": "2026-11-24T13:42:09.229Z",
+      "verdict": "PASS",
+      "at": "2026-11-24T16:23:48.868Z",
       "proposition": "the S6 management plane DELIVERS work and never executes it: `member.send` returns the coordinator's durable delivery acknowledgement with ZERO tool executions and the Member's own governed turn then writes the centre's admission `allow` (for that Member's binding) into the MEMBER's fact ledger",
-      "failed": [
-        "archived-member-refused-typed: lifecycle=SETTLED code=null requestsAdded=0"
-      ],
+      "failed": [],
       "clauses": [
         {
           "id": "ack-http-ok",
@@ -351,7 +349,7 @@
         {
           "id": "ack-precedes-the-member-admission",
           "ok": true,
-          "detail": "ack=2026-11-24T13:42:08.302Z admission=2026-11-24T13:42:08.411Z"
+          "detail": "ack=2026-11-24T16:23:47.791Z admission=2026-11-24T16:23:47.867Z"
         },
         {
           "id": "member-own-admission-allow",
@@ -361,7 +359,7 @@
         {
           "id": "member-admission-under-member-binding",
           "ok": true,
-          "detail": "instance=inst-12x4j4t1rn1g agent=inst-12x4j4t1rn1g locator=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-40-26Z-next/workspace/team-b/in-lane-b.txt"
+          "detail": "instance=inst-12x4j4t1rn1g agent=inst-12x4j4t1rn1g locator=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-22-03Z-next/workspace/team-b/in-lane-b.txt"
         },
         {
           "id": "no-operator-identity-in-member-ledger",
@@ -395,8 +393,8 @@
         },
         {
           "id": "archived-member-refused-typed",
-          "ok": false,
-          "detail": "lifecycle=SETTLED code=null requestsAdded=0"
+          "ok": true,
+          "detail": "archiveOk=true archiveCode=null archiveMessage=null lifecycle=ARCHIVED code=TEAM_RUNTIME_WORK_STATE_REJECTED requestsAdded=0"
         },
         {
           "id": "restore-reenables-delivery",
@@ -431,8 +429,8 @@
     "thisRunCount": 2,
     "thisRunEntries": [
       {
-        "at": "2026-11-24T13:40:26.018Z",
-        "runId": "a5sf-live-member-2026-11-24T13-40-25-965Z-b2",
+        "at": "2026-11-24T16:22:03.878Z",
+        "runId": "a5sf-live-member-2026-11-24T16-22-03-827Z-b2",
         "suite": "a5sf-read",
         "recordClass": "DEV-LIVE",
         "kind": "budget-intent",
@@ -443,15 +441,15 @@
         "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the FS Provider face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
         "face": "FS Provider",
         "worldLine": "u5a5sfdev1",
-        "headCommit": "65481f2f6eb0bd684e83cfa1e43e3c5268eb9de9",
+        "headCommit": "e30d22c6085b607890aba685ceeb4b7596445108",
         "plannedStarts": 1
       },
       {
-        "at": "2026-11-24T13:41:56.476Z",
-        "runId": "a5sf-live-member-2026-11-24T13-40-25-965Z-b2",
+        "at": "2026-11-24T16:23:36.957Z",
+        "runId": "a5sf-live-member-2026-11-24T16-22-03-827Z-b2",
         "suite": "a5sf-live-member",
         "recordClass": "DEV-LIVE",
-        "world": "u5u5a5sfdev1-20261124T13-40-26Z-next",
+        "world": "u5u5a5sfdev1-20261124T16-22-03Z-next",
         "phase": "a5sf-live-member-boot2"
       }
     ]
@@ -459,17 +457,17 @@
   "boots": [
     {
       "phase": "a5sf-live-member-boot2",
-      "world": "u5u5a5sfdev1-20261124T13-40-26Z-next",
+      "world": "u5u5a5sfdev1-20261124T16-22-03Z-next",
       "port": 13000,
-      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d2/driver/logs/u5u5a5sfdev1-20261124T13-40-26Z-next/instance-port13000.log"
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d2/driver/logs/u5u5a5sfdev1-20261124T16-22-03Z-next/instance-port13000.log"
     }
   ],
   "candidateClaimEligibility": {
     "eligible": false,
     "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
-    "reason": "run 'a5sf-live-member-2026-11-24T13-40-25-965Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+    "reason": "run 'a5sf-live-member-2026-11-24T16-22-03-827Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
   },
-  "overall": "FAIL",
+  "overall": "PASS",
   "partial": false,
-  "finishedAt": "2026-11-24T13:42:09.229Z"
+  "finishedAt": "2026-11-24T16:23:48.868Z"
 }

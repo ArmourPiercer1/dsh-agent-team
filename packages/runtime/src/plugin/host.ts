@@ -354,9 +354,10 @@ interface GlueModule {
     /**
      * T12-M3 (optional additive): the DSH `subagents` public service,
      * structurally a superset of the glue's SubagentsDrainPort
-     * (drainContinuableDescendants + listDescendants). Absent → the glue's
-     * recursive drain fails closed with the typed
-     * `recursive-drain-unavailable` (documented in the glue).
+     * (drainDescendants on 0.2.2-rc.5 / drainContinuableDescendants on
+     * 0.2.0-rc.2 — the same public operation, renamed — plus
+     * listDescendants). Absent → the glue's recursive drain fails closed
+     * with the typed `recursive-drain-unavailable` (documented in the glue).
      */
     readonly subagents?: unknown
     /**

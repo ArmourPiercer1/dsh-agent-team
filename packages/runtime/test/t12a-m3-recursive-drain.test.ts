@@ -26,6 +26,12 @@
  *        (quiescence cannot be established);
  *   M3-5 a whenIdle rejection PROPAGATES as a fault before any drain call
  *        (step (a) runs first — no drain, no fake quiescence).
+ *   M3-6 (ROUND 108) the 0.2.2-rc.5 PUBLIC name `drainDescendants` drives the
+ *        same drain as the rc.2 name (the host renamed the method; the seam
+ *        resolves it by name capability — measured live on rc.5 by
+ *        `d2:remote-delivery`);
+ *   M3-7 a service with `listDescendants` but neither public drain name is
+ *        structurally unusable → the same typed fail-closed refusal.
  */
 import { describe, expect, it } from 'vitest'
 import { createAgentPresetsDouble, createLiveWorld, createSubagentsDouble } from './t12a-live-bridge.mjs'
@@ -99,6 +105,32 @@ try {
   idleError = error
 }
 
+// M3-6 (ROUND 108, rc.5 acceptance): the host renamed the PUBLIC drain method
+// between generations (0.2.0-rc.2 `drainContinuableDescendants` →
+// 0.2.2-rc.5 `drainDescendants`, same signature, same aggregate-after-settle
+// contract). A double that exposes ONLY the rc.5 name must drive the SAME
+// drain: before this arm the seam hard-required the rc.2 name and `archive`
+// failed closed on rc.5, leaving the member SETTLED.
+const nextNameSubagents = createSubagentsDouble({
+  drainMethodName: 'drainDescendants',
+  descendants: [{ sessionId: 'n1' }, { sessionId: 'n2' }],
+})
+const nextNameWorld = await buildWorld({ subagents: nextNameSubagents })
+const nextNameReport = await nextNameWorld.binding.drainDescendants(CHILD)
+
+// M3-7: a service that exposes `listDescendants` but NEITHER public drain name
+// is structurally unusable — the seam must still refuse (never a silent drain
+// that reports quiescence without draining anything).
+const noDrainWorld = await buildWorld({
+  subagents: { listDescendants: () => Promise.resolve([]) },
+})
+let noDrainError: unknown
+try {
+  await noDrainWorld.binding.drainDescendants(CHILD)
+} catch (error) {
+  noDrainError = error
+}
+
 describe('T12-M3 the real recursive descendant drain', () => {
   it('M3-1 a real descendant tree drains to the actual count (quiescent: true)', () => {
     expect(okReport.drained).toBe(3)
@@ -134,5 +166,21 @@ describe('T12-M3 the real recursive descendant drain', () => {
     expect((idleError as Error).message.includes('whenIdle fault')).toBe(true)
     expect(idleSubagents.drainCalls.length).toBe(0)
     expect(idleSubagents.listCalls.length).toBe(0)
+  })
+
+  it('M3-6 the 0.2.2-rc.5 public drain name (`drainDescendants`) drives the same drain', () => {
+    expect(nextNameReport.quiescent).toBe(true)
+    expect(nextNameReport.drained).toBe(2)
+    expect(nextNameSubagents.drainCalls.length).toBe(1)
+    expect(nextNameSubagents.drainCalls[0]!.length).toBe(1)
+    expect(nextNameSubagents.drainCalls[0]![0]).toBe(nextNameWorld.agents.handles.get(CHILD)!.agent)
+    expect(nextNameSubagents.listCalls.length).toBe(1)
+    expect(nextNameSubagents.listCalls[0]).toBe(CHILD)
+  })
+
+  it('M3-7 a service with listDescendants but neither public drain name still fails closed', () => {
+    expect(noDrainError instanceof Error).toBe(true)
+    expect((noDrainError as Error).message.includes('recursive-drain-unavailable')).toBe(true)
+    expect((noDrainError as { code?: string }).code).toBe('recursive-drain-unavailable')
   })
 })

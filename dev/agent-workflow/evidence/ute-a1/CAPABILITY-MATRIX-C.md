@@ -21,7 +21,7 @@ non-required, so it cannot upgrade anything.
 
 | C row | candidate-gate judge(s) | rc.2 | rc.5 |
 | --- | --- | --- | --- |
-| C-member | `d2:stop`, `d2:remote-delivery` | PROVEN | **`d2:remote-delivery` REFUTED** (one clause: `archived-member-refused-typed` = `lifecycle=SETTLED code=null`; every other clause PROVEN) |
+| C-member | `d2:stop`, `d2:remote-delivery` | PROVEN | **PROVEN** (round 108: both judges green on rc.5, 2/2 boots; `d2:remote-delivery` 20/20 clauses after the drain-seam fix) |
 | C-tools | `d4:ask-execute`, `d4:ask-execute-2` (write only), `d4:ask-denied`, `d4:ask-stopped` | PROVEN | PROVEN |
 | C-fs | `d:member-read-admitted`, `d:member-read-denied`, `d:native-read-surface`, `d:guard-facts`, `d:centre-facts` | PROVEN | PROVEN |
 | C-remote | `d:remote-creation`, `d2:multi-member-concurrency`, `d2:revocation` | PROVEN | PROVEN |
@@ -34,9 +34,18 @@ non-required, so it cannot upgrade anything.
 | OS negative controls | not covered by the D gate | — | — |
 
 The only non-PROVEN verdict the gate may accept is the literal enumerated
-`d4:ask-execute-process` (citation `SCOPE-subprocess-ask.md` §2/§4). The rc.5 `d2:remote-delivery`
-refutation is **not** exempt, so the rc.5 gate verdict is FAIL. Round-105 verdicts:
-rc.2 `pass` (31 judges / 30 proven / 1 known-refuted / 0 env-limited); rc.5 `fail` (31 / 29 / 1 / 0).
+`d4:ask-execute-process` (citation `SCOPE-subprocess-ask.md` §2/§4). Round-105 verdicts (historical):
+rc.2 `pass` (31 judges / 30 proven / 1 known-refuted / 0 env-limited); rc.5 `fail` (31 / 29 / 1 / 0),
+because the rc.5 `d2:remote-delivery` refutation was not exempt.
+
+**Round 108 closed that refutation with a product fix, not an allowance.** rc.5 renamed the public
+`subagents.drainContinuableDescendants` to `subagents.drainDescendants`; the drain seam required only
+the rc.2 name, so `member.archive` aborted at `drain-descendants` with zero durable writes and the
+member stayed `SETTLED` (hence the observed `code=null` on the subsequent send). The seam now resolves
+either public name (`stop-drain-lane.mjs` `resolveDrainSeam`), armed by M3-6/M3-7. rc.5 re-runs:
+`d` 6/6 judges and `d2` 4/4 judges PROVEN on both boots; no judge was relaxed, skipped or exempted and
+no id was added to `KNOWN_REFUTED`. The rc.5 column of the candidate gate is green in round 108 (see
+`D-ACCEPTANCE-REPORT.md` for the exact verdict line).
 
 This worktree **does** boot the product at this HEAD (measured rounds 58–60, `D-BOOT-FEASIBILITY.md` §2/§11/
 §12): the `node_modules` link resolves, `tsc` runs from the main install, and a real `dsh web` host serves a

@@ -1195,25 +1195,35 @@ export async function createDomainDouble({
  * drain (the real service rejects with an aggregate after all branches
  * settle when any failed) and a configurable descendant tree.
  *
+ * Each host generation exposes the drain under its OWN public name
+ * (0.2.2-rc.5 `drainDescendants`, 0.2.0-rc.2 `drainContinuableDescendants`),
+ * so `drainMethodName` selects which single name the double exposes — the
+ * point of the arm is that the glue resolves the seam by name, not that a
+ * double carries both.
+ *
  * @param {object} [options]
+ * @param {'drainDescendants'|'drainContinuableDescendants'} [options.drainMethodName]
+ *   which public drain name this double exposes (default: the rc.2 name)
  * @param {'reject'} [options.drainBehavior] reject the drain call
  * @param {string} [options.drainErrorMessage]
  * @param {object[]} [options.descendants] listDescendants result entries
  */
 export function createSubagentsDouble(options = {}) {
+  const drainMethodName = options.drainMethodName ?? 'drainContinuableDescendants'
   const drainCalls = []
   const listCalls = []
   const descendants = options.descendants ?? []
+  const drain = (parents) => {
+    drainCalls.push(parents)
+    if (options.drainBehavior === 'reject') {
+      return Promise.reject(new Error(options.drainErrorMessage ?? 'subagent drain failed (aggregate)'))
+    }
+    return Promise.resolve()
+  }
   return {
     drainCalls,
     listCalls,
-    drainContinuableDescendants(parents) {
-      drainCalls.push(parents)
-      if (options.drainBehavior === 'reject') {
-        return Promise.reject(new Error(options.drainErrorMessage ?? 'subagent drain failed (aggregate)'))
-      }
-      return Promise.resolve()
-    },
+    [drainMethodName]: drain,
     listDescendants(rootSessionId) {
       listCalls.push(rootSessionId)
       return Promise.resolve(descendants)

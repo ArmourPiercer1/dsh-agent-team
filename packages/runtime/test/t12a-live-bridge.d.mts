@@ -391,18 +391,30 @@ export interface DomainDoubleParams {
 
 /** The subagents service double options (see the `.mjs` createSubagentsDouble). */
 export interface SubagentsDoubleOptions {
-  /** `'reject'` makes drainContinuableDescendants reject (aggregate failure). */
+  /**
+   * Which PUBLIC drain name this double exposes: `'drainDescendants'`
+   * (0.2.2-rc.5) or `'drainContinuableDescendants'` (0.2.0-rc.2, the
+   * default). Each host generation exposes exactly one of the two.
+   */
+  readonly drainMethodName?: 'drainDescendants' | 'drainContinuableDescendants'
+  /** `'reject'` makes the drain reject (aggregate failure). */
   readonly drainBehavior?: 'reject'
   readonly drainErrorMessage?: string
   /** The listDescendants result entries (the descendant tree). */
   readonly descendants?: object[]
 }
 
-/** The subagents service double (the SubagentRuntime drain surface). */
+/**
+ * The subagents service double (the SubagentRuntime drain surface). Only the
+ * selected generation's drain name is present.
+ */
 export interface SubagentsDouble {
   readonly drainCalls: unknown[][]
   readonly listCalls: string[]
-  drainContinuableDescendants(parents: readonly unknown[]): Promise<void>
+  /** 0.2.2-rc.5 public name (present when `drainMethodName` selects it). */
+  drainDescendants?(parents: readonly unknown[]): Promise<void>
+  /** 0.2.0-rc.2 public name (the default). */
+  drainContinuableDescendants?(parents: readonly unknown[]): Promise<void>
   listDescendants(rootSessionId: string): Promise<readonly object[]>
 }
 

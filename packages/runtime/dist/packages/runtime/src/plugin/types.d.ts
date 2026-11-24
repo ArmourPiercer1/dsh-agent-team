@@ -1456,12 +1456,17 @@ export interface TeamAgentBindings {
  * T12-M3: the structural seam for the DSH subagents service
  * (SubagentRuntime) that the live glue consumes as the OPTIONAL dep
  * `deps.subagents`. Only the two methods the recursive drain
- * (agent-bindings.mjs `drainDescendants`) invokes are required:
+ * (agent-bindings.mjs `drainDescendants`) invokes are required. The upstream
+ * PUBLIC service renamed the drain method between the two supported host
+ * generations (0.2.2-rc.5 `drainDescendants`; 0.2.0-rc.2
+ * `drainContinuableDescendants`), with the same signature and the same
+ * aggregate-after-settle contract, so the seam accepts EITHER name:
  *
- *   - `drainContinuableDescendants` — closes admission below the exact live
- *     parent agents, stops their visible descendant Activations, and awaits
- *     them; it REJECTS with an aggregate AFTER ALL BRANCHES SETTLE when any
- *     failed (a drain failure, reported as `quiescent: false`);
+ *   - `drainDescendants` / `drainContinuableDescendants` — closes admission
+ *     below the exact live parent agents, stops their visible descendant
+ *     Activations, and awaits them; it REJECTS with an aggregate AFTER ALL
+ *     BRANCHES SETTLE when any failed (a drain failure, reported as
+ *     `quiescent: false`);
  *   - `listDescendants` — the complete descendant tree below one session id
  *     (the honest drained count).
  *
@@ -1472,8 +1477,15 @@ export interface TeamAgentBindings {
  * (additive; the glue reads `deps.subagents` defensively).
  */
 export interface SubagentsDrainPort {
-    /** Drain every continuable descendant below the exact live parent agents. */
-    drainContinuableDescendants(parents: readonly unknown[]): Promise<void>;
+    /**
+     * 0.2.2-rc.5 public name: drain every instance below the exact live parent
+     * agents.
+     */
+    drainDescendants?(parents: readonly unknown[]): Promise<void>;
+    /**
+     * 0.2.0-rc.2 public name for the same operation (the seam accepts either).
+     */
+    drainContinuableDescendants?(parents: readonly unknown[]): Promise<void>;
     /** Enumerate the complete descendant tree below one session id. */
     listDescendants(rootSessionId: string): Promise<readonly unknown[]>;
 }

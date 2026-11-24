@@ -1162,7 +1162,7 @@ function judgeRemoteDelivery({ b, paths, delivery }) {
       { id: 'member-turn-came-from-the-delivery', ok: Number(after?.memberRequests) >= 1, detail: `member provider requests carrying the delivered token=${String(after?.memberRequests)}` },
       { id: 'unknown-member-typed-no-execution', ok: delivery?.unknownMember?.ok === false && typeof delivery?.unknownMember?.code === 'string' && delivery.unknownMember.code !== 'ADMISSION_REMOTE_UNAVAILABLE' && delivery?.unknownMember?.requestsAdded === 0, detail: `code=${String(delivery?.unknownMember?.code)} requestsAdded=${String(delivery?.unknownMember?.requestsAdded)}` },
       { id: 'duplicate-delivery-durable-and-ghost-free', ok: delivery?.duplicate?.ok === true && delivery?.duplicate?.outcome?.status === 'delivered' && delivery?.duplicate?.requestsAdded === 0 && executions.filter((r) => r?.outcome === 'completed').length === 1, detail: `ok=${String(delivery?.duplicate?.ok)} delivered=${String(delivery?.duplicate?.outcome?.status)} newDurableCoordination=${String(delivery?.duplicate?.distinctFromFirst)} requestsAddedAtAck=${String(delivery?.duplicate?.requestsAdded)} completedExecutionsForTheDeliveredCall=${String(executions.filter((r) => r?.outcome === 'completed').length)} (at-least-once delivery: a second send is a second coordination, never an operator-side execution)` },
-      { id: 'archived-member-refused-typed', ok: delivery?.archived?.archiveOk === true && delivery?.archived?.lifecycle === 'ARCHIVED' && delivery?.archived?.ok === false && typeof delivery?.archived?.code === 'string' && delivery.archived.code !== 'ADMISSION_REMOTE_UNAVAILABLE' && delivery?.archived?.requestsAdded === 0, detail: `lifecycle=${String(delivery?.archived?.lifecycle)} code=${String(delivery?.archived?.code)} requestsAdded=${String(delivery?.archived?.requestsAdded)}` },
+      { id: 'archived-member-refused-typed', ok: delivery?.archived?.archiveOk === true && delivery?.archived?.lifecycle === 'ARCHIVED' && delivery?.archived?.ok === false && typeof delivery?.archived?.code === 'string' && delivery.archived.code !== 'ADMISSION_REMOTE_UNAVAILABLE' && delivery?.archived?.requestsAdded === 0, detail: `archiveOk=${String(delivery?.archived?.archiveOk)} archiveCode=${String(delivery?.archived?.archiveCode)} archiveMessage=${String(delivery?.archived?.archiveMessage)} lifecycle=${String(delivery?.archived?.lifecycle)} code=${String(delivery?.archived?.code)} requestsAdded=${String(delivery?.archived?.requestsAdded)}` },
       { id: 'restore-reenables-delivery', ok: (delivery?.restored?.lifecycle === 'SETTLED' || delivery?.restored?.lifecycle === 'RUNNING') && delivery?.restored?.ok === true, detail: `lifecycle=${String(delivery?.restored?.lifecycle)} ok=${String(delivery?.restored?.ok)} code=${String(delivery?.restored?.code)}` },
       { id: 'stop-during-delivered-turn-acked', ok: delivery?.stop?.ack?.ok === true && delivery?.stop?.pending === true, detail: `ackOk=${String(delivery?.stop?.ack?.ok)} pending=${String(delivery?.stop?.pending)}` },
       { id: 'stopped-delivered-call-is-admission-stopped', ok: delivery?.stop?.fact?.refusalCode === 'ADMISSION_STOPPED' && delivery?.stop?.fact?.decision === 'deny', detail: `refusalCode=${String(delivery?.stop?.fact?.refusalCode)} decision=${String(delivery?.stop?.fact?.decision)}` },
@@ -1751,14 +1751,23 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
     const archivedDelivery = {
       archiveStatus: archiveResponse.status,
       archiveOk: archiveResponse.body?.result?.ok === true,
+      // ROUND 108 — THE ARCHIVE REPLY IS ITS OWN TYPED CHANNEL. When the
+      // management `member.archive` is itself refused, the refusal lives in
+      // this reply (`result.error.code`/`message`), NOT in the subsequent
+      // `member.send`: the send then sees an un-archived (SETTLED) member and
+      // is lawfully accepted. Recording the archive reply's typed code keeps
+      // "why the member is not ARCHIVED" observable instead of discarding it.
+      archiveCode: archiveResponse.body?.result?.error?.code ?? null,
+      archiveMessage: archiveResponse.body?.result?.error?.message ?? null,
       lifecycle: archivedLifecycle,
+      archiveLifecycle: archivedLifecycle,
       status: archivedResponse.status,
       ok: archivedResponse.body?.result?.ok === true,
       code: archivedResponse.body?.result?.error?.code ?? null,
       requestsAdded: requests().length - requestsBeforeArchived,
       executionsAfter: deliveryOf(ledgerBPath, CALL_RD).executions.length,
     }
-    log(`[boot${String(index)}] member.send archived: lifecycle=${String(archivedDelivery.lifecycle)} ok=${String(archivedDelivery.ok)} code=${String(archivedDelivery.code)} requestsAdded=${String(archivedDelivery.requestsAdded)}`)
+    log(`[boot${String(index)}] member.send archived: archiveOk=${String(archivedDelivery.archiveOk)} archiveCode=${String(archivedDelivery.archiveCode)} archiveMessage=${String(archivedDelivery.archiveMessage)} lifecycle=${String(archivedDelivery.lifecycle)} ok=${String(archivedDelivery.ok)} code=${String(archivedDelivery.code)} requestsAdded=${String(archivedDelivery.requestsAdded)}`)
     const restoreResponse = await remoteCall(fetchJson, origin, cookie, 'member.restore', {
       teamSessionId: BOOT_ROOT,
       instanceId: ids.b,
@@ -1774,6 +1783,8 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
     const restoredDelivery = {
       restoreStatus: restoreResponse.status,
       restoreOk: restoreResponse.body?.result?.ok === true,
+      restoreCode: restoreResponse.body?.result?.error?.code ?? null,
+      restoreMessage: restoreResponse.body?.result?.error?.message ?? null,
       lifecycle: restoredLifecycle,
       status: restoredResponse.status,
       ok: restoredResponse.body?.result?.ok === true,

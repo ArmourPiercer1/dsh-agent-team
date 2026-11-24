@@ -1,10 +1,10 @@
 # D acceptance report — UTE vNext A1 cut + centre (candidate)
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-<!-- ROUND 106 — THE CURRENT ACCEPTANCE STATUS. Read this before anything else. -->
+<!-- ROUND 108 — THE CURRENT ACCEPTANCE STATUS. Read this before anything else. -->
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
-## CURRENT ACCEPTANCE STATUS — the single table (round 106, 2026-11-24)
+## CURRENT ACCEPTANCE STATUS — the single table (round 108, 2026-11-24)
 
 > **This table is the current verdict. Every later section of this file is HISTORICAL.** Where a
 > later section disagrees with this table — the round-78 rc.5 note that "only these three scripted
@@ -13,10 +13,15 @@
 > table wins**. The older text is kept unchanged as the record of what was measured then; it is not
 > a current claim and must not be quoted as one.
 
-**HEAD measured:** `563feac139e87e7cc3269d3d4d799afc0b676568` (round 106; this documentation commit is
-its child, named in the settlement comment). Round 102's judge-by-judge table below was measured at
-`10d8a67aeb7e189011faf2c131a73aa33b76fac3` and is unchanged; round 106 adds two owner rulings and three
-tested arms, not new live measurements.
+**HEAD measured:** `e30d22c6085b607890aba685ceeb4b7596445108` **plus the round-108 drain-seam arm** (this
+commit is its child, named in the settlement comment). Round 108 re-ran the two rc.5 gaps the round-106
+table still carried — `d:remote-creation` and `d2:remote-delivery` — and both are **PROVEN on rc.5**
+(2/2 boots, agreeing). The `d2` rc.5 refutation was a **real product/host-compat defect, now fixed**:
+rc.5 renamed the public `subagents.drainContinuableDescendants` to `subagents.drainDescendants`, the
+drain seam required only the rc.2 name, and `member.archive` therefore aborted at `drain-descendants`
+with `LIFECYCLE_LIVE_EFFECT_FAILED` — leaving the member `SETTLED`. `d:remote-creation` was simply not
+re-run on rc.5 since the round-91 judge repair; it passes unchanged. Round 102's judge-by-judge table
+below was measured at `10d8a67aeb7e189011faf2c131a73aa33b76fac3` and is unchanged.
 Worktree `.worktrees/vnext-a1-cut`, branch `vnext/a1-cut`, PR **#822 DRAFT — unmerged**.
 Record class: `DEV-LIVE` for every boot, in-process `MECHANISM` where marked. **No row is
 PRODUCT-PROVEN** and no row can be: `V@B=yes` is reserved for a capability exercised by a BOUND
@@ -52,11 +57,11 @@ Hosts, exactly as the drivers printed them (`candidate:` row, first log line of 
 | 2 | `d:guard-facts` / `d:centre-facts` | DEV-LIVE | **PROVEN** — 2 allow facts, 2 admissions, 2 executions | **PROVEN** — same counters | same |
 | 3 | `d:native-read-surface` | DEV-LIVE | **PROVEN** (6 clauses) | **PROVEN** | same |
 | 4 | `d:member-read-denied` | DEV-LIVE | **PROVEN** (deciding channel + zero bytes/not-ENOENT) | **PROVEN** (round 78 port: batch + `workingDirectory`) | provider-channel refusal is in-process only (`ADM-100`) |
-| 5 | `d:remote-creation` | DEV-LIVE | **PROVEN** (round 91 judge repair) | **PROVEN** (round 105 candidate gate, repaired clause carried; 2/2 boots) | no bound gate ⇒ never PRODUCT-PROVEN |
+| 5 | `d:remote-creation` | DEV-LIVE | **PROVEN** (round 91 judge repair) | **PROVEN** (round 108 rc.5 re-run, 2/2 boots, 8/8 clauses each) | no bound gate ⇒ never PRODUCT-PROVEN |
 | 6 | `d2:multi-member-concurrency` | DEV-LIVE | **PROVEN** | **PROVEN** (round 78/79) | no bound gate |
 | 7 | `d2:revocation` (4 directions) | DEV-LIVE | **PROVEN** | **PROVEN** (9/9 + 9/9, 14/14 guard facts) | same |
 | 8 | `d2:stop` | DEV-LIVE | **PROVEN** | **PROVEN** (`stopSettlementState=REFUSED`) | same |
-| 9 | `d2:remote-delivery` | DEV-LIVE | **PROVEN** (round 83) | **REFUTED** (round 105 candidate gate, both boots) — one clause only: `archived-member-refused-typed` gives `lifecycle=SETTLED code=null requestsAdded=0`; every other clause PROVEN | **new round-105 finding**: on rc.5 an archived member's `member.send` does not yield the typed refusal. Product/owner decision; not a documentation defect |
+| 9 | `d2:remote-delivery` | DEV-LIVE | **PROVEN** (round 83) | **PROVEN** (round 108 rc.5 re-run after the drain-seam fix, 2/2 boots, 20/20 clauses each; archived send refused typed `TEAM_RUNTIME_WORK_STATE_REJECTED`, `requestsAdded=0`) | no bound gate ⇒ never PRODUCT-PROVEN; the round-105 rc.5 refutation is **closed by a product fix**, not by an allowance (see the round-108 section) |
 | 10 | `d3:persistent-subprocess` | DEV-LIVE | **PROVEN** (round 76) | **PROVEN** (round 78/79) | same |
 | 11 | `d3:crash-cold-recovery` | DEV-LIVE | **PROVEN** | **PROVEN** | same |
 | 12 | `d3:work-delivery` | DEV-LIVE | **PROVEN** | **PROVEN** (`collectStatus=succeeded`; `inflightAfter=UNKNOWN` by contract) | cross-process in-flight truth not established |
@@ -161,14 +166,93 @@ is proposed, and no second authority is introduced.
    No refusal code was removed or renamed; the host's `ABORTED_BEFORE_DISPATCH` return is untouched and no
    `tools/result` is fabricated.
 
+### What moved in round 108 — the two rc.5 gaps re-run, and the `d2` refutation was a PRODUCT defect
+
+Review `20261124-2120` §3 (first P0) named two rows the round-106 table still carried as rc.5 gaps:
+`d:remote-creation` (not re-run on rc.5 since the round-91 judge repair) and `d2:remote-delivery` (no
+rc.5 verdict recorded, plus the round-105 candidate-gate MEASURED refutation). Both were re-run on
+rc.5 (`TEAM_TEST_HOST=next`, `--boots 2`) and both are **PROVEN**.
+
+**The rc.5 refutation was the product's fault, not the judge's.** The chain, measured:
+
+1. `member.archive` on rc.5 returned a **typed refusal of its own** (`archiveOk=false`) and the
+   durable member row stayed `SETTLED` (`/__p6t6/state` read-back). The round-105 driver observation
+   discarded that reply's error code, so only the *consequence* was visible:
+   `member.send` → `ok=true code=null requestsAdded=0`.
+2. The send was **correct**: `SETTLED` is work-accepting (`WORK_ACCEPTING_STATES`), so an un-archived
+   member lawfully accepts a delivery. Nothing was silently dropped — the archive had never happened.
+3. Root cause (rc.5 host-compat seam): the upstream PUBLIC service renamed
+   `subagents.drainContinuableDescendants` (0.2.0-rc.2) to `subagents.drainDescendants`
+   (0.2.2-rc.5) — same signature, same aggregate-after-settle contract, the very same
+   `manager.drainDescendants` underneath. The drain seam hard-required the rc.2 name
+   (`packages/runtime/src/plugin/vnext/stop-drain-lane.mjs` pre-fix lines 194/201), so on rc.5
+   `recursive-drain-unavailable` → `LIFECYCLE_LIVE_EFFECT_FAILED` at step `drain-descendants` →
+   **zero durable writes** → the member stayed `SETTLED`.
+4. So the judge's expectation was RIGHT and the product was wrong: an archived member's delivery must
+   be refused typed, and it is — once the member can actually be archived.
+
+**The fix (arm, no patch of the host, CORE PATCH BUDGET = 0).** `stop-drain-lane.mjs:177`
+(`resolveDrainSeam`) now resolves the drain seam by PUBLIC NAME capability — `drainDescendants`
+(rc.5) first, then `drainContinuableDescendants` (rc.2) — and passes the parents verbatim (`:238`,
+`:248`). A host exposing neither still fails closed through the same typed
+`recursive-drain-unavailable` path (`:241`). The evidence arm is the bound vitest file
+`packages/runtime/test/t12a-m3-recursive-drain.test.ts`: **M3-6** drives a double that exposes ONLY
+the rc.5 name and asserts the same drain + honest count (`:171`), and **M3-7** asserts that a service
+with `listDescendants` but neither public drain name still refuses (`:181`). The driver observation
+also records the archive reply's own typed channel (`archiveCode`/`archiveMessage`, `run-boot-d2.mjs`
+`:1760`), so a future archive failure can never again present only as "the send was accepted".
+
+**Positive control (required before any observation change — and none was made).** On the SAME rc.5
+boots, the same `member.send` channel is accepted for a LIVE member (`member.send ack: status=200
+ok=true`, `deliveredSeq=40`) and for the RESTORED member after `member.restore`
+(`restore-reenables-delivery` PROVEN; `restored.lifecycle=SETTLED ok=true`). The channel is not
+blanket-refusing; it refuses exactly the ARCHIVED target. The clause was **not** relaxed — its
+predicate grew strictly more observability (`archiveOk`/`archiveCode` in the detail), not a weaker
+`ok`.
+
+**rc.5 measurements (HEAD `e30d22c60` + the round-108 seam arm), driver `run-boot.mjs`:**
+
+| judge (`d:`) | boot 1 | boot 2 | clauses |
+| --- | --- | --- | --- |
+| `d:member-read-admitted` | PASS | PASS | 7/7 |
+| `d:member-read-denied` | PASS | PASS | 11/11 |
+| `d:native-read-surface` | PASS | PASS | 6/6 |
+| `d:guard-facts` | PASS | PASS | 5/5 |
+| `d:centre-facts` | PASS | PASS | 9/9 |
+| `d:remote-creation` | PASS | PASS | 8/8 |
+
+Two-run agreement `agreeing=true differing=[]`; `RESULT PASS (2/2 boots; agreeing pair=true)`.
+Counters identical on both boots (`allowFacts=2`, `denyFacts=0`, `centreAdmissions=2`,
+`centreExecutions=2`, `governedSurface=true`, `admittedBytes=true`, `deniedSecretAbsent=true`).
+
+**rc.5 measurements, driver `run-boot-d2.mjs`:**
+
+| judge (`d2:`) | boot 1 | boot 2 | clauses |
+| --- | --- | --- | --- |
+| `d2:multi-member-concurrency` | PASS | PASS | 18/18 |
+| `d2:revocation` | PASS | PASS | 18/18 |
+| `d2:stop` | PASS | PASS | 11/11 |
+| `d2:remote-delivery` | PASS | PASS | **20/20** |
+
+`d2:remote-delivery`'s `archived-member-refused-typed`, both boots:
+`archiveOk=true archiveCode=null archiveMessage=null lifecycle=ARCHIVED
+code=TEAM_RUNTIME_WORK_STATE_REJECTED requestsAdded=0` — archived, and the delivery refused with a
+typed code and zero added requests. Two-run agreement `agreeing=true differing=[]`;
+`RESULT PASS (2/2 boots; agreeing pair=true)`; admissions/guard facts identical on both boots
+(`aAdmissions=10`, `bAdmissions=10`, `aGuardFacts=14`, `bGuardFacts=16`).
+
+**Levels:** no row moves. Both rows stay **DEV-LIVE**; neither becomes PRODUCT-PROVEN (no bound,
+required gate exercises them). The rc.5 column of the single table is now green for every row except
+the two enumerated/ruled refusals (`d4:ask-execute-process`, row 30) and the ENV-LIMITED OS controls.
+
 ### Still open — the owner's next list (NOT done this round)
 
 These are recorded so the candidate does not read as finished; none was attempted in round 106:
 
-- re-run `d:remote-creation` and `d2:remote-delivery` on rc.5 through the candidate gate, **including the
-  round-105 rc.5 refutation** (`d2:remote-delivery`'s `archived-member-refused-typed` clause:
-  `lifecycle=SETTLED code=null requestsAdded=0`, both boots) — the new measured rc.5 gap stays a finding
-  until a product/owner decision names it;
+- ~~re-run `d:remote-creation` and `d2:remote-delivery` on rc.5 through the candidate gate, including the
+  round-105 rc.5 refutation~~ — **DONE in round 108.** Both are PROVEN on rc.5; the refutation was a
+  product/host-compat defect (rc.5's public drain rename), fixed and armed. See "What moved in
+  round 108" above;
 - run the **full rc.5 test population** (the candidate gate currently exercises the four live drivers, not
   the whole suite map on the target host);
 - a **real-model smoke test** (every live row still uses the scripted mock; no real-model interleaving of

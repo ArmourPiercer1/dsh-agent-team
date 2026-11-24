@@ -3613,3 +3613,53 @@ NOT add the id to `KNOWN_REFUTED` (only `d4:ask-execute-process` is enumerated).
 R3 `write` receipt remain **DEV-LIVE** on both hosts. The governed process face remains
 **NOT-PRODUCT-PROVEN**. No row is PRODUCT-PROVEN, and no row becomes gate-backed without an owner
 decision to make the gate required.
+
+---
+
+## Round 108 — the rc.5 re-runs: `d:remote-creation` and `d2:remote-delivery` are PROVEN, and the rc.5 refutation was a product defect
+
+Round 108 re-ran the two remaining rc.5 gaps of the round-106 single table
+(`TEAM_TEST_HOST=next`, `--boots 2`), after fixing the defect the round-105 candidate gate had
+measured.
+
+**Population delta:** no test file added, removed or reclassified; no dispatch leg changed. One new
+evidence arm pair lives INSIDE the already-collected bound vitest file
+`packages/runtime/test/t12a-m3-recursive-drain.test.ts` (M3-6, M3-7), so the catalog identity and the
+`ute-vnext-a1` leg digest are unchanged by construction. `place-dist-glue` re-placed the 35 dist
+files byte-identically (the glue source changed). The scripted driver observation gained two fields
+(`archiveCode`/`archiveMessage`) and a longer judge detail — no predicate was relaxed.
+
+**The measured facts.**
+
+```
+d    (rc.5, 2 boots) RESULT PASS (2/2 boots; agreeing pair=true)
+  d:member-read-admitted PASS/PASS  d:member-read-denied PASS/PASS  d:native-read-surface PASS/PASS
+  d:guard-facts PASS/PASS  d:centre-facts PASS/PASS  d:remote-creation PASS/PASS (8/8 clauses each)
+d2   (rc.5, 2 boots) RESULT PASS (2/2 boots; agreeing pair=true)
+  d2:multi-member-concurrency PASS/PASS (18/18)  d2:revocation PASS/PASS (18/18)
+  d2:stop PASS/PASS (11/11)  d2:remote-delivery PASS/PASS (20/20)
+  archived-member-refused-typed: archiveOk=true lifecycle=ARCHIVED code=TEAM_RUNTIME_WORK_STATE_REJECTED requestsAdded=0
+```
+
+**Who was wrong: the product.** `member.archive` returned its own typed refusal
+(`archiveOk=false`) on rc.5 and the durable row stayed `SETTLED`; the round-105 observation discarded
+that reply's error code, so only the consequence was visible (`member.send` → `ok=true code=null
+requestsAdded=0`). The send itself was correct — `SETTLED` is work-accepting, so an un-archived
+member lawfully accepts a delivery. Root cause: rc.5 renamed the PUBLIC
+`subagents.drainContinuableDescendants` to `subagents.drainDescendants` (same signature, same
+aggregate-after-settle contract, same internal manager call) and the drain seam
+(`packages/runtime/src/plugin/vnext/stop-drain-lane.mjs`, pre-fix lines 194/201) required only the
+rc.2 name → `recursive-drain-unavailable` → `LIFECYCLE_LIVE_EFFECT_FAILED` at `drain-descendants` →
+zero durable writes.
+
+**The fix.** `resolveDrainSeam` (`stop-drain-lane.mjs:177`) accepts either public name and passes the
+parents verbatim; a host exposing neither still fails closed typed (`:241`). M3-6 asserts the rc.5
+name drives the same drain; M3-7 asserts the neither-name shape still refuses. No upstream patch
+(CORE PATCH BUDGET = 0), no skipped/weakened judge, no exemption added to `KNOWN_REFUTED`.
+
+**Positive control.** On the same rc.5 boots the same `member.send` channel is accepted for a LIVE
+member (`ok=true`, `deliveredSeq=40`) and again after `member.restore`; it refuses only the ARCHIVED
+target. The clause predicate was not relaxed — it grew strictly more observability.
+
+**Levels:** no row moves. Both rows stay DEV-LIVE on rc.5. The gate remains non-required, so no row
+becomes PRODUCT-PROVEN.

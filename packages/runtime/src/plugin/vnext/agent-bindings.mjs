@@ -127,7 +127,10 @@
   *   now                - parity field (the row's clock); unused by the ported
  *                        glue paths, which derive time from the services
  *   subagents (OPTIONAL) - the DSH subagents service (SubagentRuntime):
- *                        { drainContinuableDescendants, listDescendants }.
+ *                        { drainDescendants | drainContinuableDescendants,
+ *                          listDescendants } (the drain method's public
+ *                        name differs by host generation; the lane accepts
+ *                        either).
  *                        T12-M3: the recursive drain needs it; ABSENT -> the
  *                        drain fails closed with the typed
  *                        recursive-drain-unavailable error (the
@@ -319,7 +322,8 @@
  *   interrupt(target)            (agent.cancel({kind:'user'}))
  *   drainDescendants(childSessionId) -> {drained, quiescent}
  *                                 (T12-M3: the REAL recursive drain — whenIdle
- *                                  + subagents.drainContinuableDescendants +
+ *                                  + subagents.drainDescendants (rc.5) /
+ *                                  drainContinuableDescendants (rc.2) +
  *                                  the honest listDescendants count; a drain
  *                                  failure reports {drained, quiescent:false};
  *                                  a drain that cannot establish quiescence

@@ -33,6 +33,10 @@
  * @returns {object} the stop/drain/residency port.
  */
 export function createStopDrainLane ({ domain, rootSid, childSessionIdFor, liveAgents, observations, deps }) {
+  // The resolved recursive-drain seam name (rc.5 `drainDescendants` or rc.2
+  // `drainContinuableDescendants`), recorded ONCE into the row observations so
+  // the host generation actually exercised stays visible in evidence.
+  let drainSeamObserved = null
   // The P7-T3 lifecycle bindings over the REAL production surfaces: close-
   // admission stays with the production row (no separate in-process
   // admission gate — the router's per-team lock serializes the whole
@@ -143,6 +147,45 @@ export function createStopDrainLane ({ domain, rootSid, childSessionIdFor, liveA
   }
 
   /**
+   * Resolve the host's recursive-drain seam across the PUBLIC generations.
+   *
+   * The upstream public service renamed this method between the two host
+   * generations the cut supports, WITHOUT changing its contract:
+   *
+   *   - 0.2.2-rc.5+: `subagents.drainDescendants(parents)` — "Close admission
+   *     and stop all instances in the selected subagent trees, then await
+   *     pending startup and cleanup … @throws an aggregate error after all
+   *     branches settle when any failed";
+   *   - 0.2.0-rc.2:  `subagents.drainContinuableDescendants(parents)` — same
+   *     signature, same aggregate-after-settle rejection, and it calls the
+   *     very same manager (`manager.drainDescendants`) underneath.
+   *
+   * Both are PUBLIC service methods; neither is an internal. The cut therefore
+   * accepts either name and passes the parents VERBATIM. This is a name
+   * capability, not a behaviour fork: a host exposing neither still fails
+   * closed through the typed `recursive-drain-unavailable` path.
+   *
+   * ROUND 108 (rc.5 acceptance): before this resolver the seam required only
+   * the rc.2 name, so on rc.5 `member.archive` aborted at `drain-descendants`
+   * with `LIFECYCLE_LIVE_EFFECT_FAILED` and LEFT THE MEMBER SETTLED — an
+   * archive that silently never happened, measured by `d2:remote-delivery`'s
+   * `archived-member-refused-typed` clause (`lifecycle=SETTLED code=null`).
+   *
+   * @param {object|undefined} subagents the optional `deps.subagents` service
+   * @returns {{name: string, drain: (parents: readonly unknown[]) => Promise<void>}|undefined}
+   */
+  function resolveDrainSeam(subagents) {
+    if (subagents === undefined || subagents === null) return undefined
+    for (const name of ['drainDescendants', 'drainContinuableDescendants']) {
+      const method = subagents[name]
+      if (typeof method === 'function') {
+        return { name, drain: (parents) => method.call(subagents, parents) }
+      }
+    }
+    return undefined
+  }
+
+  /**
    * T12-M3: the REAL recursive descendant drain (stop + quiesce).
    *
    * Cancel semantics: this is invoked BEFORE any dropResidency /
@@ -151,7 +194,8 @@ export function createStopDrainLane ({ domain, rootSid, childSessionIdFor, liveA
    *   (a) `await handle.agent.whenIdle()` — the member's own in-flight turn
    *       settles first (a rejection PROPAGATES as a fault: a rejected
    *       settle is not quiescence);
-   *   (b) `await subagents.drainContinuableDescendants([handle.agent])` —
+   *   (b) `await subagents.drainDescendants([handle.agent])` (rc.5) or
+   *       `subagents.drainContinuableDescendants([handle.agent])` (rc.2) —
    *       the SubagentRuntime closes admission below the member, stops its
    *       visible descendant Activations, and awaits them; it REJECTS with
    *       an aggregate AFTER ALL BRANCHES SETTLE when any failed — that
@@ -187,18 +231,21 @@ export function createStopDrainLane ({ domain, rootSid, childSessionIdFor, liveA
     }
     // (a) the member's own turn settles first.
     await handle.agent.whenIdle()
-    // (b) the real recursive drain of every continuable descendant.
+    // (b) the real recursive drain of every continuable descendant, under
+    // whichever PUBLIC name this host generation exposes (rc.5 renamed
+    // `drainContinuableDescendants` → `drainDescendants`).
     const subagents = deps.subagents
-    if (
-      subagents === undefined ||
-      typeof subagents.drainContinuableDescendants !== 'function' ||
-      typeof subagents.listDescendants !== 'function'
-    ) {
+    const seam = resolveDrainSeam(subagents)
+    if (seam === undefined || typeof subagents.listDescendants !== 'function') {
       throw recursiveDrainUnavailable(sid, 'the subagents service is absent or unusable')
+    }
+    if (drainSeamObserved === null) {
+      drainSeamObserved = seam.name
+      observations.push(`t12m3: recursive drain seam resolved to subagents.${seam.name}`)
     }
     let drainFailed = false
     try {
-      await subagents.drainContinuableDescendants([handle.agent])
+      await seam.drain([handle.agent])
     } catch {
       // The aggregate settles only AFTER all branches: a rejection here is
       // a DRAIN FAILURE (residual descendant activity), not a fault — it
