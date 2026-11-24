@@ -97,23 +97,50 @@ export function alpha6EnablementRefusal(config) {
     }
     return undefined;
 }
+/** The row's admission mode. Ask = `centreStatePath` was configured; nothing else is governance. */
+export function memberAdmissionMode(config) {
+    const asked = config !== null && typeof config === 'object' && typeof config.centreStatePath === 'string' && config.centreStatePath.length > 0;
+    return asked ? 'governed' : 'ungoverned';
+}
 /**
- * R3 (round 35): a member whose row is CONFIGURED for the centre but gets no confined-provider realm
- * would otherwise run its native tools with no admission decision, no ledger line and no settlement
- * record — unmediated and unreported. That is not "an unwired controlled call is refused"; it is the
- * call being outside the centre.
+ * R3 (round 35) → OWNER RULING 20261124-0151 §Realmless = OPTION B (2026-11-24): a member whose row is
+ * CONFIGURED for the centre but gets no confined-provider realm is REFUSED. An admission allow taken
+ * against the compiled ceiling cannot claim the access bound when the provider that executes the call
+ * is not itself bound by that ceiling — so the governed member fails closed instead of running
+ * unmediated and unreported.
  *
- * The rule is narrow ON PURPOSE: it fires only when the row asked for governance (`centreStatePath`) and
- * the member did not get a centre. A row that never configured the centre keeps its current behaviour, so
- * this cannot turn a wiring gap into a product-wide outage — but a row that DID ask can no longer be
- * silently unmediated.
+ * ROUND 98 — THE RULE NOW RUNS AFTER THE MOUNT ATTEMPT, NOT BEFORE IT. The round-35 placement checked
+ * only "the row declares no realm source"; a row that DID declare a source but whose provider compiled
+ * no realm for this template (a v4 template outside `memberIoCeilings`) slipped past it and ran with no
+ * centre. `memberAdmissionGate` is handed the MOUNT RESULT, so both roads to "no confined provider" are
+ * the same refusal.
+ *
+ * @param member.mountedRealm - whether a confined-provider realm was actually mounted for this member.
+ * @returns the report; `refusal` is present exactly when the member must be refused.
+ */
+export function memberAdmissionGate(config, member) {
+    const mode = memberAdmissionMode(config);
+    if (mode === 'ungoverned')
+        return Object.freeze({ mode, uteProtected: false });
+    if (member.mountedRealm)
+        return Object.freeze({ mode, uteProtected: true });
+    return Object.freeze({ mode, uteProtected: false, refusal: memberCentreUnwiredViolation(config, member) });
+}
+/**
+ * The typed refusal for a governed member with no confined provider.
+ *
+ * KEPT AS `MEMBER_CENTRE_UNWIRED` (round 98 decision, justified in `OWNER-DECISIONS.md`): the ruling
+ * allowed renaming it to `ADMISSION_PROVIDER_UNCONFINED`, but the string is the durable identifier
+ * ADM-44, the D report and the escalation already use and it is NOT a member of the closed
+ * `AdmissionRefusalCode`/`HOST_SURFACE_REFUSALS` tables. Renaming a refusal that every existing reader
+ * recognises would buy wording, not enforcement — so the accurate semantics are stated in the message
+ * ("asked for governance ... no confined-provider realm") and the stable code is kept.
  *
  * @param mountedRealm - whether a confined-provider realm was actually mounted for this member.
  * @returns the refusal message, or `undefined` when there is nothing to refuse.
  */
 export function memberCentreUnwiredViolation(config, member) {
-    const asked = config !== null && typeof config === 'object' && typeof config.centreStatePath === 'string' && config.centreStatePath.length > 0;
-    if (!asked || member.mountedRealm)
+    if (memberAdmissionMode(config) === 'ungoverned' || member.mountedRealm)
         return undefined;
     const who = typeof member.instanceId === 'string' && member.instanceId !== '' ? member.instanceId : '<unnamed>';
     return `MEMBER_CENTRE_UNWIRED: member ${JSON.stringify(who)} is configured for the centre (centreStatePath is set) but no confined-provider realm was mounted, so its controlled calls would run with no admission decision, no durable fact and no settlement — this row asked for governance and cannot have it, so the member is refused instead of running unmediated`;

@@ -71,15 +71,58 @@ export declare function alpha6RoutingAuthored(blueprintSource: unknown): boolean
  */
 export declare function alpha6EnablementRefusal(config: CentreConfigFacts): Alpha6EnablementRefusal | undefined;
 /**
- * R3 (round 35): a member whose row is CONFIGURED for the centre but gets no confined-provider realm
- * would otherwise run its native tools with no admission decision, no ledger line and no settlement
- * record — unmediated and unreported. That is not "an unwired controlled call is refused"; it is the
- * call being outside the centre.
+ * The row's admission MODE, as a value the product can REPORT (owner ruling `docs/reviews/
+ * 20261124-0151.txt` §Realmless, 2026-11-24: "没有启用 Team 治理的传统宿主运行模式可以继续使用 DSH 自身的
+ * 权限模型，但必须明确标识为 ungoverned，不得报告成受 UTE 保护").
  *
- * The rule is narrow ON PURPOSE: it fires only when the row asked for governance (`centreStatePath`) and
- * the member did not get a centre. A row that never configured the centre keeps its current behaviour, so
- * this cannot turn a wiring gap into a product-wide outage — but a row that DID ask can no longer be
- * silently unmediated.
+ * `governed` is the row that asked the centre to be its ONE admission authority (`centreStatePath`).
+ * `ungoverned` is the row that never asked: it keeps DSH's own permission model — and it must be
+ * labelled as such wherever the product reports governance, because a run that never produced an
+ * admission fact is not UTE-protected and writing no label would let a reader assume it was.
+ *
+ * This is a READ of the same configuration the refusal reads; it decides nothing and creates no
+ * authority.
+ */
+export type MemberAdmissionMode = 'governed' | 'ungoverned';
+/** The row's admission mode. Ask = `centreStatePath` was configured; nothing else is governance. */
+export declare function memberAdmissionMode(config: CentreConfigFacts | null | undefined): MemberAdmissionMode;
+/** One member's admission report: the mode AND whether UTE actually stands behind its calls. */
+export interface MemberAdmissionReport {
+    readonly mode: MemberAdmissionMode;
+    /** true ONLY for a governed member whose confined-provider realm actually mounted the centre. */
+    readonly uteProtected: boolean;
+    /** Present for a governed member with no confined provider: the typed refusal to throw. */
+    readonly refusal?: string;
+}
+/**
+ * R3 (round 35) → OWNER RULING 20261124-0151 §Realmless = OPTION B (2026-11-24): a member whose row is
+ * CONFIGURED for the centre but gets no confined-provider realm is REFUSED. An admission allow taken
+ * against the compiled ceiling cannot claim the access bound when the provider that executes the call
+ * is not itself bound by that ceiling — so the governed member fails closed instead of running
+ * unmediated and unreported.
+ *
+ * ROUND 98 — THE RULE NOW RUNS AFTER THE MOUNT ATTEMPT, NOT BEFORE IT. The round-35 placement checked
+ * only "the row declares no realm source"; a row that DID declare a source but whose provider compiled
+ * no realm for this template (a v4 template outside `memberIoCeilings`) slipped past it and ran with no
+ * centre. `memberAdmissionGate` is handed the MOUNT RESULT, so both roads to "no confined provider" are
+ * the same refusal.
+ *
+ * @param member.mountedRealm - whether a confined-provider realm was actually mounted for this member.
+ * @returns the report; `refusal` is present exactly when the member must be refused.
+ */
+export declare function memberAdmissionGate(config: CentreConfigFacts | null | undefined, member: {
+    readonly instanceId?: unknown;
+    readonly mountedRealm: boolean;
+}): MemberAdmissionReport;
+/**
+ * The typed refusal for a governed member with no confined provider.
+ *
+ * KEPT AS `MEMBER_CENTRE_UNWIRED` (round 98 decision, justified in `OWNER-DECISIONS.md`): the ruling
+ * allowed renaming it to `ADMISSION_PROVIDER_UNCONFINED`, but the string is the durable identifier
+ * ADM-44, the D report and the escalation already use and it is NOT a member of the closed
+ * `AdmissionRefusalCode`/`HOST_SURFACE_REFUSALS` tables. Renaming a refusal that every existing reader
+ * recognises would buy wording, not enforcement — so the accurate semantics are stated in the message
+ * ("asked for governance ... no confined-provider realm") and the stable code is kept.
  *
  * @param mountedRealm - whether a confined-provider realm was actually mounted for this member.
  * @returns the refusal message, or `undefined` when there is nothing to refuse.

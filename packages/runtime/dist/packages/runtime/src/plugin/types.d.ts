@@ -1385,6 +1385,23 @@ export interface TeamAgentBindings {
     readonly resolveConsumptionViews: (sessionId: string) => unknown;
     /** The accumulated observation notes (diagnostics; route-visible). */
     readonly observations: readonly string[];
+    /**
+     * OWNER RULING 20261124-0151 §Realmless (round 98) — the per-member governance REPORT.
+     *
+     * `mode: 'governed'` means the row configured the centre and this member mounted the confined
+     * provider; `uteProtected` then says whether the admission point actually stands behind its calls.
+     * `mode: 'ungoverned'` means the row never asked: DSH's own permission model applies, and
+     * `uteProtected` is `false` — an ungoverned member must never be reported as UTE-protected.
+     * `undefined` means this session is not a bound UTE member (for example the root session), never
+     * that governance was inferred.
+     *
+     * OPTIONAL so a glue that predates this round (the stub glue, a factory world) still satisfies the
+     * type; a caller must treat absence as "not reported", never as "governed".
+     */
+    readonly admissionModeOf?: (sessionId: string) => {
+        readonly mode: 'governed' | 'ungoverned';
+        readonly uteProtected: boolean;
+    } | undefined;
     /** Drop one live residency (the residency/drop route). */
     readonly dropResidency: (sessionId: string) => Promise<{
         readonly dropped: boolean;
