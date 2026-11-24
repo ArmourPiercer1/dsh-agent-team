@@ -75,6 +75,23 @@ positive test and it is **not** `REFUSED`/`not-started`.
 | `*.log` | this round's required-gate outputs (pre-commit at `563feac13`, post-commit at the new head) |
 | `settlement-comment.md` | the settlement comment posted for the new head |
 
+## Required-gate outputs at `57b8924c8` (`*-postcommit.log`)
+
+| gate | measured |
+| --- | --- |
+| `dispatch-tests --run --leg ute-vnext-a1` | **251 tests / 248 pass / 0 fail / 3 skipped**, digest `sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975` |
+| `test-catalog --max-uncollected 41 --max-excluded 7` | tests=785, uncollected=38, excluded=14, digest unchanged, refused=0 findings=0 |
+| `ute-cut-closure --check` | **pass** deleted=148 prodRefs=0 distResiduals=0 `cut(0/148)` |
+| `ute-p0-assets --check` | **pass** modules=37 files=180 lines=69512 `cut(148/148)` |
+| `docs-sync --check` | docs=193 findings=0 blocking=0 (authority pointer verified) |
+| `place-dist-glue` | **35 placements** byte-identical |
+| `eb3-ci-required` | **pass** workflows=11 findings=0 |
+| bound vitest (`ci-integration`, 15 suites) | **PASS** describes=76 passed=238 failed=0 |
+| UTE G1 nine-file argv | **89 tests / 89 pass / 0 fail** |
+| `EB3-RUN-MANIFEST` | **pass** records=546 strict=0 incomplete=11 findings=0 |
+| `ci-pr-gate --full --census-captures 2` | **PASS 10/10** (348.2 s), census 599f/7422l, 2 captures with identical identity sets |
+| `ute-a1-window --check` | **pass** red=0/0 `cut=(148/52)` |
+
 ## What moved, and what did not
 
 * **Moved**: ruling 1 recorded as an owner-approved product scope; P0-2 closed with the ruled law and
