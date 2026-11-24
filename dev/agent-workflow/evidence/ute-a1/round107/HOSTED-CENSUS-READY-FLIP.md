@@ -34,3 +34,27 @@ Runs: `ci-required` 45424962377 · `pr-gate` 45424962369 · `candidate-protectio
   set completed (`isDraft=true`, `state=OPEN`, `autoMergeRequest=null`, head `fc4bac62e`).
 - It does **not** make any row PRODUCT-PROVEN: the candidate acceptance gate is still `knownNonRequired`, so a
   DEV-LIVE row stays DEV-LIVE until the owner decides to require that gate.
+
+## Attempt 3 — head `a4a00fc81` (the settled head; all green, census executed)
+
+Because attempt 2's evidence commit moved the head, the set was re-run at the settled head so that settlement,
+census and Required CI all name one SHA.
+
+| job | verdict |
+| --- | --- |
+| `synthesize-merge-tree` | success |
+| `ci-fast` | success |
+| `ci-product` | success |
+| `ci-security` | success |
+| `ci-integration` | **success** (the round-107 fix holds hosted) |
+| `ci-census / census-runtime` | **success** — census executed, not skipped |
+| `ci-required` | **success** |
+| `pr-gate` | **success** (settlement gate for this head) |
+| `candidate-protection` | **success** |
+
+`ci-required` run 45429461306. Immediately afterwards the PR was converted back to **DRAFT**
+(`isDraft=true`, `state=OPEN`, `autoMergeRequest=null`, head `a4a00fc81`). No merge, no auto-merge, no release, no
+deploy; no force-push; port 3080 untouched.
+
+Residual note: the superseded `ci-required`/`pr-gate` runs from the flip transition show `cancelled` — they were
+superseded by the newer push, which is the normal GitHub concurrency behaviour, not a failed check.
