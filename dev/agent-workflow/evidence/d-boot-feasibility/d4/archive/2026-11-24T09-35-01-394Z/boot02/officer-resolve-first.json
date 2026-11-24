@@ -1,0 +1,26 @@
+{
+  "seen": true,
+  "callId": "call-d4-officer-resolve-ctrl-0o86rl21q9e46p1cni5zk0k5",
+  "call": {
+    "rootSessionId": "session-dboot-d4-root",
+    "requestToken": "dboot-d4-resolve-ctrl-0o86rl21q9e46p1cni5zk0k5",
+    "requestId": "ctrl-0o86rl21q9e46p1cni5zk0k5",
+    "decision": "allow"
+  },
+  "result": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-0o86rl21q9e46p1cni5zk0k5\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-1crltnl0089j\",\"role\":\"member\"},\"scope\":{\"rootSessionId\":\"session-dboot-d4-root\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0ty67u70r99a\"},\"targetInstanceId\":\"inst-0ty67u70r99a\",\"actionName\":\"admission-ask\",\"correlation\":\"admission:call-d4-worker-write\",\"toolName\":\"write\",\"operationFingerprint\":\"sha256:484e977800a0fc34ab8d6aa5121125bdf3de340a7b6be0725ff458aa443b677e\",\"authorityScope\":{\"operationClass\":\"write\",\"matcher\":{\"kind\":\"exact\",\"resource\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T09-21-22Z/workspace/lane/worker-ask.txt\"}}},\"requestSequence\":9,\"decisionSequence\":12,\"crea",
+  "isError": false,
+  "settlement": {
+    "executionId": "exec-8ded389631334b2883d4cfa6fc81a7a2e205fb5c",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T09-21-22Z/centre/settlement/inst-1crltnl0089j/exec-8ded389631334b2883d4cfa6fc81a7a2e205fb5c.settlement.json",
+    "present": true,
+    "state": "COMPLETED",
+    "bodyOutcome": "completed",
+    "dispatch": "quiesced",
+    "transitions": [
+      "ADMITTED",
+      "RUNNING",
+      "COMPLETED"
+    ],
+    "terminalAt": "2026-11-24T09:24:25.537Z"
+  }
+}

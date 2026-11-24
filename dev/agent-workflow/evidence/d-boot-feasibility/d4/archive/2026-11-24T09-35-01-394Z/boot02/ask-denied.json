@@ -1,0 +1,101 @@
+{
+  "kind": "deny",
+  "terminal": true,
+  "resolveOutcome": {
+    "call": {
+      "rootSessionId": "session-dboot-d4-root",
+      "requestToken": "dboot-d4-resolve-ctrl-1xxrzo21k29yc31rawhls0qn",
+      "requestId": "ctrl-1xxrzo21k29yc31rawhls0qn",
+      "decision": "deny"
+    },
+    "result": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-1xxrzo21k29yc31rawhls0qn\",\"decision\":\"deny\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"scope\":{\"rootSessionId\":\"session-dboot-d4-root\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0ty67u70r99a\"},\"targetInstanceId\":\"inst-0ty67u70r99a\",\"actionName\":\"admission-ask\",\"correlation\":\"admission:call-d4-worker-write\",\"toolName\":\"write\"},\"requestSequence\":4,\"decisionSequence\":5,\"createdAt\":\"2026-11-24T09:30:36.536Z\"}}",
+    "isError": false
+  },
+  "cancelStatus": null,
+  "file": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T09-27-34Z/workspace/lane/ask-denied.txt",
+    "exists": false,
+    "content": null,
+    "bytes": null,
+    "sha256": null
+  },
+  "settlement": {
+    "executionId": "exec-e14318d017ca1dc2ba9c1821dfa714eee89178b2",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T09-27-34Z/centre/settlement/inst-0ty67u70r99a/exec-e14318d017ca1dc2ba9c1821dfa714eee89178b2.settlement.json",
+    "present": true,
+    "state": "REFUSED",
+    "bodyOutcome": "not-started",
+    "dispatch": "not-started",
+    "transitions": [
+      "ADMITTED",
+      "REFUSED"
+    ],
+    "terminalAt": "2026-11-24T09:30:36.694Z"
+  },
+  "facts": [
+    {
+      "callId": "call-d4-worker-write",
+      "agentId": "inst-0ty67u70r99a",
+      "instanceId": "inst-0ty67u70r99a",
+      "sessionId": "session-team-child-ecd32f24e3090ec60b7270eebdb92a6c",
+      "instanceGeneration": 0,
+      "toolName": "write",
+      "axis": "fs.write",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T09-27-34Z/workspace/lane/ask-denied.txt",
+      "definitionSource": "",
+      "policyGeneration": "a5sf1:10d1f9078e70d5497e0f2230ae570413",
+      "blueprintRevision": "",
+      "owner": "session-dboot-d4-root",
+      "decision": "deny",
+      "laneDecision": "ask",
+      "refusalCode": "ADMISSION_APPROVAL_DENIED",
+      "reason": "the durable control decision for \"ctrl-1xxrzo21k29yc31rawhls0qn\" is deny; the call is refused",
+      "kind": "invocation-authority",
+      "at": "2026-11-24T09:30:36.688Z"
+    },
+    {
+      "callId": "call-d4-worker-write",
+      "executionId": "exec-e14318d017ca1dc2ba9c1821dfa714eee89178b2",
+      "toolName": "write",
+      "agentId": "session-team-child-ecd32f24e3090ec60b7270eebdb92a6c",
+      "outcome": "admission-refusal",
+      "isError": true,
+      "refusalCode": "ADMISSION_APPROVAL_DENIED",
+      "policyGeneration": "a5sf1:10d1f9078e70d5497e0f2230ae570413",
+      "kind": "execution",
+      "at": "2026-11-24T09:30:36.699Z"
+    }
+  ],
+  "verdict": {
+    "proposition": "the SAME live `write` ask denied through the real control path mints nothing and writes nothing: zero bytes on disk, a recorded deny fact, and a REFUSED / not-started settlement",
+    "verdict": "PROVEN",
+    "clauses": [
+      {
+        "id": "control-request-raised",
+        "ok": true,
+        "detail": "requestRaised=true"
+      },
+      {
+        "id": "denied-through-real-control-path",
+        "ok": true,
+        "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1xxrzo21k29yc31rawhls0qn\\\",\\\"decision\\\":\\\"deny\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":4,\\\"decisionSequence\\\":5,\\\"createdAt\\\":\\\"2026-11-24T09:30:36.536\""
+      },
+      {
+        "id": "deny-fact-recorded",
+        "ok": true,
+        "detail": "deny facts=[{\"callId\":\"call-d4-worker-write\",\"refusalCode\":\"ADMISSION_APPROVAL_DENIED\",\"decision\":\"deny\"}]"
+      },
+      {
+        "id": "zero-bytes",
+        "ok": true,
+        "detail": "file exists=false bytes=null"
+      },
+      {
+        "id": "settlement-refused-not-started",
+        "ok": true,
+        "detail": "state=REFUSED bodyOutcome=not-started transitions=[\"ADMITTED\",\"REFUSED\"]"
+      }
+    ],
+    "failing": []
+  }
+}

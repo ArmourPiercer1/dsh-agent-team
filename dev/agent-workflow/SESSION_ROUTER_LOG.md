@@ -11253,3 +11253,26 @@ Docs: `D-ACCEPTANCE-REPORT.md` §12 (mechanism, four-suspect disposition, repair
 limits) and the `d:remote-creation` judge row re-cited; `MIGRATED-SUITE-STATUS.md` gains the round-91
 section. No capability row moves, `d4:routed-wake` stays REFUTED, no row is PRODUCT-PROVEN. PR #822 stays
 DRAFT/unmerged; :3080 and its DSH_HOME were never touched.
+
+### R83-R84 — single-authority proven by an independent audit; scope boundaries written down; three owner decisions remain
+
+The 20261124-1341 review asked for something the static closure cannot give: an independent responsibility audit of
+the two assembly entries. Done over 53 execution-adjacent surfaces (root.ts 25, agent-bindings.mjs 26, 2 cross-cut):
+17 CENTRE, 3 CENTRE-INPUT, 7 LAWFUL-DELIVERY, 3 LAWFUL-HOST, 12 LAWFUL-NOEXEC, 9 LAWFUL-CONTAIN/REFUSAL, 1
+CONFIG-UNGOVERNED (the owner-ruled absent-centre row, reported loudly), 1 NOT-REACHED, and ZERO findings. Verified
+from code: one native-mount lane pair inside compiledAnswer, admit() as the only allow decision with a monotonic
+guard, no absent-centre fallback, and the attribution ALS has zero readers repo-wide. Responsibility maps recorded
+(39 + 27 ranges) without splitting the files this round.
+
+Scope written the way the review required: SCOPE-subprocess-ask.md declares that this generation promises
+allow/deny for Subprocess/PTY and that per-call process `ask` is NOT supported and stays fail-closed (the refusal
+evidence is the promise: no governed PTY backend on the binding realm, 0 bytes, settlement FAILED, identical on rc.2
+and rc.5); Shape B's usability cost (a nested deny refuses the whole confined process face for that realm) is stated
+in the matrix; and the status table now carries "P0-2 OPEN TARGET-HOST ACCEPTANCE BLOCKER - pre-dispatch Stop
+observation not production-wired" with its two lawful closers.
+
+Still owner-decided, unchanged: (1) confirm the Subprocess/PTY ask scope statement; (2) choose the P0-2 closer - an
+upstream batch-completion seam or a ruled lawful "no settlement" boundary; (3) authorise a temporary ready flip so
+the hosted census can run once (never merged). Everything else is green: leg 248/245+3, catalog 785, closure
+cut(0/148), p0-assets, docs-sync 0, 35 placements, ci-required 10, vitest 238, G1 89/89, manifest findings=0,
+ci-pr-gate 10/10; hosted ci-integration green, ci-required red only by the draft's census skip.

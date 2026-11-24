@@ -1,0 +1,806 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-live-d4-2026-11-24T09-09-03-635Z-b1",
+  "suite": "a5sf-live-d4-probe",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-24T09:09:03.635Z",
+  "selectedCases": [
+    "d4:enablement",
+    "d4:officer-up",
+    "d4:officer-binding",
+    "d4:routed-wake",
+    "d4:case-created",
+    "d4:router-officer",
+    "d4:wake-delivered",
+    "d4:officer-decides",
+    "d4:ask-executes-after-review",
+    "d4:duplicate-route",
+    "d4:sticky-stop",
+    "d4:refusal",
+    "d4:ask-execute",
+    "d4:ask-execute-2",
+    "d4:ask-execute-process",
+    "d4:ask-denied",
+    "d4:ask-stopped"
+  ],
+  "allCases": [
+    "d4:enablement",
+    "d4:officer-up",
+    "d4:officer-binding",
+    "d4:routed-wake",
+    "d4:case-created",
+    "d4:router-officer",
+    "d4:wake-delivered",
+    "d4:officer-decides",
+    "d4:ask-executes-after-review",
+    "d4:duplicate-route",
+    "d4:sticky-stop",
+    "d4:refusal",
+    "d4:ask-execute",
+    "d4:ask-execute-2",
+    "d4:ask-execute-process",
+    "d4:ask-denied",
+    "d4:ask-stopped"
+  ],
+  "subset": false,
+  "selected": 17,
+  "totalCases": 17,
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3",
+        "snapshot_version": "as20261109r1"
+      },
+      "pointerSha256": "814b31f798a25fa963c5810d7733e73c127083bebd74641778ac33ad8c9a5351",
+      "snapshotDigest": "9e2a211ff34196c68fd8db5a0d0d19af124df8fd949190c9c6b990cf3600ede8"
+    },
+    "candidate": {
+      "head": "5952c84829c92d2d4e5346afa19ad1939d548239",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "grant": {
+      "grantId": "devlive-fs-search-1",
+      "scope": "DEV-LIVE",
+      "face": "FS Provider",
+      "world": "u5a5sfdev1"
+    },
+    "recordClass": "DEV-LIVE",
+    "compositionDrops": [],
+    "layout": "centre",
+    "teamSha": "5952c84829c92d2d4e5346afa19ad1939d548239",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "note": "DEV-LIVE probe: a blocker measurement, never a candidate claim and never an acceptance driver",
+    "driver": "probe-d4-routed-wake"
+  },
+  "cases": [
+    {
+      "id": "d4:enablement",
+      "verdict": "PASS",
+      "at": "2026-11-24T09:21:22.605Z",
+      "proposition": "a COHERENT Alpha.6 row (v5 reviewRouting + centreStatePath + absolute alpha6WakeIntentPath) is ENABLED — the host boots, the TeamSession exists, and the row is not refused",
+      "probeVerdict": "PROVEN",
+      "failing": [],
+      "clauses": [
+        {
+          "id": "enablement-rule-admits",
+          "ok": true,
+          "detail": "alpha6EnablementRefusal=null"
+        },
+        {
+          "id": "host-process-boots",
+          "ok": true,
+          "detail": "booted=true"
+        },
+        {
+          "id": "team-session-served",
+          "ok": true,
+          "detail": "teamSession={\"rootSessionId\":\"session-dboot-d4-root\",\"blueprintId\":\"team.dboot.d4.v5\",\"revision\":\"1\",\"contentHash\":\"sha256:4a561999ebd50c6712f70077cac12b4429e2069f1587b49c7e9028c933c32fdd\",\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T09-09-03Z/workspace\",\"createdAt\":\"2026-11-24T09:12:04.662Z\",\"generation\":11}"
+        },
+        {
+          "id": "no-alpha6-refusal-in-host-log",
+          "ok": true,
+          "detail": "hostLog has ADMISSION_ALPHA6_UNAVAILABLE=false"
+        },
+        {
+          "id": "no-alpha6-refusal-fact",
+          "ok": true,
+          "detail": "alpha6 deny facts=0"
+        }
+      ]
+    },
+    {
+      "id": "d4:officer-up",
+      "verdict": "PASS",
+      "at": "2026-11-24T09:21:22.605Z",
+      "proposition": "the Officer MemberTemplate comes up as its own Member instance with a bound child session, and the Officer session actually runs",
+      "probeVerdict": "PROVEN",
+      "failing": [],
+      "clauses": [
+        {
+          "id": "officer-member-row",
+          "ok": true,
+          "detail": "officer template row={\"instanceId\":\"inst-1crltnl0089j\",\"templateId\":\"officer\",\"label\":\"dboot-d4-officer\",\"childSessionId\":\"session-team-child-1d56dbb16a118ba3573db3c4b2641997\",\"lifecycle\":\"RUNNING\",\"activityVersion\":2}; members=[\"officer:inst-1crltnl0089j\",\"leader:inst-leader\"]"
+        },
+        {
+          "id": "officer-child-session",
+          "ok": true,
+          "detail": "childSessionId=session-team-child-1d56dbb16a118ba3573db3c4b2641997"
+        },
+        {
+          "id": "officer-session-ran",
+          "ok": true,
+          "detail": "calls=[\"read\"]"
+        },
+        {
+          "id": "officer-turn-completed",
+          "ok": true,
+          "detail": "final=DBOOT_D4_OFFICER_TURN_DONE"
+        }
+      ]
+    },
+    {
+      "id": "d4:officer-binding",
+      "verdict": "PASS",
+      "at": "2026-11-24T09:21:22.605Z",
+      "proposition": "the Officer's OWN tool call is admitted by the ONE centre under the OFFICER's binding: an allow invocation-authority fact for ITS callId in the OFFICER's own ledger, settled COMPLETED",
+      "probeVerdict": "PROVEN",
+      "failing": [],
+      "clauses": [
+        {
+          "id": "officer-ledger-fact",
+          "ok": true,
+          "detail": "allow facts=[{\"axis\":\"fs.read\",\"callId\":\"call-d4-officer-read\",\"decision\":\"allow\"}]"
+        },
+        {
+          "id": "fact-names-officer-call",
+          "ok": true,
+          "detail": "callIds=[\"call-d4-officer-read\"]"
+        },
+        {
+          "id": "officer-settlement-completed",
+          "ok": true,
+          "detail": "settlement state=COMPLETED transitions=[\"ADMITTED\",\"RUNNING\",\"COMPLETED\"]"
+        },
+        {
+          "id": "officer-not-the-leader",
+          "ok": true,
+          "detail": "instanceId=inst-1crltnl0089j template=officer"
+        }
+      ]
+    },
+    {
+      "id": "d4:routed-wake",
+      "verdict": "PASS",
+      "at": "2026-11-24T09:21:22.605Z",
+      "proposition": "the Alpha.6 ROUTED review wake reaches a real Host end to end: a qualifying worker ask opens a durable case, the product router selects the unique Officer, the governed wake reaches the Officer's own session, the Officer settles it under its own binding, and the worker's granted call executes — with the duplicate and Sticky-Stop laws intact",
+      "probeVerdict": "PROVEN",
+      "failing": [],
+      "clauses": [
+        {
+          "id": "d4:case-created-proven",
+          "ok": true,
+          "detail": "PROVEN"
+        },
+        {
+          "id": "d4:router-officer-proven",
+          "ok": true,
+          "detail": "PROVEN"
+        },
+        {
+          "id": "d4:wake-delivered-proven",
+          "ok": true,
+          "detail": "PROVEN"
+        },
+        {
+          "id": "d4:officer-decides-proven",
+          "ok": true,
+          "detail": "PROVEN"
+        },
+        {
+          "id": "d4:ask-executes-after-review-proven",
+          "ok": true,
+          "detail": "PROVEN"
+        },
+        {
+          "id": "d4:duplicate-route-proven",
+          "ok": true,
+          "detail": "PROVEN"
+        },
+        {
+          "id": "d4:sticky-stop-proven",
+          "ok": true,
+          "detail": "PROVEN"
+        }
+      ]
+    },
+    {
+      "id": "d4:case-created",
+      "verdict": "PASS",
+      "at": "2026-11-24T09:21:22.605Z",
+      "proposition": "a qualifying ordinary admission ask opened a REAL durable Alpha.6 approval CASE (server-derived case id + leg ordinal + frozen operation/tool/blueprint identity), read back from the TeamDomain ledger on disk",
+      "probeVerdict": "PROVEN",
+      "failing": [],
+      "clauses": [
+        {
+          "id": "read-back-from-the-ledger",
+          "ok": true,
+          "detail": "factFile=null sequence=9"
+        },
+        {
+          "id": "durable-row-is-an-approval-ask",
+          "ok": true,
+          "detail": "kind=\"leader-approval\" actionName=\"admission-ask\""
+        },
+        {
+          "id": "approval-case-id-present",
+          "ok": true,
+          "detail": "approvalCaseId=\"case-0gdcrmf0ujmhbc0trnonp0ml\""
+        },
+        {
+          "id": "leg-ordinal-present",
+          "ok": true,
+          "detail": "legOrdinal=1"
+        },
+        {
+          "id": "case-rung-is-the-leader",
+          "ok": true,
+          "detail": "reviewAuthority=\"leader\" requiredAuthorityAtCreation=\"leader\""
+        },
+        {
+          "id": "frozen-operation-identity",
+          "ok": true,
+          "detail": "operationFingerprint=\"sha256:d95fb373e1563af0baece04d6309d2748a363470f8024e391d7e2505475cdd26\" requestedEffect=\"allow\" authorityScope={\"matcher\":{\"kind\":\"exact\",\"resource\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T09-09-03Z/workspace/lane/worker-ask.txt\"},\"operationClass\":\"write\"}"
+        },
+        {
+          "id": "frozen-tool-coordinate",
+          "ok": true,
+          "detail": "coordinate=[\"dsh.fs\",\"write\",\"dsh.fs/write\"]"
+        },
+        {
+          "id": "frozen-blueprint-and-generation",
+          "ok": true,
+          "detail": "blueprintContentHash=\"sha256:4a561999ebd50c6712f70077cac12b4429e2069f1587b49c7e9028c933c32fdd\" revision=\"1\" authorityGeneration=0"
+        },
+        {
+          "id": "case-has-no-decision-yet",
+          "ok": true,
+          "detail": "decision facts at capture time=0"
+        }
+      ]
+    },
+    {
+      "id": "d4:router-officer",
+      "verdict": "PASS",
+      "at": "2026-11-24T09:21:22.605Z",
+      "proposition": "the product router selects the UNIQUE lawful Officer for the case leg, and a self-ask (the operation owner is the Officer) is never routed to that Officer",
+      "probeVerdict": "PROVEN",
+      "failing": [],
+      "clauses": [
+        {
+          "id": "route-is-the-officer-instance",
+          "ok": true,
+          "detail": "route={\"kind\":\"recipient\",\"target\":{\"kind\":\"instance\",\"instanceId\":\"inst-1crltnl0089j\",\"templateId\":\"officer\",\"routeRole\":\"officer\"},\"reason\":\"closed ordinary tool ask delegated to the dedicated Officer\",\"currentLegId\":\"ctrl-11alwpb03vltrc100fqq101o\"} expectedOfficer=\"inst-1crltnl0089j\" memberListCalls=1"
+        },
+        {
+          "id": "exactly-one-lawful-officer",
+          "ok": true,
+          "detail": "active officer candidates=1"
+        },
+        {
+          "id": "requester-is-not-the-reviewer",
+          "ok": true,
+          "detail": "requester=\"inst-0ty67u70r99a\" officer=\"inst-1crltnl0089j\""
+        },
+        {
+          "id": "self-ask-never-routed-to-the-officer",
+          "ok": true,
+          "detail": "self-ask route={\"kind\":\"recipient\",\"target\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"routeRole\":\"leader\"},\"reason\":\"actual OperationOwner is the Officer; self-ask routes to Leader\",\"currentLegId\":\"ctrl-11alwpb03vltrc100fqq101o\"}"
+        }
+      ]
+    },
+    {
+      "id": "d4:wake-delivered",
+      "verdict": "PASS",
+      "at": "2026-11-24T09:21:22.605Z",
+      "proposition": "the routed review wake is DELIVERED through the governed delivery: exactly one durable `team-review-wake-routed` intent, one correlated `team-review-wake-delivered` confirmation, the input is machine-attributed (never human), and the management plane executed ZERO tools",
+      "probeVerdict": "PROVEN",
+      "failing": [],
+      "clauses": [
+        {
+          "id": "one-routed-intent-for-the-leg",
+          "ok": true,
+          "detail": "routed facts for requestId=\"ctrl-11alwpb03vltrc100fqq101o\": [\"ctrl-11alwpb03vltrc100fqq101o\",\"ctrl-1dzy2ht1m4oxpi00xawh30ji\",\"ctrl-01o2qxw080b5k70elan920t2\",\"ctrl-0y0ubok0evn4jf1h15j620vg\"]"
+        },
+        {
+          "id": "one-correlated-confirmation",
+          "ok": true,
+          "detail": "requestToken=\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A6e9a11d0\" confirmations=1 correlation=true"
+        },
+        {
+          "id": "intent-names-the-officer-session",
+          "ok": true,
+          "detail": "intent payload={\"action\":\"review-wake\",\"at\":\"2026-11-24T09:12:06.547Z\",\"deliveredToSessionId\":\"session-team-child-1d56dbb16a118ba3573db3c4b2641997\",\"recipientInstanceId\":\"inst-1crltnl0089j\",\"requestId\":\"ctrl-11alwpb03vltrc100fqq101o\",\"requestToken\":\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A6e9a11d0\",\"routeRole\":\"officer\"}"
+        },
+        {
+          "id": "intent-carries-the-review-action",
+          "ok": true,
+          "detail": "intent payload action=\"review-wake\" at=\"2026-11-24T09:12:06.547Z\" intentDirFiles=[]"
+        },
+        {
+          "id": "machine-attribution-not-human",
+          "ok": true,
+          "detail": "wake input sources=[\"plugin:dsh-agent-team\",\"plugin:dsh-agent-team\",\"plugin:dsh-agent-team\",\"plugin:dsh-agent-team\"] expected=\"plugin:dsh-agent-team\""
+        },
+        {
+          "id": "zero-management-plane-tool-executions",
+          "ok": true,
+          "detail": "settlements naming the wake token or the review-wake tool=0"
+        }
+      ]
+    },
+    {
+      "id": "d4:officer-decides",
+      "verdict": "PASS",
+      "at": "2026-11-24T09:21:22.605Z",
+      "proposition": "the Officer is woken in ITS OWN session and its OWN `team_resolve_control` is admitted under ITS binding (a durable invocation-authority allow for its call, in its centre ledger), settling the case",
+      "probeVerdict": "PROVEN",
+      "failing": [],
+      "clauses": [
+        {
+          "id": "officer-woken-in-its-own-session",
+          "ok": true,
+          "detail": "officer session=\"session-team-child-1d56dbb16a118ba3573db3c4b2641997\" wake-for-this-leg=true"
+        },
+        {
+          "id": "officer-issued-its-own-resolve",
+          "ok": true,
+          "detail": "callId=\"call-d4-officer-resolve-ctrl-11alwpb03vltrc100fqq101o\" found=true result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-11alwpb03vltrc100fqq101o\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targ\""
+        },
+        {
+          "id": "resolve-admitted-under-its-own-binding",
+          "ok": true,
+          "detail": "invocation-authority allow facts for \"call-d4-officer-resolve-ctrl-11alwpb03vltrc100fqq101o\"=[{\"instanceId\":\"inst-1crltnl0089j\",\"axis\":\"team.control\",\"decision\":\"allow\"}]"
+        },
+        {
+          "id": "settlement-completed",
+          "ok": true,
+          "detail": "settlement={\"state\":\"COMPLETED\",\"bodyOutcome\":\"completed\"}"
+        },
+        {
+          "id": "leader-did-not-decide",
+          "ok": true,
+          "detail": "leader resolve calls for the leg=false"
+        }
+      ]
+    },
+    {
+      "id": "d4:ask-executes-after-review",
+      "verdict": "PASS",
+      "at": "2026-11-24T09:21:22.605Z",
+      "proposition": "the worker's granted call EXECUTES AFTER the review decision: the durable decision precedes the tool settlement, the receipt let REAL bytes through, and the admission allow is on the ask lane",
+      "probeVerdict": "PROVEN",
+      "failing": [],
+      "clauses": [
+        {
+          "id": "review-decision-is-durable",
+          "ok": true,
+          "detail": "decision fact={\"requestId\":\"ctrl-11alwpb03vltrc100fqq101o\",\"decision\":\"allow\",\"at\":\"2026-11-24T09:12:06.699Z\"}"
+        },
+        {
+          "id": "decision-precedes-execution",
+          "ok": true,
+          "detail": "decisionAt=\"2026-11-24T09:12:06.699Z\" settlementTerminalAt=\"2026-11-24T09:12:06.812Z\""
+        },
+        {
+          "id": "real-bytes-on-disk",
+          "ok": true,
+          "detail": "file={\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T09-09-03Z/workspace/lane/worker-ask.txt\",\"exists\":true,\"bytes\":27,\"sha256\":\"ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3\"} expectedBytes=27"
+        },
+        {
+          "id": "worker-tool-result-not-an-error",
+          "ok": true,
+          "detail": "write result=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T09-09-03Z/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+        },
+        {
+          "id": "admission-allow-on-the-ask-lane",
+          "ok": true,
+          "detail": "allow fact={\"callId\":\"call-d4-worker-write\",\"axis\":\"fs.write\",\"decision\":\"allow\"}"
+        },
+        {
+          "id": "settlement-completed",
+          "ok": true,
+          "detail": "settlement={\"state\":\"COMPLETED\",\"bodyOutcome\":\"completed\"}"
+        }
+      ]
+    },
+    {
+      "id": "d4:duplicate-route",
+      "verdict": "PASS",
+      "at": "2026-11-24T09:21:22.605Z",
+      "proposition": "a duplicate route for the SAME leg produces exactly ONE wake: one delivery intent, one confirmation, one input accepted by the Officer session, and the duplicate attempt is reported as a convergent no-op (never a second model-visible wake)",
+      "probeVerdict": "PROVEN",
+      "failing": [],
+      "clauses": [
+        {
+          "id": "duplicate-attempt-was-made",
+          "ok": true,
+          "detail": "attempted=true via=\"request-creation notifier + reviewer turn/end re-collection (the product's own two route call sites)\""
+        },
+        {
+          "id": "one-delivery-intent",
+          "ok": true,
+          "detail": "routed intent facts for the token=1"
+        },
+        {
+          "id": "one-confirmation",
+          "ok": true,
+          "detail": "delivered confirmation facts for the token=1"
+        },
+        {
+          "id": "one-model-visible-wake",
+          "ok": true,
+          "detail": "wake inputs in the Officer session=1"
+        },
+        {
+          "id": "duplicate-is-a-no-op",
+          "ok": true,
+          "detail": "converged=true detail={\"requestId\":\"ctrl-1dzy2ht1m4oxpi00xawh30ji\",\"requestToken\":\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3Aaae28dce\",\"intentAt\":\"2026-11-24T09:12:06.899Z\",\"decisionAt\":\"2026-11-24T09:12:07.047Z\"}"
+        }
+      ]
+    },
+    {
+      "id": "d4:sticky-stop",
+      "verdict": "PASS",
+      "at": "2026-11-24T09:21:22.605Z",
+      "proposition": "a machine-delivered review wake does NOT clear a HUMAN Sticky Stop: the stop marker survives a machine wake attempt, the stopped Officer receives NO wake input from it, and only an explicit human interaction resumes the latch",
+      "probeVerdict": "PROVEN",
+      "failing": [],
+      "clauses": [
+        {
+          "id": "human-sticky-stop-marked",
+          "ok": true,
+          "detail": "stop markers before the machine attempt=[\"stopped-20765e07.json\"]"
+        },
+        {
+          "id": "machine-wake-attempted",
+          "ok": true,
+          "detail": "machine attempt={\"holdLanded\":true,\"holdStatus\":200,\"cancelStatus\":200,\"resumeStatus\":200,\"thirdRequestId\":\"ctrl-01o2qxw080b5k70elan920t2\"}"
+        },
+        {
+          "id": "stop-survives-the-machine-wake",
+          "ok": true,
+          "detail": "stop markers after the machine attempt=[\"stopped-20765e07.json\"]"
+        },
+        {
+          "id": "no-wake-input-while-stopped",
+          "ok": true,
+          "detail": "wake inputs between the stop and the human resume=0"
+        },
+        {
+          "id": "human-resume-is-the-only-clear",
+          "ok": true,
+          "detail": "human resume cleared the marker={\"status\":200,\"markersAfterResume\":0}"
+        }
+      ]
+    },
+    {
+      "id": "d4:refusal",
+      "verdict": "PASS",
+      "at": "2026-11-24T09:21:22.605Z",
+      "proposition": "the refusal side still works for an incoherent row: the SAME v5 document WITHOUT the absolute wake-intent path is refused by the closed enablement rule, the refusal is recorded, the team is absent and no wake exists",
+      "probeVerdict": "PROVEN",
+      "failing": [],
+      "clauses": [
+        {
+          "id": "refusal-rule-fires",
+          "ok": true,
+          "detail": "alpha6EnablementRefusal/centreConfigViolation=\"ADMISSION_ALPHA6_UNAVAILABLE: ADMISSION_ALPHA6_ROUTING_REQUIRED — alpha6ReviewRouting needs a v5 Blueprint whose authored `reviewRouting` block is enabled — with no authored policy there is no routing decision to take, and Alpha.6 has no implicit default. a coherent configuration (ADMISSION_ALPHA6_ROUTING_REQUIRED / _CENTRE_REQUIRED / _WAKE_INTENT_PATH_REQUIRED). A routing decision executes nothin\""
+        },
+        {
+          "id": "refusal-recorded",
+          "ok": true,
+          "detail": "deny facts=[{\"refusalCode\":\"ADMISSION_ALPHA6_UNAVAILABLE\",\"axis\":\"host.service\",\"callId\":\"alpha6:657e6cc4-4087-431f-afa4-8e10a3977629:0\"}]"
+        },
+        {
+          "id": "refusal-is-not-a-route",
+          "ok": true,
+          "detail": "intent files=[]"
+        },
+        {
+          "id": "host-log-carries-code",
+          "ok": true,
+          "detail": "host log carries the code=true (host=true)"
+        }
+      ]
+    },
+    {
+      "id": "d4:ask-execute",
+      "verdict": "PASS",
+      "at": "2026-11-24T09:21:22.605Z",
+      "proposition": "a Member `write` whose disposition is `ask` raises a REAL Control request, is approved through the REAL control path, and then executes: the confined Provider verifies the minted receipt and writes the exact approved bytes, settled COMPLETED",
+      "probeVerdict": "PROVEN",
+      "failing": [],
+      "clauses": [
+        {
+          "id": "control-request-raised",
+          "ok": true,
+          "detail": "requestRaised=true"
+        },
+        {
+          "id": "approved-through-real-control-path",
+          "ok": true,
+          "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-11alwpb03vltrc100fqq101o\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:d95fb373e1563af0baece04d6309d2748a363470\""
+        },
+        {
+          "id": "admission-fact-allow-lane-ask",
+          "ok": true,
+          "detail": "allow facts=[{\"callId\":\"call-d4-worker-write\",\"decision\":\"allow\",\"laneDecision\":\"ask\",\"axis\":\"fs.write\"}]"
+        },
+        {
+          "id": "write-tool-result-not-an-error",
+          "ok": true,
+          "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T09-09-03Z/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+        },
+        {
+          "id": "real-bytes-on-disk",
+          "ok": true,
+          "detail": "file exists=true bytes=27 sha256=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3 expectedSha256=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3"
+        },
+        {
+          "id": "settlement-completed",
+          "ok": true,
+          "detail": "state=COMPLETED bodyOutcome=completed transitions=[\"ADMITTED\",\"RUNNING\",\"COMPLETED\"]"
+        }
+      ]
+    },
+    {
+      "id": "d4:ask-execute-2",
+      "verdict": "PASS",
+      "at": "2026-11-24T09:21:22.605Z",
+      "proposition": "a SECOND Member `write` (different path, different bytes) raises its OWN Control request, is approved, and executes: the receipt is bound to THAT operation, both files hold the bytes of their own approval, settled COMPLETED",
+      "probeVerdict": "PROVEN",
+      "failing": [],
+      "clauses": [
+        {
+          "id": "second-control-request-raised",
+          "ok": true,
+          "detail": "requestRaised=true requestIsNew=true"
+        },
+        {
+          "id": "second-approved-through-real-control-path",
+          "ok": true,
+          "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1dzy2ht1m4oxpi00xawh30ji\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write-2\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:ec508e783ecef7168264782138a10d88ee0995\""
+        },
+        {
+          "id": "second-admission-fact-allow-lane-ask",
+          "ok": true,
+          "detail": "allow facts=[{\"callId\":\"call-d4-worker-write-2\",\"decision\":\"allow\",\"laneDecision\":\"ask\",\"axis\":\"fs.write\"}]"
+        },
+        {
+          "id": "second-write-tool-result-not-an-error",
+          "ok": true,
+          "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T09-09-03Z/workspace/lane/worker-ask-2.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+        },
+        {
+          "id": "second-real-bytes-on-disk",
+          "ok": true,
+          "detail": "file exists=true bytes=29 sha256=2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f expectedSha256=2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f"
+        },
+        {
+          "id": "first-file-unchanged-by-second-approval",
+          "ok": true,
+          "detail": "first sha256=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3 expectedSha256=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3"
+        },
+        {
+          "id": "content-binding-distinguishes-the-two-approvals",
+          "ok": true,
+          "detail": "second=2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f first=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3"
+        },
+        {
+          "id": "second-settlement-completed",
+          "ok": true,
+          "detail": "state=COMPLETED bodyOutcome=completed transitions=[\"ADMITTED\",\"RUNNING\",\"COMPLETED\"]"
+        }
+      ]
+    },
+    {
+      "id": "d4:ask-execute-process",
+      "verdict": "FAIL",
+      "at": "2026-11-24T09:21:22.605Z",
+      "proposition": "a Member `bash` whose disposition is `ask` raises a REAL Control request, is approved through the REAL control path, and then executes under the confined profile: the in-lane write lands with the exact bytes, the out-of-lane write produces NOTHING, and the execution settles COMPLETED",
+      "probeVerdict": "REFUTED",
+      "failing": [
+        "bash-tool-result-not-an-error",
+        "in-lane-write-lands",
+        "settlement-completed"
+      ],
+      "clauses": [
+        {
+          "id": "control-request-raised",
+          "ok": true,
+          "detail": "requestRaised=true"
+        },
+        {
+          "id": "approved-through-real-control-path",
+          "ok": true,
+          "detail": "durable control-decision-recorded decision=allow decider={\"instanceId\":\"inst-1crltnl0089j\",\"kind\":\"instance\",\"role\":\"member\"} requestId=ctrl-0y0ubok0evn4jf1h15j620vg"
+        },
+        {
+          "id": "process-admission-fact-allow",
+          "ok": true,
+          "detail": "process.exec allow facts=[{\"callId\":\"call-d4-worker-bash\",\"decision\":\"allow\",\"laneDecision\":\"ask\",\"axis\":\"process.exec\"}]"
+        },
+        {
+          "id": "bash-tool-result-not-an-error",
+          "ok": false,
+          "detail": "bash result isError=true text=\"Error: no PTY backend registered for \\\"a5sf-governed-shell\\\"\""
+        },
+        {
+          "id": "in-lane-write-lands",
+          "ok": false,
+          "detail": "file exists=false bytes=null sha256=null expectedSha256=861a17a712b274c843416fe7f9bab16e3399bbe6137e3b36bb832252a13420c2"
+        },
+        {
+          "id": "out-of-lane-write-produces-nothing",
+          "ok": true,
+          "detail": "out-of-lane file exists=false bytes=null (the OS profile refused it; the receipt added no writable bit)"
+        },
+        {
+          "id": "settlement-completed",
+          "ok": false,
+          "detail": "state=FAILED bodyOutcome=failed transitions=[\"ADMITTED\",\"RUNNING\",\"FAILED\"]"
+        }
+      ]
+    },
+    {
+      "id": "d4:ask-denied",
+      "verdict": "PASS",
+      "at": "2026-11-24T09:21:22.605Z",
+      "proposition": "the SAME live `write` ask denied through the real control path mints nothing and writes nothing: zero bytes on disk, a recorded deny fact, and a REFUSED / not-started settlement",
+      "probeVerdict": "PROVEN",
+      "failing": [],
+      "clauses": [
+        {
+          "id": "control-request-raised",
+          "ok": true,
+          "detail": "requestRaised=true"
+        },
+        {
+          "id": "denied-through-real-control-path",
+          "ok": true,
+          "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1xxrzo21k29yc31rawhls0qn\\\",\\\"decision\\\":\\\"deny\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":4,\\\"decisionSequence\\\":5,\\\"createdAt\\\":\\\"2026-11-24T09:18:18.261\""
+        },
+        {
+          "id": "deny-fact-recorded",
+          "ok": true,
+          "detail": "deny facts=[{\"callId\":\"call-d4-worker-write\",\"refusalCode\":\"ADMISSION_APPROVAL_DENIED\",\"decision\":\"deny\"}]"
+        },
+        {
+          "id": "zero-bytes",
+          "ok": true,
+          "detail": "file exists=false bytes=null"
+        },
+        {
+          "id": "settlement-refused-not-started",
+          "ok": true,
+          "detail": "state=REFUSED bodyOutcome=not-started transitions=[\"ADMITTED\",\"REFUSED\"]"
+        }
+      ]
+    },
+    {
+      "id": "d4:ask-stopped",
+      "verdict": "PASS",
+      "at": "2026-11-24T09:21:22.605Z",
+      "proposition": "a live `write` ask that is STOPPED while pending is refused with the product Stop code: zero bytes on disk and a REFUSED / not-started settlement, never an execution",
+      "probeVerdict": "PROVEN",
+      "failing": [],
+      "clauses": [
+        {
+          "id": "control-request-raised",
+          "ok": true,
+          "detail": "requestRaised=true"
+        },
+        {
+          "id": "cancel-reached-the-host",
+          "ok": true,
+          "detail": "session/cancel status=200"
+        },
+        {
+          "id": "stop-fact-recorded",
+          "ok": true,
+          "detail": "deny facts=[{\"callId\":\"call-d4-worker-write\",\"refusalCode\":\"ADMISSION_STOPPED\",\"decision\":\"deny\"}]"
+        },
+        {
+          "id": "zero-bytes",
+          "ok": true,
+          "detail": "file exists=false bytes=null"
+        },
+        {
+          "id": "settlement-refused-not-started",
+          "ok": true,
+          "detail": "state=REFUSED bodyOutcome=not-started transitions=[\"ADMITTED\",\"REFUSED\"]"
+        }
+      ]
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/run-ledger.jsonl",
+    "thisRunCount": 6,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-24T09:09:03.666Z",
+        "runId": "a5sf-live-d4-2026-11-24T09-09-03-635Z-b1",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-fs-search-1",
+        "grantId": "devlive-fs-search-1",
+        "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the FS Provider face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+        "face": "FS Provider",
+        "worldLine": "u5a5sfdev1",
+        "headCommit": "5952c84829c92d2d4e5346afa19ad1939d548239",
+        "plannedStarts": 2
+      },
+      {
+        "at": "2026-11-24T09:10:40.488Z",
+        "runId": "a5sf-live-d4-2026-11-24T09-09-03-635Z-b1",
+        "suite": "a5sf-live-d4-probe",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfdev1-20261124T09-09-03Z",
+        "phase": "a5sf-live-d4-boot1"
+      },
+      {
+        "at": "2026-11-24T09:13:52.832Z",
+        "runId": "a5sf-live-d4-2026-11-24T09-09-03-635Z-b1",
+        "suite": "a5sf-live-d4-probe",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfdev1-20261124T09-12-13Z",
+        "phase": "a5sf-live-d4-boot1-refusal"
+      },
+      {
+        "at": "2026-11-24T09:15:16.823Z",
+        "runId": "a5sf-live-d4-2026-11-24T09-09-03-635Z-b1",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-fs-search-1",
+        "grantId": "devlive-fs-search-1",
+        "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the FS Provider face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+        "face": "FS Provider",
+        "worldLine": "u5a5sfdev1",
+        "headCommit": "5952c84829c92d2d4e5346afa19ad1939d548239",
+        "plannedStarts": 2
+      },
+      {
+        "at": "2026-11-24T09:16:54.253Z",
+        "runId": "a5sf-live-d4-2026-11-24T09-09-03-635Z-b1",
+        "suite": "a5sf-live-d4-probe",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfdev1-20261124T09-15-16Z",
+        "phase": "a5sf-live-d4-boot1-ask-denied"
+      },
+      {
+        "at": "2026-11-24T09:19:57.322Z",
+        "runId": "a5sf-live-d4-2026-11-24T09-09-03-635Z-b1",
+        "suite": "a5sf-live-d4-probe",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfdev1-20261124T09-18-19Z",
+        "phase": "a5sf-live-d4-boot1-ask-stopped"
+      }
+    ]
+  },
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-live-d4-2026-11-24T09-09-03-635Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "FAIL",
+  "partial": false,
+  "finishedAt": "2026-11-24T09:21:22.606Z"
+}

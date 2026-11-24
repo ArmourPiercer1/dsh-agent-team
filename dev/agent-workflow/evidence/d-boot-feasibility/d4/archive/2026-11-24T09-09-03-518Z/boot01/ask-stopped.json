@@ -1,0 +1,92 @@
+{
+  "kind": "stop",
+  "terminal": true,
+  "resolveOutcome": null,
+  "cancelStatus": 200,
+  "file": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T08-56-27Z-next/workspace/lane/ask-stopped.txt",
+    "exists": false,
+    "content": null,
+    "bytes": null,
+    "sha256": null
+  },
+  "settlement": {
+    "executionId": "exec-e14318d017ca1dc2ba9c1821dfa714eee89178b2",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T08-56-27Z-next/centre/settlement/inst-0ty67u70r99a/exec-e14318d017ca1dc2ba9c1821dfa714eee89178b2.settlement.json",
+    "present": true,
+    "state": "REFUSED",
+    "bodyOutcome": "not-started",
+    "dispatch": "not-started",
+    "transitions": [
+      "ADMITTED",
+      "REFUSED"
+    ],
+    "terminalAt": "2026-11-24T08:58:01.411Z"
+  },
+  "facts": [
+    {
+      "callId": "call-d4-worker-write",
+      "agentId": "inst-0ty67u70r99a",
+      "instanceId": "inst-0ty67u70r99a",
+      "sessionId": "session-team-child-ecd32f24e3090ec60b7270eebdb92a6c",
+      "instanceGeneration": 0,
+      "toolName": "write",
+      "axis": "fs.write",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T08-56-27Z-next/workspace/lane/ask-stopped.txt",
+      "definitionSource": "",
+      "policyGeneration": "a5sf1:d73d606b75e553720303251d56703b26",
+      "blueprintRevision": "",
+      "owner": "session-dboot-d4-root",
+      "decision": "deny",
+      "laneDecision": "ask",
+      "refusalCode": "ADMISSION_STOPPED",
+      "reason": "the execution \"call-d4-worker-write\" was aborted before its body; a Stop is not a lane denial, an expiry or a fault, and nothing that arrives after it may authorize this call",
+      "kind": "invocation-authority",
+      "at": "2026-11-24T08:58:01.406Z"
+    },
+    {
+      "callId": "call-d4-worker-write",
+      "executionId": "exec-e14318d017ca1dc2ba9c1821dfa714eee89178b2",
+      "toolName": "write",
+      "agentId": "session-team-child-ecd32f24e3090ec60b7270eebdb92a6c",
+      "outcome": "admission-refusal",
+      "isError": true,
+      "refusalCode": "ADMISSION_STOPPED",
+      "policyGeneration": "a5sf1:d73d606b75e553720303251d56703b26",
+      "kind": "execution",
+      "at": "2026-11-24T08:58:01.416Z"
+    }
+  ],
+  "verdict": {
+    "proposition": "a live `write` ask that is STOPPED while pending is refused with the product Stop code: zero bytes on disk and a REFUSED / not-started settlement, never an execution",
+    "verdict": "PROVEN",
+    "clauses": [
+      {
+        "id": "control-request-raised",
+        "ok": true,
+        "detail": "requestRaised=true"
+      },
+      {
+        "id": "cancel-reached-the-host",
+        "ok": true,
+        "detail": "session/cancel status=200"
+      },
+      {
+        "id": "stop-fact-recorded",
+        "ok": true,
+        "detail": "deny facts=[{\"callId\":\"call-d4-worker-write\",\"refusalCode\":\"ADMISSION_STOPPED\",\"decision\":\"deny\"}]"
+      },
+      {
+        "id": "zero-bytes",
+        "ok": true,
+        "detail": "file exists=false bytes=null"
+      },
+      {
+        "id": "settlement-refused-not-started",
+        "ok": true,
+        "detail": "state=REFUSED bodyOutcome=not-started transitions=[\"ADMITTED\",\"REFUSED\"]"
+      }
+    ],
+    "failing": []
+  }
+}
