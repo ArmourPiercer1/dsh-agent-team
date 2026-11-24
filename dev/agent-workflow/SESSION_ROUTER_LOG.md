@@ -11343,3 +11343,51 @@ unchanged, no new scannable file, delta 0); cut-closure `cut(0/148)`; p0-assets 
 suites / 238 passed / 0 failed; UTE G1 argv 89/89; run-manifest records=602 findings=0; `ci-pr-gate --full
 --census-captures 2` PASS 10/10 (census `599f/7424l` ×2, identical identity sets). No capability row
 moves; no row is PRODUCT-PROVEN.
+
+### R115 — ONE reviewable candidate report, and the one hosted Required-CI red fixed with a measurement (round 115, 2026-11-24)
+
+Worktree `.worktrees/vnext-a1-cut` only, branch `vnext/a1-cut`, HEAD `974c643de` + this round's commits; PR
+#822 stays **DRAFT**; `:3080`/its DSH_HOME untouched; no history rewrite, no merge, no non-topic push, no
+upstream patch, no widened skip/timeout/retry.
+
+1. **The deliverable is one document.** `dev/agent-workflow/evidence/ute-a1/CANDIDATE-REPORT.md` is now the
+   entry point a reviewer reads first: identity (branch/HEAD/base/PR-draft state/the A0 contract it
+   implements/the one-paragraph claim), static closure with **what the numbers do not prove**, the
+   single-authority verdict (`SINGLE-AUTHORITY`, 53 surfaces, 0 findings) with its counts and map pointers,
+   the P1–P5 ladder + the six rungs (mechanism arm / live judge / OS negative control / exception), Required CI
+   (last fully green hosted set with census = run `45429461306` @ `a4a00fc816`, plus why `ci-census` skips on a
+   draft), the C1–C18 summary (21 rows: 7 MECHANISM / 8 DEV-LIVE / 1 ENV-LIMITED / 5 UNSUPPORTED BY PRODUCT
+   RULING / 0 NOT PROVEN / 0 PRODUCT-PROVEN) with every UNSUPPORTED and the ENV-LIMITED row named,
+   host-modification authority (`CORE PATCH BUDGET = 0`; both pins 639ed01539/9c2670d3bc pristine; the two rc.5
+   shape differences resolved by public capability), the candid limits list (real model ENV-LIMITED, no
+   PRODUCT-PROVEN row, 40 rc.2-only vitest suites, SEC-03/SEC-04, unmeasured power-cut durability, unbound
+   `apply_patch`, `caseId:null`, per-DSH_HOME operators, latch-scoped sticky Stop, no durable duplicate-route
+   fact, Alpha.6 DEV-LIVE), the reviewer's exact commands with expected verdict lines, and the boundaries in
+   force. `D-ACCEPTANCE-REPORT.md` keeps every round section byte-for-byte and gains only an entry-point header;
+   `PR-BODY-draft.md`/the live PR body now point at the candidate report and keep the round-113 content intact
+   and secondary; `docs/STATUS.md` gains a dated CURRENT block scoped to the candidate branch; `graph.yaml`
+   gains one appended block `ute_vnext_a1_candidate_20261124` (state_pointers untouched — the legacy round
+   pointer is not a phase counter).
+2. **The standing hosted red is diagnosed and fixed.** `ci-integration`'s `EB4-B/D/E tooling suites` step failed
+   at `974c643de` on `tests/u7-3-devex/devex-integration.test.mjs` E4/E5: `BOUND HIT: more than maxRecords 600
+   committed run records … REFUSED, no partial report is produced` (run `45508260944`, job `138849199239`, step
+   19; reproduces locally, so not a runner defect). Measured cause: 602 committed `u5-run-record/1` records.
+   `scripts/integration-order.mjs` `BOUNDS.maxRecords` 600 → **900** with the measurement in the BOUNDS header
+   and at the declaration (10,440 tracked evidence `.json`, 12 over the 512 KiB cap, 623 mention the schema, 602
+   parse; maxCandidates 12,000 vs 10,440 left unchanged). This is the script's own declared procedure (raised
+   the same way 2026-11-13 and 2026-11-22/24); **no assertion weakened** (E4 still requires `--strict` to fail on
+   an unbound head; E7 still builds `maxRecords + 1` fixture records and still requires BOUND HIT; E8 still
+   requires a late record to be graded) and **no committed evidence trimmed**.
+3. **Required CI position stated honestly.** At `974c643de` the hosted set is red for exactly two reasons:
+   `ci-census: skipped` (draft — `.github/workflows/ci-required.yml:150`, so `ci-required` cannot be green until
+   the owner flips ready) and the devex bound (fixed locally this round). **The final head must re-earn the whole
+   set in the coordinator's hosted run; no hosted green is claimed at this head.**
+
+Gates at this head (`dev/agent-workflow/evidence/ute-a1/round115/`): leg `ute-vnext-a1` **255/252/0/3**
+(`sha256:edd4f1c4…` unchanged); `devex-diag` **44/44/0** after the fix; catalog **786 tests / 734 collected / 38
+uncollected / 14 excluded**, digest `sha256:8982e6e9…` unchanged (**delta 0 new scannable files**, node=147);
+cut-closure `cut(0/148)`; p0-assets `37/180/69512` `cut(148/148)`; docs-sync `193 docs / 0 findings`; place-dist-glue
+35 placements byte-identical; eb3-ci-required `11/0`; bound vitest `15 suites / 76 describes / 238 passed / 0
+failed`; UTE G1 argv 89/89; `eb3-run-manifest` records=602 findings=0; `ci-pr-gate --full --census-captures 2`
+`pass=10 fail=0` (294.9 s, census `599f/7424l` ×2, identical identity sets). No capability row moves; no row is
+PRODUCT-PROVEN; the draft stays draft.

@@ -1,7 +1,23 @@
 # D acceptance report — UTE vNext A1 cut + centre (candidate)
 
+> ## ⚠️ ENTRY POINT — read [`CANDIDATE-REPORT.md`](CANDIDATE-REPORT.md) first (round 115, 2026-11-24)
+>
+> **This file is the append-only CHRONOLOGICAL RECORD, not the current truth.** The single current statement
+> of the candidate — identity/HEAD/base/PR state, the static closure and exactly what its numbers do and do not
+> prove, the single-authority verdict, the P1–P5 ladder with the OS negative controls and the declared
+> exceptions, Required CI (last fully green hosted set + why census skips on a draft), the C1–C18 summary with
+> every UNSUPPORTED/ENV-LIMITED row named, host-modification authority (`CORE PATCH BUDGET = 0`, both pins
+> pristine), the candid limits list, the reviewer's exact reproduction commands, and the boundaries in force —
+> lives in **[`CANDIDATE-REPORT.md`](CANDIDATE-REPORT.md)**.
+>
+> Nothing below is deleted, corrected retroactively, or re-ordered: the round sections (114 → 55) keep the
+> numbers of the head they were measured at, and they are **historical where they disagree with
+> `CANDIDATE-REPORT.md`**. The itemised per-contract sign-off is [`C1-C18-SIGNOFF.md`](C1-C18-SIGNOFF.md); the
+> adversarial audit is [`SECURITY-REVIEW-20261125.md`](SECURITY-REVIEW-20261125.md); the independent authority
+> audit is [`ARCHITECTURE-AUTHORITY-AUDIT.md`](ARCHITECTURE-AUTHORITY-AUDIT.md).
+
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-<!-- ROUND 109 — THE CURRENT ACCEPTANCE STATUS. Read this before anything else. -->
+<!-- ROUND 109 — THE HISTORICAL ACCEPTANCE TABLE. Current truth = CANDIDATE-REPORT.md. -->
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
 ## ROUND 114 — the three security findings are dispositioned (no capability row moves)

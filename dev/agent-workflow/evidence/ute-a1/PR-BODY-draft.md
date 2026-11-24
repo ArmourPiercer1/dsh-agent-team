@@ -7,13 +7,71 @@ named in the same row or section.
 
 | field | value |
 | --- | --- |
-| **Head measured for every number below** | **round 112 sits on `ba3b3b436` + the round-112 commit (named in the settlement comment); it closes the round-110 ladder red and leaves every driver verdict untouched.** Round 110 leaves the driver verdicts of `acc72e58e` untouched; its own head is `fc170f929060133b3897cb1f0b769c20a928c893` + the round-110 commit (the documentation/observation commit carrying this body is its child, named in the settlement comment)**; the round-106/102/98/95/89 sections that name `563feac13` / `10d8a67ae` / `a95be5f11` / `d322b17aa` / `97d7d7c8d` / `c29da52d3` keep their own round's numbers and are labelled as such |
+| **Head measured for every number below** | **round 114 sits on `b5da23b4b` + the round-114 commit set (`194a5c3ce` fixes + `974c643de` post-commit gate logs); it closes SEC-01/SEC-02, declares SEC-03, and leaves every driver verdict and capability level untouched.** Round 110 leaves the driver verdicts of `acc72e58e` untouched; its own head is `fc170f929060133b3897cb1f0b769c20a928c893` + the round-110 commit (the documentation/observation commit carrying this body is its child, named in the settlement comment)**; the round-106/102/98/95/89 sections that name `563feac13` / `10d8a67ae` / `a95be5f11` / `d322b17aa` / `97d7d7c8d` / `c29da52d3` keep their own round's numbers and are labelled as such |
 | **Base** | `master @ a19d1df01` (frozen A0, PR #821) |
 | **PR state** | **DRAFT**, `state=OPEN`, never merged (`gh pr view 822 --json isDraft,state,headRefOid`) |
 | **Record class** | every live claim is `DEV-LIVE` (a real host boot, **not a gate**); no capability row is PRODUCT-PROVEN |
-| **Read first** | `dev/agent-workflow/evidence/ute-a1/D-ACCEPTANCE-REPORT.md` (**its FIRST section is the single current acceptance-status table, round 106; everything later is historical where it disagrees**) and `dev/agent-workflow/evidence/ute-a1/CANDIDATE-AUDIT.md` (the round-86 adversarial audit: corrections, capability table, fresh gate block, verdict) |
+| **Read first** | **[`dev/agent-workflow/evidence/ute-a1/CANDIDATE-REPORT.md`](https://github.com/ArmourPiercer1/dsh-agent-team/blob/vnext/a1-cut/dev/agent-workflow/evidence/ute-a1/CANDIDATE-REPORT.md) — the ONE reviewable candidate report (round 115): identity/HEAD/base/PR state, static closure and exactly what its numbers do and do not prove, the single-authority verdict, the P1–P5 ladder with the OS negative controls and the declared exceptions, Required CI (last fully green hosted set with census + why census skips on a draft), the C1–C18 summary with every UNSUPPORTED/ENV-LIMITED row named, host-modification authority, the candid limits list, the reviewer's exact reproduction commands, and the boundaries in force.** Then [`D-ACCEPTANCE-REPORT.md`](https://github.com/ArmourPiercer1/dsh-agent-team/blob/vnext/a1-cut/dev/agent-workflow/evidence/ute-a1/D-ACCEPTANCE-REPORT.md) — now explicitly the append-only chronological record (its header points at the candidate report) — plus `C1-C18-SIGNOFF.md` (the per-row sign-off), `SECURITY-REVIEW-20261125.md` (the adversarial audit) and `ARCHITECTURE-AUTHORITY-AUDIT.md` (the single-authority audit) |
 | **How to review** | (1) read the audit's corrections table first — it lists every number the report used to get wrong; (2) re-run the gate block in §"Verification on this HEAD" (single commands, ~8 min with the census) and diff the verdict lines; (3) for any capability row, follow its `file:line`/evidence path and check it says what the row claims; (4) treat every `DEV-LIVE` row as unproven for acceptance purposes; (5) read `D-ACCEPTANCE-REPORT.md` §10 before forming a view — the two round-87/88 seams and the four rulings they need are there; (6) do **not** mark this PR ready or merge it — that is the owner's act. |
-| **Gate status at this head** | **Round 112 / `ba3b3b436` + the round-112 commit — the B ladder is GREEN on BOTH hosts: `vnext-b-probe-ladder` 18/18 on rc.2 and 18/18 on rc.5 (16 pass + the same 2 declared non-runs each), leg 251/248/0/3 on both, 0 fail; no product change, no assertion weakened.** **Round 110 / `fc170f929` + the round-110 commit (rc.5 TEST MATRIX; no driver re-run, no row moves):** `dispatch-tests --run --leg ute-vnext-a1` **251 tests / 248 pass / 0 fail / 3 skipped** (exit 0, leg digest unchanged `sha256:edd4f1c4…`); `test-catalog --max-uncollected 41 --max-excluded 7` **tests=785, collected=733, uncollected=38, excluded=14, findings=0** (digest `sha256:da8a452d…` unchanged; no new scannable file); `ute-cut-closure --check` **pass** `cut(0/148)`; `ute-p0-assets --check` **pass** `cut(148/148) modules=37 files=180 lines=69512`; `docs-sync --check` **docs=193 findings=0 blocking=0**; `place-dist-glue` **35 placements** byte-identical; `eb3-ci-required` **pass workflows=11 findings=0**; bound vitest (`ci-integration`, 15 suites) **PASS 238 passed / 0 failed**; **UTE G1 nine-file argv 89/89**; `EB3-RUN-MANIFEST` **pass records=600 strict=0 incomplete=11 findings=0**; `ci-pr-gate --full --census-captures 2` **PASS 10/10** (293.5 s, census `599f/7424l` twice, identical identity sets). **rc.5 population, measured:** 759 tests / 737 pass / 21 fail / 1 skip through the ONE selector — 18 are the open B-ladder `mode` arms (`vnext-b-probe-ladder.test.mjs:273` vs rc.5 `tools/lib/index.js:407`, a deterministic failure in ~0.5 s, not a hang), 1 `a5sf-fs-contract` arm that measures the rc.2 tool package, 2 `m7a-real-slice-host-state` arms that boot the rc.2 census base; three test-side rc.5 drifts adapted with observation only (ADM-96/97 `AbortSignal`; selected-host module resolution + rc.5 executor plugin + batch dispatch) → `admission` 0 fail on both hosts, `a5sf-harness` 10/10 both, `a5sf-native-route-c` **8/8 both**. Disclosed gap: **40 vitest suites that load host code stay rc.2-only** (Vite resolves the repo install before the Node host loader — measured; a Vite alias would be a second selection mechanism). Full table: `dev/agent-workflow/evidence/ute-a1/RC5-TEST-MATRIX.md`. |
+| **Gate status at this head** | **Round 115 (`974c643de` + this round's commits) is the CURRENT gate block — see the round-115 section immediately below and `CANDIDATE-REPORT.md` §5/§9: `ute-vnext-a1` leg 255 tests / 252 pass / 0 fail / 3 declared non-runs; `test-catalog` tests=786 collected=734; the hosted `devex-diag` BOUND HIT is FIXED (measured budget raise); `ci-pr-gate --full --census-captures 2` PASS 10/10.** The rows below keep the numbers of the head they were measured at. **Round 112 / `ba3b3b436` + the round-112 commit — the B ladder is GREEN on BOTH hosts: `vnext-b-probe-ladder` 18/18 on rc.2 and 18/18 on rc.5 (16 pass + the same 2 declared non-runs each), leg 251/248/0/3 on both, 0 fail; no product change, no assertion weakened.** **Round 110 / `fc170f929` + the round-110 commit (rc.5 TEST MATRIX; no driver re-run, no row moves):** `dispatch-tests --run --leg ute-vnext-a1` **251 tests / 248 pass / 0 fail / 3 skipped** (exit 0, leg digest unchanged `sha256:edd4f1c4…`); `test-catalog --max-uncollected 41 --max-excluded 7` **tests=785, collected=733, uncollected=38, excluded=14, findings=0** (digest `sha256:da8a452d…` unchanged; no new scannable file); `ute-cut-closure --check` **pass** `cut(0/148)`; `ute-p0-assets --check` **pass** `cut(148/148) modules=37 files=180 lines=69512`; `docs-sync --check` **docs=193 findings=0 blocking=0**; `place-dist-glue` **35 placements** byte-identical; `eb3-ci-required` **pass workflows=11 findings=0**; bound vitest (`ci-integration`, 15 suites) **PASS 238 passed / 0 failed**; **UTE G1 nine-file argv 89/89**; `EB3-RUN-MANIFEST` **pass records=600 strict=0 incomplete=11 findings=0**; `ci-pr-gate --full --census-captures 2` **PASS 10/10** (293.5 s, census `599f/7424l` twice, identical identity sets). **rc.5 population, measured:** 759 tests / 737 pass / 21 fail / 1 skip through the ONE selector — 18 are the open B-ladder `mode` arms (`vnext-b-probe-ladder.test.mjs:273` vs rc.5 `tools/lib/index.js:407`, a deterministic failure in ~0.5 s, not a hang), 1 `a5sf-fs-contract` arm that measures the rc.2 tool package, 2 `m7a-real-slice-host-state` arms that boot the rc.2 census base; three test-side rc.5 drifts adapted with observation only (ADM-96/97 `AbortSignal`; selected-host module resolution + rc.5 executor plugin + batch dispatch) → `admission` 0 fail on both hosts, `a5sf-harness` 10/10 both, `a5sf-native-route-c` **8/8 both**. Disclosed gap: **40 vitest suites that load host code stay rc.2-only** (Vite resolves the repo install before the Node host loader — measured; a Vite alias would be a second selection mechanism). Full table: `dev/agent-workflow/evidence/ute-a1/RC5-TEST-MATRIX.md`. |
+
+## ROUND 115 — one reviewable candidate report, and the one hosted Required-CI red fixed
+
+Head `974c643de` + this round's commits (named in the settlement comment), branch `vnext/a1-cut`, PR **#822
+stays DRAFT**. This round writes **one document a reviewer reads first** and fixes the single standing red in
+the hosted `ci-integration` layer. **No capability level moves; no row becomes PRODUCT-PROVEN; no history
+rewrite; no upstream patch; no assertion, timeout, retry or skip widened.**
+
+**The entry point is now
+[`dev/agent-workflow/evidence/ute-a1/CANDIDATE-REPORT.md`](https://github.com/ArmourPiercer1/dsh-agent-team/blob/vnext/a1-cut/dev/agent-workflow/evidence/ute-a1/CANDIDATE-REPORT.md).**
+It states: identity (branch / `974c643de` / base `master @ a19d1df01` / PR #822 DRAFT / the A0 contract it
+implements / the one-paragraph claim), static closure with what the numbers do **not** prove, the
+single-authority verdict (`SINGLE-AUTHORITY`, 53 surfaces, 0 findings), the P1–P5 ladder with the six rungs and
+the OS negative controls plus the three declared exceptions (PTC unsupported by ruling; per-call process ask
+unsupported by ruling with the `d4:ask-execute-process` REFUTED preserved; env-limited arms), Required CI, the
+C1–C18 summary with every UNSUPPORTED/ENV-LIMITED row named, host-modification authority, the candid limits
+list, the reviewer's exact commands, and the boundaries in force. `D-ACCEPTANCE-REPORT.md` keeps every round
+section unchanged and its header now points at the candidate report as the entry point.
+
+### The hosted red, named and fixed with a measurement
+
+`ci-integration` failed at `974c643de` in one step: `EB4-B/D/E tooling suites` →
+`tests/u7-3-devex/devex-integration.test.mjs` **E4/E5**, `BOUND HIT: more than maxRecords 600 committed run
+records … REFUSED, no partial report is produced` (run `45508260944`, job `138849199239`, step 19; reproduces
+locally, so it is not a runner defect). Cause: the branch now carries **602** committed `u5-run-record/1`
+records, exceeding `scripts/integration-order.mjs`'s *capacity budget* — a bound the script's own header says
+must be **raised with a measurement**, never trimmed by deleting evidence (done twice before, 2026-11-13 and
+2026-11-22/24). `BOUNDS.maxRecords` **600 → 900**, with the measurement in the header and at the declaration:
+10,440 tracked `.json` under the evidence root (12 over the 512 KiB cap, unread), 623 mention the schema,
+**602 parse**. The controls are untouched and re-run green: `E7` still builds `maxRecords + 1` fixture records
+and requires `BOUND HIT`, `E8` still requires a late record to be graded, `E4` still requires `--strict` to
+fail while any record does not bind the candidate head. Local `devex-diag` after the fix: **44 tests / 44 pass
+/ 0 fail**.
+
+### Gate block at this head (`dev/agent-workflow/evidence/ute-a1/round115/`)
+
+| gate | measured verdict |
+| --- | --- |
+| `dispatch-tests --run --leg ute-vnext-a1` (`A5SF_REQUIRE_PINNED_HOST=1`) | **255 tests / 252 pass / 0 fail / 3 disclosed skips**, `exit=0`, set `sha256:edd4f1c4…` |
+| `dispatch-tests --run --leg devex-diag` | **44 / 44 pass / 0 fail**, `exit=0` |
+| `test-catalog --max-uncollected 41 --max-excluded 7` | `tests=786 collected=734 excluded=14 uncollected=38`, digest `sha256:8982e6e9…`, `findings=0` (**no new scannable file**) |
+| `ute-cut-closure --check` | `pass deleted=148 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 retiredSurfaces=12 findings=0` |
+| `ute-p0-assets --check` | `pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 cut=cut(148/148) findings=0` |
+| `docs-sync --check` | `docs=193 findings=0 blocking=0 contracts=20 pairs compared` |
+| `place-dist-glue` | `done (35 placement(s))`, every line byte-identical |
+| `eb3-ci-required` | `pass workflows=11 findings=0` |
+| bound vitest (`ci-integration`, 15 suites) | `PASS 238 passed / 0 failed` (`clock_ms=20000`, unchanged) |
+| UTE G1 nine-file argv (exact CI argv) | **89 tests / 89 pass / 0 fail / 0 skip** |
+| `EB3-RUN-MANIFEST` | `pass records=602 strict=0 incomplete=11 findings=0` |
+| `ci-pr-gate --full --census-captures 2` | **PASS 10/10**, 294.9 s, census `599f/7424l` twice with **identical identity sets**, `refused=0` |
+
+### Required CI at this head — the honest position
+
+The last **fully green hosted set with census** is run `45429461306` @ `a4a00fc816` (2026-11-24T15:46:52Z; also
+`45424962377` @ `fc4bac62e2`). At `974c643de` the hosted set is **red** for two named reasons: `ci-census`
+**skipped** because the PR is a draft (`.github/workflows/ci-required.yml:150` — so `ci-required` cannot be green
+until the owner flips ready), and the `ci-integration` bound described above (now fixed locally). **The final
+head must re-earn the whole set in the coordinator's hosted run; this body claims no hosted green at this head.**
 
 ## ROUND 114 — the three security findings are closed (no capability row moves, PR stays DRAFT)
 
@@ -1097,3 +1155,4 @@ world keeps its round-98 shape plus the bash declaration and a pure-allow worksp
 **Not proven.** The live POSITIVE process execution (blocked by the assembly gap above — a product
 decision, not a receipt defect: the same face mounts in the v4 D3 world). `apply_patch` remains R4. The
 scripted model is the only double. No row is PRODUCT-PROVEN.
+
