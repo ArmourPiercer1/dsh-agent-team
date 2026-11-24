@@ -236,6 +236,7 @@ Evidence directory: `dev/agent-workflow/evidence/ute-a1/round110/`
 
 ## 8. Gate evidence at this head
 
+**The block below is the round-110 run and is kept as history; the round-112 (current) block is §9.5.**
 Filled by the round-110 gate run (`MIGRATED-SUITE-STATUS.md` carries the same numbers):
 
 | gate | result |
@@ -352,6 +353,24 @@ Two properties this round did **not** get for free, recorded so a reader cannot 
 
 ### 9.5 Evidence
 
-`dev/agent-workflow/evidence/ute-a1/round112/`:
-`ladder-rc2.log`, `ladder-rc5.log`, `dispatch-ute-vnext-a1-rc2.log`, `dispatch-ute-vnext-a1-rc5.log`
-(plus the gate logs named in §8).
+`dev/agent-workflow/evidence/ute-a1/round112/`: `ladder-rc2.log`, `ladder-rc5.log`,
+`dispatch-ute-vnext-a1-rc{2,5}.log` (precommit) and `*-postcommit.log` for every gate below, plus
+`README.md`. Logs are plain captures; the verdict lines below are the machine-readable ones.
+
+| gate (round 112, postcommit at `9bfa5053d` unless noted) | result |
+| --- | --- |
+| `dispatch-tests --run --leg ute-vnext-a1` | **rc.2 251/248/0/3 and rc.5 251/248/0/3**, `set=sha256:edd4f1c4…` both |
+| `test-catalog --max-uncollected 41 --max-excluded 7` | `tests=785 collected=733 uncollected=38 excluded=14 refused=0 findings=0`, digest `sha256:da8a452d…` unchanged (booking delta **0**: no new scannable file) |
+| `ute-cut-closure --check` | `pass deleted=148 references=3 prodRefs=0 cut=cut(0/148) findings=0` |
+| `ute-p0-assets --check` | `pass modules=37 files=180 lines=69512 cut(148/148) findings=0` |
+| `docs-sync --check` | `docs=193 notes=4 plans=152(0 declaring) findings=0 blocking=0 contracts=20` |
+| `place-dist-glue` | `35 placement(s)` byte-identical |
+| `eb3-ci-required` | `pass workflows=11 findings=0` |
+| bound vitest (`ci-integration`, 15 migrated suites) | `EB3-LAYER … verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0 clock_ms=30000` |
+| UTE G1 exact CI argv (9 files) | `tests 89 / pass 89 / fail 0`, exit 0 |
+| `EB3-RUN-MANIFEST` | `pass records=602 strict=0 incomplete=11 findings=0` |
+| `ci-pr-gate --full --census-captures 2` | `DSH-CI-VERDICT pass pass=10 fail=0 skip=0 legs=10` in **293.7 s**; census `599f/7424l` twice, identical identity sets |
+| `pr-settlement-gate --pr 822` | `DSH-SETTLEMENT-VERDICT PASS marker=none matches=1 candidates=51` (after the dated comment for the settled head) |
+
+The precommit `ci-pr-gate` was also PASS 10/10 (287.5 s) on the same tree; both runs' logs are in the
+directory.

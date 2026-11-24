@@ -50,7 +50,9 @@ product ruling; the refusal is what `ADM-76`/`ADM-79` prove).
 | `gate-ute-g1-argv.log` | UTE G1 nine-file argv (exact CI argv) |
 | `gate-eb3-run-manifest.log` | `eb3-run-manifest` |
 | `gate-ci-pr-gate*.log` | `ci-pr-gate --full --census-captures 2` (precommit + postcommit) |
-| (posted to the PR) | the dated settlement comment; its text is kept at `.artifacts/r112/settlement-comment.md` (gitignored, like the PR-body artifact), because a comment naming the final head cannot itself be committed without moving that head |
+| `*-postcommit.log` | every gate re-run after the round-112 commit |
+| `pr-settlement-gate.log` | `pr-settlement-gate --pr 822` (left untracked: a new commit would retire the settled head it names) |
+| (posted to the PR) | the dated settlement comment; its text is kept at `.artifacts/r112/settlement-comment.md` and `.artifacts/r112/pr-body-current.md` is the posted PR body (both gitignored: a comment naming the final head cannot itself be committed without moving that head) |
 
 Docs updated in the same commit: `RC5-TEST-MATRIX.md` (§3 rows + §4.2 closed + **§9** the replacement-API
 reading and the 18-row table), `CAPABILITY-MATRIX-C.md` (round-112 section; no level moves),
