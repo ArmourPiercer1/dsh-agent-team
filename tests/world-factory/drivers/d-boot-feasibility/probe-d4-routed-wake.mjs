@@ -1111,7 +1111,27 @@ function judgeCaseCreated({ durableRow, ledgerRows }) {
       },
       { id: 'frozen-tool-coordinate', ok: row?.operationToolOwner === 'dsh.fs' && row?.operationToolName === 'write' && row?.operationToolDefinitionIdentity === 'dsh.fs/write', detail: `coordinate=${JSON.stringify([row?.operationToolOwner ?? null, row?.operationToolName ?? null, row?.operationToolDefinitionIdentity ?? null])}` },
       { id: 'frozen-blueprint-and-generation', ok: nonEmpty(row?.blueprintContentHash) && String(row.blueprintContentHash).startsWith('sha256:') && nonEmpty(row?.blueprintRevision) && Number.isInteger(row?.authorityGeneration), detail: `blueprintContentHash=${JSON.stringify(row?.blueprintContentHash ?? null)} revision=${JSON.stringify(row?.blueprintRevision ?? null)} authorityGeneration=${JSON.stringify(row?.authorityGeneration ?? null)}` },
-      { id: 'case-has-no-decision-yet', ok: decisionFacts.length === 0, detail: `decision facts at capture time=${String(decisionFacts.length)}` },
+      // ROUND 102 — MEASUREMENT FIX, made in the open (no capability relaxed). This clause used to
+      // assert "ZERO control-decision-recorded facts at capture time" by reading the ledger AFTER the
+      // capture, so it measured how fast the Officer decides, not what was captured. It REFUTED a
+      // correct product: boot 2 at 5952c84 recorded the request fact as sequence 9 (…25.351Z) and the
+      // decision as sequence 12 (…25.527Z) — 176 ms later, faster than the 300 ms poll, so the
+      // absence was never observable by polling. The INTENT — the captured row is a pre-decision
+      // view — is now asserted from the append-only ledger, which cannot lie: the captured row comes
+      // from the `control-request-recorded` fact (first clause pins it and its sequence), its case id
+      // is the one that creation fact recorded, and EVERY decision fact for the request has a
+      // STRICTLY LATER sequence. A post-decision capture cannot satisfy that ordering.
+      (() => {
+        const decisionsOutOfOrder = decisionFacts.filter((d) => !(Number.isInteger(d?.sequence)
+          && Number.isInteger(fact?.sequence) && d.sequence > fact.sequence))
+        const caseIdAgrees = nonEmpty(row?.approvalCaseId)
+          && String(row.approvalCaseId) === String(fact?.payload?.approvalCaseId ?? '')
+        return {
+          id: 'captured-case-precedes-any-decision',
+          ok: fact !== null && Number.isInteger(fact?.sequence) && caseIdAgrees && decisionsOutOfOrder.length === 0,
+          detail: `creation sequence=${String(fact?.sequence ?? null)} createdAt=${String(fact?.createdAt ?? null)} approvalCaseId=${JSON.stringify(row?.approvalCaseId ?? null)} decisions=${JSON.stringify(decisionFacts.map((d) => ({ sequence: d?.sequence ?? null, createdAt: d?.createdAt ?? null, laterThanCapture: Number.isInteger(d?.sequence) && Number.isInteger(fact?.sequence) && d.sequence > fact.sequence })))}`,
+        }
+      })(),
     ],
   )
 }
@@ -2289,11 +2309,12 @@ async function probeOnce({ index, head, grant }) {
         ...(String(m?.childSessionId ?? '') === 'undefined' ? { childSessionId: undefined } : {}),
         ...(String(m?.lifecycle ?? '') === 'undefined' ? { lifecycle: undefined } : {}),
       }))
-      // THE ROUTE IS EVALUATED ON THE ROW AS IT WAS WHEN IT WAS PENDING. `ledgerRows` is the snapshot
-      // the probe took BEFORE any decision (and it is the same snapshot `d4:case-created` reads), so
-      // every request in it is pending by construction — derive nothing from the later ledger state,
-      // which by now has settled every leg. Routing a decided row would return null and measure
-      // nothing; routing the captured row measures the real router's decision for the real leg.
+      // THE ROUTE IS EVALUATED ON THE ROW AS IT WAS WHEN IT WAS PENDING. `ledgerRows` is a FRESH read
+      // (the request facts it carries are immutable, unlike the decision state), and every request is
+      // handed to the router with `status: 'pending'` and an EMPTY decision list by construction —
+      // derive nothing from the later ledger state, which by now has settled every leg. Routing a
+      // decided row would return null and measure nothing; routing the captured rows measures the
+      // real router's decision for the real leg.
       const requests = ledgerRows
         .filter((fact) => fact?.factType === 'control-request-recorded')
         .map((fact) => ({ ...fact.payload, status: 'pending' }))
