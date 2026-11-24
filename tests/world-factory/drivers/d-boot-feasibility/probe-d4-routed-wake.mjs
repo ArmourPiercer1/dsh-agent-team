@@ -56,11 +56,18 @@
  *      the refusal is recorded through the product's own host-surface point.
  *
  * BOOT DISCIPLINE (TEST_METHODS §2/§5/§7): DSH_HOME under the workspace
- * (`tests/homes/u5a5sfdev1-*`), ports from the 3180 family through WorldFactory
- * leases, the pinned host tree read-only (porcelain verified before and after),
- * <= 2 concurrent dev Hosts (`lib/dev-live-slots.mjs`), archive-before-start,
- * teardown by identity, one DEV-LIVE ledger row per start. The stable instance
- * on :3080 and its DSH_HOME are never touched.
+ * (`tests/homes/u5a5sfdev1-*`), ports from the SELECTED host's band through
+ * WorldFactory leases, the SELECTED host tree read-only (porcelain verified
+ * before and after), <= 2 concurrent dev Hosts (`lib/dev-live-slots.mjs`),
+ * archive-before-start, teardown by identity, one DEV-LIVE ledger row per
+ * start. The stable instance on :3080 and its DSH_HOME are never touched.
+ *
+ * HOST-SELECTABLE (round 102): tree, pin, port band, home suffix and loader come
+ * from the ONE lane selector `tests/next-host/host-select.mjs` — rc.2 by default,
+ * rc.5 under `TEAM_TEST_HOST=next` — exactly as the three D drivers do. The
+ * probe adds NO second resolution mechanism: the selected tree is also the only
+ * place the realm's native `tool-fs` module is read from, so the product under
+ * measurement and the pinned module it mounts are always the SAME generation.
  *
  * EVIDENCE HOME: `dev/agent-workflow/evidence/d-boot-feasibility/d4/`.
  *
@@ -132,8 +139,6 @@ const DONE_WRK = 'DBOOT_D4_WORKER_DELEGATED'
 const MK_RESOLVE = 'DBOOT_D4_RESOLVE_ASK'
 const DONE_RESOLVE = 'DBOOT_D4_RESOLVE_DONE'
 const D4_BINDING_WORLD = process.env['D4_BINDING_WORLD'] ?? ''
-const BASELINE_TOOL_FS = join(REPO_ROOT, 'tests', 'deepseek-harness-test-use', 'packages', 'fs', 'tool-fs', 'lib', 'index.js')
-if (!existsSync(BASELINE_TOOL_FS)) throw new Error(`the pinned host tool-fs module must exist (${BASELINE_TOOL_FS})`)
 
 const TOK_OFF = 'dboot-d4-officer-work'
 const TOK_WRK = 'dboot-d4-worker-work'
@@ -261,6 +266,21 @@ const HOST_PIN = selectedHostPin(REPO_ROOT)
 const HOST_TREE = realpathSync(selectedHostTree(REPO_ROOT))
 if (realpathSync(HOST_PIN.tree) !== HOST_TREE) {
   throw new Error(`host selector disagreement: tree ${HOST_TREE} != pin tree ${HOST_PIN.tree}`)
+}
+/**
+ * The pinned host `tool-fs` the governed realm mounts as its native module.
+ *
+ * HOST-ANCHORED (round 102). This used to be the literal
+ * `tests/deepseek-harness-test-use/...` path, which under `TEAM_TEST_HOST=next`
+ * mounted the rc.2 module into an rc.5 host — the exact two-generation mix the
+ * selector exists to prevent. The layout is the same on both hosts (the
+ * `fsContractHostLayout()` layout, `tests/world-factory/lib/a5sf-fs-contract-world.mjs:157`),
+ * so deriving it from the SELECTED tree is not a second mechanism: it is the
+ * same mechanism reading the same package path out of the chosen host.
+ */
+const HOST_TOOL_FS = join(HOST_TREE, 'packages', 'fs', 'tool-fs', 'lib', 'index.js')
+if (!existsSync(HOST_TOOL_FS)) {
+  throw new Error(`the pinned host tool-fs module must exist (${HOST_TOOL_FS}); host=${HOST_PIN.host} pin=${HOST_PIN.sha}`)
 }
 const require_ = createRequire(import.meta.url)
 
@@ -486,13 +506,14 @@ function composedRows({ home, mainYaml, alpha6 }) {
     // THE TOOL MODULE THE DECLARED BINDING IS MOUNTED FROM (round 93). A Team-scoped
     // `toolBindings[]` entry names a tool; the realm can only shadow a name it can mount, so a
     // world that DECLARES the operation tool must also mount the module that provides it. This is
-    // the pinned host `tool-fs` package (read-only, from the pristine test tree), not a product mock.
+    // the pinned host `tool-fs` package (read-only, from the SELECTED pristine host tree — rc.2 by
+    // default, rc.5 under `TEAM_TEST_HOST=next`), not a product mock.
     // ROUND 99 — UNCHANGED from round 98. `[]` was MEASURED to break Member activation (the officer
     // never came up: the governed realm needs its configured native module), so the D4 world keeps the
     // FS module exactly as it was. The consequence for the process arm is recorded in its own artifact:
     // a v5 per-tool `bash` binding lands on a BINDING realm, and that realm carries no governed PTY
     // face, so the spawn refuses `NO_BACKEND` (a product assembly gap, measured not inferred).
-    a5sfNativeToolModules: [BASELINE_TOOL_FS],
+    a5sfNativeToolModules: [HOST_TOOL_FS],
     ...(alpha6.enabled
       ? {
           alpha6ReviewRouting: true,
