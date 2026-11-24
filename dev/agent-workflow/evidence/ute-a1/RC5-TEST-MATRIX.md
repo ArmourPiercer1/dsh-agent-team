@@ -9,6 +9,12 @@ Hosts: rc.2 `tests/deepseek-harness-test-use` @ `639ed015397290b3745d163aafe02ff
 (`dsh-v0.2.2-rc.5`). One selector: `TEAM_TEST_HOST=next`, authority
 `tests/next-host/host-select.mjs`.
 
+> **ROUND 112 (2026-11-25): the only open red in this matrix — the 18 B-ladder arms — is CLOSED.** The
+> ladder is host-selectable and measures **18/18 on rc.2 and 18/18 on rc.5** (16 pass + 2 declared
+> non-runs each); the rc.5 A/A7 cells in §3 and the §4.2 entry are annotated in place, and the full
+> replacement-API reading + the 18-row table are §9. Nothing else in the round-110 measurement moved;
+> the remaining rc.5 non-green cells are the rc.2-subject suites in §4.4, which are N/A by pin.
+
 This document replaces narration with a population. Every "rc.5" cell below is a run on the rc.5 pin
 through the existing selector (or, where a suite is rc.5-pinned by construction, through its own
 `NEXT_HOST` import); every "N/A" cell carries the reason and the measured evidence for that reason. No
@@ -74,14 +80,14 @@ no host dependency at all: one run on either host grades them identically, and t
 
 | # | population | files | tests | rc.2 result | rc.5 result | rc.2-only reason / rc.5 note |
 | --- | --- | ---: | ---: | --- | --- | --- |
-| A | `ute-vnext-a1` dispatch leg (selector; 6 non-ladder suites + ladder) | 7 | 251 | **251 / 248 pass / 0 fail / 3 skip** (exit 0) | **251 / 232 pass / 18 fail / 1 skip** | the 18 failures are the B-ladder arms only (§4 item 4) |
+| A | `ute-vnext-a1` dispatch leg (selector; 6 non-ladder suites + ladder) | 7 | 251 | **251 / 248 pass / 0 fail / 3 skip** (exit 0) | **251 / 248 pass / 0 fail / 3 skip** (round 112; was 232/18/1 in round 110) | the 18 B-ladder failures are **CLOSED** by the host-selectable world rewrite (§9); the 3 skips are the two declared ladder non-runs + ADM-147 |
 | A1 | ├ `vnext-realm-lane` | 1 | 12 | 12/12 | **12/12** | — |
 | A2 | ├ `vnext-fs-slice` | 1 | 42 | 42/42 | **42/42** | SLICE-21/30 were fixed in earlier rounds; this round confirms 36→42 |
 | A3 | ├ `vnext-admission` | 1 | 163 | 162/1 skip | **162/1 skip** (0 fail) | ADM-96/97 fixed this round (§5.1) |
 | A4 | ├ `vnext-os-probe` | 1 | 3 | 3/3 | **3/3** | — |
 | A5 | ├ `vnext-work-turn-reader` | 1 | 7 | 7/7 | **7/7** | — |
 | A6 | ├ `vnext-template-binding` | 1 | 6 | 6/6 | **6/6** | — |
-| A7 | └ `vnext-b-probe-ladder` | 1 | 18 | 18/18 | **0/18** | **OPEN (b)**: `mode` config removed upstream (§4 item 4) |
+| A7 | └ `vnext-b-probe-ladder` | 1 | 18 | 18/18 (16 pass + 2 declared skips) | **18/18 (16 pass + 2 declared skips, 0 fail)** — round 112 | **CLOSED (b)**: rc.5 mounts an executor service + batch dispatch instead of `mode`; the SAME 18 arms run on both hosts (§9) |
 | B | UTE G1 exact CI argv (rc.5-pinned; 9 files) | 9 | 89 | N/A | **89 / 89 / 0 / 0** (exit 0) | rc.2 N/A: files import `NEXT_HOST` directly; the argv must not carry `TEAM_TEST_HOST` (double selection) |
 | C | next-host/settlement/closure lane exactly as CI (11 files) | 11 | 184 | N/A | **184 / 184 / 0 / 0** | rc.2 N/A (pinned rc.5 + pure script tests) |
 | C1 | └ `tests/next-host` (boot 2, native-api 4, provisioning-controls 13) — **included in C** | 3 | 19 | N/A | **19 / 19** | rc.2 N/A: provisioning is rc.5-only |
@@ -90,7 +96,8 @@ no host dependency at all: one run on either host grades them identically, and t
 | G | vitest root population (one run) | 599 | 7424 | **7424 / 7424 pass** (599 files) | **N/A** | host-free by construction (678/771 files); the 40 host-importing vitest suites are §4.3 |
 | H | uncollected `node:test` files (catalog ratchet) | 38 | — | governed by the 38-uncollected baseline | **not counted** | outside the executed population; §4.4 |
 
-Executed rc.5 tests: **A+B+C+D+E = 759 tests, 737 pass, 21 fail, 1 skip**. Every one of the 21 failures
+Executed rc.5 tests: **A+B+C+D+E = 759 tests, 753 pass, 3 fail, 3 skip** (round 112; round 110 measured 737/21/1). The 3
+remaining failures are the rc.2-subject suites in §4.4/E, not the ladder. Every one of the 3 failures
 is dispositioned in §4; none is skipped.
 
 The rc.2 column for A/E/F/G is a real run at this head (`ute-a1-rc2.log`,
@@ -112,11 +119,11 @@ ENV-LIMITED with a probe, never PASS.
 | 2 | `a5sf-harness` "fixed candidate: the pin is READ from tests/paths.mjs" | `AssertionError: + '9c2670d3…' - '639ed015…'` at `a5sf-harness.test.mjs:248` | the arm bound the candidate pin to the **rc.2 constant** (`TEST_USE_BASELINE_SHA`) instead of the selected pin, while `candidate().pin` correctly returns `factory.hostPin.sha` (the selected authority) | `tests/world-factory/a5sf-harness.test.mjs:243–261`: compare against `selectedHostPin(REPO_ROOT).sha` (the same authority the harness reads) and assert the 40-hex **literal** is absent from the harness source. Same law ("read from the authority, never copied"), host-independent. Result: **10/10 on rc.2 and rc.5** |
 | 3 | `a5sf-native-route-c` N2–N8 (6 arms) | first `TypeError: agent-bindings: the a5sf native tool re-mount needs a SCOPED agent Context` at `a5sf-realm-row.mjs:782`; after that `cannot get property "tools" without inject` at `tool-executor-native/lib/index.js:10` ← `pipeline.js:258` | two rc.2 assumptions in the unit world: (i) `createRequire(packages/runtime/package.json)` pinned the **rc.2** `@deepseek-ai/*` modules while the product resolved the **rc.5** copies → two `dsh-scope` namespaces → the module-private scope Symbol missed → `scopeOf(root) === undefined` (the exact duplicate-instance hazard the product comment names); (ii) rc.2's single-call `tools.execute` and no executor service | `tests/world-factory/a5sf-native-route-c.test.mjs`: host modules now resolve through `resolveSelectedHostModule` under the selector (`hostEntry()`), the rc.5 executor is mounted as its exported plugin `{name, inject, apply}` (mounting the bare class skips `inject`), and dispatch goes through the **existing** `executeToolDispatch(..., {hostMode})` helper (rc.2 single call / rc.5 batch). Assertions unchanged. Result: **8/8 on rc.2 and rc.5** |
 
-### 4.2 Still red — (b) open: the B Ladder
+### 4.2 The B Ladder — **CLOSED in round 112** (was red in round 110; the diagnosis below is the historical record)
 
 | # | suite / arms | rc.5 result | diagnosis (file:line) | why it is not fixed this round |
 | --- | --- | --- | --- | --- |
-| 4 | `vnext-b-probe-ladder` — all 18 `ARMS` fail in the `before` hook | `TypeError [ValidationError]: invalid config: - $.mode expected nullable but got both (at mode)` — deterministic, ~505 ms | `vnext-b-probe-ladder.test.mjs:273` mounts `ToolRuntime` with `{ mode: 'both', ptc: {} }`; rc.5 `packages/core/tools/lib/index.js:407` declares `mode: z.never()` ("Removed. Mount a native or PTC tool executor instead."). The hook rejects before any arm runs, so all 18 are red, not 18 independent findings | The adaptation is a **rewrite of the world**, not a config rename: rc.5 selects an executor service (`NativeToolExecutor` / `PtcExecutor`, one per scope — `tools.setExecutor` refuses a second), dispatch is a batch (`{calls:[{type:'tool-call',…}], signal, agent}`), and the `run_code` identity/retention arms (ADM-63/69/76/79/80) rely on rc.2's registry `Transport`, which rc.5 moved into `PtcExecutor.requirePtcTransport()`. That is its own arm design, not a drive-by edit; doing it in this round would have been an unreviewed rewrite of 18 judged arms |
+| 4 | `vnext-b-probe-ladder` — all 18 `ARMS` fail in the `before` hook — **CLOSED round 112: 18/18 on both hosts** | `TypeError [ValidationError]: invalid config: - $.mode expected nullable but got both (at mode)` — deterministic, ~505 ms | `vnext-b-probe-ladder.test.mjs:273` mounts `ToolRuntime` with `{ mode: 'both', ptc: {} }`; rc.5 `packages/core/tools/lib/index.js:407` declares `mode: z.never()` ("Removed. Mount a native or PTC tool executor instead."). The hook rejects before any arm runs, so all 18 are red, not 18 independent findings | The adaptation is a **rewrite of the world**, not a config rename: rc.5 selects an executor service (`NativeToolExecutor` / `PtcExecutor`, one per scope — `tools.setExecutor` refuses a second), dispatch is a batch (`{calls:[{type:'tool-call',…}], signal, agent}`), and the `run_code` identity/retention arms (ADM-63/69/76/79/80) rely on rc.2's registry `Transport`, which rc.5 moved into `PtcExecutor.requirePtcTransport()`. That is its own arm design, not a drive-by edit; doing it in this round would have been an unreviewed rewrite of 18 judged arms. **Round 112 did that rewrite: §9.** |
 
 **The historical "hang" is explained, not waved away.** Round 78 recorded
 `vnext-b-probe-ladder.test.mjs` as hanging on rc.5. This round it does not hang when given a
@@ -168,7 +175,12 @@ apply.
 
 ## 5. Product fixes
 
-**None.** The three code changes are test-observation adaptations (§4.1). No file under `packages/`
+**None.** The three code changes are test-observation adaptations (§4.1). **Round 112 adds a fourth
+observation adaptation and still zero product changes** (§9): the ladder's world is host-selectable, the
+18 arms are byte-identical in what they assert, and no file under `packages/*/src` was touched (the only
+`packages/` edit remains `packages/runtime/test/vnext-b-probe-ladder.test.mjs`). CORE PATCH BUDGET is
+still 0; `git -C tests/deepseek-harness-next status --porcelain` and the same command on
+`tests/deepseek-harness-test-use` are empty (the harness guard verifies both pins on every boot). No file under `packages/`
 product source (`packages/*/src`) was touched; the only `packages/` edit is a test file
 (`packages/runtime/test/vnext-admission.test.mjs`), and no assertion was weakened. CORE PATCH BUDGET
 stays 0; `tests/deepseek-harness-next` and `tests/deepseek-harness-test-use` are unmodified
@@ -176,7 +188,7 @@ stays 0; `tests/deepseek-harness-next` and `tests/deepseek-harness-test-use` are
 
 ## 6. What is NOT covered (stated plainly)
 
-1. **18 B-ladder arms** (rc.5) — red, §4.2.
+1. ~~**18 B-ladder arms** (rc.5) — red, §4.2.~~ **CLOSED in round 112: 18/18 on both hosts (§9).**
 2. **40 host-importing vitest suites** (rc.5) — runner-limited, §4.3. This is the single largest
    uncovered block; closing it requires either a runner change driven by the *same* selector (a
    `resolve.alias` in `vitest.config.ts` that calls `testHostMode()`), or a decision that these units
@@ -250,3 +262,96 @@ resolved. The re-run is the PASS 10/10 above.
 No new scannable test file was added (the three edits are existing files; the evidence is markdown), so
 there is no p4t6 booking delta: the catalog is **byte-identical** to round 109
 (`tests=785`, digest `sha256:da8a452d65130a3a7f62ef90b549a5289909e689e1ff619c4b3e0c45d5f5ed32`).
+
+---
+
+## 9. ROUND 112 — the B ladder closes on rc.5 (the 18 rows)
+
+Round 110 recorded the ladder as **red on rc.5 for a structural reason** and deferred the rewrite. This
+round performs it. The ladder is now **host-SELECTABLE, not host-doubled**: one arm set, one expectation
+set, two host shapes, and the *same* 18 assertions run against whichever pristine tree
+`TEAM_TEST_HOST` selects. No arm was added, deleted, split, skipped or weakened, and **no product file
+changed**.
+
+### 9.1 The rc.5 replacement API (read from the rc.5 pin, file:line)
+
+| what rc.2 had | rc.5 (0.2.2-rc.5 @ `9c2670d3bc`) |
+| --- | --- |
+| `ToolRuntime`'s config carried `mode: 'native' \| 'both'` (+ `ptc`, `maxParallelSubCalls`) — `tests/deepseek-harness-test-use/packages/core/tools/lib/index.js:2666-2671` | `mode: z.never().description("Removed. Mount a native or PTC tool executor instead.")`, `maxParallelSubCalls: z.never().description("Moved to the PTC tool executor configuration.")` — `tests/deepseek-harness-next/packages/core/tools/lib/index.js:406-409` |
+| dispatch lived in the registry; `tools.execute({callId,name,arguments,agent,signal})` ran one call | `tools.execute(input)` **delegates to a per-scope EXECUTOR**: `this.selectExecutor(input.agent).execute(input)` — `…/core/tools/lib/index.js:641-643`; selection is `selectExecutor` (`:624-635`), registration is `setExecutor` (`:577-620`, **one executor per scope**, `:590`) |
+| `run_code` was registered by the registry as its reserved transport | the transport is the PTC executor's own object: `PtcExecutor.requirePtcTransport()` — `…/core/tool-executor-ptc/lib/index.js:1867-1870`; it is deliberately kept outside registered capabilities/restrictions (`:1823-1836`), and the PTC pipeline rejects direct non-`run_code` calls (`:1817-1820`) |
+| one call in, one settled result out | a **BATCH** in (`{calls:[{type:'tool-call', id, name, arguments:<JSON string>}], signal, agent}`), per-call results out (`batch.results[].result`); `callId` is `block.id` — `…/core/tools/lib/pipeline.js:28-52`, pre-execute/guards at `:384-404` |
+| native dispatch was the registry's default | the native executor is a PLUGIN PACKAGE exporting `{name, inject, apply}` — `…/core/tool-executor-native/lib/index.js:20-31`; the PTC executor likewise (`…/tool-executor-ptc/lib/index.js:1885-1888`), config `maxSubCallsPerMinute`/`maxParallelSubCalls` (`:1678-1683`) |
+
+The mount mistake round 110 already paid for is not repeated: both executors are mounted as the exported
+**plugin object**, never the bare class (mounting the class skips `inject`, and the pipeline then cannot
+see `tools` — `tool-executor-native/lib/index.js:10` ← `pipeline.js:258`).
+
+### 9.2 How the world mounts on each host
+
+The ladder's world code resolves the shape through the **existing** selector/tree
+(`tests/next-host/host-select.mjs` → `testHostMode`, `resolveSelectedHostModule`, `selectedHostPin`;
+`loadFsContractSeams` already exposes `NativeToolExecutor` for `next`). Revealed by
+`packages/runtime/test/vnext-b-probe-ladder.test.mjs`:
+
+| piece | rc.2 | rc.5 |
+| --- | --- | --- |
+| host module resolution | `createRequire(packages/runtime)` + the pnpm virtual store (unchanged, byte-for-byte) | `resolveSelectedHostModule(spec, REPO_ROOT, 'next')` — every `@deepseek-ai/*` entry resolves INSIDE `tests/deepseek-harness-next` (mixing the repo's rc.2 install is the round-110 duplicate-instance hazard) |
+| runtime | `root.plugin(ToolRuntime, {mode:'both', ptc:{}})` for the PTC world, `{mode:'native'}` for the shipped world | `root.plugin(ToolRuntime)` (no config) and the PRESENTATION is the executor: `PtcExecutor` at the deployment scope for the PTC world, `NativeToolExecutor` for the shipped world |
+| native calls + the retained PTC entry in ONE world | `mode:'both'` gave both in one registry | one executor per scope, so the world composes them where the host allows: PTC executor at the DEPLOYMENT scope (the retained entry), `NativeToolExecutor` in a member-NESTED scope. Guards chain over ancestors and `tools/pre-execute` is dispatched over the scope chain, so every call is still judged by the ONE centre on the member scope |
+| dispatch | `executeToolDispatch(..., {hostMode:'legacy'})` — the existing single-call shape | `executeToolDispatch(..., {hostMode:'next'})` — the existing batch shape (`a5sf-fs-contract-world.mjs:283-303`, re-used, not re-invented) |
+| `run_code` resolution | `tools.get('run_code', scope)` (registry transport) | `tools.selectExecutor(scope).requirePtcTransport()` for the PTC presentation; `undefined` when the selected executor is native (the shipped presentation) |
+| `workingDirectory` | not mounted (rc.2 has no such inject) | `provideWorkingDirectoryDouble(root, dir)` — rc.5 `tool-fs`/`tool-fs-search`/`tool-bash-persistent` statically inject it (`…/fs/tool-fs/lib/index.js:2003-2007`); without it Cordis defers the module and NO tool registers (a harness absence, not a refusal) |
+
+### 9.3 The 18 rows (same arms, same assertions, both hosts)
+
+Measured at this HEAD with the leg's own flag (`A5SF_REQUIRE_PINNED_HOST=1`), one run per host.
+`✔` = PASS, `﹣` = the arm's OWN declared non-run (a skip that reports a machine-readable line; never a
+pass).
+
+| # | arm | what it proves | rc.2 | rc.5 |
+| --- | --- | --- | --- | --- |
+| 1 | `ADM-63` | every rung resolves the HOST module's own body (definition identity + `run_code` is one transport object) | ✔ | ✔ |
+| 2 | `ADM-64` | READ positive: admitted, body runs on the member provider, fact allow, settlement `COMPLETED` | ✔ | ✔ |
+| 3 | `ADM-65` | WRITE positive: admitted, bytes land, `COMPLETED` | ✔ | ✔ |
+| 4 | `ADM-66` | GREP positive: admitted, runs on the confined face, `COMPLETED` (ENV-BLOCK with its probe on a host that cannot prove network-deny) | ✔ | ✔ |
+| 5 | `ADM-67` | WEB_FETCH positive: admitted, one transport call, loopback body, `COMPLETED` | ✔ | ✔ |
+| 6 | `ADM-68` | BASH positive: **NOT RUN** — the compiled answer declares no execution authorization (declared skip + machine line) | ﹣ | ﹣ |
+| 7 | `ADM-69` | RUN_CODE positive: **NOT APPLICABLE — PRODUCT UNSUPPORTED** (ruled; declared skip + marker line) | ﹣ | ﹣ |
+| 8 | `ADM-70` | ORDER (positive): durable facts re-read from disk in ladder order | ✔ | ✔ |
+| 9 | `ADM-71` | READ negative: `LANE_DENY` before the body, zero provider calls, `REFUSED`/`not-started` | ✔ | ✔ |
+| 10 | `ADM-72` | WRITE negative: `LANE_DENY`, file never created, zero provider calls | ✔ | ✔ |
+| 11 | `ADM-73` | GREP negative: `LANE_DENY`, zero confined spawns | ✔ | ✔ |
+| 12 | `ADM-74` | WEB_FETCH negative: `NETWORK_DENY`, zero transport calls | ✔ | ✔ |
+| 13 | `ADM-75` | BASH negative: `ADMISSION_EXECUTION_UNAUTHORIZED`, zero spawns, zero confines | ✔ | ✔ |
+| 14 | `ADM-76` | RUN_CODE negative: `ADMISSION_PTC_UNAVAILABLE` + ruling status, zero worker, `REFUSED`/`not-started` | ✔ | ✔ |
+| 15 | `ADM-77` | ORDER (negative): six durable refusals in ladder order, one execution fact each | ✔ | ✔ |
+| 16 | `ADM-78` | the binding is the COMPILED answer; absent axes stay absent (no second policy) | ✔ | ✔ |
+| 17 | `ADM-79` | `run_code` absent from the shipped OFFERED set; the retained entry is a TYPED refusal with zero worker (both presentations) | ✔ | ✔ |
+| 18 | `ADM-80` | the not-applicable marker is REPORTED (never a silent skip); the ruled arm list is CLOSED | ✔ | ✔ |
+
+**rc.2: 18 / 16 pass / 0 fail / 2 declared skips.** **rc.5: 18 / 16 pass / 0 fail / 2 declared skips.**
+Identical shape; the two skips are the same two arms for the same reasons on both hosts.
+
+### 9.4 What could NOT hold, and why nothing was weakened
+
+Nothing. Every one of the 18 assertions holds on both hosts with its original text. The only rc.5
+difference is **where** the world mounts each piece (executor service, nested native scope, batch
+dispatch, `workingDirectory`, transport lookup) — observation, not expectation. Ledger rows, refusal
+codes, settlement states, worker/spawn/confine counters and ORDER are asserted unchanged.
+
+Two properties this round did **not** get for free, recorded so a reader cannot mistake them:
+
+- **`mode` was not replaced by a shim.** No `mode` polyfill, no `ToolRuntime` wrapper, no widened
+  timeout, no retry, no skipped arm. rc.5's `ToolRuntime` is mounted with NO config at all; the
+  oracle of dispatch is the host's executor.
+- **The PTC retained entry is a separate executor scope, not a registry row.** That is the rc.5
+  contract (`setExecutor`, one per scope); the arms that assert its identity (`ADM-63`) and its
+  typed refusal through the real entry (`ADM-76`, `ADM-79`) pass by resolving the SAME
+  `requirePtcTransport()` object the executor owns.
+
+### 9.5 Evidence
+
+`dev/agent-workflow/evidence/ute-a1/round112/`:
+`ladder-rc2.log`, `ladder-rc5.log`, `dispatch-ute-vnext-a1-rc2.log`, `dispatch-ute-vnext-a1-rc5.log`
+(plus the gate logs named in §8).

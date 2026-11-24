@@ -1,0 +1,31 @@
+VNEXT-B-LADDER rungs=read,write,grep,web_fetch,bash,run_code negatives=6/6 positives=4/5 bash-positive=ADM-68-blocked-in-this-world-ADM-125-proves-it ptc=ADM-69-NOT-APPLICABLE-product-unsupported amendment=ADR-ptc-unsupported.md
+A5SF-CAPABILITY network-deny=present level=enforced code=NET_DENY_ENFORCED ripgrep=present ripgrep-path=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg forced=false detail="runNetworkLeg verdict=NET-DENY-CONFIRMED mechanism=netns netns=4026532298/(host 4026531833)"
+✔ ADM-63 — the ladder's definitions are the HOST's own: every rung resolves a host module body (3724.080747ms)
+✔ ADM-64 — READ positive: in-lane read is admitted, executes on the member provider, and settles COMPLETED (14.20019ms)
+✔ ADM-65 — WRITE positive: in-lane write is admitted, lands on disk, and settles COMPLETED (7.120379ms)
+✔ ADM-66 — GREP positive: in-lane search is admitted, runs on the confined face, and settles COMPLETED (3247.756944ms)
+VNEXT-B-LADDER-BLOCKED rung=5 tool=bash control=positive verdict=NOT_RUN reason=execution-authority-not-declared-in-this-world: the compiled answer carries no toolBindings[] entry for bash, so there is no tool-level authorization to admit it (round 75 admission now keys on that declaration, not on a path lane)
+VNEXT-PTC-PRODUCT-UNSUPPORTED arm=ADM-69 marker="NOT APPLICABLE — PRODUCT UNSUPPORTED" status=unsupported-by-product-ruling verdict=NOT_APPLICABLE ruling=docs/reviews/20261124-0151.txt §PTC (owner ruling, 2026-11-24) adr=dev/agent-workflow/evidence/ute-a1/ADR-ptc-unsupported.md
+✔ ADM-67 — WEB_FETCH positive: in-lane fetch is admitted, the transport serves the loopback fixture, and settles COMPLETED (18.665431ms)
+﹣ ADM-68 — BASH positive: NOT RUN in this world (no compiled execution authorization) — disclosed, never a pass (0.378397ms) # BASH positive control NOT RUN (execution-authority-not-declared-in-this-world: the compiled answer carries no toolBindings[] entry for bash, so there is no tool-level authorization to admit it (round 75 admission now keys on that declaration, not on a path lane)); the positive control on a declared world is ADM-125, the negative IS proven (ADM-75)
+﹣ ADM-69 — RUN_CODE positive: NOT APPLICABLE — PRODUCT UNSUPPORTED (owner ruling 20261124-0151 §PTC; a ruled scope, not a pending fix) (0.344712ms) # NOT APPLICABLE — PRODUCT UNSUPPORTED — docs/reviews/20261124-0151.txt §PTC (owner ruling, 2026-11-24): the rung-6 POSITIVE has no supported target this generation; the refusal controls ADM-76/ADM-79 stand, with the rung verified ONLY as run_code -> typed refusal -> zero worker -> REFUSED/not-started
+✔ ADM-70 — ORDER (positive): the durable facts read back in LADDER order (0.370672ms)
+✔ ADM-71 — READ negative: out-of-lane read is refused before the body, with zero filesystem side effects (1.751917ms)
+✔ ADM-72 — WRITE negative: out-of-lane write is refused before the body, and the file is never created (1.232493ms)
+✔ ADM-73 — GREP negative: out-of-lane search is refused before the body, and no subprocess is spawned (1.203428ms)
+✔ ADM-74 — WEB_FETCH negative: denied network axis is refused before the body, and the transport is never called (1.284712ms)
+✔ ADM-75 — BASH negative: with no compiled execution authorization, a shell is refused before the body with zero side effects (1.46828ms)
+✔ ADM-76 — RUN_CODE negative: PTC stays refused before the body with zero side effects, for the worker's OS-profile seam (1.604157ms)
+✔ ADM-77 — ORDER (negative): the durable refusals read back in LADDER order, each before its body (0.297052ms)
+✔ ADM-79 — PTC is ABSENT from the governed Member's OFFERED set, and the host-retained entry is a TYPED refusal with zero worker start (the real composition, shipped and PTC presentations) (1.208057ms)
+✔ ADM-80 — the PTC not-applicable marker was REPORTED with its status (not a silent skip), and the ruled arm list is CLOSED (0.44394ms)
+✔ ADM-78 — the binding is the COMPILED answer, and its absent axes stay absent (no second policy) (0.08445ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 2
+ℹ todo 0
+ℹ duration_ms 7616.508828
+EXIT=0

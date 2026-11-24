@@ -48,13 +48,30 @@ real-model claim is made**.
 | --- | --- | --- | --- |
 | C-real-model | `rm:` 20-judge set (real-model driver; harness only) | **ENV-LIMITED** — `SCRIPTED-ONLY` 20/20 ×2 boots; no real model route (`DEEPSEEK_API_KEY` missing) | not run (same environment) |
 
+### Round 112 — the B ladder's rc.5 cell closes (no level moves)
+
+Round 112 performed the world rewrite round 110 deferred. The 18 `vnext-b-probe-ladder` arms now run on
+**both** hosts from ONE arm set: rc.2 **18/18** (16 pass + 2 declared non-runs) and rc.5 **18/18**
+(16 pass + 2 declared non-runs, 0 fail). The rewrite is observation only — rc.5 mounts an executor
+service instead of `ToolRuntime.mode`, dispatches a batch, resolves `run_code` through
+`PtcExecutor.requirePtcTransport()`, and needs the host's `workingDirectory` inject; **no product file
+changed, no assertion was weakened, no arm was skipped beyond the two declared non-runs that exist on
+both hosts.** Full reading and the 18-row table: `RC5-TEST-MATRIX.md` §9.
+
+This closes the ladder evidence, not a capability level: the C-fs positive/negative rows below keep the
+`MECHANISM` level they had (the ladder is in-process, no boot), and C-ptc keeps `UNSUPPORTED BY RULING`
+(the refusal shape is what ADM-76/ADM-79 prove on rc.5 too). **No row below changes level; no
+PRODUCT-PROVEN row is added.**
+
 ### Round 110 — the rc.5 test POPULATION (no level moves, no gate change)
 
 Round 110 measured the rc.5 behaviour of the broader test population (not the four drivers) —
 [`RC5-TEST-MATRIX.md`](./RC5-TEST-MATRIX.md). On rc.5 through the ONE selector (or the suite's own rc.5
-pin): **759 tests / 737 pass / 21 fail / 1 skip**. The 21 reds: 18 `vnext-b-probe-ladder` arms (rc.5
-removed `ToolRuntime`'s `mode` config; still an open arm design), 1 `a5sf-fs-contract` arm that measures
-the rc.2 tool package, 2 `m7a-real-slice-host-state` arms that boot the rc.2 census base. Two test-side
+pin), the round-110 numbers were **759 tests / 737 pass / 21 fail / 1 skip** (round 112 moved this to
+**753/3/3** by closing the 18 ladder arms; see the round-112 section above). The 21 reds then: 18
+`vnext-b-probe-ladder` arms (**CLOSED round 112**; rc.5 removed `ToolRuntime`'s `mode` config), 1
+`a5sf-fs-contract` arm that measures the rc.2 tool package, 2 `m7a-real-slice-host-state` arms that boot
+the rc.2 census base. Two test-side
 rc.5 drifts were adapted with observation only (ADM-96/97 `AbortSignal`; selected-host module resolution
 + rc.5 executor plugin + batch dispatch in `a5sf-harness` / `a5sf-native-route-c`), taking those suites to
 0 fail on **both** hosts. **No row below changes level; no PRODUCT-PROVEN row is added.** Disclosed gap:
@@ -666,8 +683,9 @@ double for the lane arms, the real pinned `LocalFileSystem` for `ADM-140`) and t
 `createMemberFsGuard`. NOT PROVEN: a live `apply_patch`/delete/move through a booted Member; any
 kernel boundary (the guard is in-process; the base provider's own TOCTOU is inherited, not closed);
 `moveFile`'s version-guarded / patched-on-move path (only the unconditional case is exercised); and
-the rc.5 lane's pre-existing reds (`ADM-96/97/101/102`, the `vnext-b-probe-ladder` hang) are
-untouched by this round and remain open rc.5 drift. **Round 78 update: `ADM-100` is no longer red on
+the rc.5 lane's then-open reds (`ADM-96/97/101/102`, the `vnext-b-probe-ladder` hang — the
+latter **CLOSED in round 112**, see the round-112 section at the top: 18/18 on both hosts) were
+untouched by that round; ADM-96/97 were adapted in round 110. **Round 78 update: `ADM-100` is no longer red on
 rc.5** — its world now mounts rc.5's `workingDirectory` service and executor and dispatches the batch
 shape (assertions unchanged); it passes on both hosts.
 

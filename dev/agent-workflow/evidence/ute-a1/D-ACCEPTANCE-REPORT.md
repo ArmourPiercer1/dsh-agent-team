@@ -41,6 +41,23 @@ real-model scenario driver, and (c) validates that driver on the scripted model,
    (NON-REQUIRED).** This section is the only change: row 34 is new and is `ENV-LIMITED` with its missing
    item named.
 
+## ROUND 112 — the B ladder's rc.5 cell closes (no capability row moves)
+
+The last red the round-110 population carried — 18 `vnext-b-probe-ladder` arms — is **closed**. The
+ladder's world is now host-selectable through the ONE selector (`tests/next-host/host-select.mjs`), not
+host-doubled: the SAME 18 arms, with the SAME assertions, measure **18/18 on rc.2 and 18/18 on rc.5**
+(16 pass + the same 2 declared non-runs each: `ADM-68` bash positive not run in this world, `ADM-69` PTC
+positive NOT APPLICABLE by ruling). rc.5's replacement for `ToolRuntime { mode }` is an EXECUTOR SERVICE
+(`NativeToolExecutor` / `PtcExecutor`, one per scope), a BATCH dispatch, and
+`PtcExecutor.requirePtcTransport()` for the reserved `run_code` entry; the world mounts the exported
+`{name, inject, apply}` plugin objects and uses the existing `executeToolDispatch` batch/legacy split.
+
+**No level moves and no PRODUCT-PROVEN row is added.** The ladder is in-process `MECHANISM` evidence, not
+a boot; C-fs keeps the level it had and C-ptc stays `UNSUPPORTED BY RULING` (the refusal is what the arm
+proves, on both hosts). **No product file changed** — the only edit is the test world in
+`packages/runtime/test/vnext-b-probe-ladder.test.mjs`; no `mode` shim, no widened timeout, no retry, no
+weakened assertion. Full reading and the 18-row table: `RC5-TEST-MATRIX.md` §9.
+
 ## ROUND 110 — the rc.5 TEST MATRIX (no capability row moves)
 
 Round 110 (review `20261125-0058` Stage B) did **not** re-run the four D drivers and did **not** move
@@ -51,8 +68,9 @@ and what does rc.5 do to it?* The measured table is
 Executed on rc.5 through the ONE selector (or the suite's own rc.5 pin): **759 tests, 737 pass, 21 fail,
 1 skip**. The 21 reds are dispositioned, not hidden:
 
-- **18** = every arm of `vnext-b-probe-ladder`, which still mounts `ToolRuntime { mode: 'both' }`
+- **18** = every arm of `vnext-b-probe-ladder`, which still mounted `ToolRuntime { mode: 'both' }`
   (`vnext-b-probe-ladder.test.mjs:273`) — rc.5 removed `mode` (`packages/core/tools/lib/index.js:407`).
+  **CLOSED in round 112 (18/18 on both hosts; see the round-112 section above).**
   The recorded "hang" is this `before`-hook rejection; with `--test-timeout=45000` it is a deterministic
   failure in ~0.5 s, and the world rewrite (executor + batch dispatch + PTC transport) is an open arm
   design, not a timeout. **No gate timeout was changed.**
@@ -125,6 +143,10 @@ Hosts, exactly as the drivers printed them (`candidate:` row, first log line of 
 | **NOT-PRODUCT-PROVEN** | No live proof at the pin (refuted, unrecorded, or observation exists but is not production-wired). Carries the open item that would prove it. |
 
 ### The table
+
+> **Round 112 does NOT move any row of this table.** It closes the rc.5 test-population red (the 18 B
+> ladder arms) with an observation-only world rewrite; see the round-112 section above. The levels,
+> verdicts and open items below are unchanged.
 
 | # | capability | level | rc.2 verdict | rc.5 verdict | open item |
 | --- | --- | --- | --- | --- | --- |

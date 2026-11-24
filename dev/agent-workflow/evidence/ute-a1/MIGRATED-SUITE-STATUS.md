@@ -45,6 +45,28 @@ four new judges (`rm:leader-creates-worker`, `rm:collect`, `rm:duplicate-approva
 `dev/agent-workflow/evidence/d-boot-feasibility/real-model/` (+ `REAL-MODEL-ACCEPTANCE.md`). **No
 migrated-suite count moves; the migrated layer remains 238/238 as measured in round 110.**
 
+## Round 112 — the B ladder is GREEN on rc.5 (the migrated 15-suite layer is unchanged: 238/238)
+
+Round 112 closed the last rc.5 red in the `ute-vnext-a1` leg — the 18 `vnext-b-probe-ladder` arms — by
+making the ladder's WORLD host-selectable instead of host-doubled. This is **not** one of the fifteen
+migrated vitest suites (`tests/checks/eb3-ute-migrated-suites.txt`, still **238/238**, unchanged); it is
+the node:test leg's B stage, and it belongs here because it is the same "did the A1 cut keep the
+capability" question.
+
+| population | rc.2 | rc.5 |
+| --- | --- | --- |
+| `ute-vnext-a1` dispatch leg (7 suites) | **251 / 248 pass / 0 fail / 3 skip** | **251 / 248 pass / 0 fail / 3 skip** |
+| └ `vnext-b-probe-ladder` (18 arms) | **18 / 16 pass / 0 fail / 2 declared non-runs** | **18 / 16 pass / 0 fail / 2 declared non-runs** |
+| the fifteen migrated capability suites | **238 / 238** | N/A (runner-limited, §round 110/RC5-TEST-MATRIX §4.3) |
+
+The two non-runs are `ADM-68` (bash positive: no compiled execution authorization in this world) and
+`ADM-69` (run_code positive: NOT APPLICABLE — PRODUCT UNSUPPORTED by owner ruling), each with its own
+machine-readable line, on BOTH hosts — unchanged from the rc.2 shape. **No arm was added, deleted,
+skipped or weakened; no product file changed.** The rc.5 replacement API (`ToolRuntime.mode` →
+per-scope executor service + batch dispatch + `PtcExecutor.requirePtcTransport()`) and the 18-row
+table are `RC5-TEST-MATRIX.md` §9; the 18 arms' per-tool semantics are the table below, which now holds
+on both hosts.
+
 ## Round 31: the four LAYOUT PINS are re-anchored — 237/238
 
 Four of the five were pins on the retired root/route, re-expressed against the new assembly
@@ -619,6 +641,9 @@ centre at all.
   the destination.
 
 ### The ladder, per tool
+
+**Round 112: every row below now holds on rc.2 AND rc.5 (same arms, same assertions); the
+rc.5 mounting shape is `RC5-TEST-MATRIX.md` §9.**
 
 | # | tool | positive control | negative control |
 | --- | --- | --- | --- |

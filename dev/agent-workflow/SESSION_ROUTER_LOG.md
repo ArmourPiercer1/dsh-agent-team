@@ -11307,3 +11307,39 @@ docs-sync `193 docs / 0 findings`; place-dist-glue 35 placements byte-identical;
 vitest `15 suites / 76 describes / 238 passed / 0 failed`; UTE G1 argv 89/89; `eb3-run-manifest` records=568
 findings=0; `ci-pr-gate --full --census-captures 2` `pass=10 fail=0` (285.7 s, census `599f/7424l`, identical
 identity sets). No capability row moves; no row is PRODUCT-PROVEN.
+
+### R112 — the B LADDER closes on rc.5: host-selectable, not host-doubled (round 112, 2026-11-25)
+
+Worktree `.worktrees/vnext-a1-cut` only, branch `vnext/a1-cut`, HEAD `ba3b3b436` + this round's commit; PR
+#822 stays DRAFT; `:3080`/its DSH_HOME untouched; no history rewrite, no merge, no non-topic push.
+
+1. **Diagnosis (the replacement API, read from the pin).** rc.5 removed `ToolRuntime`'s `mode` config
+   (`tests/deepseek-harness-next/packages/core/tools/lib/index.js:406-409`, `z.never()`: "Removed. Mount a
+   native or PTC tool executor instead."). Dispatch is now `tools.execute` → `selectExecutor(agent).execute`
+   (`:641-643`; `setExecutor` one-per-scope `:577-620`), a call is a BATCH
+   (`{calls:[{type:'tool-call', id, name, arguments:<JSON string>}], signal, agent}` →
+   `batch.results[].result`, `…/core/tools/lib/pipeline.js:28-52`), the reserved `run_code` transport
+   moved into `PtcExecutor.requirePtcTransport()` (`…/core/tool-executor-ptc/lib/index.js:1867-1870`), and
+   each executor is a plugin object `{name, inject, apply}` (`…/tool-executor-native/lib/index.js:13-30`).
+2. **The world rewrite (host-SELECTABLE, no fork).** One arm set, one expectation set. rc.2 keeps its
+   byte-for-byte mount (`mode:'both'`/`'native'`, repo install, single-call dispatch). rc.5 mounts
+   `ToolRuntime` with NO config, the exported executor PLUGIN at the deployment scope (PTC presenting) plus
+   a nested member-scope `NativeToolExecutor` (the host's one-executor-per-scope contract), resolves every
+   entry via `resolveSelectedHostModule`, dispatches via the existing `executeToolDispatch` batch shape,
+   resolves `run_code` via `requirePtcTransport()`, and supplies rc.5's `workingDirectory` inject.
+3. **Measured, same 18 arms both hosts.** rc.2 **18/18** (16 pass + 2 declared non-runs), rc.5 **18/18**
+   (16 pass + 2 declared non-runs, 0 fail); the `ute-vnext-a1` leg is **251 / 248 pass / 0 fail / 3 skip on
+   BOTH hosts**, digest `sha256:edd4f1c4…` unchanged. The non-runs are the arms' own declared states
+   (`ADM-68` bash positive; `ADM-69` PTC positive, product ruling), unchanged from rc.2. Full per-arm
+   table + API reading: `RC5-TEST-MATRIX.md` §9.
+4. **No product change, no shim.** Only `packages/runtime/test/vnext-b-probe-ladder.test.mjs` changed (the
+   world's mounting code); no `packages/*/src` file, no `mode` polyfill, no widened timeout, no retry, no
+   skipped arm, no weakened assertion; both host pins porcelain-empty.
+
+Gates at the new head (postcommit logs in `dev/agent-workflow/evidence/ute-a1/round112/`): leg ute-vnext-a1
+251/248/0/3 both hosts digest unchanged; catalog 785 / 38 uncollected / 14 excluded / findings=0 (digest
+unchanged, no new scannable file, delta 0); cut-closure `cut(0/148)`; p0-assets `37/180/69512`
+`cut(148/148)`; docs-sync 193/0; place-dist-glue 35 placements; eb3-ci-required 11/0; bound vitest 15
+suites / 238 passed / 0 failed; UTE G1 argv 89/89; run-manifest records=602 findings=0; `ci-pr-gate --full
+--census-captures 2` PASS 10/10 (census `599f/7424l` ×2, identical identity sets). No capability row
+moves; no row is PRODUCT-PROVEN.

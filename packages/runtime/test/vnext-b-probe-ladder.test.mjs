@@ -87,11 +87,13 @@ import { join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { after, before, test } from 'node:test'
 
-import { DSH_BASELINE_VERSION, TEST_USE_BASELINE_SHA } from '../../../tests/paths.mjs'
+import { resolveSelectedHostModule, selectedHostPin, testHostMode } from '../../../tests/next-host/host-select.mjs'
 import {
+  executeToolDispatch,
   fsContractHostLayout,
   instrumentedFileSystemClass,
   loadFsContractSeams,
+  provideWorkingDirectoryDouble,
 } from '../../../tests/world-factory/lib/a5sf-fs-contract-world.mjs'
 import { capabilityProbeLine, createConfinedProvider, probeEnvCapabilities, envLimited } from '../../../tests/world-factory/lib/a5sf-env-capability.mjs'
 
@@ -152,7 +154,16 @@ const POSITIVE_BLOCKED = Object.freeze({
 
 // ---------------------------------------------------------------- host gate (declared, not guessed)
 
-const HOST = fsContractHostLayout(REPO_ROOT)
+/**
+ * WHICH pinned host this world is built from. The ladder is host-SELECTABLE, not host-doubled: the
+ * same 18 arms run against whichever pristine tree `TEAM_TEST_HOST` selects, and every host module
+ * below resolves INSIDE that tree. Mixing the repo's rc.2 install into an rc.5 world is the
+ * duplicate-instance hazard the route-C repair removed once already (round 110), so the selector is
+ * consulted here rather than a bare `createRequire`.
+ */
+const HOST_MODE = testHostMode()
+const HOST = fsContractHostLayout(REPO_ROOT, HOST_MODE)
+const HOST_PIN = selectedHostPin(REPO_ROOT, HOST_MODE)
 const REQUIRE_PINNED_HOST = process.env['A5SF_REQUIRE_PINNED_HOST'] === '1'
 
 const runtimeRequire = createRequire(join(REPO_ROOT, 'packages', 'runtime', 'package.json'))
@@ -160,22 +171,28 @@ const runtimeRequire = createRequire(join(REPO_ROOT, 'packages', 'runtime', 'pac
  * A few of the host packages the ladder needs are not direct dependencies of `packages/runtime`;
  * they resolve from the tool package that declares them (exactly as a composition that hosts those
  * tools would resolve them). The pnpm virtual store hoists the rest (the PTC runtime and the session
- * module are declared by the host's own assembly package, not by this repository).
+ * module are declared by the host's own assembly package, not by this repository). Those fallbacks
+ * apply to the LEGACY host only: under `next` every host entry resolves inside the selected tree.
  */
 const VIRTUAL_STORE_ANCHOR = join(REPO_ROOT, 'node_modules', '.pnpm', 'node_modules', '__vnext-b-ladder-resolve__.mjs')
 const storeRequire = createRequire(VIRTUAL_STORE_ANCHOR)
 
-function anchorOf (specifier) {
+/**
+ * Resolve one HOST package entry in the SELECTED generation.
+ * @param {string} spec - bare `@deepseek-ai/*` specifier.
+ * @returns {string} absolute entry path inside the selected host tree.
+ */
+function resolveHost (spec) {
+  if (HOST_MODE === 'next') return resolveSelectedHostModule(spec, REPO_ROOT, HOST_MODE)
   try {
-    return { require: createRequire(runtimeRequire.resolve(`${specifier}/package.json`)) }
+    return runtimeRequire.resolve(spec)
   } catch (error) {
-    return { problem: String(error?.message ?? error) }
+    if (error?.code !== 'MODULE_NOT_FOUND') throw error
+    return storeRequire.resolve(spec)
   }
 }
 
-const searchAnchor = anchorOf('@deepseek-ai/dsh-tool-fs-search')
-const webAnchor = anchorOf('@deepseek-ai/dsh-tool-web')
-const shellAnchor = anchorOf('@deepseek-ai/dsh-tool-bash-persistent')
+const hostEntryUrl = (spec) => pathToFileURL(resolveHost(spec)).href
 
 /** One entry per piece of host the ladder cannot run without, with the EXACT reason it is absent. */
 function hostEntry (name, locate) {
@@ -192,16 +209,26 @@ const HOST_ENTRIES = Object.freeze([
   hostEntry('pinned tool-fs lib', () => HOST.entries.toolFs),
   hostEntry('pinned fs-local lib', () => HOST.entries.fsLocal),
   hostEntry('pinned fs-observation-policy lib', () => HOST.entries.observationPolicy),
-  hostEntry('@deepseek-ai/dsh-tool-fs-search', () => searchAnchor.require.resolve('@deepseek-ai/dsh-tool-fs-search')),
-  hostEntry('@deepseek-ai/dsh-subprocess-local', () => searchAnchor.require.resolve('@deepseek-ai/dsh-subprocess-local')),
-  hostEntry('@deepseek-ai/dsh-sandbox-policy', () => shellAnchor.require.resolve('@deepseek-ai/dsh-sandbox-policy')),
-  hostEntry('@deepseek-ai/dsh-sandbox-local', () => shellAnchor.require.resolve('@deepseek-ai/dsh-sandbox-local')),
-  hostEntry('@deepseek-ai/dsh-session-projection', () => shellAnchor.require.resolve('@deepseek-ai/dsh-session-projection')),
-  hostEntry('@deepseek-ai/dsh-tool-bash-persistent', () => shellAnchor.require.resolve('@deepseek-ai/dsh-tool-bash-persistent')),
-  hostEntry('@deepseek-ai/dsh-tool-web', () => webAnchor.require.resolve('@deepseek-ai/dsh-tool-web')),
-  hostEntry('@deepseek-ai/dsh-web', () => webAnchor.require.resolve('@deepseek-ai/dsh-web')),
-  hostEntry('@deepseek-ai/dsh-ptc-runtime-node', () => storeRequire.resolve('@deepseek-ai/dsh-ptc-runtime-node')),
-  hostEntry('@deepseek-ai/dsh-session', () => storeRequire.resolve('@deepseek-ai/dsh-session')),
+  hostEntry('@deepseek-ai/dsh-tool-fs-search', () => resolveHost('@deepseek-ai/dsh-tool-fs-search')),
+  hostEntry('@deepseek-ai/dsh-subprocess-local', () => resolveHost('@deepseek-ai/dsh-subprocess-local')),
+  hostEntry('@deepseek-ai/dsh-spill-local', () => resolveHost('@deepseek-ai/dsh-spill-local')),
+  hostEntry('@deepseek-ai/dsh-sandbox-policy', () => resolveHost('@deepseek-ai/dsh-sandbox-policy')),
+  hostEntry('@deepseek-ai/dsh-sandbox-local', () => resolveHost('@deepseek-ai/dsh-sandbox-local')),
+  hostEntry('@deepseek-ai/dsh-session-projection', () => resolveHost('@deepseek-ai/dsh-session-projection')),
+  hostEntry('@deepseek-ai/dsh-tool-bash-persistent', () => resolveHost('@deepseek-ai/dsh-tool-bash-persistent')),
+  hostEntry('@deepseek-ai/dsh-tool-web', () => resolveHost('@deepseek-ai/dsh-tool-web')),
+  hostEntry('@deepseek-ai/dsh-web', () => resolveHost('@deepseek-ai/dsh-web')),
+  hostEntry('@deepseek-ai/dsh-ptc-runtime-node', () => resolveHost('@deepseek-ai/dsh-ptc-runtime-node')),
+  hostEntry('@deepseek-ai/dsh-session', () => resolveHost('@deepseek-ai/dsh-session')),
+  // rc.5 replaced `ToolRuntime`'s `mode` config with an EXECUTOR SERVICE selected by scope. The
+  // ladder's two presentations mount the two executors the host ships; on rc.2 dispatch is built in
+  // and neither package exists (so neither is required).
+  ...(HOST_MODE === 'next'
+    ? [
+        hostEntry('@deepseek-ai/dsh-tool-executor-native', () => resolveHost('@deepseek-ai/dsh-tool-executor-native')),
+        hostEntry('@deepseek-ai/dsh-tool-executor-ptc', () => resolveHost('@deepseek-ai/dsh-tool-executor-ptc')),
+      ]
+    : []),
 ])
 
 const HOST_PRESENT = existsSync(HOST.root)
@@ -209,9 +236,9 @@ const HOST_MISSING = HOST_ENTRIES.filter((entry) => entry.problem !== undefined)
 
 const HOST_REFUSAL = HOST_PRESENT
   ? undefined
-  : `VNEXT-B-LADDER-HOST-REFUSED pinned=${DSH_BASELINE_VERSION} sha=${TEST_USE_BASELINE_SHA} root=${HOST.root}`
+  : `VNEXT-B-LADDER-HOST-REFUSED host=${HOST_MODE} pinned=${HOST_PIN.version} sha=${HOST_PIN.sha} root=${HOST.root}`
 const HOST_INCOMPLETE = HOST_PRESENT && HOST_MISSING.length > 0
-  ? `VNEXT-B-LADDER-HOST-INCOMPLETE root=${HOST.root} missing=${HOST_MISSING.map((entry) => `${entry.name} (${entry.problem})`).join('; ')}`
+  ? `VNEXT-B-LADDER-HOST-INCOMPLETE host=${HOST_MODE} root=${HOST.root} missing=${HOST_MISSING.map((entry) => `${entry.name} (${entry.problem})`).join('; ')}`
   : undefined
 
 if (HOST_REFUSAL !== undefined && REQUIRE_PINNED_HOST) {
@@ -265,30 +292,43 @@ async function buildLadderWorld ({ label, ceiling, dir, presentation = 'both' })
 
   const root = new Context()
   await root.plugin(SystemPrompt)
-  // `mode: 'both'` is what makes the host registry register its RESERVED `run_code` transport; the
-  // PTC runtime service below is what the transport dispatches into. Neither is a Team module. The
-  // `offered` world builds the SAME composition under the SHIPPED presentation (`native`) instead:
-  // that is where the model-visible/ofered set is measured, because it is the deployment the product
-  // ships, while the `both` world is where the host still RETAINS the entry point (ADM-79 drives both).
-  await root.plugin(ToolRuntime, presentation === 'native' ? { mode: 'native' } : { mode: 'both', ptc: {} })
+  // THE DISPATCH SHAPE IS THE SELECTED HOST'S, not a config spelling:
+  //
+  //   rc.2  `ToolRuntime` owns dispatch; `mode: 'both'` additionally registers the registry's
+  //         RESERVED `run_code` transport (the PTC runtime service below is what it dispatches into),
+  //         while `mode: 'native'` is the shipped presentation with no such entry.
+  //   rc.5  `mode` was REMOVED (`z.never()` — "Mount a native or PTC tool executor instead"). The
+  //         registry delegates to an EXECUTOR SERVICE selected per scope (`tools.setExecutor`), the
+  //         reserved `run_code` transport moved into `PtcExecutor.requirePtcTransport()`, and dispatch
+  //         is a BATCH. The two presentations are the two executor packages the host ships; mounting
+  //         them is the host's own contract, not a compatibility layer for rc.2.
+  //
+  // The PTC executor is mounted AFTER the PTC runtime because it statically injects `ptcRuntime`;
+  // the native executor after nothing in particular. Both are mounted as the plugin objects the host
+  // exports (`{name, inject, apply}`) — mounting the bare class skips `inject` and the pipeline then
+  // cannot see `tools` (round 110's measured failure on route C).
+  const presentationOf = (value) => (value === 'both' ? 'ptc' : 'native')
+  const presentationMode = presentationOf(presentation)
+  if (HOST_MODE === 'next') await root.plugin(ToolRuntime)
+  else await root.plugin(ToolRuntime, presentationMode === 'native' ? { mode: 'native' } : { mode: 'both', ptc: {} })
   await root.plugin(LocalFileSystem, { cwd: dir, diffBasisMaxBytes: 10 * 1024 * 1024 })
 
-  const LocalSubprocessRuntime = (await import(pathToFileURL(searchAnchor.require.resolve('@deepseek-ai/dsh-subprocess-local')).href)).default
+  const LocalSubprocessRuntime = (await import(hostEntryUrl('@deepseek-ai/dsh-subprocess-local'))).default
   await root.plugin(LocalSubprocessRuntime)
-  const LocalSpillStore = (await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/dsh-spill-local')).href)).default
+  const LocalSpillStore = (await import(hostEntryUrl('@deepseek-ai/dsh-spill-local'))).default
   await root.plugin(LocalSpillStore, { root: join(dir, 'spill'), cleanupPeriodDays: 1 })
 
   // The PTY path: `sandboxPolicy` statically injects `sessionProjections`, and Cordis DEFERS a plugin
   // whose static inject is unmet (silently, from the caller's side), so the projection comes first.
-  const SessionProjection = (await import(pathToFileURL(shellAnchor.require.resolve('@deepseek-ai/dsh-session-projection')).href)).default
+  const SessionProjection = (await import(hostEntryUrl('@deepseek-ai/dsh-session-projection'))).default
   await root.plugin(SessionProjection)
-  const SandboxPolicyService = (await import(pathToFileURL(shellAnchor.require.resolve('@deepseek-ai/dsh-sandbox-policy')).href)).default
+  const SandboxPolicyService = (await import(hostEntryUrl('@deepseek-ai/dsh-sandbox-policy'))).default
   await root.plugin(SandboxPolicyService, { mode: 'workspace-write', workspaceRoot: inside })
   // The HOST's own sandbox provider, with NO `runnerCommand`: the host then selects its own rung
   // (bwrap if installed, else its landlock runner). Pinning the PRODUCT launcher here would be the
   // wrong seam — the host prepends its own bwrap profile args to a custom runner, and the product
   // launcher expects `--confined-exec`, so the two do not compose.
-  const LocalSandboxProvider = (await import(pathToFileURL(shellAnchor.require.resolve('@deepseek-ai/dsh-sandbox-local')).href)).default
+  const LocalSandboxProvider = (await import(hostEntryUrl('@deepseek-ai/dsh-sandbox-local'))).default
   const sandboxCounters = { confine: 0 }
   class CountingSandbox extends LocalSandboxProvider {
     async confine (...args) {
@@ -298,16 +338,41 @@ async function buildLadderWorld ({ label, ceiling, dir, presentation = 'both' })
   }
   await root.plugin(CountingSandbox, {})
 
-  const WebRuntime = (await import(pathToFileURL(webAnchor.require.resolve('@deepseek-ai/dsh-web')).href)).default
+  const WebRuntime = (await import(hostEntryUrl('@deepseek-ai/dsh-web'))).default
   await root.plugin(WebRuntime)
-  const NodePtcRuntime = (await import(pathToFileURL(storeRequire.resolve('@deepseek-ai/dsh-ptc-runtime-node')).href)).default
+  const NodePtcRuntime = (await import(hostEntryUrl('@deepseek-ai/dsh-ptc-runtime-node'))).default
   await root.plugin(NodePtcRuntime, {})
+
+  // rc.5 only: the executor service the registry delegates to. On rc.2 dispatch is built into
+  // `ToolRuntime` and neither package exists.
+  //
+  // THE DEPLOYMENT-LEVEL EXECUTOR is the PRESENTATION: a native deployment selects
+  // `NativeToolExecutor`; a PTC-presenting deployment selects `PtcExecutor` (which is also the only
+  // scope that retains the reserved `run_code` transport). rc.2 expressed the second one as
+  // `mode: 'both'`, which kept native dispatch AND the PTC entry in ONE registry. rc.5 does not:
+  // `tools.setExecutor` refuses a second executor IN A SCOPE, so a world that must dispatch native
+  // calls AND reach the retained PTC entry composes them where the host allows — the PTC executor at
+  // the deployment scope, the native executor in a nested member scope (created below, once the
+  // member scope exists). That is per-scope executor selection, the host's own contract.
+  if (HOST_MODE === 'next') {
+    const executor = presentationMode === 'ptc'
+      ? await import(hostEntryUrl('@deepseek-ai/dsh-tool-executor-ptc'))
+      : await import(hostEntryUrl('@deepseek-ai/dsh-tool-executor-native'))
+    await root.plugin({ name: executor.name, inject: executor.inject, apply: executor.apply })
+  }
+
+  // rc.5's `tool-fs` / `tool-fs-search` / `tool-bash-persistent` statically inject `workingDirectory`
+  // (`packages/fs/tool-fs/lib/index.js:2003-2007`). Cordis defers a plugin whose inject is unmet, so
+  // a world without it registers NO `read`/`write`/`edit` and every arm fails at DEFINITION_MISSING —
+  // a harness absence masquerading as a refusal. The double answers the one question the body asks.
+  // It is mounted ONLY on rc.5: rc.2 has no such service and must not grow one.
+  if (HOST_MODE === 'next') provideWorkingDirectoryDouble(root, dir)
 
   // The host modules themselves. `tool-bash-persistent` is a plugin OBJECT (named `apply`), while the
   // tool packages export a default plugin; both are imported as the host ships them.
-  const searchModules = await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/dsh-tool-fs-search')).href)
-  const webModules = await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/dsh-tool-web')).href)
-  const shellModules = await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/dsh-tool-bash-persistent')).href)
+  const searchModules = await import(hostEntryUrl('@deepseek-ai/dsh-tool-fs-search'))
+  const webModules = await import(hostEntryUrl('@deepseek-ai/dsh-tool-web'))
+  const shellModules = await import(hostEntryUrl('@deepseek-ai/dsh-tool-bash-persistent'))
 
   // ---- the STANDING (preset) topology: what a member would inherit without the realm mount ----
   const standingKey = {}
@@ -316,11 +381,10 @@ async function buildLadderWorld ({ label, ceiling, dir, presentation = 'both' })
   await standing.ctx.plugin(searchModules, { sampleOverCapGlobResults: false })
   await standing.ctx.plugin(webModules)
   await standing.ctx.plugin(shellModules)
-  const presetDefinition = (name) => root.get('tools').get(name, standingKey)
 
   // A REAL detached Session: `SessionProjection` reads `session.snapshotEvents()` on session events,
   // so a plain `{ header }` object fails inside the host's own projection (it is not a session).
-  const sessionModules = await import(pathToFileURL(storeRequire.resolve('@deepseek-ai/dsh-session')).href)
+  const sessionModules = await import(hostEntryUrl('@deepseek-ai/dsh-session'))
   const agentSession = sessionModules.Session.create(sessionModules.SessionId(SESSION_ID))
 
   const agentKey = { id: AGENT_ID, session: agentSession, options: {} }
@@ -332,6 +396,55 @@ async function buildLadderWorld ({ label, ceiling, dir, presentation = 'both' })
   // is a registry entry, not a tool body, and nothing about the refusal logic is replaced by it.
   const agents = new Map([[AGENT_ID, agentKey]])
   root.provide('agents', { get: (id) => agents.get(id) })
+
+  // rc.5 — THE MEMBER'S NATIVE DISPATCH SCOPE. The deployment-scope PTC executor (`run_code` only)
+  // retains the entry ADM-76/ADM-79 drive; the native calls the ladder's other rungs dispatch must
+  // reach an executor that runs them directly. `tools.setExecutor` allows ONE executor per scope, so
+  // the native executor lives in a scope NESTED under the member: every dispatch made there is still
+  // judged by the centre installed on the member scope (guards chain over ancestors, and
+  // `tools/pre-execute` is dispatched on the scope chain), while executor selection picks the native
+  // one. rc.2 needs neither: `mode: 'both'` already runs native calls directly.
+  const nativeKey = HOST_MODE === 'next' && presentationMode === 'ptc'
+    ? { id: `${AGENT_ID}-native`, session: agentSession, options: {} }
+    : undefined
+  if (nativeKey !== undefined) {
+    const nativeScope = createScope(root, nativeKey)
+    nativeKey.ctx = nativeScope.ctx
+    bindScopeParent(nativeKey, agentKey)
+    const nativeExecutor = await import(hostEntryUrl('@deepseek-ai/dsh-tool-executor-native'))
+    await nativeScope.ctx.plugin({ name: nativeExecutor.name, inject: nativeExecutor.inject, apply: nativeExecutor.apply })
+  }
+
+  /**
+   * The scope one tool call is DISPATCHED in: the host's executor selection is per scope, so this is
+   * part of the host SHAPE, not of the expectation. `run_code` goes to the deployment scope (the PTC
+   * executor ADM-79 drives); every native rung goes to the member/native scope on rc.5 (and to the
+   * member scope on rc.2, which has no split).
+   */
+  const scopeOfTool = (name) => (HOST_MODE === 'next' && name !== 'run_code' && nativeKey !== undefined ? nativeKey : agentKey)
+
+  /**
+   * THE RESERVED `run_code` TRANSPORT, in the shape the SELECTED host exposes it.
+   *
+   * rc.2 keeps it in the registry, so `tools.get('run_code', scope)` answers it. rc.5 moved it into
+   * the PTC EXECUTOR (`PtcExecutor.requirePtcTransport()` — it deliberately stays outside registered
+   * capabilities and their restrictions), and the registry's `get()` no longer knows the name. The
+   * arm's claim is unchanged — "one transport object, never a per-scope copy" — so this resolves the
+   * SAME object through whichever entry the host actually offers; a host that offers none answers
+   * `undefined` (the shipped native presentation), which is exactly what ADM-79 asserts.
+   *
+   * @param {object|undefined} scope - the viewing scope (agent), or undefined for the global view.
+   * @param {string} name - tool name.
+   */
+  const definitionIn = (scope, name) => {
+    const tools = root.get('tools')
+    if (name === 'run_code' && HOST_MODE === 'next') {
+      const executor = tools.selectExecutor(scope)
+      return typeof executor?.requirePtcTransport === 'function' ? executor.requirePtcTransport() : undefined
+    }
+    return tools.get(name, scope)
+  }
+  const presetDefinition = (name) => definitionIn(standingKey, name)
 
   // ---- the composition's faces (physically identical in both worlds) ----
   const teamSandbox = await import(pathToFileURL(join(REPO_ROOT, 'packages/runtime/team-sandbox/src/index.ts')).href)
@@ -522,14 +635,16 @@ async function buildLadderWorld ({ label, ceiling, dir, presentation = 'both' })
     identityOf: settlementIdentity,
   })
 
+  // THE HOST'S OWN CALL SHAPE. rc.2 takes one call; rc.5 takes a batch whose call arguments are a
+  // JSON STRING and whose result is `batch.results[0].result`. The existing helper owns that split
+  // (round 110 re-used it for route C rather than inventing a second mechanism); the ladder passes
+  // only the call it wants dispatched and unwraps the SAME result shape the arms already assert on.
   const dispatch = async (name, args, callId) => {
-    const settled = await root.get('tools').execute({
-      signal: new AbortController().signal,
-      callId,
-      name,
-      arguments: args,
-      agent: agentKey,
-    })
+    const settled = await executeToolDispatch(
+      root.get('tools'),
+      { signal: new AbortController().signal, callId, name, arguments: args, agent: scopeOfTool(name) },
+      { hostMode: HOST_MODE },
+    )
     const text = Array.isArray(settled.content)
       ? settled.content.map((part) => (part?.type === 'text' ? part.text : '')).join('')
       : ''
@@ -567,11 +682,11 @@ async function buildLadderWorld ({ label, ceiling, dir, presentation = 'both' })
     dispatch,
     recordsOf,
     settlementOf: (callId) => settlementStore.read(settlementIdentity({ callId }).executionId),
-    definitionOf: (name) => root.get('tools').get(name, agentKey),
+    definitionOf: (name) => definitionIn(scopeOfTool(name), name),
     /** The model-visible set the host would OFFER this member (`tools.schemas(scope)`). */
     schemas: () => root.get('tools').schemas(agentKey),
     /** The HOST-registry view (no scope): what the process retains regardless of the member's offer. */
-    globalDefinitionOf: (name) => root.get('tools').get(name),
+    globalDefinitionOf: (name) => definitionIn(undefined, name),
     /**
      * The host bash module's OWN definition for THIS member's terminals face. The preset scope has
      * no `terminals`, so the module registers nothing there and has no reference to compare against;
