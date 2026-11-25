@@ -26,52 +26,46 @@
  * Runs in the hook worker thread spawned by module.register(); no
  * child_process, no dependencies (beyond the fail-loud host selector).
  */
-import { existsSync, realpathSync } from 'node:fs'
-import { dirname, isAbsolute, join, resolve as resolvePath, sep } from 'node:path'
+import { existsSync } from 'node:fs'
+import { dirname, isAbsolute, join, resolve as resolvePath } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-import { resolveSelectedHostModule, selectedHostTree, testHostMode } from '../tests/next-host/host-select.mjs'
+import { createHostResolver, testHostMode } from '../tests/next-host/host-select.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const repoRoot = resolvePath(here, '..')
 const shimUrl = pathToFileURL(join(here, 'test-vitest-shim.mjs')).href
 
-/** Resolved host targets, so the tree verifier's git calls run once per specifier. */
-const hostResolutions = new Map()
-/** The host tree's realpath, resolved once (the worktree path is a symlink). */
-let hostRoot = null
-
 /**
- * Is the importing module ALREADY inside the host tree? A host package's own
- * bare imports (including third-party ones like `@deepseek-ai/cosmokit`, which
- * are legitimate host dependencies) must resolve through Node's normal,
- * already host-anchored walk — redirecting them would ask a workspace anchor to
- * resolve a package only the host's own install carries, and fail.
+ * The ONE shared resolvers (tests/next-host/host-select.mjs), cached per
+ * selected generation. This file is an ADAPTER: it owns the Node ESM hook
+ * shape, not the host decision. `testHostMode()` is consulted on EVERY host
+ * specifier so an unknown `TEAM_TEST_HOST` refuses (typed) instead of being
+ * masked by a stale cache.
  */
-function parentIsInsideHost(context) {
-  if (hostRoot === null) hostRoot = realpathSync(selectedHostTree(repoRoot, 'next'))
-  if (typeof context.parentURL !== 'string' || !context.parentURL.startsWith('file:')) return false
-  try {
-    const parent = realpathSync(fileURLToPath(context.parentURL))
-    return parent === hostRoot || parent.startsWith(`${hostRoot}${sep}`)
-  } catch {
-    return false
+const hostResolvers = new Map()
+function selectedHost() {
+  const mode = testHostMode()
+  let resolver = hostResolvers.get(mode)
+  if (resolver === undefined) {
+    resolver = createHostResolver(repoRoot, mode)
+    hostResolvers.set(mode, resolver)
   }
+  return resolver
 }
 
 export async function resolve(spec, context, next) {
   if (spec === 'vitest') return { url: shimUrl, shortCircuit: true }
 
-  // (3) Host-anchored bare imports from TEAM code. `testHostMode` throws on an
-  // unknown value, which is what keeps a typo from silently selecting the
-  // legacy host.
-  if (spec.startsWith('@deepseek-ai/') && testHostMode() === 'next' && !parentIsInsideHost(context)) {
-    let url = hostResolutions.get(spec)
-    if (url === undefined) {
-      url = pathToFileURL(resolveSelectedHostModule(spec, repoRoot, 'next')).href
-      hostResolutions.set(spec, url)
-    }
-    return { url, shortCircuit: true }
+  // (3) Every bare `@deepseek-ai/*` import is decided by the shared resolver.
+  // `createHostResolver()` throws a typed HostSelectionError on an unknown
+  // selector, which is what keeps a typo from silently selecting the legacy
+  // host. The resolver also declines host-internal importers (a host package's
+  // own bare imports must walk its own install) and, under `legacy`, declines
+  // a miss so Node's default resolution — the same rc.2 install — answers.
+  if (spec.startsWith('@deepseek-ai/')) {
+    const decision = selectedHost().resolveForImporter(spec, context.parentURL)
+    if (decision !== null) return { url: pathToFileURL(decision.file).href, shortCircuit: true }
   }
 
   if (

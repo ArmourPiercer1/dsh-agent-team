@@ -61,7 +61,17 @@ Acceptance Gate is a **version gate**, not a per-PR gate:
 > It is **NOT** "covered by every PR's Required CI".
 
 **No row is PRODUCT-PROVEN today**, and no row becomes so until such a version gate is frozen, Required and
-green at that SHA. The mechanism (`version-gate-receipt.json` schema, the typed verifier, the exact
+green at that SHA.
+
+**ROUND 118 vocabulary (owner ruling 2026-11-25, `OWNER-DECISIONS.md` §"ROUND 118").** Two words, two
+facts, never interchangeable: **`CANDIDATE-ACCEPTED`** = the row's deterministic acceptance evidence ran on
+**both** pinned hosts in one candidate round, with the selected generation proven per run
+(`HOST-VERSION-GUARD host=<mode> resolved=<version> pin=<version>`) and a classified result on each;
+**`PRODUCT-PROVEN`** = the frozen-version fact above. `CANDIDATE-ACCEPTED` is a precondition for the freeze,
+not a substitute. Model-behaviour rows need a real-model run at the pin to reach `CANDIDATE-ACCEPTED`; that
+run is a later round and is not started. **No row is PRODUCT-PROVEN.**
+
+The mechanism (`version-gate-receipt.json` schema, the typed verifier, the exact
 branch/tag ruleset the owner must apply, and the freeze procedure) is **`VERSION-GATE.md`**; the workflow is
 `.github/workflows/candidate-acceptance.yml`, and `scripts/eb3-ci-required.mjs` **asserts** the manifest's
 version-gate classification so it cannot be promoted into a required layer or stripped of its meaning.

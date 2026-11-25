@@ -226,3 +226,67 @@ test('a new family adds ONE file and edits none: the appended entry lands after 
     rmSync(dir, { recursive: true, force: true })
   }
 })
+
+// ---------------------------------------------------------------------------
+// CREDENTIAL HYGIENE — negative control for the `.env` protection (P0 round,
+// review 20261125-2258).
+//
+// WHY IT LIVES IN THIS FILE. The `.env` protection is a tracked-file law, and
+// this suite is the collected host-free controls home for tracked-file laws
+// (`tests/checks` is collected whole by the `tests-checks` leg, so a NEW file
+// here would book a catalog delta; the round's rule is zero delta where an
+// existing collected suite can carry the arm). The arms below use only `git`
+// against this worktree: no host, no port, no DSH_HOME.
+//
+// WHAT IS PINNED. (a) `.env` and `.env.*` are ignored BY THIS TREE'S
+// `.gitignore` (the `-v` source is asserted, so a global excludes file or an
+// environment-level ignore cannot make this green); (b) no TRACKED path ends
+// in `.env` outside the explicit allow-list (empty today: the owner key is the
+// only real `.env` and it must never be tracked); (c) `git ls-files` carries no
+// `.env`-like credential file at all. A negative control proves the checker
+// would FAIL on an unprotected path, so a broken `check-ignore` invocation
+// cannot pass silently.
+const TRACKED_ENV_ALLOWED = [] // intentional: no tracked `.env` variant is allowed in this repo
+const gitOut = (args) => execFileSync('git', ['-C', REPO_ROOT, ...args], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
+
+test('credential hygiene: `.env` and `.env.*` are ignored by THIS tree\'s .gitignore', () => {
+  assert.equal(gitOut(['ls-files', '--error-unmatch', '.gitignore']).trim(), '.gitignore', '.gitignore must be tracked')
+  const gitignore = readFileSync(join(REPO_ROOT, '.gitignore'), 'utf8')
+  assert.match(gitignore, /^\.env$/mu, 'the tracked .gitignore must carry the `.env` rule')
+  assert.match(gitignore, /^\.env\.\*$/mu, 'the tracked .gitignore must carry the `.env.*` rule')
+  for (const path of ['.env', '.env.local', '.env.production', '.env.test.local']) {
+    const out = gitOut(['check-ignore', '-v', '--', path])
+    assert.match(out, /(?:^|\/)\.gitignore:\d+:/u, `${path} must be ignored by the tracked .gitignore, got: ${out.trim()}`)
+    assert.match(out, /:(?:\.env|\.env\.\*)\t/u, `${path} must match the .env/.env.* rule, got: ${out.trim()}`)
+  }
+  // NEGATIVE CONTROL: the same command on an unprotected, tracked path reports
+  // no match (exit 1), so (a) is a real observation rather than a vacuous pass.
+  assert.throws(
+    () => gitOut(['check-ignore', '-v', '--', 'README.md']),
+    (error) => error.status === 1,
+    'git check-ignore must report README.md as NOT ignored (control arm)',
+  )
+})
+
+test('credential hygiene: no TRACKED path ends in `.env` outside the allow-list', () => {
+  const tracked = gitOut(['ls-files', '-z']).split('\0').filter((path) => path !== '')
+  const offenders = tracked.filter((path) => path.endsWith('.env') && !TRACKED_ENV_ALLOWED.includes(path))
+  assert.deepEqual(offenders, [], `tracked paths ending in .env are forbidden: ${offenders.join(', ')}`)
+})
+
+test('credential hygiene: `git ls-files` carries no `.env`-like credential file', () => {
+  const tracked = gitOut(['ls-files', '-z']).split('\0').filter((path) => path !== '')
+  const envLike = tracked.filter((path) => {
+    const base = path.slice(path.lastIndexOf('/') + 1)
+    return base === '.env' || base.startsWith('.env.')
+  }).filter((path) => !TRACKED_ENV_ALLOWED.includes(path))
+  assert.deepEqual(envLike, [], `tracked .env-like credential files: ${envLike.join(', ')}`)
+  // The concrete owner-key path must not be tracked (it exists, gitignored, at
+  // the repo root; its CONTENTS are never read by this arm).
+  assert.throws(
+    () => gitOut(['ls-files', '--error-unmatch', '--', '.env']),
+    (error) => error.status === 1,
+    'the repo-root .env must never be tracked',
+  )
+})
+

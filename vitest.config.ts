@@ -1,4 +1,8 @@
 import { defineConfig } from 'vitest/config'
+import { createHostVitePlugin } from './tests/next-host/host-vite-adapter.mjs'
+
+/** The Team checkout this config lives in (worktree-safe via import.meta.url). */
+const REPO_ROOT = new URL('.', import.meta.url).pathname
 
 /**
  * Runner is kept fully in-process: worker_threads pool (no child_process
@@ -7,10 +11,24 @@ import { defineConfig } from 'vitest/config'
  * (EPERM); these settings make the suite pass there and everywhere else.
  */
 export default defineConfig({
+  plugins: [
+    // THE ONE SELECTOR, VITE-SIDE. A bare `@deepseek-ai/*` import from Team
+    // code resolves through `tests/next-host/host-select.mjs` (via the shared
+    // adapter), so `TEAM_TEST_HOST=next` grades this whole run on rc.5 instead
+    // of silently importing the repo's rc.2 install — the false green measured
+    // in round 116. With the variable unset the adapter resolves the exact
+    // rc.2 files this run always did; host-internal importers are declined so
+    // the host's own install still answers for itself.
+    createHostVitePlugin({ repoRoot: REPO_ROOT }),
+  ],
   resolve: {
     preserveSymlinks: true,
   },
   test: {
+    // Every worker proves the host it actually loaded IS the selected host
+    // before any test body runs (round 116 measured a green rc.5-selected run
+    // that imported rc.2). One line per worker: HOST-VERSION-GUARD.
+    setupFiles: ['./tests/next-host/host-version-guard.mjs'],
     // G-d integration wiring round (branch `alpha5-int-wiring`): the two
     // Alpha.5 lane suites with shared-surface stakes join the CI-collectable
     // set (INTEGRATION-PLAN default ruling "加 include 以进 CI 门").

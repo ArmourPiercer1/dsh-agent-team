@@ -1,0 +1,13 @@
+✔ SEC-02 — the d4 README declares the same measurement head as probe-digest.json (0.530635ms)
+✔ SEC-02 — the two d4 boots agree before either is compared with the prose (0.38576ms)
+✔ SEC-02 — the README §2 verdicts equal results.json (no inverted or omitted judge) (0.392302ms)
+✔ SEC-02 — the README overall verdict equals results.json overall (0.090121ms)
+✔ SEC-02 — a current-tense REFUTED may not stand outside an explicitly marked historical block (1.925304ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 58.369287

@@ -11449,3 +11449,70 @@ exact ruleset (`version-gate (Required at frozen candidate SHA)` on a `release/*
 default-branch PR rules; tag protection by a tag ruleset, which cannot carry required checks) and the freeze
 procedure are in `VERSION-GATE.md` §5–§6. Local evidence: the receipt writer/verifier against the repo's own
 `92be91dfb` verdict (`62/60/2/0`, exit 0) with wrong-head/missing-receipt refusals, `round117/version-gate-dryrun.log`.
+
+---
+
+## Round 118 — 2026-11-25 (P0 review `20261125-2258`) — credential hygiene, D4 correction, and the vitest population measured on rc.5
+
+**Lane.** `.worktrees/vnext-a1-cut`, branch `vnext/a1-cut`, base `0b96a1fa8`; sole writer; no history rewrite,
+no merge, no non-topic push; PR #822 stays DRAFT; `:3080` and its DSH_HOME untouched; CORE PATCH BUDGET = 0.
+
+**A — `.env` control.** Committed the `.gitignore` lines and added a collected negative-control section to
+`tests/checks/dist-placements.test.mjs` (13/13): `.env`/`.env.*` ignored via the tracked `.gitignore` with a
+positive control (`README.md` not ignored, exit 1), no tracked `.env` path, and `git ls-files` carries no
+`.env`-like credential file. The owner key (repo-root `../../.env`, mode 600) was never read, printed, copied or
+referenced in any committed file. Zero catalog delta from this control (existing suite).
+
+**B — D4 README head.** Reproduced the Hosted `ci-integration` red with
+`node --test tests/checks/d4-evidence-consistency.test.mjs` (README bound `41d579…`, probe digest binds
+`5cb5c606…`), transcribed the digest with a dated `## CORRECTION` note that keeps the old head as history, and
+re-ran green **5/5**. The check was not relaxed.
+
+**C — shared-resolution Vite adapter (one authority, two adapters).** `tests/next-host/host-select.mjs` stays
+the only holder of pin/tree/specifier mapping; `tests/next-host/host-vite-adapter.mjs` is a `resolveId` plugin
+that calls the SAME exported `createHostResolver` and owns no pin/tree/table; `scripts/run-tests-hooks.mjs` is
+the Node adapter and consults the selector per specifier (per-generation cache); both vitest configs install the
+plugin, the client config keeps its source-preference path, and `tests/next-host/host-version-guard.mjs` runs in
+every worker's `setupFiles` and throws unless `resolved == selectedHostPin().version`. Typed refusals:
+`HOST_SELECTOR_UNKNOWN`, `HOST_MODULE_UNRESOLVED`, `HOST_RESOLUTION_ESCAPED`; a legacy miss declines to the
+runner's own (same rc.2) resolution, never a silent rc.2 redirect under `next`. Importers inside either pinned
+tree are declined so a host module resolves from its own generation. **No second mapping table exists.** New
+mechanical suite `tests/next-host/host-resolution-consistency.test.mjs` (12/12) measures the real Node hook and
+a real Vite server per selector; it joins the post-build `ute-vnext-a1` leg (the only per-PR lane with both the
+repo install and the rc.5 tree).
+
+**D — the vitest population on rc.5: measured, not counted.** Population rule: collected vitest entries with a
+value `@deepseek-ai/*` import → **44** files (26 client + 18 runtime/testkit; the round-110 "40" is superseded).
+All 44 run on both hosts, one invocation per runner per host, with a guard line per worker
+(`HOST-VERSION-GUARD ok host=… resolved=… pin=…`, 26 client + 18 runtime). Result: rc.2 **42/44 files, 529/532
+tests**; rc.5 **39/44 files, 505/519 tests**. Classification: 1 **rc.2-shaped test** (`team-timeline` tooltip —
+rc.2 `Tooltip` uses mouse enter/leave, rc.5 pointer enter/leave; the test now fires both families, assertions
+unchanged, green on both); 3 **pre-existing host-independent** client failures (reproduced identically on rc.2
+with the UNMODIFIED HEAD config); **11 tests / 3 suites = a real rc.5 product gap** (rc.5
+`ToolsService.selectExecutor` requires an executor in the composition, `tests/deepseek-harness-next/packages/
+core/tools/lib/index.js:632`; the managed attach then forwards `[]`, refused by name at
+`packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1312`). That gap is recorded as open, not excused. No skip,
+no widened timeout, no weakened assertion.
+
+**Docs.** `RC5-TEST-MATRIX.md` §11 supersedes §4.3 row 5 / §6 item 2 / §10 (0/40 → measured); the
+`CANDIDATE-ACCEPTED` (dual-host deterministic, per-run guard) vs `PRODUCT-PROVEN` (frozen-version gate) ruling
+is in `OWNER-DECISIONS.md` §ROUND 118 and echoed in `D-ACCEPTANCE-REPORT.md`, `C1-C18-SIGNOFF.md`,
+`CANDIDATE-REPORT.md`, `VERSION-GATE.md`. **No row is PRODUCT-PROVEN**; no row is claimed CANDIDATE-ACCEPTED;
+the real-model run is a later round and was not started.
+
+**Booked scannable-surface delta.** One collected node:test suite (`host-resolution-consistency.test.mjs`,
++12 tests) and its declaration files; `ute-vnext-a1` leg 7 → 8 suites. Catalog: tests **787 → 788**, collected
+**735 → 736**, uncollected **38** (unchanged), excluded **14** (unchanged), digest
+`sha256:5f94024c… → sha256:15451525…`. Dispatch leg: **267 tests / 264 pass / 0 fail / 3 skipped**, set
+`sha256:edd4f1c4… → sha256:0b087a6a…` (the set changed by declared population, not by a weakened suite).
+
+**Gates at this round (`dev/agent-workflow/evidence/ute-a1/round118/`).** `ute-vnext-a1` 267/264/0/3 (exit 0);
+catalog 788/736/14/38 digest `sha256:15451525…` findings=0; `ute-cut-closure cut(0/148)`; `ute-p0-assets
+modules=37 files=180 lines=69512 cut(148/148)`; `docs-sync docs=193 findings=0 blocking=0`; place-dist-glue 35
+byte-identical; `eb3-ci-required pass workflows=11 findings=0`; bound vitest `ci-integration` PASS 15 suites /
+238 passed / 0 failed; UTE G1 argv **89/89**; `eb3-run-manifest records=634 findings=0`; `ci-pr-gate --full
+--census-captures 2` **PASS 10/10** (322.6 s; census 599f/7424l twice, identical identity sets, same as the
+published baseline); D4 5/5.
+
+**Not done.** The 11 rc.5 product-gap tests are not fixed (product migration: load the rc.5 executor provider /
+re-bind the managed attach); no real-model run; PR stays DRAFT; no settlement merge.

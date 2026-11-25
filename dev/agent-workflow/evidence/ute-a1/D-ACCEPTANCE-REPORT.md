@@ -64,6 +64,14 @@ that cost/relevance trade-off (it is recorded as rejected, not as an open option
 **No row is PRODUCT-PROVEN today**, and none becomes so until a version gate is frozen, Required and green at
 that SHA. `DEV-LIVE` is unchanged as a record class: it is evidence from a booted host, and it is not a gate.
 
+**ROUND 118 vocabulary (owner ruling 2026-11-25, `OWNER-DECISIONS.md` §"ROUND 118").** Two words, two
+facts, never interchangeable: **`CANDIDATE-ACCEPTED`** = the row's deterministic acceptance evidence ran on
+**both** pinned hosts in one candidate round, with the selected generation proven per run
+(`HOST-VERSION-GUARD host=<mode> resolved=<version> pin=<version>`) and a classified result on each;
+**`PRODUCT-PROVEN`** = the frozen-version fact above. `CANDIDATE-ACCEPTED` is a precondition for the freeze,
+not a substitute. Model-behaviour rows need a real-model run at the pin to reach `CANDIDATE-ACCEPTED`; that
+run is a later round and is not started. **No row is PRODUCT-PROVEN.**
+
 **Mechanissm (see `VERSION-GATE.md`).** `.github/workflows/candidate-acceptance.yml` now triggers on
 `push` to tags `v*` / branches `release/**` and `candidate/**`, on `workflow_dispatch` with an optional
 40-hex `head` input, and on `pull_request: [labeled, synchronize, reopened]` **only as a non-required opt-in**

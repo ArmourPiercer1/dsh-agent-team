@@ -58,7 +58,7 @@ no host dependency at all: one run on either host grades them identically, and t
 
 | area | files | host-coupled | signal mix | executed on rc.5? |
 | --- | ---: | ---: | --- | --- |
-| `packages/client` (vitest, jsdom) | 59 | 26 | import 26 | runner-limited (§4.3) |
+| `packages/client` (vitest, jsdom) | 59 | 26 | import 26 | measured on rc.5 (§11) |
 | `packages/runtime` | 421 | 22 | import 18, tree 5, boot 4 | partly (selector + pinned) |
 | `tests/world-factory` | 71 | 31 | tree 26, import 2, boot 5 | partly (leg suites) |
 | `packages/testkit` | 34 | 4 | tree 3, import 1 | no (pure + rc.2 helper) |
@@ -93,7 +93,7 @@ no host dependency at all: one run on either host grades them identically, and t
 | C1 | └ `tests/next-host` (boot 2, native-api 4, provisioning-controls 13) — **included in C** | 3 | 19 | N/A | **19 / 19** | rc.2 N/A: provisioning is rc.5-only |
 | E | leg-declared `node:test` suites under the selector | 14 | 235 | green in the `ci-integration` leg (rc.2 lane) | **232 pass / 3 fail / 0 skip** | the 3 failures are rc.2-subject suites (§4 items 5–6) |
 | F | vitest bound migration set (`ci-integration`, 15 suites) | 15 | 238 | **238 / 238** | **N/A** | runner-limited: Vite resolves the repo install, not the selector (§4.3); 14 of 15 are host-free anyway |
-| G | vitest root population (one run) | 599 | 7424 | **7424 / 7424 pass** (599 files) | **N/A** | host-free by construction (678/771 files); the 40 host-importing vitest suites are §4.3 |
+| G | vitest root population (one run) | 599 | 7424 | **7424 / 7424 pass** (599 files) | **N/A** | host-free by construction (678/771 files); the host-importing vitest suites are measured in §11 (44 files, both hosts) |
 | H | uncollected `node:test` files (catalog ratchet) | 38 | — | governed by the 38-uncollected baseline | **not counted** | outside the executed population; §4.4 |
 
 Executed rc.5 tests: **A+B+C+D+E = 759 tests, 753 pass, 3 fail, 3 skip** (round 112; round 110 measured 737/21/1). The 3
@@ -137,7 +137,7 @@ world rewrite above, **not** a larger timeout; no gate timeout was changed.
 
 | # | population | measured | why rc.5 cannot grade it through the ONE selector |
 | --- | --- | --- | --- |
-| 5 | 40 vitest suites that load host code at runtime (26 `packages/client/test/*.client.spec.tsx` via `@deepseek-ai/dsh-client-test-runtime`, 14 `packages/runtime/test/*` via `dsh-tools`/`dsh-scope`/`dsh-system-prompt`/`dsh-mcp`/`cordis`) | rc.2: PASS inside the 599-file / 7424-test root run | Vite resolves `@deepseek-ai/*` from the repo install **before** Node's ESM loader runs. Measured: with `TEAM_TEST_HOST=next NODE_OPTIONS=--import=tests/next-host/host-loader.mjs`, a probe suite still imported `@deepseek-ai/dsh-scope/package.json` version **`0.2.0-rc.2`**. A `resolve.alias` in `vitest.config.ts` would make the matrix greener but would be a **second host-selection mechanism** (explicitly forbidden), and it would move the whole root population. So these 40 are **rc.2-only by mechanism**, and are *not* counted as rc.5 coverage; the 590 host-free vitest files are graded once, on either host. **Round 116 ran the bounded probe that this row asked for: ENV-LIMITED, layer = the Vite module runner — the one selector is correct (plain-Node control resolves rc.5) but Vite resolves before Node's loader, so `NODE_OPTIONS=--import` and `server.deps.inline` are both inert; a Vite-side redirect works but is a second selection mechanism and is refused. See §10 and `round116/VITEST-HOST-PROBE.md`.** |
+| 5 | 40 vitest suites that load host code at runtime (26 `packages/client/test/*.client.spec.tsx` via `@deepseek-ai/dsh-client-test-runtime`, 14 `packages/runtime/test/*` via `dsh-tools`/`dsh-scope`/`dsh-system-prompt`/`dsh-mcp`/`cordis`) | rc.2: PASS inside the 599-file / 7424-test root run | Vite resolves `@deepseek-ai/*` from the repo install **before** Node's ESM loader runs. Measured: with `TEAM_TEST_HOST=next NODE_OPTIONS=--import=tests/next-host/host-loader.mjs`, a probe suite still imported `@deepseek-ai/dsh-scope/package.json` version **`0.2.0-rc.2`**. A `resolve.alias` in `vitest.config.ts` would make the matrix greener but would be a **second host-selection mechanism** (explicitly forbidden), and it would move the whole root population. So these 40 are **rc.2-only by mechanism**, and are *not* counted as rc.5 coverage; the 590 host-free vitest files are graded once, on either host. **Round 116 ran the bounded probe that this row asked for: ENV-LIMITED, layer = the Vite module runner — the one selector is correct (plain-Node control resolves rc.5) but Vite resolves before Node's loader, so `NODE_OPTIONS=--import` and `server.deps.inline` are both inert; a Vite-side redirect works but is a second selection mechanism and is refused. See §10 and `round116/VITEST-HOST-PROBE.md`. **SUPERSEDED by §11 (round 118): the population was run on rc.5 through ONE authority + two adapters — 33/44 files green, every failure classified, guard per worker. This cell is kept as the round-116 history.** |
 
 The 15-suite bound migration set (238 tests) is a subset of this runner limit; 14 of its 15 suites have
 no host dependency at all, and the one host import (`f15-mcp-live-loss.test.ts` → `scopeOf` from
@@ -189,15 +189,15 @@ stays 0; `tests/deepseek-harness-next` and `tests/deepseek-harness-test-use` are
 ## 6. What is NOT covered (stated plainly)
 
 1. ~~**18 B-ladder arms** (rc.5) — red, §4.2.~~ **CLOSED in round 112: 18/18 on both hosts (§9).**
-2. **40 host-importing vitest suites** (rc.5) — runner-limited, §4.3. Round 116 probed the two candidate
-   one-mechanism paths and both failed: `NODE_OPTIONS=--import` (the SAME loader every `node:test` leg and
-   live boot uses) is **not consulted** by Vite, and `server.deps.inline` is inert for resolution (measured:
-   the modules stay `0.2.0-rc.2`). A Vite alias/plugin derived from the selector's own mapping **would** work
-   (measured: `0.2.2-rc.5`) but is a **second host-selection mechanism** and is refused. This block therefore
-   stays open as **ENV-LIMITED at the Vite layer** (§10), not as a green cell: closing it needs a
-   runner/host capability (Vite delegating bare-specifier resolution to the registered Node loader, or a
-   host-published Vite plugin parameterised by the selected tree), or an owner ruling that these 26 client +
-   14 runtime suites are host-version-agnostic by contract.
+2. ~~**40 host-importing vitest suites** (rc.5) — runner-limited, §4.3.~~ **CLOSED in round 118: measured,
+   not assumed (§11).** One selection authority (`tests/next-host/host-select.mjs`) + two adapters (Node ESM
+   hook, Vite plugin) — the Vite side calls the exported resolver and owns no pin/tree/table. All **44**
+   collected vitest files with a value `@deepseek-ai/*` import were run on both hosts: **33/44 files green on
+   rc.5** (client 343/346, runtime 162/173), every failure classified in §11.4: 1 rc.2-shaped test adapted
+   (assertions unchanged), 3 pre-existing host-independent client failures (reproduced on rc.2 with the
+   unmodified config), and **11 tests in 3 suites that are a real rc.5 product gap** (executor provider not
+   loaded; managed attach forwards `[]`) — recorded, not excused, and not green. The false-green risk is
+   guarded per worker by `HOST-VERSION-GUARD` asserting resolved == pin.
 3. **38 uncollected files** — governed by the catalog ratchet `--max-uncollected 41`; not executed, not
    counted.
 4. **350 leg-declared node suites not in the rc.5-selected run** (the 51-suite `tinf-instruments` leg
@@ -382,7 +382,7 @@ directory.
 
 ---
 
-## 10. ROUND 116 — the vitest population probe: **ENV-LIMITED at the Vite layer** (0 of 40 counted)
+## 10. ROUND 116 — the vitest population probe: **ENV-LIMITED at the Vite layer** (0 of 40 counted) — **SUPERSEDED by §11**
 
 Round 116 asked the §6/§4.3 question as an experiment instead of an assumption: *can the 40 vitest suites that
 value-import `@deepseek-ai/*` be graded on rc.5 through the SAME one selector, without a second mechanism?*
@@ -434,3 +434,96 @@ probe, and the probe lived only in gitignored `.scratch/` (the tree adds no test
 
 Round 116 gates are recorded in `round116/README.md` and `round116/` logs; the candidate report §5.5 carries
 the same verdict lines.
+
+---
+
+## 11. ROUND 118 — the vitest population on rc.5: **measured, 44/44 run, 33/44 green files** (was "0/40 counted")
+
+Round 116 stopped at "ENV-LIMITED": Vite resolves before Node's ESM loader, and a Vite-side alias would be a
+**second selection mechanism**. Round 118 does what §4.3/§6 asked for instead: **one selection authority, two
+resolution adapters**. The Node loader and a Vite plugin both call the SAME exported resolution function
+(`tests/next-host/host-select.mjs` → `createHostResolver`), so the Vite adapter holds **no pin, no tree path
+and no specifier table** of its own — it is a transport, not a second selector. Red line 8 was never
+triggered. The 40-suite cell is therefore no longer runner-limited; it is **measured**, with a
+false-green guard and a disclosed failure classification.
+
+### 11.1 The two adapters (one authority)
+
+| layer | file | owns | does NOT own |
+| --- | --- | --- | --- |
+| authority | `tests/next-host/host-select.mjs` | pin, tree, `exports`-driven package→subpath mapping, containment (`selectedHostResolveRoot`), typed refusals (`HostSelectionError`: `HOST_SELECTOR_UNKNOWN` / `HOST_MODULE_UNRESOLVED` / `HOST_RESOLUTION_ESCAPED`), source-preference mapping (`resolveSourceForImporter`), host-internal importer decline | — |
+| Node adapter | `scripts/run-tests-hooks.mjs` | the ESM `resolve` hook shape; asks the authority per `@deepseek-ai/*` specifier | any pin/tree/mapping |
+| Vite adapter | `tests/next-host/host-vite-adapter.mjs` | `resolveId` plugin shape (`enforce: 'pre'`) | any pin/tree/mapping |
+| configs | root `vitest.config.ts`, `packages/client/vitest.config.ts` | install the plugin; client adds the source-preference flag and jsdom setup | any pin/tree/mapping |
+| guard | `tests/next-host/host-version-guard.mjs` | per-worker `setupFiles`: resolve `@deepseek-ai/dsh-tools/package.json` through the adapter and assert `version === selectedHostPin().version` | — |
+
+The Node hook consults `testHostMode()` **on every host specifier** (the cache is keyed by the selected
+generation), so an unknown `TEAM_TEST_HOST` refuses typed instead of being masked by a cached resolver.
+
+### 11.2 The consistency test — mechanical, both paths, 12/12 green
+
+`tests/next-host/host-resolution-consistency.test.mjs` (collected; part of the `ute-vnext-a1` leg) measures
+the **real** adapters against each other, per selector:
+
+1. Node and Vite resolve `@deepseek-ai/dsh-tools`, `…/presentation` and `…/package.json` to the **same file**;
+2. that file is **inside** `selectedHostResolveRoot`;
+3. the measured version is the pin: `legacy` ⇒ `0.2.0-rc.2`, `next` ⇒ `0.2.2-rc.5`;
+4. the module actually **loaded** from both answers is inside the tree and evaluates;
+5. an **unexported subpath** refuses on both paths (`ERR_PACKAGE_PATH_NOT_EXPORTED` / typed), never a source
+   fallback;
+6. the client **source-preference** path resolves into the same tree, and a host-internal importer is declined;
+7. `TEAM_TEST_HOST=rc2-typo` is a **typed refusal** at Vite config load and at the Node hook, never rc.2;
+8. the two selectors resolve **different** trees.
+
+Log: `round118/host-resolution-consistency.log`. Command:
+`node --test tests/next-host/host-resolution-consistency.test.mjs`.
+
+### 11.3 The population and the per-suite measurement
+
+**Population rule** (mechanical, this round): collected `vitest` catalog entries that carry a **value** import
+of a bare `@deepseek-ai/*` specifier (type-only imports excluded). The scan finds **44** files: **26**
+`packages/client/test/*.client.spec.tsx` + **18** runtime/testkit suites. The earlier "40 (26+14)" was a
+round-110 classification count; this round's rule is stated above and is what was run. **All 44 were run on
+both hosts** — not a representative subset.
+
+Commands (one invocation per runner per host, because client suites run under the package config):
+
+```
+# client (26 files, package config, jsdom)
+cd packages/client && TEAM_TEST_HOST=next node ../../node_modules/vitest/vitest.mjs run <26 files>
+# runtime (18 files, root config)
+TEAM_TEST_HOST=next node node_modules/vitest/vitest.mjs run <18 files>
+```
+
+| population | rc.2 | rc.5 | verdict |
+| --- | --- | --- | --- |
+| 26 client suites | 24 files / **343 of 346** tests pass | 24 files / **343 of 346** tests pass | **parity**; same 3 pre-existing failures on both |
+| 18 runtime+testkit suites | 18 files / **186 of 186** pass | 15 files / **162 of 173** pass | 3 suites fail on rc.5 only (classified below) |
+| **44 total** | **42 files / 529 of 532** | **39 files / 505 of 519** | 33/44 files green on rc.5; every failure classified |
+
+False-green guard on **every** run: each Vitest worker logged
+`HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=…/tests/deepseek-harness-next`
+(or `host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2`). The guard throws before any test if the resolved
+version differs from the pin, so an rc.2 module under `TEAM_TEST_HOST=next` cannot be reported as green.
+Raw logs: `round118/vitest-client-{legacy,next}.log`, `round118/vitest-runtime-{legacy,next}.log`.
+
+### 11.4 Failure classification (no skip, no widened timeout, no weakened assertion)
+
+| finding | tests | class | disposition |
+| --- | --- | --- | --- |
+| `team-timeline.client.spec.tsx` "tooltips a bar…" failed on rc.5 only | 1 | **rc.2-shaped test** | The tooltip is the HOST's `Tooltip` primitive: rc.2 opens on `mouseenter/leave`, rc.5 on `pointerenter/leave` (`tests/deepseek-harness-next/packages/client/ui-primitives/src/Tooltip.tsx:232-240`). The test now fires the family the selected host listens to (`hover` = `mouseOver` + `pointerEnter`). **Assertions unchanged**; green on both hosts. Dated note in the test. |
+| `team-creation-panel.client.spec.tsx` 2 tests (persona fact `available: false`) and `team-governance.client.spec.tsx` 1 test | 3 | **pre-existing, host-independent** | Reproduced **identically on rc.2 with the UNMODIFIED HEAD client config** (measured this round). Not caused by the adapter and not rc.5 findings; they are red in the full 26-suite population on both hosts. Not touched. |
+| `a5sf-bl16-grep-realm.test.ts` (9 tests), `a5sf-subprocess-unconfined-realm.test.ts` (2), `issue2-real-preset-restriction.test.ts` (suite-level) | 11 | **product incompatibility with rc.5** (real, not environmental) | rc.5 `ToolsService.selectExecutor` now throws `ToolExecutorUnavailableError` when the composition has no executor loaded (`tests/deepseek-harness-next/packages/core/tools/lib/index.js:632-642`); rc.2 fell back to the root executor. The same change makes the attach forward `[]` managed tools, which the Team assembly correctly refuses (`packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1312`, `A5SF_EXPECTED_TOOLS_UNSHADOWED`), and the error precedence moves the BL-17 U1b code from `SUBPROCESS_UNCONFINED_REALM` to `A5SF_BINDING_OWNER_UNRESOLVED` (test lines 371/401; BL-16 attach lines 348/399/459; issue2 line 291). This is a genuine vNext-product migration item (load the rc.5 executor provider / re-bind the managed attach), **not an adapter defect** — both hosts resolve the code they were asked for. Out of scope for this P0 adapter round; recorded as the open rc.5 product gap. |
+
+No environment-limited arm remains: the guard proves the rc.5 code is what ran. The only ENV-LIMITED items
+left in §4.3 are unrelated (hosted-runner network deny, etc.).
+
+### 11.5 What this changes in the matrix
+
+- §4.3 row 5 and §6 item 2 are **superseded by this section**: the vitest population is no longer
+  rc.2-only by mechanism. It is measured on rc.5, 33/44 files green with the failures classified above.
+- The 44 files are **not** added to the bound CI vitest leg (that leg is the 15-suite `ci-integration`
+  bound set, §4.1 row F); the measurement is evidence, and the consistency test alone joins the
+  `ute-vnext-a1` leg so the mechanism is guarded per PR.
+- **No row becomes PRODUCT-PROVEN.** The rc.5 product gap above means the vitest population cannot be
+  called CANDIDATE-ACCEPTED as a whole either: 3 suites are not accepted on rc.5 yet.

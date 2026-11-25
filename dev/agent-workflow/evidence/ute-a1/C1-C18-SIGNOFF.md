@@ -41,6 +41,14 @@ ruling 2026-11-25): PRODUCT-PROVEN means *gate-backed at the frozen candidate SH
 version gate Required and green at that SHA and its `version-gate-receipt.json` verified there* — **not**
 "covered by every PR's Required CI". See `VERSION-GATE.md` §1 and `CANDIDATE-REPORT.md` §1.1.
 
+**ROUND 118 vocabulary (owner ruling 2026-11-25, `OWNER-DECISIONS.md` §"ROUND 118").** Two words, two
+facts, never interchangeable: **`CANDIDATE-ACCEPTED`** = the row's deterministic acceptance evidence ran on
+**both** pinned hosts in one candidate round, with the selected generation proven per run
+(`HOST-VERSION-GUARD host=<mode> resolved=<version> pin=<version>`) and a classified result on each;
+**`PRODUCT-PROVEN`** = the frozen-version fact above. `CANDIDATE-ACCEPTED` is a precondition for the freeze,
+not a substitute. Model-behaviour rows need a real-model run at the pin to reach `CANDIDATE-ACCEPTED`; that
+run is a later round and is not started. **No row is PRODUCT-PROVEN.**
+
 ## 3. Gate coverage key
 
 The merge gate is the synthetic `ci-required` context over the five `ci-*` layers

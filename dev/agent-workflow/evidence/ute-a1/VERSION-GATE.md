@@ -30,6 +30,14 @@ the gate HAS been exercised as a version gate end-to-end: it has not (see §8).
 > It is **NOT** "covered by every PR's Required CI". No row is PRODUCT-PROVEN today; none becomes so
 > until such a version gate is frozen, Required and green at that SHA.
 
+**ROUND 118 vocabulary (owner ruling 2026-11-25, `OWNER-DECISIONS.md` §"ROUND 118").** Two words, two
+facts, never interchangeable: **`CANDIDATE-ACCEPTED`** = the row's deterministic acceptance evidence ran on
+**both** pinned hosts in one candidate round, with the selected generation proven per run
+(`HOST-VERSION-GUARD host=<mode> resolved=<version> pin=<version>`) and a classified result on each;
+**`PRODUCT-PROVEN`** = the frozen-version fact above. `CANDIDATE-ACCEPTED` is a precondition for the freeze,
+not a substitute. Model-behaviour rows need a real-model run at the pin to reach `CANDIDATE-ACCEPTED`; that
+run is a later round and is not started. **No row is PRODUCT-PROVEN.**
+
 ## 2. What the gate covers — exactly the 31 judges, nothing more
 
 Per host the gate grades **31 judges** (44 sign-off rows / claims are NOT this population). Per the

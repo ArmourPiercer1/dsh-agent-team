@@ -1,0 +1,464 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut
+
+stdout | packages/runtime/test/f15-mcp-live-loss.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/rc2-persona-probe.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/mcp-blueprint-initial-grant.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/f1-webserver-shim-isolation.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/a5sf-service-install.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/team-spill-local-composition.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/a3p5-permission-notification-lane-hygiene.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/a5sf-provider-composition.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/a5sf-pd17-fs-policy.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/team-spill-local.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/testkit/test/m2-scripted-model.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/a5sf-bl16-grep-realm.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/a3p5-permission-delivery-binding.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/u6-mcp-017-regression.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 87, column 24:
+
+        testEndpoints: !!js (process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split('…
+                       ^^^^
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ packages/runtime/test/rc2-persona-probe.test.ts (13 tests) 13ms
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 89, column 20:
+
+          baseURL: !!js process.env.A5SF_WEB_SEARCH_BASE_URL ?? 'https://api.ex…
+                   ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 90, column 19:
+
+          apiKey: !!js process.env.A5SF_WEB_SEARCH_API_KEY ?? process.env.EXA_A…
+                  ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 366, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 379, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 87, column 24:
+
+        testEndpoints: !!js (process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split('…
+                       ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 89, column 20:
+
+          baseURL: !!js process.env.A5SF_WEB_SEARCH_BASE_URL ?? 'https://api.ex…
+                   ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 90, column 19:
+
+          apiKey: !!js process.env.A5SF_WEB_SEARCH_API_KEY ?? process.env.EXA_A…
+                  ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 366, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 379, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 87, column 24:
+
+        testEndpoints: !!js (process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split('…
+                       ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 89, column 20:
+
+          baseURL: !!js process.env.A5SF_WEB_SEARCH_BASE_URL ?? 'https://api.ex…
+                   ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 90, column 19:
+
+          apiKey: !!js process.env.A5SF_WEB_SEARCH_API_KEY ?? process.env.EXA_A…
+                  ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 366, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 379, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 87, column 24:
+
+        testEndpoints: !!js (process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split('…
+                       ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 89, column 20:
+
+          baseURL: !!js process.env.A5SF_WEB_SEARCH_BASE_URL ?? 'https://api.ex…
+                   ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 90, column 19:
+
+          apiKey: !!js process.env.A5SF_WEB_SEARCH_API_KEY ?? process.env.EXA_A…
+                  ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 366, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 379, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+ ✓ packages/runtime/test/team-spill-local-composition.test.ts (3 tests) 42ms
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 87, column 24:
+
+        testEndpoints: !!js (process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split('…
+                       ^^^^
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 89, column 20:
+
+          baseURL: !!js process.env.A5SF_WEB_SEARCH_BASE_URL ?? 'https://api.ex…
+                   ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 90, column 19:
+
+          apiKey: !!js process.env.A5SF_WEB_SEARCH_API_KEY ?? process.env.EXA_A…
+                  ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 366, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 379, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 87, column 24:
+
+        testEndpoints: !!js (process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split('…
+                       ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 89, column 20:
+
+          baseURL: !!js process.env.A5SF_WEB_SEARCH_BASE_URL ?? 'https://api.ex…
+                   ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 90, column 19:
+
+          apiKey: !!js process.env.A5SF_WEB_SEARCH_API_KEY ?? process.env.EXA_A…
+                  ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 366, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+(node:3) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 379, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+ ✓ packages/runtime/test/a5sf-provider-composition.test.ts (9 tests) 38ms
+stdout | packages/runtime/test/issue2-real-preset-restriction.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/f15-mcp-live-loss-characterization.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/team-skills.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+(node:3) TimeoutNaNWarning: NaN is not a number.
+Timeout duration was set to 1.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ packages/runtime/test/u6-mcp-017-regression.test.ts (5 tests) 128ms
+ ✓ packages/runtime/test/a5sf-pd17-fs-policy.test.ts (5 tests) 29ms
+ ✓ packages/testkit/test/m2-scripted-model.test.ts (11 tests) 9ms
+stderr | packages/runtime/test/team-skills.test.ts
+[dsh-agent-team] bundled team skill "bad-name" skipped: the frontmatter name "Bad_Name" is not a valid kebab-case skill name
+[dsh-agent-team] bundled team skill "missing-description" skipped: SKILL.md frontmatter must carry a kebab-case "name" and a non-empty "description"
+
+stdout | packages/runtime/test/team-skills.test.ts
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+
+stderr | packages/runtime/test/team-skills.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/team-skills.test.ts
+[dsh-agent-team] no bundled skills directory is resolvable from the host entry location — the bundled team skills are NOT registered (install-surface anomaly); the team core proceeds
+
+ ✓ packages/runtime/test/team-skills.test.ts (9 tests) 4ms
+ ✓ packages/runtime/test/a3p5-permission-notification-lane-hygiene.test.ts (9 tests) 46ms
+ ✓ packages/runtime/test/a5sf-service-install.test.ts (20 tests) 82ms
+ ✓ packages/runtime/test/team-spill-local.test.ts (10 tests) 15ms
+ ❯ packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts (4 tests | 2 failed) 153ms
+     ✓ U1: a BINDING-realm mount of the real search module is refused before any mount 12ms
+     × U1b: the PRODUCT ROW composition refuses the same binding mount (seam and composition agree) 62ms
+     × U2: the MEMBER realm with the confined face still mounts the same module and executes on it 34ms
+     ✓ U3: a read restriction NARROWER than the ceiling is refused at admission (the nested case) 4ms
+ ✓ packages/runtime/test/a3p5-permission-delivery-binding.test.ts (18 tests) 148ms
+ ❯ packages/runtime/test/issue2-real-preset-restriction.test.ts (0 test)
+ ✓ packages/runtime/test/f15-mcp-live-loss-characterization.test.ts (2 tests) 3ms
+ ✓ packages/runtime/test/f15-mcp-live-loss.test.ts (10 tests) 9ms
+ ✓ packages/runtime/test/mcp-blueprint-initial-grant.test.ts (32 tests) 7ms
+stderr | packages/runtime/test/f1-webserver-shim-isolation.test.ts > F1 the scoped webServer compatibility seam (host.ts internal/get) > F1-T1: the team remote registration is served by the scoped shim (0.1.5 topology)
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/f1-webserver-shim-isolation.test.ts > F1 the scoped webServer compatibility seam (host.ts internal/get) > F1-T1: the team remote registration is served by the scoped shim (0.1.5 topology)
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+stderr | packages/runtime/test/f1-webserver-shim-isolation.test.ts > F1 the scoped webServer compatibility seam (host.ts internal/get) > F1-T2: unrelated contexts keep the native Cordis failure (the key regression)
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/f1-webserver-shim-isolation.test.ts > F1 the scoped webServer compatibility seam (host.ts internal/get) > F1-T2: unrelated contexts keep the native Cordis failure (the key regression)
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+stderr | packages/runtime/test/f1-webserver-shim-isolation.test.ts > F1 the scoped webServer compatibility seam (host.ts internal/get) > F1-T3: 0.1.2-era behavior is unchanged (the native walk resolves)
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/f1-webserver-shim-isolation.test.ts > F1 the scoped webServer compatibility seam (host.ts internal/get) > F1-T3: 0.1.2-era behavior is unchanged (the native walk resolves)
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+ ✓ packages/runtime/test/f1-webserver-shim-isolation.test.ts (3 tests) 173ms
+ ❯ packages/runtime/test/a5sf-bl16-grep-realm.test.ts (10 tests | 9 failed) 16708ms
+     × R0/R1: the preset definition reaches the INHERITED service; the shadow reaches the confined one 15ms
+     × R2: an out-of-lane grep is refused BEFORE the provider is called, with one typed fact and no secret 56ms
+     × R3: an in-lane search with no match is NOT an error — exit code 1 survives the handle adaptation 31ms
+     × R4: an invalid pattern is a failure (rg exit 2) carrying the REAL rg stderr 30ms
+     × G1/G2: glob rides the SAME confined face — in-lane lists, out-of-lane is refused with a fact 26ms
+     ✓ R5: a shell body is refused at ADMISSION (0 spawns, one fact), and the KERNEL allowance is measured directly  3306ms
+     × R6: live row 1 through the REAL grep tool — an in-lane worktree search returns the match (one allow fact, disclosure recorded) 3297ms
+     × R6m: MUTATION — stripping the two flags at the provider boundary reproduces the LIVE row-1 tool error verbatim 3300ms
+     × R7: a lane that includes the worktree root keeps ordinary .gitignore semantics (no silent global change) 3286ms
+     × R7m: MUTATION — forcing the flags onto that lane loses .gitignore semantics (why the change is conditional) 3288ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/issue2-real-preset-restriction.test.ts [ packages/runtime/test/issue2-real-preset-restriction.test.ts ]
+ToolExecutorUnavailableError: The selected tool executor is unavailable. Load an executor in this composition before running the agent.
+ ❯ Proxy.selectExecutor tests/deepseek-harness-next/packages/core/tools/lib/index.js:632:34
+    630|   record ??= this.root;
+    631|   const executor = record?.executor;
+    632|   if (executor === void 0) throw new ToolExecutorUnavailableError();
+       |                                  ^
+    633|   return executor;
+    634|  }
+ ❯ Object.apply tests/deepseek-harness-next/vendor/cordis/lib/index.js:122:36
+ ❯ Proxy.execute tests/deepseek-harness-next/packages/core/tools/lib/index.js:642:15
+ ❯ Object.apply tests/deepseek-harness-next/vendor/cordis/lib/index.js:122:36
+ ❯ packages/runtime/test/issue2-real-preset-restriction.test.ts:291:42
+ ❯ packages/runtime/test/issue2-real-preset-restriction.test.ts:193:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5sf-bl16-grep-realm.test.ts > BL-16 realm wiring — the routed grep/glob resolve the CONFINED subprocess > R0/R1: the preset definition reaches the INHERITED service; the shadow reaches the confined one
+ToolExecutorUnavailableError: The selected tool executor is unavailable. Load an executor in this composition before running the agent.
+ ❯ Proxy.selectExecutor tests/deepseek-harness-next/packages/core/tools/lib/index.js:632:34
+    630|   record ??= this.root;
+    631|   const executor = record?.executor;
+    632|   if (executor === void 0) throw new ToolExecutorUnavailableError();
+       |                                  ^
+    633|   return executor;
+    634|  }
+ ❯ Object.apply tests/deepseek-harness-next/vendor/cordis/lib/index.js:122:36
+ ❯ Proxy.execute tests/deepseek-harness-next/packages/core/tools/lib/index.js:642:15
+ ❯ Object.apply tests/deepseek-harness-next/vendor/cordis/lib/index.js:122:36
+ ❯ call packages/runtime/test/a5sf-bl16-grep-realm.test.ts:348:6
+ ❯ packages/runtime/test/a5sf-bl16-grep-realm.test.ts:399:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  packages/runtime/test/a5sf-bl16-grep-realm.test.ts > BL-16 realm wiring — the routed grep/glob resolve the CONFINED subprocess > R2: an out-of-lane grep is refused BEFORE the provider is called, with one typed fact and no secret
+A5sfNativeAssemblyError: agent-bindings: the configured a5sfNativeToolModules declared expectedTools that the settled attach did not shadow (tool-fs-search expected ["grep","glob"] but the attach forwarded []); a declared managed name that no routed fiber forwards executes on whatever PRESET definition is visible, with zero guard facts — refusing the attach (fail closed)
+ ❯ Module.attachA5sfNativeToolModules packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1312:11
+    1310|   if (unshadowedExpected.length > 0) {
+    1311|     await releaseAttach()
+    1312|     throw new A5sfNativeAssemblyError(
+       |           ^
+    1313|       'A5SF_EXPECTED_TOOLS_UNSHADOWED',
+    1314|       `the configured ${A5SF_NATIVE_TOOL_MODULES_KEY} declared expecte…
+ ❯ packages/runtime/test/a5sf-bl16-grep-realm.test.ts:434:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+
+ FAIL  packages/runtime/test/a5sf-bl16-grep-realm.test.ts > BL-16 realm wiring — the routed grep/glob resolve the CONFINED subprocess > R3: an in-lane search with no match is NOT an error — exit code 1 survives the handle adaptation
+A5sfNativeAssemblyError: agent-bindings: the configured a5sfNativeToolModules declared expectedTools that the settled attach did not shadow (tool-fs-search expected ["grep","glob"] but the attach forwarded []); a declared managed name that no routed fiber forwards executes on whatever PRESET definition is visible, with zero guard facts — refusing the attach (fail closed)
+ ❯ Module.attachA5sfNativeToolModules packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1312:11
+    1310|   if (unshadowedExpected.length > 0) {
+    1311|     await releaseAttach()
+    1312|     throw new A5sfNativeAssemblyError(
+       |           ^
+    1313|       'A5SF_EXPECTED_TOOLS_UNSHADOWED',
+    1314|       `the configured ${A5SF_NATIVE_TOOL_MODULES_KEY} declared expecte…
+ ❯ packages/runtime/test/a5sf-bl16-grep-realm.test.ts:459:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/12]⎯
+
+ FAIL  packages/runtime/test/a5sf-bl16-grep-realm.test.ts > BL-16 realm wiring — the routed grep/glob resolve the CONFINED subprocess > R4: an invalid pattern is a failure (rg exit 2) carrying the REAL rg stderr
+A5sfNativeAssemblyError: agent-bindings: the configured a5sfNativeToolModules declared expectedTools that the settled attach did not shadow (tool-fs-search expected ["grep","glob"] but the attach forwarded []); a declared managed name that no routed fiber forwards executes on whatever PRESET definition is visible, with zero guard facts — refusing the attach (fail closed)
+ ❯ Module.attachA5sfNativeToolModules packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1312:11
+    1310|   if (unshadowedExpected.length > 0) {
+    1311|     await releaseAttach()
+    1312|     throw new A5sfNativeAssemblyError(
+       |           ^
+    1313|       'A5SF_EXPECTED_TOOLS_UNSHADOWED',
+    1314|       `the configured ${A5SF_NATIVE_TOOL_MODULES_KEY} declared expecte…
+ ❯ packages/runtime/test/a5sf-bl16-grep-realm.test.ts:471:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/12]⎯
+
+ FAIL  packages/runtime/test/a5sf-bl16-grep-realm.test.ts > BL-16 realm wiring — the routed grep/glob resolve the CONFINED subprocess > G1/G2: glob rides the SAME confined face — in-lane lists, out-of-lane is refused with a fact
+A5sfNativeAssemblyError: agent-bindings: the configured a5sfNativeToolModules declared expectedTools that the settled attach did not shadow (tool-fs-search expected ["grep","glob"] but the attach forwarded []); a declared managed name that no routed fiber forwards executes on whatever PRESET definition is visible, with zero guard facts — refusing the attach (fail closed)
+ ❯ Module.attachA5sfNativeToolModules packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1312:11
+    1310|   if (unshadowedExpected.length > 0) {
+    1311|     await releaseAttach()
+    1312|     throw new A5sfNativeAssemblyError(
+       |           ^
+    1313|       'A5SF_EXPECTED_TOOLS_UNSHADOWED',
+    1314|       `the configured ${A5SF_NATIVE_TOOL_MODULES_KEY} declared expecte…
+ ❯ packages/runtime/test/a5sf-bl16-grep-realm.test.ts:486:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/12]⎯
+
+ FAIL  packages/runtime/test/a5sf-bl16-grep-realm.test.ts > BL-16 realm wiring — the routed grep/glob resolve the CONFINED subprocess > R6: live row 1 through the REAL grep tool — an in-lane worktree search returns the match (one allow fact, disclosure recorded)
+A5sfNativeAssemblyError: agent-bindings: the configured a5sfNativeToolModules declared expectedTools that the settled attach did not shadow (tool-fs-search expected ["grep","glob"] but the attach forwarded []); a declared managed name that no routed fiber forwards executes on whatever PRESET definition is visible, with zero guard facts — refusing the attach (fail closed)
+ ❯ Module.attachA5sfNativeToolModules packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1312:11
+    1310|   if (unshadowedExpected.length > 0) {
+    1311|     await releaseAttach()
+    1312|     throw new A5sfNativeAssemblyError(
+       |           ^
+    1313|       'A5SF_EXPECTED_TOOLS_UNSHADOWED',
+    1314|       `the configured ${A5SF_NATIVE_TOOL_MODULES_KEY} declared expecte…
+ ❯ packages/runtime/test/a5sf-bl16-grep-realm.test.ts:595:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/12]⎯
+
+ FAIL  packages/runtime/test/a5sf-bl16-grep-realm.test.ts > BL-16 realm wiring — the routed grep/glob resolve the CONFINED subprocess > R6m: MUTATION — stripping the two flags at the provider boundary reproduces the LIVE row-1 tool error verbatim
+A5sfNativeAssemblyError: agent-bindings: the configured a5sfNativeToolModules declared expectedTools that the settled attach did not shadow (tool-fs-search expected ["grep","glob"] but the attach forwarded []); a declared managed name that no routed fiber forwards executes on whatever PRESET definition is visible, with zero guard facts — refusing the attach (fail closed)
+ ❯ Module.attachA5sfNativeToolModules packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1312:11
+    1310|   if (unshadowedExpected.length > 0) {
+    1311|     await releaseAttach()
+    1312|     throw new A5sfNativeAssemblyError(
+       |           ^
+    1313|       'A5SF_EXPECTED_TOOLS_UNSHADOWED',
+    1314|       `the configured ${A5SF_NATIVE_TOOL_MODULES_KEY} declared expecte…
+ ❯ packages/runtime/test/a5sf-bl16-grep-realm.test.ts:631:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/12]⎯
+
+ FAIL  packages/runtime/test/a5sf-bl16-grep-realm.test.ts > BL-16 realm wiring — the routed grep/glob resolve the CONFINED subprocess > R7: a lane that includes the worktree root keeps ordinary .gitignore semantics (no silent global change)
+A5sfNativeAssemblyError: agent-bindings: the configured a5sfNativeToolModules declared expectedTools that the settled attach did not shadow (tool-fs-search expected ["grep","glob"] but the attach forwarded []); a declared managed name that no routed fiber forwards executes on whatever PRESET definition is visible, with zero guard facts — refusing the attach (fail closed)
+ ❯ Module.attachA5sfNativeToolModules packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1312:11
+    1310|   if (unshadowedExpected.length > 0) {
+    1311|     await releaseAttach()
+    1312|     throw new A5sfNativeAssemblyError(
+       |           ^
+    1313|       'A5SF_EXPECTED_TOOLS_UNSHADOWED',
+    1314|       `the configured ${A5SF_NATIVE_TOOL_MODULES_KEY} declared expecte…
+ ❯ packages/runtime/test/a5sf-bl16-grep-realm.test.ts:649:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/12]⎯
+
+ FAIL  packages/runtime/test/a5sf-bl16-grep-realm.test.ts > BL-16 realm wiring — the routed grep/glob resolve the CONFINED subprocess > R7m: MUTATION — forcing the flags onto that lane loses .gitignore semantics (why the change is conditional)
+A5sfNativeAssemblyError: agent-bindings: the configured a5sfNativeToolModules declared expectedTools that the settled attach did not shadow (tool-fs-search expected ["grep","glob"] but the attach forwarded []); a declared managed name that no routed fiber forwards executes on whatever PRESET definition is visible, with zero guard facts — refusing the attach (fail closed)
+ ❯ Module.attachA5sfNativeToolModules packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1312:11
+    1310|   if (unshadowedExpected.length > 0) {
+    1311|     await releaseAttach()
+    1312|     throw new A5sfNativeAssemblyError(
+       |           ^
+    1313|       'A5SF_EXPECTED_TOOLS_UNSHADOWED',
+    1314|       `the configured ${A5SF_NATIVE_TOOL_MODULES_KEY} declared expecte…
+ ❯ packages/runtime/test/a5sf-bl16-grep-realm.test.ts:676:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/12]⎯
+
+ FAIL  packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts > BL-17 — a subprocess consumer cannot be mounted on a realm with no confined process face > U1b: the PRODUCT ROW composition refuses the same binding mount (seam and composition agree)
+AssertionError: expected A5sfNativeAssemblyError: agent-bindings: … { code: '…' } to match object { code: 'SUBPROCESS_UNCONFINED_REALM' }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "code": "SUBPROCESS_UNCONFINED_REALM",
++ A5sfNativeAssemblyError {
++   "code": "A5SF_BINDING_OWNER_UNRESOLVED",
+  }
+
+ ❯ packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts:371:21
+    369|         w.agentKey,
+    370|       ))
+    371|       expect(error).toMatchObject({ code: A5SF_SUBPROCESS_UNCONFINED_R…
+       |                     ^
+    372|       const detail = (error as { detail?: string }).detail ?? ''
+    373|       expect(detail).toContain("binding realm 'dsh.search/grep'")
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/12]⎯
+
+ FAIL  packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts > BL-17 — a subprocess consumer cannot be mounted on a realm with no confined process face > U2: the MEMBER realm with the confined face still mounts the same module and executes on it
+ToolExecutorUnavailableError: The selected tool executor is unavailable. Load an executor in this composition before running the agent.
+ ❯ Proxy.selectExecutor tests/deepseek-harness-next/packages/core/tools/lib/index.js:632:34
+    630|   record ??= this.root;
+    631|   const executor = record?.executor;
+    632|   if (executor === void 0) throw new ToolExecutorUnavailableError();
+       |                                  ^
+    633|   return executor;
+    634|  }
+ ❯ Object.apply tests/deepseek-harness-next/vendor/cordis/lib/index.js:122:36
+ ❯ Proxy.execute tests/deepseek-harness-next/packages/core/tools/lib/index.js:642:15
+ ❯ Object.apply tests/deepseek-harness-next/vendor/cordis/lib/index.js:122:36
+ ❯ packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts:401:35
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/12]⎯
+
+
+ Test Files  3 failed | 15 passed (18)
+      Tests  11 failed | 162 passed (173)
+   Start at  23:39:02
+   Duration  18.35s (transform 15.94s, setup 3.64s, import 18.35s, tests 17.61s, environment 2ms)
+

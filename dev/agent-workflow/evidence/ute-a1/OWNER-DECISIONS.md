@@ -58,6 +58,34 @@ version has been frozen, and the version gate has not been dispatched end-to-end
 
 ---
 
+## ROUND 118 (2026-11-25) — DECIDED: `CANDIDATE-ACCEPTED` is not `PRODUCT-PROVEN`
+
+**Status: DECIDED by the owner, 2026-11-25 (P0 review `20261125-2258`).** This is a vocabulary ruling, not
+new coverage. It exists because two different facts were being written with one word: "this candidate behaves
+the same on both pinned hosts" and "this capability is formally accepted for a version".
+
+**`CANDIDATE-ACCEPTED` — the dual-host deterministic fact.** A row is **CANDIDATE-ACCEPTED** when its
+deterministic acceptance evidence has run on **BOTH** pinned hosts in the same candidate round, with the
+selected generation proven per run (the `HOST-VERSION-GUARD` line: `host=<mode> resolved=<version>
+pin=<version>`), and the two results agree or the difference is a classified, disclosed finding. It is
+**repeatable and greppable**, and it is what a green dual-host `candidate-acceptance-gate` run can establish
+for the deterministic judges it actually covers (C2, C3, C5, C6, C8, C9, C12, C13's fs/subprocess base
+faces). A **model-behaviour** row (C1, C4, C10, C11, C13's ask/PTC faces, C14, C14b, C15–C18, and any row
+whose verdict depends on what a real model does) is **NOT** CANDIDATE-ACCEPTED on mechanism or scripted-model
+evidence: it additionally needs a **real-model** run at the pin, which is a later round and is **not started**.
+
+**`PRODUCT-PROVEN` — unchanged, and still zero.** The definition in force is the §"ROUND 117" one: gate-backed
+at the **frozen candidate SHA** of a **version**, with the version gate **Required** and green there and its
+`version-gate-receipt.json` verified. `CANDIDATE-ACCEPTED` is a **precondition** for that freeze, never a
+substitute: no freeze exists, no version gate has been run as a version gate, and **no row is PRODUCT-PROVEN
+today**. Every document that says "no row is PRODUCT-PROVEN" keeps saying it.
+
+**One-line rule for the other documents.** Use `CANDIDATE-ACCEPTED` for the measured dual-host deterministic
+fact; reserve `PRODUCT-PROVEN` for the frozen-version fact; never write `PRODUCT-PROVEN` for a green candidate
+gate, a green PR check, or this round's vitest measurements.
+
+---
+
 ## ROUND 86 CORRECTION — the current state of each item (the sections below are the round-63 record)
 
 Four of the six are **answered or implemented**; keeping them listed as open decisions was the largest

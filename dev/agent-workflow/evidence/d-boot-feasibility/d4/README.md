@@ -3,8 +3,9 @@
 > ## CORRECTION — 2026-11-25 (SEC-02): this README's headline verdict is stale
 >
 > **Current truth (machine record in THIS directory).** At the evidence head recorded in
-> `probe-digest.json` (`41d5791195d199190c8d808d321aaa8e4dbca030`, pinned host `0.2.2-rc.5`
-> `9c2670d3…`), `results.json` records **`d4:routed-wake` PROVEN on 2/2 agreeing boots**, as the
+> `probe-digest.json` (`5cb5c606203eaf07dd78a2a5c67b442899db2377`, pinned host `0.2.2-rc.5`
+> `9c2670d3…`; transcribed from `probe-digest.json#head`, see the 2026-11-25 P0 correction below),
+> `results.json` records **`d4:routed-wake` PROVEN on 2/2 agreeing boots**, as the
 > conjunction of seven independently measured judges (`case-created`, `router-officer`,
 > `wake-delivered`, `officer-decides`, `ask-executes-after-review`, `duplicate-route`,
 > `sticky-stop` — all PROVEN, `failing=[]`). The only non-PROVEN judge in the same record is
@@ -26,6 +27,18 @@
 > verdict. The corrected machine-checked table is §2; the round-87 blocker analysis is §4
 > `[HISTORICAL — CLOSED]`. The consistency of §2 with `results.json` is enforced by
 > `tests/checks/d4-evidence-consistency.test.mjs`.
+>
+> ## CORRECTION — 2026-11-25 (P0 round, review 20261125-2258): the declared measurement head was stale
+>
+> **Only the declared HEAD moved; no verdict and no table row changed.** The section-2 block below still
+> said `41d5791195d199190c8d808d321aaa8e4dbca030`, the head of the 2026-11-24 re-measurement, while
+> `probe-digest.json` was re-bound on 2026-11-25T00:58:03Z to `5cb5c606203eaf07dd78a2a5c67b442899db2377`
+> when the two boots recorded in `results.json` (`u5u5a5sfdev1-20261125T00-44-37Z-next` and
+> `…T00-51-18Z-next`) were re-run. The Hosted `ci-integration` D4 arm was red because of exactly this
+> mismatch (`tests/checks/d4-evidence-consistency.test.mjs`, SEC-02 arm 1). This note is the dated
+> correction: the head below is now **transcribed from `probe-digest.json`**, not re-typed from the
+> previous round, and the previous value is retained here so the drift is auditable. The verdicts were
+> not re-measured by this correction and were already identical in `results.json` at both heads.
 
 **Round 87 · 2026-11-23 · HEAD `775be06d7ac21ea4f815eb93338ff4556944dcd5` · branch `vnext/a1-cut`
 · pinned host `0.2.0-rc.2` @ `639ed015397290b3745d163aafe02ffee4aa3f84` (tree porcelain empty
@@ -97,11 +110,12 @@ vacuous: both incoherent shapes are refused BY NAME.
 
 ## 2. Per-judge results (two agreeing boots) — CURRENT (corrected 2026-11-25)
 
-**Measurement head: `41d5791195d199190c8d808d321aaa8e4dbca030`** (from `probe-digest.json`; pinned
-host `0.2.2-rc.5` `9c2670d3bce5275e0d1610272958121af87787bb`). `results.json` is the authority; the
-table below is a transcription of it and `tests/checks/d4-evidence-consistency.test.mjs` fails when
-this table and `results.json` disagree. The round-87 table (six rows, `routed-wake` REFUTED) is kept
-as history in §2.4.
+**Measurement head: `5cb5c606203eaf07dd78a2a5c67b442899db2377`** (transcribed from
+`probe-digest.json#head`; pinned host `0.2.2-rc.5` `9c2670d3bce5275e0d1610272958121af87787bb`). The
+previous value `41d5791195d199190c8d808d321aaa8e4dbca030` is superseded by the dated correction banner
+at the top of this file; `results.json` is the authority; the table below is a transcription of it and
+`tests/checks/d4-evidence-consistency.test.mjs` fails when this table and `results.json` disagree. The
+round-87 table (six rows, `routed-wake` REFUTED) is kept as history in §2.4.
 
 | judge | verdict | boots |
 | --- | --- | --- |
