@@ -248,6 +248,33 @@ Hosts, exactly as the drivers printed them (`candidate:` row, first log line of 
 
 ### The table
 
+> **ROUND 116 UPDATE (2026-11-25) — the current numbers for this table; no row moves.** HEAD
+> the round-116 commit set (measurements at `5cb5c6062`; the dated settlement comment names the final
+> documentation head); branch `vnext/a1-cut`; PR #822 **DRAFT**. The single current statement remains `CANDIDATE-REPORT.md`
+> (round 116); this note folds its newest numbers back into the status table so the table cannot be read as
+> stale:
+>
+> - **Required CI (hosted): green at `5cb5c6062` WITH census** — run `45517751283`: `synthesize-merge-tree`,
+>   `pr-gate`, `candidate-protection`, `pr-settlement-gate`, `ci-fast`, `ci-product`, `ci-integration`,
+>   `ci-security`, `ci-census` and `ci-required` all **success**; census executed **2 live captures**, `599f` /
+>   `7424l` each, 11/11 tasks, 0 failed, **identical graded identity sets**; PR restored to **DRAFT**
+>   immediately after. The later draft-state re-evaluation is red only because census is skipped on a draft
+>   (documented mechanism, not a candidate red).
+> - **Candidate acceptance gate (NON-REQUIRED):** fresh dual-host verdict at **`92be91dfb`** —
+>   `pass hosts=legacy,next judges=62 proven=60 known-refuted=2 env-limited=0` (the 2 are the single
+>   enumerated `d4:ask-execute-process`, once per host). It was **not** run at `5cb5c6062`; `git diff --stat
+>   92be91dfb..5cb5c6062 -- 'packages/*/src'` is **empty**, so it is representative of the same product code.
+>   Non-required ⇒ still `DEV-LIVE`; **no row is PRODUCT-PROVEN**.
+> - **rc.5 test population:** the 18 B-ladder arms are **18/18 on both hosts**. The **40 host-importing
+>   vitest suites remain not gradable on rc.5 through the one selector** — now measured as **`ENV-LIMITED`,
+>   layer = Vite, 0 of 40 counted** (`round116/VITEST-HOST-PROBE.md`, `RC5-TEST-MATRIX.md` §10); a Vite-side
+>   alias would work but is a second selection mechanism and is refused.
+> - **Security findings:** SEC-01 **FIXED** (fsync-before-return, arms `SEC-01a…d`), SEC-02 **FIXED with
+>   history retained**, SEC-03/SEC-04 **DECLARED**; no finding open (`SECURITY-REVIEW-20261125.md`).
+> - **Two reds fixed in this stretch:** the devex `maxRecords` capacity bound 600 → 900 with its measured 602
+>   records (E4/E7/E8 untouched), and the dispatch-parity evidence regenerated deliberately (union 77 → 78,
+>   `problems=0`, one declared suite added). Neither weakened an assertion.
+>
 > **Round 112 does NOT move any row of this table.** It closes the rc.5 test-population red (the 18 B
 > ladder arms) with an observation-only world rewrite; see the round-112 section above. The levels,
 > verdicts and open items below are unchanged.

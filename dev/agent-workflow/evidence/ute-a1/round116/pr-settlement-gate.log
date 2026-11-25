@@ -1,7 +1,7 @@
 pr-settlement-gate: marker present = false
-head sha at check time: 26030444b83520a5a00900dc9702501246373639
-settlement: candidates=60 valid=1 settled=true
-  settles: comment 7149638918 covers 26030444b83520a5a00900dc9702501246373639
+head sha at check time: f45bea89e48bdf80597835a8868d9c183a33d8c5
+settlement: candidates=61 valid=1 settled=true
+  settles: comment 7149662168 covers f45bea89e48bdf80597835a8868d9c183a33d8c5
   rejected: comment 7082741220 → SHA_NOT_CURRENT_HEAD
   rejected: comment 7083358970 → SHA_NOT_CURRENT_HEAD
   rejected: comment 7083766586 → SHA_NOT_CURRENT_HEAD
@@ -61,5 +61,6 @@ settlement: candidates=60 valid=1 settled=true
   rejected: comment 7147669899 → SHA_NOT_CURRENT_HEAD
   rejected: comment 7147679498 → SHA_NOT_CURRENT_HEAD
   rejected: comment 7148466488 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7149638918 → SHA_NOT_CURRENT_HEAD
 verdict: PASS — valid dated settlement covering the current head sha (§8.5.2); unresolved-review threads remain the merge agent’s own gate (§8.5.3, not duplicated here).
-DSH-SETTLEMENT-VERDICT PASS marker=none matches=1 candidates=60
+DSH-SETTLEMENT-VERDICT PASS marker=none matches=1 candidates=61
