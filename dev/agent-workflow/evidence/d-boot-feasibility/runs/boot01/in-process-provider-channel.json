@@ -1,6 +1,6 @@
 {
   "schema": "dboot/in-process-provider-channel/1",
-  "at": "2026-11-24T18:11:45.209Z",
+  "at": "2026-11-24T23:46:34.994Z",
   "note": "the provider-channel refusal measured in its own in-process population, not on the live path (where the centre decides first)",
   "layer": "in-process",
   "file": "packages/runtime/test/vnext-admission.test.mjs",
@@ -9,5 +9,5 @@
   "pass": true,
   "guardAssertion": true,
   "ok": true,
-  "outputTail": "✔ ADM-100 — a GOVERNED member mounts the host native module BY DEFAULT, and the admitted read is served by the realm's confined provider (guard consulted) (700.733889ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 891.234194"
+  "outputTail": "✔ ADM-100 — a GOVERNED member mounts the host native module BY DEFAULT, and the admitted read is served by the realm's confined provider (guard consulted) (501.53685ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 686.789782"
 }

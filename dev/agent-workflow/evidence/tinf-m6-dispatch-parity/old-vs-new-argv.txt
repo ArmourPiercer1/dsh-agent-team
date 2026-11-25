@@ -231,8 +231,8 @@ dispatch-parity mode=inspect old=e5bf05670 new=worktree workflows=.github/workfl
     Unit tests (node --test, scripts convention): old=1 new=1 missing=none added=none
       old scripts/pr-settlement-gate.test.mjs
       new scripts/pr-settlement-gate.test.mjs
-  union old=25 new=77 set=sha256:f8488aa9c0abf3282cde5e433c5cb426d343652118e531043ae9016aaf2ad609
-DISPATCH-PARITY mode=inspect DIFFERS steps=19 old_files=25 new_files=77 problems=0
+  union old=25 new=78 set=sha256:b5b992944b59753bf4afb1f4ddff0e872bd1e5bf4c520b7bd25bd49caae92da2
+DISPATCH-PARITY mode=inspect DIFFERS steps=19 old_files=25 new_files=78 problems=0
 
 EXIT CODE
 1

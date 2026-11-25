@@ -1,8 +1,8 @@
 # Member transcript — session-team-child-e9b5ce0327604b7ffa30f6dfedd9c437
-# durable log: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261124T18-13-54Z-next-workspace-team-a--/session-team-child-e9b5ce0327604b7ffa30f6dfedd9c437/session.v4.jsonl.zstd
+# durable log: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261124T23-49-37Z-workspace-team-a--/session-team-child-e9b5ce0327604b7ffa30f6dfedd9c437/session.v4.jsonl.zstd
 
 USER:
-[team-work requestToken=dboot-d2-delegate-a] dboot-d2-a-inlane: read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-a/in-lane-a.txt`, then read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-b/in-lane-b.txt`, one tool call at a time, then report both outcomes briefly.
+[team-work requestToken=dboot-d2-delegate-a] dboot-d2-a-inlane: read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-a/in-lane-a.txt`, then read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-b/in-lane-b.txt`, one tool call at a time, then report both outcomes briefly.
 
 USER:
 <system-reminder>
@@ -25,28 +25,19 @@ Instructions from: AGENTS.md
 … [rendered truncated at 900 chars; the full text is in member-transcript.json]
 
 USER:
-<system-reminder>
-The following information describes your current session:
+Current runtime context. This snapshot supersedes earlier runtime-context snapshots.
 
-Current working directory: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-a".
+Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-a". Some platform temporary areas may also be writable.
 
-Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-a". Some platform temporary areas may also be writable.
-
-Approval prompts are enabled in this session: operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.
-
-Current DeepSeek Harness implementation checkout: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-ne
-… [rendered truncated at 900 chars; the full text is in member-transcript.json]
+Approval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.
 
 USER:
 <system-reminder>
 A skill is a reusable set of task-specific instructions. The following skills are available in this session:
 
 <available_skills>
-- `office`: Create or edit Office files; inspect Office files and PDFs. Load before rendering, conversion, or recalculation to enable office_render, office_convert, and office_recalculate next step.
-- `office-docx`: Create, read, edit, and validate Word documents (.docx).
-- `office-pptx`: Create, read, edit, and validate PowerPoint presentations (.pptx).
-- `office-xlsx`: Read, create, edit, and validate Excel workbooks, data, and formulas (.xlsx).
-- `team-blueprint-authoring`: Author a DSH Agent Team blueprint (a saved-source YAML document) and run pre-flight checks before creating a team — identity frontmatter, the frozen closed field sets, exactly one complete LeaderTemplate, member templates, capabilities (teamTools/builtinToolDeny/skills/m
+- `team-blueprint-authoring`: Author a DSH Agent Team blueprint (a saved-source YAML document) and run pre-flight checks before creating a team — identity frontmatter, the frozen closed field sets, exactly one complete LeaderTemplate, member templates, capabilities (teamTools/builtinToolDeny/skills/mcp/permissions with allow-ask-deny lanes, exact/subtree/any resources, shell-class rules), envelopes, policyStates, quotas, the draft-file convention, and live checks over the /team-remote catalog.list / catalog.get endpoints....
+- `team-leader-operations`: Operate a DSH Agent Team as the Leader using the closed set of fifteen team tools — list members/templates, inspect config, create member, delegate, follow up, collect, send message, report prog
 … [rendered truncated at 900 chars; the full text is in member-transcript.json]
 
 USER:
@@ -56,20 +47,20 @@ USER:
 Repeated tool call detected:
 - tool: read
 - consecutive_calls: 5
-- arguments: {"file_path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-a/in-lane-a.txt"}
+- arguments: {"file_path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-a/in-lane-a.txt"}
 The repeated calls are not making progress. Do not call this tool with these exact arguments again. Inspect the latest result and choose a different action, different arguments, or finish the task if enough evidence has been gathered.
 
 USER:
-[team-work requestToken=dboot-d2-follow-a-stop] dboot-d2-a-stopprobe: read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-a-ask/ask-me.txt`, one tool call, then report briefly.
+[team-work requestToken=dboot-d2-follow-a-stop] dboot-d2-a-stopprobe: read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-a-ask/ask-me.txt`, one tool call, then report briefly.
 
 USER:
 [team-relay] from=human:session-dboot-d2-root to=inst-1235q1w1rd1u (label: dboot-d2-worker-a)
-dboot-d2-remote-delivery-stop: read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-a-ask/ask-me.txt`, one tool call, then report briefly.
+dboot-d2-remote-delivery-stop: read the file `/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-a-ask/ask-me.txt`, one tool call, then report briefly.
 
 TOOL CALL [read] call-d2-a-own
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-a/in-lane-a.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-a/in-lane-a.txt
 TOOL RESULT isError=false
-  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-a/in-lane-a.txt</path>
+  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-a/in-lane-a.txt</path>
   <type>file</type>
   <content>
   1: DBOOT_D2_A_UNIQUE_BYTES
@@ -78,9 +69,9 @@ TOOL RESULT isError=false
   </content>
 
 TOOL CALL [read] call-d2-a-busy-1
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-a/in-lane-a.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-a/in-lane-a.txt
 TOOL RESULT isError=false
-  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-a/in-lane-a.txt</path>
+  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-a/in-lane-a.txt</path>
   <type>file</type>
   <content>
   1: DBOOT_D2_A_UNIQUE_BYTES
@@ -89,9 +80,9 @@ TOOL RESULT isError=false
   </content>
 
 TOOL CALL [read] call-d2-a-busy-2
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-a/in-lane-a.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-a/in-lane-a.txt
 TOOL RESULT isError=false
-  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-a/in-lane-a.txt</path>
+  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-a/in-lane-a.txt</path>
   <type>file</type>
   <content>
   1: DBOOT_D2_A_UNIQUE_BYTES
@@ -100,9 +91,9 @@ TOOL RESULT isError=false
   </content>
 
 TOOL CALL [read] call-d2-a-busy-3
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-a/in-lane-a.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-a/in-lane-a.txt
 TOOL RESULT isError=false
-  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-a/in-lane-a.txt</path>
+  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-a/in-lane-a.txt</path>
   <type>file</type>
   <content>
   1: DBOOT_D2_A_UNIQUE_BYTES
@@ -111,9 +102,9 @@ TOOL RESULT isError=false
   </content>
 
 TOOL CALL [read] call-d2-a-busy-4
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-a/in-lane-a.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-a/in-lane-a.txt
 TOOL RESULT isError=false
-  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-a/in-lane-a.txt</path>
+  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-a/in-lane-a.txt</path>
   <type>file</type>
   <content>
   1: DBOOT_D2_A_UNIQUE_BYTES
@@ -122,9 +113,9 @@ TOOL RESULT isError=false
   </content>
 
 TOOL CALL [read] call-d2-a-busy-5
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-a/in-lane-a.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-a/in-lane-a.txt
 TOOL RESULT isError=false
-  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-a/in-lane-a.txt</path>
+  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-a/in-lane-a.txt</path>
   <type>file</type>
   <content>
   1: DBOOT_D2_A_UNIQUE_BYTES
@@ -133,9 +124,9 @@ TOOL RESULT isError=false
   </content>
 
 TOOL CALL [read] call-d2-a-busy-6
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-a/in-lane-a.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-a/in-lane-a.txt
 TOOL RESULT isError=false
-  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-a/in-lane-a.txt</path>
+  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-a/in-lane-a.txt</path>
   <type>file</type>
   <content>
   1: DBOOT_D2_A_UNIQUE_BYTES
@@ -144,19 +135,19 @@ TOOL RESULT isError=false
   </content>
 
 TOOL CALL [read] call-d2-a-cross
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-b/in-lane-b.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-b/in-lane-b.txt
 TOOL RESULT isError=true
-  Error: LANE_DENY: fs.read "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-b/in-lane-b.txt" is outside the binding's fs.read lane (policy generation a5sf1:9d7af5ca6ccf77bf13895377a1cf7759)
+  Error: LANE_DENY: fs.read "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-b/in-lane-b.txt" is outside the binding's fs.read lane (policy generation a5sf1:9efafdee1f7c35e03c39747927cd0c14)
 
 TOOL CALL [read] call-d2-a-ask
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-a-ask/ask-me.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-a-ask/ask-me.txt
 TOOL RESULT isError=true
   Error: ADMISSION_STOPPED: the execution "call-d2-a-ask" was aborted before its body; a Stop is not a lane denial, an expiry or a fault, and nothing that arrives after it may authorize this call
 
 TOOL CALL [read] call-d2-remote-delivery-stop
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-a-ask/ask-me.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-a-ask/ask-me.txt
 TOOL RESULT isError=true
   Error: ADMISSION_STOPPED: the execution "call-d2-remote-delivery-stop" was aborted before its body; a Stop is not a lane denial, an expiry or a fault, and nothing that arrives after it may authorize this call
 
 ASSISTANT (final):
-DBOOT_D2_MEMBER_A1_DONE Error: LANE_DENY: fs.read "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-13-54Z-next/workspace/team-b/in-lane-b.txt" is outside the binding's fs.read lane (policy generation a5sf1:9d7af5ca6ccf77bf13895
+DBOOT_D2_MEMBER_A1_DONE Error: LANE_DENY: fs.read "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-b/in-lane-b.txt" is outside the binding's fs.read lane (policy generation a5sf1:9efafdee1f7c35e03c39747927

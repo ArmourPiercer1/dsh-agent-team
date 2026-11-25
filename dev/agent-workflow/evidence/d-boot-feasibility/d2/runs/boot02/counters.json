@@ -16,16 +16,16 @@
     "archivedCode": "TEAM_RUNTIME_WORK_STATE_REJECTED",
     "stoppedRefusalCode": "ADMISSION_STOPPED"
   },
-  "mockRequests": 63,
+  "mockRequests": 62,
   "memberModelRequests": 30,
   "aWindow": {
-    "first": "2026-11-24T18:17:40.588Z",
-    "last": "2026-11-24T18:17:41.248Z",
+    "first": "2026-11-24T23:55:13.263Z",
+    "last": "2026-11-24T23:55:13.940Z",
     "count": 10
   },
   "bWindow": {
-    "first": "2026-11-24T18:17:40.757Z",
-    "last": "2026-11-24T18:17:40.967Z",
+    "first": "2026-11-24T23:55:13.520Z",
+    "last": "2026-11-24T23:55:13.645Z",
     "count": 3
   }
 }

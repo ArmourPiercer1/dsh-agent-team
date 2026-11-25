@@ -1,5 +1,5 @@
 # Member transcript — session-team-child-56a707050f4095d1acddaa687cf3ed41
-# durable log: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-11-47Z-next/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261124T18-11-47Z-next-workspace--/session-team-child-56a707050f4095d1acddaa687cf3ed41/session.v4.jsonl.zstd
+# durable log: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-46-35Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261124T23-46-35Z-workspace--/session-team-child-56a707050f4095d1acddaa687cf3ed41/session.v4.jsonl.zstd
 
 USER:
 [team-work requestToken=dboot-read-turn-delegate] dboot-read-turn: call the native read tool twice, exactly once per probe, one tool call at a time, then report. Probe A: the in-lane fixture. Probe B: the out-of-lane fixture.
@@ -25,36 +25,25 @@ Instructions from: AGENTS.md
 … [rendered truncated at 900 chars; the full text is in member-transcript.json]
 
 USER:
-<system-reminder>
-The following information describes your current session:
+Current runtime context. This snapshot supersedes earlier runtime-context snapshots.
 
-Current working directory: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-11-47Z-next/workspace".
+Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-46-35Z/workspace". Some platform temporary areas may also be writable.
 
-Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-11-47Z-next/workspace". Some platform temporary areas may also be writable.
-
-Approval prompts are enabled in this session: operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.
-
-Current DeepSeek Harness implementation checkout: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/".
-
-Current
-… [rendered truncated at 900 chars; the full text is in member-transcript.json]
+Approval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.
 
 USER:
 <system-reminder>
 A skill is a reusable set of task-specific instructions. The following skills are available in this session:
 
 <available_skills>
-- `office`: Create or edit Office files; inspect Office files and PDFs. Load before rendering, conversion, or recalculation to enable office_render, office_convert, and office_recalculate next step.
-- `office-docx`: Create, read, edit, and validate Word documents (.docx).
-- `office-pptx`: Create, read, edit, and validate PowerPoint presentations (.pptx).
-- `office-xlsx`: Read, create, edit, and validate Excel workbooks, data, and formulas (.xlsx).
-- `team-blueprint-authoring`: Author a DSH Agent Team blueprint (a saved-source YAML document) and run pre-flight checks before creating a team — identity frontmatter, the frozen closed field sets, exactly one complete LeaderTemplate, member templates, capabilities (teamTools/builtinToolDeny/skills/m
+- `team-blueprint-authoring`: Author a DSH Agent Team blueprint (a saved-source YAML document) and run pre-flight checks before creating a team — identity frontmatter, the frozen closed field sets, exactly one complete LeaderTemplate, member templates, capabilities (teamTools/builtinToolDeny/skills/mcp/permissions with allow-ask-deny lanes, exact/subtree/any resources, shell-class rules), envelopes, policyStates, quotas, the draft-file convention, and live checks over the /team-remote catalog.list / catalog.get endpoints....
+- `team-leader-operations`: Operate a DSH Agent Team as the Leader using the closed set of fifteen team tools — list members/templates, inspect config, create member, delegate, follow up, collect, send message, report prog
 … [rendered truncated at 900 chars; the full text is in member-transcript.json]
 
 TOOL CALL [read] call-dboot-read-admit
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-11-47Z-next/workspace/in-lane.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-46-35Z/workspace/in-lane.txt
 TOOL RESULT isError=false
-  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-11-47Z-next/workspace/in-lane.txt</path>
+  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-46-35Z/workspace/in-lane.txt</path>
   <type>file</type>
   <content>
   1: DBOOT_IN_LANE_BYTES
@@ -63,9 +52,9 @@ TOOL RESULT isError=false
   </content>
 
 TOOL CALL [read] call-dboot-read-deny
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-11-47Z-next/out-of-lane/secret-out-of-lane.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-46-35Z/out-of-lane/secret-out-of-lane.txt
 TOOL RESULT isError=true
-  Error: LANE_DENY: fs.read "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-11-47Z-next/out-of-lane/secret-out-of-lane.txt" is outside the binding's fs.read lane (policy generation a5sf1:56cdb700f25658f0bc64335ce8254eed)
+  Error: LANE_DENY: fs.read "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-46-35Z/out-of-lane/secret-out-of-lane.txt" is outside the binding's fs.read lane (policy generation a5sf1:32416b18805f7f2e5340c01c227b735a)
 
 ASSISTANT (final):
-DBOOT_MEMBER_DONE Error: LANE_DENY: fs.read "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-11-47Z-next/out-of-lane/secret-out-of-lane.txt" is outside the bindi
+DBOOT_MEMBER_DONE Error: LANE_DENY: fs.read "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-46-35Z/out-of-lane/secret-out-of-lane.txt" is outside the binding's

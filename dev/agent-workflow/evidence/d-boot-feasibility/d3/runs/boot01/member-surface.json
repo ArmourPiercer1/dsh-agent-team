@@ -4,6 +4,7 @@
     "bash",
     "create_goal",
     "edit",
+    "exit_plan_mode",
     "get_goal",
     "glob",
     "grep",
@@ -33,7 +34,6 @@
     "u5_canary",
     "u6fs_probe",
     "update_goal",
-    "working_directory",
     "write"
   ],
   "tokenRequests": 4
