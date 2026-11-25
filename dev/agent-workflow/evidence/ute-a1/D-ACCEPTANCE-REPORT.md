@@ -95,6 +95,70 @@ this repository's own latest verdict (head `92be91dfb`, `62/60/2/0`, exit 0) wit
 missing-receipt refusals, the verifier's 22 negative-control tests (leg `version-gate-verify-unit`), and the
 six manifest-classification controls.
 
+## ROUND 122 (2026-11-26) — the `executeTool` DISPATCH-SHAPE residue closes: the ONE product dispatch entry is capability-detected on BOTH hosts, and refuses a caller's wrong shape by name (no capability row moves)
+
+**What was still open after round 121, and why it mattered.** Round 121 fixed the realm/dispatch seam the
+three rc.5-red suites drive, and disclosed in the same breath (§J.1) that the product's OWN one-call entry
+— `createAgentBindings().executeTool` in `packages/runtime/src/plugin/vnext/agent-bindings.mjs` — still
+handed `tools.execute` the rc.2 SINGLE-CALL object `{callId, name, arguments, agent, signal}`. On rc.5 that
+object reaches `ToolsService.execute`, which does `selectExecutor(input.agent).execute(input)` and schedules
+`input.calls`; `calls` is `undefined` there, so the call cannot work on that host. The entry is not test-only
+glue: the repository's harness row (`packages/tools/harness/plugin.mjs`, `POST /__p6t6/tool`) is its only
+in-repo production-ish caller and that row is mounted in the next-host homes' composition.
+
+**Call graph (measured, `round122/README.md` §A).** `executeTool` is returned on the live object
+(`agent-bindings.mjs:4286`) and called by: the harness HTTP route (`packages/tools/harness/plugin.mjs:377`)
+and, in the same process, the twelve kits that POST that route; `packages/runtime/test/tcm-d4-root-context.test.ts:241`
+(host-free collected suite); and three tracked archived-evidence arms under
+`dev/agent-workflow/evidence/a5sf-*` (not collected by any leg). **Reachable on rc.5 ⇒ route it, do not
+refuse it.**
+
+**The fix.** `executeTool` now calls `dispatchGovernedToolCall` (`tool-executor-mount.mjs`, round 121's
+seam) instead of open-coding a shape. The seam resolves the LIVE tools service by PUBLIC CAPABILITY
+(`setExecutor` ⇒ rc.5 executor mount, batch `{calls:[{type:'tool-call', id, name, arguments: JSON string}],
+signal, agent}` + `results[0].result` unwrap; `modeFor`/`defaultMode` ⇒ rc.2 registry, single call). No
+version string is read, no `try`/`catch` fallback exists, no removed API is emulated. Both hosts' result
+type is `{isError, value, error, content}`, so the binder returns the host's settlement verbatim (the
+`/__p6t6/tool` route's `isError` mapping is unchanged and still correct on both).
+
+**New: a wrong shape is REFUSED, not coerced.** `assertSingleCallDispatchShape` runs FIRST — before
+`ensureLiveAgent` — and raises `A5SF_TOOL_DISPATCH_SHAPE_UNSUPPORTED` naming the expected
+`{callId, name, arguments, agent, signal}` when the caller passes a batch (`calls` present) or no call name.
+The harness route maps every `A5SF_*` code explicitly (400 for the shape refusal, 500 otherwise) instead of
+falling into the generic 500, so an operator can tell "this composition cannot dispatch" from "the tool
+threw".
+
+**Controls (all new or extended, all failing on the defect — mutation-checked twice).**
+`packages/runtime/test/vnext-tool-dispatch-shape.test.ts` (host-free, 5 arms): A — a registry-dispatch
+service receives the single-call object, never `calls`, and its settlement is returned unchanged; B — an
+executor-dispatch service receives the host BATCH with `arguments` as a JSON string and the binder unwraps
+`results[0].result`; C — a BATCH passed to the one-call entry is refused `A5SF_TOOL_DISPATCH_SHAPE_UNSUPPORTED`
+on a session with NO live agent (so the code proves the ORDER) with zero dispatches; D — the rc.5
+capability with no selected executor refuses `A5SF_TOOL_EXECUTOR_UNAVAILABLE`, zero dispatches; E — a
+service declaring neither contract refuses `A5SF_TOOL_EXECUTOR_CAPABILITY_MISSING`, zero dispatches.
+Mutation 1 (restore the round-121 dispatch call): B, D and E go red. Mutation 2 (remove the shape gate): C
+goes red. On the REAL hosts, `a5sf-bl16-grep-realm.test.ts` grew **C5**: the same batch handed to the same
+seam is refused by name on rc.2 AND rc.5, with zero spawns and zero admission facts (14/14 on each host).
+
+**Measured population, 44 files, both hosts:** rc.2 **42/44 files, 533/536**; rc.5 **42/44, 533/536**
+(round 121: 42/44, 532/535; the +1 test is BL-16 C5). No suite skipped, no timeout widened, no assertion
+weakened, no retry added. The p4t6 scannable-file ledger moved by exactly one path and is booked with its
+measurement (`packages/testkit/test/p4t6-bookings/round122tooldispatchshape.json`, 1323 → 1324).
+
+**The three client reds are pre-existing on `master`, attributed to exact commits, and disclosed — not
+skipped.** A0 `a19d1df01` and HEAD both measure `Test Files 2 failed (2)` / `Tests 3 failed | 46 passed
+(49)` on the same three suites, and HEAD measures the same on rc.5 with the guard line proving the loaded
+tree. In-place bisect: `dcf661468` (W1 fix-A F10) reds the governance `override reset` arm
+(`TeamGovernance.tsx` reads `response.value.data['removed']` from a `null` fixture before `pullProjection`,
+0 calls); `4f07e2da9` (pre-alpha3 PR-E) reds both creation-panel arms (`intentEnvironmentFacts` now yields
+`observedKind === 'standard'`, so `team`/`solo` are `available:false`). Both commits are ancestors of A0; the
+specs and their product files are unchanged since A0. They are added to the known-red disclosure
+(`CANDIDATE-REPORT.md` §8 item 4) and left collected and red.
+
+**Level:** development evidence on two pinned hosts — **no row moves, nothing becomes PRODUCT-PROVEN**
+(the candidate gate is a VERSION gate and no version is frozen). Trail: `round122/README.md`,
+`round122/POPULATION.md`, `RC5-TEST-MATRIX.md` §11.7.
+
 **No capability level moves.** The table below keeps the levels it had; only the definition of the top level
 changed.
 

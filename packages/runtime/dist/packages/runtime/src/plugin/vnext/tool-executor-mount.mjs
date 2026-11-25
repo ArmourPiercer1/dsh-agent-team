@@ -57,6 +57,19 @@
  * is denied by the centre while the executor is mounted (pinned by the
  * round-121 controls in `a5sf-bl16-grep-realm.test.ts`).
  *
+ * WHAT THIS SEAM REFUSES, IN FOUR NAMED CASES (all typed, all greppable):
+ *
+ *   A5SF_TOOL_DISPATCH_SHAPE_UNSUPPORTED   the CALLER handed a batch
+ *                                          (`{calls:[…]}`) or no call name to a
+ *                                          one-call entry. Never coerced into
+ *                                          whichever shape the host accepts.
+ *   A5SF_TOOL_EXECUTOR_CAPABILITY_MISSING  neither dispatch contract is present.
+ *   A5SF_TOOL_EXECUTOR_UNAVAILABLE         rc.5 shape, but the scope selected
+ *                                          no executor (the mount was skipped
+ *                                          or disposed).
+ *   A5SF_TOOL_EXECUTOR_PLUGIN_INVALID      the package loaded is not the host's
+ *                                          plugin `{name, inject, apply}`.
+ *
  * @module @dsh-agent-team/runtime/src/plugin/vnext/tool-executor-mount
  */
 
@@ -71,6 +84,15 @@ export const TOOL_EXECUTOR_UNAVAILABLE = 'A5SF_TOOL_EXECUTOR_UNAVAILABLE'
 export const TOOL_EXECUTOR_PLUGIN_INVALID = 'A5SF_TOOL_EXECUTOR_PLUGIN_INVALID'
 /** The typed code for "the host accepted the batch but returned no result for the call". */
 export const TOOL_EXECUTOR_RESULT_MISSING = 'A5SF_TOOL_EXECUTOR_RESULT_MISSING'
+/**
+ * The typed code for "this call object is not the SINGLE-CALL shape this seam
+ * dispatches" — a caller handed the rc.5 BATCH here (or no call name at all).
+ * Refused by name instead of being coerced into whichever shape the host in
+ * front happens to accept: a batch routed as a single call on rc.2 would run
+ * `name: undefined`, and a single call routed as a batch on rc.5 would schedule
+ * nothing. Neither failure may be silent.
+ */
+export const TOOL_DISPATCH_SHAPE_UNSUPPORTED = 'A5SF_TOOL_DISPATCH_SHAPE_UNSUPPORTED'
 
 /**
  * A refusal from this seam. It carries a machine-greppable `code`, so a
@@ -252,6 +274,55 @@ export function governedToolExecutorOf(tools, agent) {
 }
 
 /**
+ * Refuse a `call` that is not the SINGLE-CALL shape this seam dispatches, with
+ * a typed code naming what was expected.
+ *
+ * WHY THIS EXISTS (round 122). `dispatchGovernedToolCall` takes ONE call and
+ * chooses the host's shape. Fed the rc.5 BATCH (`{ calls: [...] }`), it would do
+ * two different wrong things depending on the host in front of it: on rc.2 the
+ * registry would look up a tool named `undefined` (a generic "tool not found"
+ * that reads like a user error), and on rc.5 it would wrap the batch in a batch
+ * and schedule one call named `undefined`. Both are silent coercions of a
+ * caller's mistake into a host-shaped request, so the seam refuses the input
+ * instead. The refusal reaches the caller BEFORE any dispatch — and, in
+ * `executeTool`, before any live agent is materialized.
+ *
+ * `arguments` is deliberately NOT validated here: an absent `arguments` is the
+ * documented "no arguments" form (`{}`), and rc.2 accepts `arguments: undefined`
+ * while rc.5 JSON-stringifies it.
+ *
+ * @param {unknown} call - the candidate single-call object.
+ * @returns {void} throws {@link A5sfToolExecutorSeamError} with
+ *   {@link TOOL_DISPATCH_SHAPE_UNSUPPORTED} when the shape is wrong.
+ */
+export function assertSingleCallDispatchShape(call) {
+  if (call === undefined || call === null || typeof call !== 'object') {
+    throw new A5sfToolExecutorSeamError(
+      TOOL_DISPATCH_SHAPE_UNSUPPORTED,
+      'expected the SINGLE-CALL shape { callId, name, arguments, agent, signal } but received no call object;'
+      + ' a batch { calls: [...] } must be handed to the host’s own `tools.execute`, not to this seam',
+    )
+  }
+  const batch = /** @type {{calls?: unknown}} */ (call).calls
+  if (batch !== undefined) {
+    throw new A5sfToolExecutorSeamError(
+      TOOL_DISPATCH_SHAPE_UNSUPPORTED,
+      'expected the SINGLE-CALL shape { callId, name, arguments, agent, signal } but received a BATCH'
+      + ' (`calls` is present); the seam dispatches ONE call in the host’s shape and must not coerce a batch'
+      + ' into it — call the host’s own `tools.execute({calls, signal, agent})` for a batch',
+    )
+  }
+  const name = /** @type {{name?: unknown}} */ (call).name
+  if (typeof name !== 'string' || name.length === 0) {
+    throw new A5sfToolExecutorSeamError(
+      TOOL_DISPATCH_SHAPE_UNSUPPORTED,
+      'expected the SINGLE-CALL shape { callId, name, arguments, agent, signal } with a non-empty string `name`;'
+      + ` received name=${JSON.stringify(name)}`,
+    )
+  }
+}
+
+/**
  * Dispatch ONE governed tool call in the shape the selected host accepts.
  *
  * This is the call-level entry the round-121 controls drive: it resolves the
@@ -262,6 +333,10 @@ export function governedToolExecutorOf(tools, agent) {
  * `tools/pre-execute` listener and `tools.guard()` denials are consulted:
  * admission is NOT bypassed by dispatching this way.
  *
+ * The input is validated as the SINGLE-CALL shape first
+ * (`assertSingleCallDispatchShape`): a batch is refused by name rather than
+ * coerced into one host's shape or the other's.
+ *
  * The two input shapes are the hosts' own public contracts (rc.5 batch
  * `{ calls: [{ type: 'tool-call', id, name, arguments }] }`, rc.2 single call);
  * neither is an emulation of a removed API — the shape is chosen by
@@ -269,9 +344,10 @@ export function governedToolExecutorOf(tools, agent) {
  *
  * @param {object} tools - the live tools service.
  * @param {object} call - `{ callId, name, arguments, agent, signal }`.
- * @returns {Promise<object>} the settled tool result (`{ isError, content, … }`).
+ * @returns {Promise<object>} the settled tool result (`{ isError, value, error, content }`).
  */
 export async function dispatchGovernedToolCall(tools, call) {
+  assertSingleCallDispatchShape(call)
   const accepted = governedToolExecutorOf(tools, call.agent)
   if (accepted.shape === 'registry-dispatch') {
     return await tools.execute({

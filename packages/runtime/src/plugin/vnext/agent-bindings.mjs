@@ -382,6 +382,16 @@ import {
 } from '../live/a5sf-realm-row.mjs'
 import { freshCreateHintAdmits } from './bind-path.mjs'
 import { memberAdmissionGate } from './centre-config.js'
+// ROUND 122: the ONE host-shape dispatch seam. `executeTool` used to hand the host a
+// SINGLE-CALL argument object — rc.2's contract, which rc.5's delegating `tools.execute`
+// cannot read (it schedules `input.calls`). The seam resolves the shape from the live
+// service's PUBLIC capability and refuses by name what it cannot dispatch; this binder
+// therefore never chooses a shape itself and never falls back to the other host's.
+import {
+  A5sfToolExecutorSeamError,
+  assertSingleCallDispatchShape,
+  dispatchGovernedToolCall,
+} from './tool-executor-mount.mjs'
 // C (2026-11-21): the ONE centre composition point + its durable sinks.
 import { installMemberExecution } from './member-execution.mjs'
 // SHAPE A (round 61): a governed member's native modules are mounted into its realm BY DEFAULT,
@@ -4047,15 +4057,36 @@ export function createAgentBindings(deps) {
 
   /**
    * One registered-tool execution on the agent bound to `sessionId`
-   * (ensure-live -> request boundary -> synthetic callId -> the public
-   * tools.execute with the row-owned budget). Faults surface as an Error
-   * with a `code`: NO_LIVE_AGENT (harness 422), CONSUMPTION_BOUNDARY
-   * (harness 500), TOOLS_EXECUTE (harness 500).
+   * (ensure-live -> request boundary -> synthetic callId -> the governed
+   * dispatch seam -> the host's OWN dispatch shape). Faults surface as an
+   * Error with a `code`: NO_LIVE_AGENT (harness 422), CONSUMPTION_BOUNDARY
+   * (harness 500), TOOLS_EXECUTE (harness 500), and the seam's own typed
+   * refusals (`A5SF_TOOL_DISPATCH_SHAPE_UNSUPPORTED`,
+   * `A5SF_TOOL_EXECUTOR_UNAVAILABLE`, `A5SF_TOOL_EXECUTOR_CAPABILITY_MISSING`,
+   * `A5SF_TOOL_EXECUTOR_PLUGIN_INVALID`, `A5SF_TOOL_EXECUTOR_RESULT_MISSING`).
+   *
+   * THE SHAPE IS NOT THIS FUNCTION'S DECISION (round 122). Until round 122 this
+   * method handed `tools.execute` the rc.2 SINGLE-CALL object unconditionally.
+   * rc.5 deleted registry dispatch: its `tools.execute` delegates to a per-scope
+   * EXECUTOR and schedules `input.calls`, so the legacy object reached the host
+   * with `calls === undefined` — a TypeError surfaced as a generic
+   * `TOOLS_EXECUTE` on a route that could therefore never work on rc.5 (the
+   * round-121 disclosure). `dispatchGovernedToolCall` resolves the shape from
+   * the LIVE service's public capability (`setExecutor` / `modeFor`/`defaultMode`)
+   * and dispatches in that host's own shape. There is no version check here and
+   * no try-the-other-shape fallback: an unknown service is REFUSED by name.
+   *
+   * A caller that passes the BATCH shape (`{calls: [...]}`) is refused typed,
+   * before any live-agent side effect, rather than being coerced into whichever
+   * shape the host happens to accept — this surface is single-call by contract.
    * @param {string} sessionId
    * @param {{name: string, args?: object, callId?: string}} request
-   * @returns {Promise<object>} the tools.execute result ({isError, value, error}).
+   * @returns {Promise<object>} the host's settled tool result ({isError, value, error}).
    */
   async function executeTool(sessionId, request) {
+    // THE SHAPE GATE FIRST: it must refuse BEFORE `ensureLiveAgent` so a
+    // wrong-shape caller cannot even materialize a live agent as a side effect.
+    assertSingleCallDispatchShape(request)
     const { name, args, callId } = request
     let handle
     try {
@@ -4080,13 +4111,13 @@ export function createAgentBindings(deps) {
     // see it) must not execute a tool once the quiesce has closed the member —
     // including a dispatch whose own resume completed inside the drop→commit
     // window. `prepareAgentForRequest` above is an await point, so this is
-    // checked as late as it can be without splitting tools.execute.
+    // checked as late as it can be without splitting the dispatch.
     const lateAdmissionRefusal = admissionCloseRefusal(String(sessionId))
     if (lateAdmissionRefusal !== null) {
       throw toolRouteError('NO_LIVE_AGENT', lateAdmissionRefusal.message)
     }
     try {
-      return await handle.agent.ctx.tools.execute({
+      return await dispatchGovernedToolCall(handle.agent.ctx.tools, {
         callId: resolvedCallId,
         name,
         arguments: args ?? {},
@@ -4094,6 +4125,11 @@ export function createAgentBindings(deps) {
         signal: AbortSignal.timeout(TOOL_EXEC_TIMEOUT_MS),
       })
     } catch (error) {
+      // The seam's typed refusals are the PRODUCT vocabulary (a reviewer can
+      // grep them in a route body); they must not be re-worded into the generic
+      // dispatch fault, or "no executor is mounted" would read as "the tool
+      // threw".
+      if (error instanceof A5sfToolExecutorSeamError) throw toolRouteError(error.code, error.message)
       throw toolRouteError('TOOLS_EXECUTE', `tools.execute failed: ${error instanceof Error ? `${error.message}${error.stack ? `\n${error.stack}` : ''}` : String(error)}`)
     }
   }

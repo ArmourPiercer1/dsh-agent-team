@@ -638,6 +638,15 @@ function makeAgentCtx(globalSections, mcpFailures, mcpToolNames, realmMount = fa
         toolExecutions.push(call)
         return Promise.resolve({ ok: true, callId: call.callId })
       },
+      // ROUND 122: the double DECLARES the rc.2 public dispatch contract it models.
+      // `execute(call)` above IS registry dispatch — one call in, one settlement
+      // out — and rc.2 proves that publicly through `mode`/`modeFor`/`defaultMode`
+      // (`ToolRuntime`, rc.2 `packages/core/tools/src/index.ts`). The host-shape
+      // seam (`plugin/vnext/tool-executor-mount.mjs`) may not GUESS a shape: a
+      // service that declares neither contract is refused by name, so a double
+      // that dispatches must say so. This is a capability declaration only — the
+      // double's recorded call shape and return value are unchanged.
+      defaultMode: 'native',
       // alpha.1: the public Agent-scoped restriction seam (tools.restrict).
       // Records the deny list on THIS ctx only (sibling-inert); the scoped
       // effective deny is the union of every call (the seam accumulates).

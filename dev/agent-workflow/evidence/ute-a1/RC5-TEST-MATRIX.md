@@ -585,3 +585,44 @@ split module graph — same host generation (the guard proves it), but a graph t
 frozen), the 3 pre-existing client failures stay red on both hosts, and `agent-bindings.mjs#executeTool`
 still emits the rc.2 single-call shape (`:4058`) — named as open in `round121/README.md` §J because it is
 not on any measured red path this round.
+
+## 11.7 ROUND 122 (2026-11-26) — the `executeTool` dispatch-shape residue closes; the population is unchanged in size and membership
+
+**SUPERSEDES §11.6's last paragraph only.** The 44 files, the rule and the commands are unchanged. Measured
+at this round's HEAD (`round122/POPULATION.md`, `round122/vitest-{runtime,client}-{legacy,next}.log`); both
+logs carry the `HOST-VERSION-GUARD` line naming the loaded tree (`0.2.0-rc.2` /
+`tests/deepseek-harness-test-use` versus `0.2.2-rc.5` / `tests/deepseek-harness-next`).
+
+| population | rc.2 (round 122) | rc.5 (round 122) | rc.2/rc.5 (round 121) |
+| --- | --- | --- | --- |
+| 26 client suites | 24 files / 343 of 346 | 24 files / 343 of 346 | 24 / 343 of 346 |
+| 18 runtime+testkit suites | **18 files / 190 of 190** | **18 files / 190 of 190** | 18 / 189 of 189 |
+| **44 total** | **42 files / 533 of 536** | **42 files / 533 of 536** | 42 / 532 of 535 |
+
+The single new test is `a5sf-bl16-grep-realm.test.ts` **C5**, green on both hosts: the rc.5 BATCH handed to
+the ONE-CALL seam is refused `A5SF_TOOL_DISPATCH_SHAPE_UNSUPPORTED` with zero spawns and zero admission
+facts. The 3 client reds are unchanged in identity and count on both hosts and are attributed to
+pre-existing commits in §11.7.1.
+
+### 11.7.1 The three client reds: pre-existing on `master`, exact commits, disclosed (not skipped)
+
+| arm | red since | mechanism (measured) |
+| --- | --- | --- |
+| `team-governance :: override reset … pulls once on success` | **`dcf661468`** (W1 fix-A F10) | `TeamGovernance.tsx` reads `(response.value.data)['removed']` from the fixture's `okResponse(null, 'override.reset')` → throws before `pullProjection` (0 calls) |
+| `team-creation-panel :: selecting a blueprint … persona-fact probe` | **`4f07e2da9`** (pre-alpha3 PR-E) | `intentEnvironmentFacts` changed `available: true` → `observedKind === 'standard'` (roster `standard/ptc/cordis/minimal`), so `team`/`solo` are `available:false` |
+| `team-creation-panel :: switching the runtime preset …` | **`4f07e2da9`** | same |
+
+Evidence: A0 `a19d1df01` and HEAD both `Test Files 2 failed (2)` / `Tests 3 failed | 46 passed (49)`; HEAD
+repeats it on rc.5 with the guard line proving the rc.5 tree; the A0 comparison is the rc.2-only one
+honestly, because A0's client config predates the host adapter (`git show a19d1df01:packages/client/vitest.config.ts`
+has no selector, so `TEAM_TEST_HOST=next` is inert at A0 — `round122/a0-client-next.log` is kept and
+labelled as the inert-selector duplicate). Bisect controls: `aa8391ac1` = 47 passed; `dcf661468` and
+`4f07e2da9` each introduce their arm(s); both are ancestors of A0. `git diff --name-status a19d1df01..HEAD`
+over the two spec files and their product files prints nothing. Logs: `round122/a0-client-legacy.log`,
+`head-client-{legacy,next}.log`, `origin-{aa8391ac1,dcf661468,4f07e2da9}.log`.
+
+**What does NOT move:** no row becomes PRODUCT-PROVEN (the candidate gate is a VERSION gate, no version
+frozen), and the 3 client reds stay collected and red (they are disclosed in `CANDIDATE-REPORT.md` §8 item
+4). What DID move: `agent-bindings.mjs#executeTool` no longer emits a fixed rc.2 shape — §11.6's last
+paragraph is closed; the entry dispatches in the host's own capability-detected shape and refuses a
+caller's wrong shape by name.

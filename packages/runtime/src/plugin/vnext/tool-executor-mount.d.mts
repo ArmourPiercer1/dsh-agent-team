@@ -44,6 +44,7 @@ export declare const TOOL_EXECUTOR_CAPABILITY_MISSING: 'A5SF_TOOL_EXECUTOR_CAPAB
 export declare const TOOL_EXECUTOR_UNAVAILABLE: 'A5SF_TOOL_EXECUTOR_UNAVAILABLE'
 export declare const TOOL_EXECUTOR_PLUGIN_INVALID: 'A5SF_TOOL_EXECUTOR_PLUGIN_INVALID'
 export declare const TOOL_EXECUTOR_RESULT_MISSING: 'A5SF_TOOL_EXECUTOR_RESULT_MISSING'
+export declare const TOOL_DISPATCH_SHAPE_UNSUPPORTED: 'A5SF_TOOL_DISPATCH_SHAPE_UNSUPPORTED'
 
 /** A typed refusal from the seam (it carries a machine-greppable `code`). */
 export declare class A5sfToolExecutorSeamError extends Error {
@@ -64,6 +65,12 @@ export declare function mountHostToolExecutor(input: {
 }): Promise<HostToolExecutorRecord>
 
 export declare function governedToolExecutorOf(tools: object | undefined | null, agent: unknown): GovernedToolExecutor
+
+/**
+ * Refuse a call that is not the SINGLE-CALL shape (typed
+ * `A5SF_TOOL_DISPATCH_SHAPE_UNSUPPORTED`), e.g. a batch `{ calls: [...] }`.
+ */
+export declare function assertSingleCallDispatchShape(call: unknown): void
 
 export declare function dispatchGovernedToolCall(
   tools: object,

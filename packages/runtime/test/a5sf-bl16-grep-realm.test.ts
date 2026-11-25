@@ -879,6 +879,39 @@ describe('BL-16 round-121 controls — dispatch reaches the host executor, admis
       await w.realm.dispose()
     }
   }, 30_000)
+
+  it('C5 (round 122): a BATCH handed to the one-call seam is REFUSED by name on this host — never coerced', async () => {
+    const w = await worldWith(effectiveOf(lane([inside]), lane([inside]), lane([inside])), 'realm-bl16-c5')
+    const { facts, centre } = installCentreOn(w)
+    try {
+      await attach(w)
+      // The executor state is whatever this host offers (mounted on rc.5, the
+      // registry on rc.2). Either way the SEAM's entry takes ONE call, and the
+      // rc.5 batch is a caller error: coercing it into the host's one-call shape
+      // would look up a tool named `undefined` on rc.2 and schedule nothing on
+      // rc.5. The refusal must therefore be the same typed code on BOTH hosts,
+      // BEFORE the host pipeline is entered.
+      const before = w.spawns.count
+      const refused = await caught(dispatchGovernedToolCall(w.root.get('tools') as object, {
+        calls: [{ type: 'tool-call', id: 'bl16-c5-batch', name: 'grep', arguments: '{"pattern":"INSIDE-NEEDLE"}' }],
+      } as never))
+      expect(refused).toMatchObject({ code: 'A5SF_TOOL_DISPATCH_SHAPE_UNSUPPORTED' })
+      // The refusal NAMES the shape it expected, so a future caller learns the
+      // contract from the failure instead of guessing.
+      expect(String((refused as { message?: string }).message)).toContain('SINGLE-CALL')
+      // Nothing was dispatched and nothing was admitted: the gate is upstream
+      // of the host pipeline on this host.
+      expect(w.spawns.count).toBe(before)
+      expect(facts).toHaveLength(0)
+      const realmFacts = await factsOf(w.sinkPath)
+      // The realm's own sink saw NOTHING for this call (it has no call-id
+      // field: the absence is asserted as "no fact at all after the baseline").
+      expect(realmFacts).toHaveLength(0)
+    } finally {
+      centre.dispose()
+      await w.realm.dispose()
+    }
+  }, 30_000)
 })
 
 /** Drain every stream of a raw provider handle, then report the exit. */

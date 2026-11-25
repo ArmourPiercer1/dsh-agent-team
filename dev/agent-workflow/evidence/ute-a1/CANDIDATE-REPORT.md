@@ -554,43 +554,76 @@ log line (`host:"legacy"`/`source:tests/paths.mjs#TEST_USE_BASELINE_SHA`, `host:
    not on any red path this round, unchanged, and named as open rather than counted as migrated. **This is
    coverage, not a freeze:** no row becomes PRODUCT-PROVEN and the candidate gate has still not run at a
    frozen version.
-4. **The 18 B-ladder arms are green on BOTH hosts** (18/18 rc.2 and 18/18 rc.5; 16 pass + the same 2 declared
+   **AMENDED round 122 (2026-11-26): disclosure (b) is CLOSED — the entry dispatch is capability-detected
+   on BOTH hosts.** The product's one tool-dispatch entry (`createAgentBindings().executeTool`, the body
+   behind the harness row's `POST /__p6t6/tool`) no longer hands `tools.execute` a hard-coded rc.2 object.
+   It goes through the same round-121 seam (`dispatchGovernedToolCall`): `hostToolDispatchShape` picks the
+   host's OWN shape by public capability (`setExecutor` ⇒ rc.5 batch
+   `{calls:[{type:'tool-call',id,name,arguments}]}` + `results[0].result` unwrap; `modeFor`/`defaultMode`
+   ⇒ rc.2 single call), with **no version sniff, no try/catch fallback and no removed-API emulation**. A
+   caller that hands the one-call entry a BATCH is refused by name —
+   `A5SF_TOOL_DISPATCH_SHAPE_UNSUPPORTED` — *before* `ensureLiveAgent`, so it is not silently coerced into
+   either host's shape. Controls: `packages/runtime/test/vnext-tool-dispatch-shape.test.ts` (A/B positive
+   on both shapes, C/D/E negative with zero dispatches; both mutation-checked — reverting the dispatch call
+   re-reds B/D/E, removing the shape gate re-reds C) plus `a5sf-bl16-grep-realm.test.ts` C5 on each REAL
+   host (typed refusal, zero spawns, zero facts). Measured rc.2 **42/44 files, 533 of 536 tests**; rc.5
+   **42/44, 533 of 536** (round 121: 532/535). The 3 remaining reds are the same pre-existing client
+   failures on both hosts — see §8 item 4 (the known-red disclosure). **This is coverage, not a freeze:** no row
+   becomes PRODUCT-PROVEN.
+4. **KNOWN-RED disclosure (round 122) — three client arms are red on `master` BEFORE this branch and are
+   deliberately NOT skipped, NOT deleted and NOT retried.** Identity and attribution are measured, not
+   asserted (full method and logs: `round122/POPULATION.md` §4):
+   - `packages/client/test/team-governance.client.spec.tsx :: override reset … pulls once on success` —
+     red since **`dcf661468`** (W1 fix-A F10): `TeamGovernance.tsx` reads
+     `(response.value.data)['removed']` while the fixture's `okResponse(null, 'override.reset')` is `null`,
+     so it throws before `pullProjection` runs (0 calls).
+   - `packages/client/test/team-creation-panel.client.spec.tsx :: selecting a blueprint … persona-fact
+     probe` and `:: switching the runtime preset …` — red since **`4f07e2da9`** (pre-alpha3 PR-E):
+     `intentEnvironmentFacts` changed `available: true` → `observedKind === 'standard'` (roster
+     `standard/ptc/cordis/minimal`), so `team`/`solo` become `available:false`.
+   Both commits are **ancestors of the A0 base `a19d1df01`**, and the A0 measurement is identical
+   (`Test Files 2 failed (2)`, `Tests 3 failed | 46 passed (49)`) to HEAD on rc.2 and on rc.5 (guard lines
+   prove the loaded tree). The two spec files and every product file behind them are unchanged since A0
+   (`git diff --name-status a19d1df01..HEAD -- <paths>` prints nothing). Disposition: **out of scope for
+   the dispatch round** — the fix is a client panel/governance task; the reds are published here so no
+   reader can mistake the 3-failure aggregate for a green population.
+5. **The 18 B-ladder arms are green on BOTH hosts** (18/18 rc.2 and 18/18 rc.5; 16 pass + the same 2 declared
    non-runs each), but they are **in-process `MECHANISM`**, not boots; C-ptc stays unsupported.
-5. **Two declared boundaries (not controls):** **SEC-03** — host-capability tools (`subagent`,
+6. **Two declared boundaries (not controls):** **SEC-03** — host-capability tools (`subagent`,
    `send_message`, `interrupt_agent`, `skill`, the 15 `team_*`) are admitted on host authority with **no managed
    fs/net lane**, so the lane algebra does not bound their effects; a hostile-code model must treat them as
    capabilities **outside** the sandbox. **SEC-04** — ungoverned rows (`centreStatePath` absent) remain a
    labelled product mode **outside every invariant**; Option B refuses a *governed* row with no confined
    provider (`MEMBER_CENTRE_UNWIRED`), it does not govern a row that never asked.
-6. **Physical power-cut durability is unmeasured.** SEC-01 made the admission append `fsync`-before-return
+7. **Physical power-cut durability is unmeasured.** SEC-01 made the admission append `fsync`-before-return
    (file + one directory fsync on create) and the arms pin the ordering and the fail-closed refusals; a
    **physical power cut cannot be injected in-process** — a kernel/power cut is out of reach here, so the
    machine-crash claim is structural, not observed.
-7. **`apply_patch` is unbound.** The R3 receipt covers `write`/`writeText`, `editText`, `patchText`,
+8. **`apply_patch` is unbound.** The R3 receipt covers `write`/`writeText`, `editText`, `patchText`,
    `deleteFile`, `moveFile` (with per-method scope binding); `apply_patch` stays unbound and the
    subprocess/PTY face is explicitly **not** covered (its authority is an OS `SandboxExecutionPolicy`).
-8. **`caseId: null` for inline asks.** The receipt binds the durable request/decision identity, but an inline
+9. **`caseId: null` for inline asks.** The receipt binds the durable request/decision identity, but an inline
    admission request mints `caseId: null` — so the receipt is not a claim that every ask is an Alpha.6 case.
-9. **The operator model is per-`DSH_HOME`, not RBAC.** Every management-plane claim is scoped to one
+10. **The operator model is per-`DSH_HOME`, not RBAC.** Every management-plane claim is scoped to one
    authenticated operator (Connection Gate); no multi-user isolation, no per-user authority, no tenant
    boundary is claimed.
-10. **Sticky Stop is latch-scoped.** A machine wake does not clear a human Sticky Stop (measured,
+11. **Sticky Stop is latch-scoped.** A machine wake does not clear a human Sticky Stop (measured,
     `d4:sticky-stop` PROVEN), but the guarantee is about the latch: an in-flight Stop whose body aborts without
     a terminal observation settles **`UNKNOWN`**, and is not a `CANCELLED` claim unless the Stop evidence
     exists.
-11. **A duplicate-route attempt leaves no durable fact.** `d4:duplicate-route` PROVEN = one wake for a
+12. **A duplicate-route attempt leaves no durable fact.** `d4:duplicate-route` PROVEN = one wake for a
     duplicate route (1 intent, 1 confirmation, 1 input); the *attempt* itself is not persisted as a fact, so
     "we can count duplicate attempts" is not a claim this candidate makes.
-12. **Alpha.6 review routing is `DEV-LIVE`, not PRODUCT-PROVEN.** The routed wake is PROVEN on both hosts,
+13. **Alpha.6 review routing is `DEV-LIVE`, not PRODUCT-PROVEN.** The routed wake is PROVEN on both hosts,
     2 agreeing boots (case created with frozen identity, router selects the unique lawful Officer, the wake is
     delivered with zero management-plane executions, the Officer decides in its own session and the decision
     precedes the settlement, duplicate route yields one wake, sticky Stop survives a machine wake) — but no
     version gate has been frozen, and the **cold-wake** half (an intent written before a restart and consumed
     after) is **not** a live judge at all.
-13. **In-process vs live is a real distinction everywhere.** `MECHANISM` arms run in-process over real pinned
+14. **In-process vs live is a real distinction everywhere.** `MECHANISM` arms run in-process over real pinned
     components with named stand-ins that decide nothing; the compiled member answer is an **input**, so policy
     **compilation** is not exercised. `DEV-LIVE` boots are real host processes but not gates.
-14. **No Windows deployment** (the persistent shell row is disabled on win32); no hosted third-party
+15. **No Windows deployment** (the persistent shell row is disabled on win32); no hosted third-party
     deployment; no MCP server booted live (the `ADM-96` mount is in-process over a real server object).
 
 ---
