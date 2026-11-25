@@ -141,8 +141,8 @@ $ node scripts/eb3-run-manifest.mjs
 EB3-RUN-MANIFEST pass records=634 strict=0 incomplete=11 findings=0
 
 $ node scripts/ci-pr-gate.mjs --full --census-captures 2
-DSH-CI-VERDICT pass pass=10 fail=0 skip=0 skipped=none legs=10 refused=0 refusedlegs=none seconds=285.5
-DSH-CI-LEG leg=census verdict=pass seconds=241.3 detail=… captured 599f/7424l, 599f/7424l vs baseline-declared 626 / 7936; 2 captures, identical identity sets … identity set IDENTICAL to the published baseline
+DSH-CI-VERDICT pass pass=10 fail=0 skip=0 skipped=none legs=10 refused=0 refusedlegs=none seconds=286.4
+DSH-CI-LEG leg=census verdict=pass seconds=242.1 detail=… captured 599f/7424l, 599f/7424l vs baseline-declared 626 / 7936; 2 captures, identical identity sets … identity set IDENTICAL to the published baseline
 EXIT=0
 ```
 
