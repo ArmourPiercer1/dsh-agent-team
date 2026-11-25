@@ -1,0 +1,7 @@
+# cmd: node scripts/ute-p0-assets.mjs --check
+# cwd: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut
+# started: 2026-11-25T01:21:09Z
+
+UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 wave1=146 wave2=0 cut=cut(148/148) findings=0
+
+EXIT=0

@@ -1,5 +1,5 @@
 {
-  "at": "2026-11-24T23:52:28.003Z",
+  "at": "2026-11-25T00:35:25.467Z",
   "root": "session-dboot-d2-root",
   "target": "inst-12x4j4t1rn1g",
   "operator": {
@@ -7,10 +7,10 @@
     "humanId": "session-dboot-d2-root"
   },
   "requestToken": "dboot-d2-remote-send",
-  "requestedAt": "2026-11-24T23:52:26.806Z",
-  "ackedAt": "2026-11-24T23:52:26.894Z",
+  "requestedAt": "2026-11-25T00:35:24.323Z",
+  "ackedAt": "2026-11-25T00:35:24.379Z",
   "before": {
-    "requests": 56,
+    "requests": 57,
     "centreB": 18,
     "transcriptCalls": 9
   },
@@ -49,15 +49,15 @@
         "instanceGeneration": 0,
         "toolName": "read",
         "axis": "fs.read",
-        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-b/in-lane-b.txt",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-33-45Z-next/workspace/team-b/in-lane-b.txt",
         "definitionSource": "",
-        "policyGeneration": "a5sf1:780e66a05ba306687d23b221f8647395",
+        "policyGeneration": "a5sf1:aecf687eb27749956bb07e2b27fdcea7",
         "blueprintRevision": "",
         "owner": "session-dboot-d2-root",
         "decision": "allow",
         "overlayOutcome": "no-opinion",
         "kind": "invocation-authority",
-        "at": "2026-11-24T23:52:26.955Z"
+        "at": "2026-11-25T00:35:24.450Z"
       }
     ],
     "executions": [
@@ -68,13 +68,13 @@
         "agentId": "session-team-child-ce84089af9f38ed55ba2d0bdf5442691",
         "outcome": "completed",
         "isError": false,
-        "policyGeneration": "a5sf1:780e66a05ba306687d23b221f8647395",
+        "policyGeneration": "a5sf1:aecf687eb27749956bb07e2b27fdcea7",
         "kind": "execution",
-        "at": "2026-11-24T23:52:26.975Z"
+        "at": "2026-11-25T00:35:24.471Z"
       }
     ],
     "settlement": {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/centre/settlement/inst-12x4j4t1rn1g/exec-b7da47d13cfb9caa5f86436b73bcc8e7e019da51.settlement.json",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-33-45Z-next/centre/settlement/inst-12x4j4t1rn1g/exec-b7da47d13cfb9caa5f86436b73bcc8e7e019da51.settlement.json",
       "state": "COMPLETED",
       "dispatch": "quiesced",
       "bodyOutcome": "completed",
@@ -89,8 +89,8 @@
     "memberResult": {
       "callId": "call-d2-remote-delivery",
       "isError": false,
-      "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
-      "at": 1795564346981
+      "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-33-45Z-next/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+      "at": 1795566924477
     }
   },
   "unknownMember": {
@@ -129,7 +129,7 @@
     "archiveReply": {
       "httpStatus": 200,
       "transportError": null,
-      "rpcId": "d2rd-df1jmctdy5",
+      "rpcId": "d2rd-km0s8bhv5q",
       "envelopeType": "server-response",
       "ok": true,
       "code": null,
@@ -145,9 +145,9 @@
             "label": "dboot-d2-worker-b",
             "childSessionId": "session-team-child-ce84089af9f38ed55ba2d0bdf5442691",
             "lifecycle": "ARCHIVED",
-            "createdAt": "2026-11-24T23:52:21.398Z",
+            "createdAt": "2026-11-25T00:35:19.285Z",
             "activityVersion": 14,
-            "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-b"
+            "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-33-45Z-next/workspace/team-b"
           },
           "steps": [
             "close-admission",
@@ -182,7 +182,7 @@
     "sendReply": {
       "httpStatus": 200,
       "transportError": null,
-      "rpcId": "d2rd-s8dijqxnq6",
+      "rpcId": "d2rd-ikqc2n7gjc",
       "envelopeType": "server-response",
       "ok": false,
       "code": "TEAM_RUNTIME_WORK_STATE_REJECTED",
@@ -227,7 +227,7 @@
     "restoreReply": {
       "httpStatus": 200,
       "transportError": null,
-      "rpcId": "d2rd-oyhbys6ihq",
+      "rpcId": "d2rd-bre6c9lm5x",
       "envelopeType": "server-response",
       "ok": true,
       "code": null,
@@ -243,9 +243,9 @@
             "label": "dboot-d2-worker-b",
             "childSessionId": "session-team-child-ce84089af9f38ed55ba2d0bdf5442691",
             "lifecycle": "SETTLED",
-            "createdAt": "2026-11-24T23:52:21.398Z",
+            "createdAt": "2026-11-25T00:35:19.285Z",
             "activityVersion": 15,
-            "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-b"
+            "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-33-45Z-next/workspace/team-b"
           },
           "steps": [
             "commit-restore"
@@ -271,7 +271,7 @@
     "sendReply": {
       "httpStatus": 200,
       "transportError": null,
-      "rpcId": "d2rd-8dst01zhgd",
+      "rpcId": "d2rd-vagll58x30",
       "envelopeType": "server-response",
       "ok": true,
       "code": null,
@@ -324,9 +324,9 @@
       "instanceGeneration": 0,
       "toolName": "read",
       "axis": "fs.read",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-a-ask/ask-me.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-33-45Z-next/workspace/team-a-ask/ask-me.txt",
       "definitionSource": "",
-      "policyGeneration": "a5sf1:9efafdee1f7c35e03c39747927cd0c14",
+      "policyGeneration": "a5sf1:14169c6b8c8691d0e3db223328a260f0",
       "blueprintRevision": "",
       "owner": "session-dboot-d2-root",
       "decision": "deny",
@@ -334,7 +334,7 @@
       "refusalCode": "ADMISSION_STOPPED",
       "reason": "the execution \"call-d2-remote-delivery-stop\" was aborted before its body; a Stop is not a lane denial, an expiry or a fault, and nothing that arrives after it may authorize this call",
       "kind": "invocation-authority",
-      "at": "2026-11-24T23:52:27.811Z"
+      "at": "2026-11-25T00:35:25.275Z"
     },
     "executions": [
       {
@@ -345,13 +345,13 @@
         "outcome": "admission-refusal",
         "isError": true,
         "refusalCode": "ADMISSION_STOPPED",
-        "policyGeneration": "a5sf1:9efafdee1f7c35e03c39747927cd0c14",
+        "policyGeneration": "a5sf1:14169c6b8c8691d0e3db223328a260f0",
         "kind": "execution",
-        "at": "2026-11-24T23:52:27.822Z"
+        "at": "2026-11-25T00:35:25.285Z"
       }
     ],
     "settlement": {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/centre/settlement/inst-1235q1w1rd1u/exec-d227aa2fd63013fbd14639118d2ef095440213f8.settlement.json",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-33-45Z-next/centre/settlement/inst-1235q1w1rd1u/exec-d227aa2fd63013fbd14639118d2ef095440213f8.settlement.json",
       "state": "REFUSED",
       "dispatch": "not-started",
       "bodyOutcome": "not-started",
@@ -365,13 +365,13 @@
       "callId": "call-d2-remote-delivery-stop",
       "name": "read",
       "arguments": {
-        "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-49-37Z/workspace/team-a-ask/ask-me.txt"
+        "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-33-45Z-next/workspace/team-a-ask/ask-me.txt"
       },
       "result": {
         "callId": "call-d2-remote-delivery-stop",
         "isError": true,
         "text": "Error: ADMISSION_STOPPED: the execution \"call-d2-remote-delivery-stop\" was aborted before its body; a Stop is not a lane denial, an expiry or a fault, and nothing that arrives after it may authorize this call",
-        "at": 1795564347825
+        "at": 1795566925287
       }
     }
   }

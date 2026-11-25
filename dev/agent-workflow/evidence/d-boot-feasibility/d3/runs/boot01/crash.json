@@ -1,6 +1,6 @@
 {
-  "at": "2026-11-25T00:01:15.619Z",
-  "pid": 3314,
+  "at": "2026-11-25T00:40:46.813Z",
+  "pid": 11888,
   "exit": {
     "code": null,
     "signal": "SIGKILL"
@@ -17,17 +17,16 @@
       ]
     },
     "bOpen": {
-      "state": "RUNNING",
+      "state": "ADMITTED",
       "transitions": [
-        "ADMITTED",
-        "RUNNING"
+        "ADMITTED"
       ],
       "executionId": "exec-c7761249d1064b23c36e5e4f76a48778dd895896",
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T23-58-18Z/centre/settlement/inst-1v36r931jr7r/exec-c7761249d1064b23c36e5e4f76a48778dd895896.settlement.json"
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-39-00Z-next/centre/settlement/inst-1v36r931jr7r/exec-c7761249d1064b23c36e5e4f76a48778dd895896.settlement.json"
     }
   },
   "restart": {
-    "url": "http://127.0.0.1:3196/?token=<redacted>",
-    "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261124T23-58-18Z/instance-port3196.log"
+    "url": "http://127.0.0.1:13000/?token=<redacted>",
+    "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261125T00-39-00Z-next/instance-port13000.log"
   }
 }

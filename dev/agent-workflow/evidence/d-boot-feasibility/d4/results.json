@@ -20,7 +20,7 @@
           {
             "id": "team-session-served",
             "ok": true,
-            "detail": "teamSession={\"rootSessionId\":\"session-dboot-d4-root\",\"blueprintId\":\"team.dboot.d4.v5\",\"revision\":\"1\",\"contentHash\":\"sha256:a56a2c965ad6573ae5820087b2c09aa5db60f6157823d09dad3757df690f1a57\",\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-26-12Z-next/workspace\",\"createdAt\":\"2026-11-24T18:27:59.071Z\",\"generation\":14}"
+            "detail": "teamSession={\"rootSessionId\":\"session-dboot-d4-root\",\"blueprintId\":\"team.dboot.d4.v5\",\"revision\":\"1\",\"contentHash\":\"sha256:da2824acc8b2c0fcf133c233481d66a4754779e55ae64c9a82629f6168e1de1d\",\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-44-37Z-next/workspace\",\"createdAt\":\"2026-11-25T00:46:11.253Z\",\"generation\":11}"
           },
           {
             "id": "no-alpha6-refusal-in-host-log",
@@ -148,7 +148,7 @@
           {
             "id": "approval-case-id-present",
             "ok": true,
-            "detail": "approvalCaseId=\"case-1llhgi21ko0sb30ifrk5w0gs\""
+            "detail": "approvalCaseId=\"case-03qb1j80b5ww7p0lxxcpy1a5\""
           },
           {
             "id": "leg-ordinal-present",
@@ -163,7 +163,7 @@
           {
             "id": "frozen-operation-identity",
             "ok": true,
-            "detail": "operationFingerprint=\"sha256:6f58865d226bc52c167e40991ca8a9e5d601f3dafdbc822a8067f95c78a191d5\" requestedEffect=\"allow\" authorityScope={\"matcher\":{\"kind\":\"exact\",\"resource\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-26-12Z-next/workspace/lane/worker-ask.txt\"},\"operationClass\":\"write\"}"
+            "detail": "operationFingerprint=\"sha256:643d17daa13f57ee06768555086b09d6c682f7c12f0f794b2e1b7580888a0cbc\" requestedEffect=\"allow\" authorityScope={\"matcher\":{\"kind\":\"exact\",\"resource\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-44-37Z-next/workspace/lane/worker-ask.txt\"},\"operationClass\":\"write\"}"
           },
           {
             "id": "frozen-tool-coordinate",
@@ -173,12 +173,12 @@
           {
             "id": "frozen-blueprint-and-generation",
             "ok": true,
-            "detail": "blueprintContentHash=\"sha256:a56a2c965ad6573ae5820087b2c09aa5db60f6157823d09dad3757df690f1a57\" revision=\"1\" authorityGeneration=0"
+            "detail": "blueprintContentHash=\"sha256:da2824acc8b2c0fcf133c233481d66a4754779e55ae64c9a82629f6168e1de1d\" revision=\"1\" authorityGeneration=0"
           },
           {
             "id": "captured-case-precedes-any-decision",
             "ok": true,
-            "detail": "creation sequence=9 createdAt=2026-11-24T18:28:00.955Z approvalCaseId=\"case-1llhgi21ko0sb30ifrk5w0gs\" decisions=[{\"sequence\":12,\"createdAt\":\"2026-11-24T18:28:01.128Z\",\"laterThanCapture\":true}]"
+            "detail": "creation sequence=9 createdAt=2026-11-25T00:46:13.186Z approvalCaseId=\"case-03qb1j80b5ww7p0lxxcpy1a5\" decisions=[]"
           }
         ],
         "failing": []
@@ -190,7 +190,7 @@
           {
             "id": "route-is-the-officer-instance",
             "ok": true,
-            "detail": "route={\"kind\":\"recipient\",\"target\":{\"kind\":\"instance\",\"instanceId\":\"inst-1crltnl0089j\",\"templateId\":\"officer\",\"routeRole\":\"officer\"},\"reason\":\"closed ordinary tool ask delegated to the dedicated Officer\",\"currentLegId\":\"ctrl-00ebxcj116mvpg1ujxxip1jm\"} expectedOfficer=\"inst-1crltnl0089j\" memberListCalls=1"
+            "detail": "route={\"kind\":\"recipient\",\"target\":{\"kind\":\"instance\",\"instanceId\":\"inst-1crltnl0089j\",\"templateId\":\"officer\",\"routeRole\":\"officer\"},\"reason\":\"closed ordinary tool ask delegated to the dedicated Officer\",\"currentLegId\":\"ctrl-08a8uk4057fnlv0jjzfq20ft\"} expectedOfficer=\"inst-1crltnl0089j\" memberListCalls=1"
           },
           {
             "id": "exactly-one-lawful-officer",
@@ -205,7 +205,7 @@
           {
             "id": "self-ask-never-routed-to-the-officer",
             "ok": true,
-            "detail": "self-ask route={\"kind\":\"recipient\",\"target\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"routeRole\":\"leader\"},\"reason\":\"actual OperationOwner is the Officer; self-ask routes to Leader\",\"currentLegId\":\"ctrl-00ebxcj116mvpg1ujxxip1jm\"}"
+            "detail": "self-ask route={\"kind\":\"recipient\",\"target\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"routeRole\":\"leader\"},\"reason\":\"actual OperationOwner is the Officer; self-ask routes to Leader\",\"currentLegId\":\"ctrl-08a8uk4057fnlv0jjzfq20ft\"}"
           }
         ],
         "failing": []
@@ -217,22 +217,22 @@
           {
             "id": "one-routed-intent-for-the-leg",
             "ok": true,
-            "detail": "routed facts for requestId=\"ctrl-00ebxcj116mvpg1ujxxip1jm\": [\"ctrl-00ebxcj116mvpg1ujxxip1jm\",\"ctrl-1s2v6a50uhi1ie0agk5wj1hu\",\"ctrl-03tevar1sp3oo81usybid0bk\",\"ctrl-1ifuxs71g486y00kvmds10ws\"]"
+            "detail": "routed facts for requestId=\"ctrl-08a8uk4057fnlv0jjzfq20ft\": [\"ctrl-08a8uk4057fnlv0jjzfq20ft\",\"ctrl-07af6nw1jt4ifb0v4tkym1y5\",\"ctrl-0siz1ex1b88v5u0r4hayr1kl\",\"ctrl-1mj3gke1pg97ed0cj5lvo0lm\"]"
           },
           {
             "id": "one-correlated-confirmation",
             "ok": true,
-            "detail": "requestToken=\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A26954e67\" confirmations=1 correlation=true"
+            "detail": "requestToken=\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A5ce9a9f8\" confirmations=1 correlation=true"
           },
           {
             "id": "intent-names-the-officer-session",
             "ok": true,
-            "detail": "intent payload={\"action\":\"review-wake\",\"at\":\"2026-11-24T18:28:00.971Z\",\"deliveredToSessionId\":\"session-team-child-1d56dbb16a118ba3573db3c4b2641997\",\"recipientInstanceId\":\"inst-1crltnl0089j\",\"requestId\":\"ctrl-00ebxcj116mvpg1ujxxip1jm\",\"requestToken\":\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A26954e67\",\"routeRole\":\"officer\"}"
+            "detail": "intent payload={\"action\":\"review-wake\",\"at\":\"2026-11-25T00:46:13.205Z\",\"deliveredToSessionId\":\"session-team-child-1d56dbb16a118ba3573db3c4b2641997\",\"recipientInstanceId\":\"inst-1crltnl0089j\",\"requestId\":\"ctrl-08a8uk4057fnlv0jjzfq20ft\",\"requestToken\":\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A5ce9a9f8\",\"routeRole\":\"officer\"}"
           },
           {
             "id": "intent-carries-the-review-action",
             "ok": true,
-            "detail": "intent payload action=\"review-wake\" at=\"2026-11-24T18:28:00.971Z\" intentDirFiles=[]"
+            "detail": "intent payload action=\"review-wake\" at=\"2026-11-25T00:46:13.205Z\" intentDirFiles=[]"
           },
           {
             "id": "machine-attribution-not-human",
@@ -259,12 +259,12 @@
           {
             "id": "officer-issued-its-own-resolve",
             "ok": true,
-            "detail": "callId=\"call-d4-officer-resolve-ctrl-00ebxcj116mvpg1ujxxip1jm\" found=true result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-00ebxcj116mvpg1ujxxip1jm\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targ\""
+            "detail": "callId=\"call-d4-officer-resolve-ctrl-08a8uk4057fnlv0jjzfq20ft\" found=true result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-08a8uk4057fnlv0jjzfq20ft\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targ\""
           },
           {
             "id": "resolve-admitted-under-its-own-binding",
             "ok": true,
-            "detail": "invocation-authority allow facts for \"call-d4-officer-resolve-ctrl-00ebxcj116mvpg1ujxxip1jm\"=[{\"instanceId\":\"inst-1crltnl0089j\",\"axis\":\"team.control\",\"decision\":\"allow\"}]"
+            "detail": "invocation-authority allow facts for \"call-d4-officer-resolve-ctrl-08a8uk4057fnlv0jjzfq20ft\"=[{\"instanceId\":\"inst-1crltnl0089j\",\"axis\":\"team.control\",\"decision\":\"allow\"}]"
           },
           {
             "id": "settlement-completed",
@@ -286,22 +286,22 @@
           {
             "id": "review-decision-is-durable",
             "ok": true,
-            "detail": "decision fact={\"requestId\":\"ctrl-00ebxcj116mvpg1ujxxip1jm\",\"decision\":\"allow\",\"at\":\"2026-11-24T18:28:01.128Z\"}"
+            "detail": "decision fact={\"requestId\":\"ctrl-08a8uk4057fnlv0jjzfq20ft\",\"decision\":\"allow\",\"at\":\"2026-11-25T00:46:13.357Z\"}"
           },
           {
             "id": "decision-precedes-execution",
             "ok": true,
-            "detail": "decisionAt=\"2026-11-24T18:28:01.128Z\" settlementTerminalAt=\"2026-11-24T18:28:01.239Z\""
+            "detail": "decisionAt=\"2026-11-25T00:46:13.357Z\" settlementTerminalAt=\"2026-11-25T00:46:13.483Z\""
           },
           {
             "id": "real-bytes-on-disk",
             "ok": true,
-            "detail": "file={\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-26-12Z-next/workspace/lane/worker-ask.txt\",\"exists\":true,\"bytes\":27,\"sha256\":\"ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3\"} expectedBytes=27"
+            "detail": "file={\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-44-37Z-next/workspace/lane/worker-ask.txt\",\"exists\":true,\"bytes\":27,\"sha256\":\"ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3\"} expectedBytes=27"
           },
           {
             "id": "worker-tool-result-not-an-error",
             "ok": true,
-            "detail": "write result=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-26-12Z-next/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+            "detail": "write result=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-44-37Z-next/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
           },
           {
             "id": "admission-allow-on-the-ask-lane",
@@ -343,7 +343,7 @@
           {
             "id": "duplicate-is-a-no-op",
             "ok": true,
-            "detail": "converged=true detail={\"requestId\":\"ctrl-1s2v6a50uhi1ie0agk5wj1hu\",\"requestToken\":\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3Ab0d7d3ca\",\"intentAt\":\"2026-11-24T18:28:01.329Z\",\"decisionAt\":\"2026-11-24T18:28:01.490Z\"}"
+            "detail": "converged=true detail={\"requestId\":\"ctrl-07af6nw1jt4ifb0v4tkym1y5\",\"requestToken\":\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A46d95fed\",\"intentAt\":\"2026-11-25T00:46:13.559Z\",\"decisionAt\":\"2026-11-25T00:46:13.711Z\"}"
           }
         ],
         "failing": []
@@ -360,7 +360,7 @@
           {
             "id": "machine-wake-attempted",
             "ok": true,
-            "detail": "machine attempt={\"holdLanded\":true,\"holdStatus\":200,\"cancelStatus\":200,\"resumeStatus\":200,\"thirdRequestId\":\"ctrl-03tevar1sp3oo81usybid0bk\"}"
+            "detail": "machine attempt={\"holdLanded\":true,\"holdStatus\":200,\"cancelStatus\":200,\"resumeStatus\":200,\"thirdRequestId\":\"ctrl-0siz1ex1b88v5u0r4hayr1kl\"}"
           },
           {
             "id": "stop-survives-the-machine-wake",
@@ -392,7 +392,7 @@
           {
             "id": "refusal-recorded",
             "ok": true,
-            "detail": "deny facts=[{\"refusalCode\":\"ADMISSION_ALPHA6_UNAVAILABLE\",\"axis\":\"host.service\",\"callId\":\"alpha6:e5279ccd-06da-4ed4-ae3a-4a15a011771a:0\"}]"
+            "detail": "deny facts=[{\"refusalCode\":\"ADMISSION_ALPHA6_UNAVAILABLE\",\"axis\":\"host.service\",\"callId\":\"alpha6:c6fc494a-3b40-488b-8231-c2a6cc5c29de:0\"}]"
           },
           {
             "id": "refusal-is-not-a-route",
@@ -419,7 +419,7 @@
           {
             "id": "approved-through-real-control-path",
             "ok": true,
-            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-00ebxcj116mvpg1ujxxip1jm\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:6f58865d226bc52c167e40991ca8a9e5d601f3da\""
+            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-08a8uk4057fnlv0jjzfq20ft\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:643d17daa13f57ee06768555086b09d6c682f7c1\""
           },
           {
             "id": "admission-fact-allow-lane-ask",
@@ -429,7 +429,7 @@
           {
             "id": "write-tool-result-not-an-error",
             "ok": true,
-            "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-26-12Z-next/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+            "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-44-37Z-next/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
           },
           {
             "id": "real-bytes-on-disk",
@@ -456,7 +456,7 @@
           {
             "id": "second-approved-through-real-control-path",
             "ok": true,
-            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1s2v6a50uhi1ie0agk5wj1hu\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write-2\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:ea1229dbe7cab2c6d40d4125cf89af451202c7\""
+            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-07af6nw1jt4ifb0v4tkym1y5\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write-2\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:66fec5c32cb1df994a378927c8a342e33104fc\""
           },
           {
             "id": "second-admission-fact-allow-lane-ask",
@@ -466,7 +466,7 @@
           {
             "id": "second-write-tool-result-not-an-error",
             "ok": true,
-            "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-26-12Z-next/workspace/lane/worker-ask-2.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+            "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-44-37Z-next/workspace/lane/worker-ask-2.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
           },
           {
             "id": "second-real-bytes-on-disk",
@@ -503,7 +503,7 @@
           {
             "id": "approved-through-real-control-path",
             "ok": true,
-            "detail": "durable control-decision-recorded decision=allow decider={\"instanceId\":\"inst-1crltnl0089j\",\"kind\":\"instance\",\"role\":\"member\"} requestId=ctrl-1ifuxs71g486y00kvmds10ws"
+            "detail": "durable control-decision-recorded decision=allow decider={\"instanceId\":\"inst-1crltnl0089j\",\"kind\":\"instance\",\"role\":\"member\"} requestId=ctrl-1mj3gke1pg97ed0cj5lvo0lm"
           },
           {
             "id": "process-admission-fact-allow",
@@ -549,7 +549,7 @@
           {
             "id": "denied-through-real-control-path",
             "ok": true,
-            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1xxrzo21k29yc31rawhls0qn\\\",\\\"decision\\\":\\\"deny\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":4,\\\"decisionSequence\\\":5,\\\"createdAt\\\":\\\"2026-11-24T18:31:55.005\""
+            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1xxrzo21k29yc31rawhls0qn\\\",\\\"decision\\\":\\\"deny\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":4,\\\"decisionSequence\\\":5,\\\"createdAt\\\":\\\"2026-11-25T00:49:36.348\""
           },
           {
             "id": "deny-fact-recorded",
@@ -638,16 +638,16 @@
     "ids": {
       "officer": "inst-1crltnl0089j",
       "worker": "inst-0ty67u70r99a",
-      "pendingRequestId": "ctrl-00ebxcj116mvpg1ujxxip1jm",
-      "pendingRequestId2": "ctrl-1s2v6a50uhi1ie0agk5wj1hu",
-      "pendingRequestId3": "ctrl-03tevar1sp3oo81usybid0bk",
-      "pendingProcessRequestId": "ctrl-1ifuxs71g486y00kvmds10ws"
+      "pendingRequestId": "ctrl-08a8uk4057fnlv0jjzfq20ft",
+      "pendingRequestId2": "ctrl-07af6nw1jt4ifb0v4tkym1y5",
+      "pendingRequestId3": "ctrl-0siz1ex1b88v5u0r4hayr1kl",
+      "pendingProcessRequestId": "ctrl-1mj3gke1pg97ed0cj5lvo0lm"
     },
-    "worldId": "u5u5a5sfdev1-20261124T18-26-12Z-next",
-    "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-26-12Z-next",
+    "worldId": "u5u5a5sfdev1-20261125T00-44-37Z-next",
+    "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-44-37Z-next",
     "port": 13000,
-    "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/driver/logs/u5u5a5sfdev1-20261124T18-26-12Z-next/instance-port13000.log",
-    "refusalWorldId": "u5u5a5sfdev1-20261124T18-28-08Z-next",
+    "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/driver/logs/u5u5a5sfdev1-20261125T00-44-37Z-next/instance-port13000.log",
+    "refusalWorldId": "u5u5a5sfdev1-20261125T00-46-20Z-next",
     "negativeArms": {
       "denied": {
         "requestId": "ctrl-1xxrzo21k29yc31rawhls0qn",
@@ -658,8 +658,8 @@
         "cancelStatus": 200
       }
     },
-    "bootedAt": 1795544772213,
-    "elapsedMs": 459181
+    "bootedAt": 1795567477786,
+    "elapsedMs": 400604
   },
   {
     "boot": 2,
@@ -682,7 +682,7 @@
           {
             "id": "team-session-served",
             "ok": true,
-            "detail": "teamSession={\"rootSessionId\":\"session-dboot-d4-root\",\"blueprintId\":\"team.dboot.d4.v5\",\"revision\":\"1\",\"contentHash\":\"sha256:579be3552c29ab4a878b0eb1bb58789926fc00b96c7592045cd89dc0248c0aad\",\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-33-51Z-next/workspace\",\"createdAt\":\"2026-11-24T18:35:41.240Z\",\"generation\":14}"
+            "detail": "teamSession={\"rootSessionId\":\"session-dboot-d4-root\",\"blueprintId\":\"team.dboot.d4.v5\",\"revision\":\"1\",\"contentHash\":\"sha256:5855649b29088d35f8d21feeea1a5b392e1e7706c65a97a91b456c65550e512d\",\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-51-18Z-next/workspace\",\"createdAt\":\"2026-11-25T00:52:53.634Z\",\"generation\":14}"
           },
           {
             "id": "no-alpha6-refusal-in-host-log",
@@ -810,7 +810,7 @@
           {
             "id": "approval-case-id-present",
             "ok": true,
-            "detail": "approvalCaseId=\"case-06h9vy81es9sip1qxh3n20ua\""
+            "detail": "approvalCaseId=\"case-1z03p9l1h1cd6k1eupbj712n\""
           },
           {
             "id": "leg-ordinal-present",
@@ -825,7 +825,7 @@
           {
             "id": "frozen-operation-identity",
             "ok": true,
-            "detail": "operationFingerprint=\"sha256:3de2d70fd3e3b6ac1e8da222b0882d114316c1a06e56937b69779b37d1bfdde0\" requestedEffect=\"allow\" authorityScope={\"matcher\":{\"kind\":\"exact\",\"resource\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-33-51Z-next/workspace/lane/worker-ask.txt\"},\"operationClass\":\"write\"}"
+            "detail": "operationFingerprint=\"sha256:05731794dda34221da98a1619c7a34c889ad59bb831a2717e72385bc4b3f9ae4\" requestedEffect=\"allow\" authorityScope={\"matcher\":{\"kind\":\"exact\",\"resource\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-51-18Z-next/workspace/lane/worker-ask.txt\"},\"operationClass\":\"write\"}"
           },
           {
             "id": "frozen-tool-coordinate",
@@ -835,12 +835,12 @@
           {
             "id": "frozen-blueprint-and-generation",
             "ok": true,
-            "detail": "blueprintContentHash=\"sha256:579be3552c29ab4a878b0eb1bb58789926fc00b96c7592045cd89dc0248c0aad\" revision=\"1\" authorityGeneration=0"
+            "detail": "blueprintContentHash=\"sha256:5855649b29088d35f8d21feeea1a5b392e1e7706c65a97a91b456c65550e512d\" revision=\"1\" authorityGeneration=0"
           },
           {
             "id": "captured-case-precedes-any-decision",
             "ok": true,
-            "detail": "creation sequence=9 createdAt=2026-11-24T18:35:43.190Z approvalCaseId=\"case-06h9vy81es9sip1qxh3n20ua\" decisions=[{\"sequence\":12,\"createdAt\":\"2026-11-24T18:35:43.366Z\",\"laterThanCapture\":true}]"
+            "detail": "creation sequence=9 createdAt=2026-11-25T00:52:55.565Z approvalCaseId=\"case-1z03p9l1h1cd6k1eupbj712n\" decisions=[{\"sequence\":12,\"createdAt\":\"2026-11-25T00:52:55.738Z\",\"laterThanCapture\":true}]"
           }
         ],
         "failing": []
@@ -852,7 +852,7 @@
           {
             "id": "route-is-the-officer-instance",
             "ok": true,
-            "detail": "route={\"kind\":\"recipient\",\"target\":{\"kind\":\"instance\",\"instanceId\":\"inst-1crltnl0089j\",\"templateId\":\"officer\",\"routeRole\":\"officer\"},\"reason\":\"closed ordinary tool ask delegated to the dedicated Officer\",\"currentLegId\":\"ctrl-0dsdv911gm0hfm0uf0svv02m\"} expectedOfficer=\"inst-1crltnl0089j\" memberListCalls=1"
+            "detail": "route={\"kind\":\"recipient\",\"target\":{\"kind\":\"instance\",\"instanceId\":\"inst-1crltnl0089j\",\"templateId\":\"officer\",\"routeRole\":\"officer\"},\"reason\":\"closed ordinary tool ask delegated to the dedicated Officer\",\"currentLegId\":\"ctrl-14ojy2a095w7kx1fba5sg0bg\"} expectedOfficer=\"inst-1crltnl0089j\" memberListCalls=1"
           },
           {
             "id": "exactly-one-lawful-officer",
@@ -867,7 +867,7 @@
           {
             "id": "self-ask-never-routed-to-the-officer",
             "ok": true,
-            "detail": "self-ask route={\"kind\":\"recipient\",\"target\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"routeRole\":\"leader\"},\"reason\":\"actual OperationOwner is the Officer; self-ask routes to Leader\",\"currentLegId\":\"ctrl-0dsdv911gm0hfm0uf0svv02m\"}"
+            "detail": "self-ask route={\"kind\":\"recipient\",\"target\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"routeRole\":\"leader\"},\"reason\":\"actual OperationOwner is the Officer; self-ask routes to Leader\",\"currentLegId\":\"ctrl-14ojy2a095w7kx1fba5sg0bg\"}"
           }
         ],
         "failing": []
@@ -879,22 +879,22 @@
           {
             "id": "one-routed-intent-for-the-leg",
             "ok": true,
-            "detail": "routed facts for requestId=\"ctrl-0dsdv911gm0hfm0uf0svv02m\": [\"ctrl-0dsdv911gm0hfm0uf0svv02m\",\"ctrl-1mq1b1v0l1l5qs0cypep10i1\",\"ctrl-0yg19n608fodl907mz0xw022\",\"ctrl-0bvxuhc123025j0wt8a2e1re\"]"
+            "detail": "routed facts for requestId=\"ctrl-14ojy2a095w7kx1fba5sg0bg\": [\"ctrl-14ojy2a095w7kx1fba5sg0bg\",\"ctrl-0yfbphz0vf4ncg0kxuk8d0l5\",\"ctrl-13ejvdq0vewc4p1mgsg581kk\",\"ctrl-1ty81kd0325deq11zk5bz0hq\"]"
           },
           {
             "id": "one-correlated-confirmation",
             "ok": true,
-            "detail": "requestToken=\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A3f65e60e\" confirmations=1 correlation=true"
+            "detail": "requestToken=\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A6edfca3f\" confirmations=1 correlation=true"
           },
           {
             "id": "intent-names-the-officer-session",
             "ok": true,
-            "detail": "intent payload={\"action\":\"review-wake\",\"at\":\"2026-11-24T18:35:43.207Z\",\"deliveredToSessionId\":\"session-team-child-1d56dbb16a118ba3573db3c4b2641997\",\"recipientInstanceId\":\"inst-1crltnl0089j\",\"requestId\":\"ctrl-0dsdv911gm0hfm0uf0svv02m\",\"requestToken\":\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A3f65e60e\",\"routeRole\":\"officer\"}"
+            "detail": "intent payload={\"action\":\"review-wake\",\"at\":\"2026-11-25T00:52:55.583Z\",\"deliveredToSessionId\":\"session-team-child-1d56dbb16a118ba3573db3c4b2641997\",\"recipientInstanceId\":\"inst-1crltnl0089j\",\"requestId\":\"ctrl-14ojy2a095w7kx1fba5sg0bg\",\"requestToken\":\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A6edfca3f\",\"routeRole\":\"officer\"}"
           },
           {
             "id": "intent-carries-the-review-action",
             "ok": true,
-            "detail": "intent payload action=\"review-wake\" at=\"2026-11-24T18:35:43.207Z\" intentDirFiles=[]"
+            "detail": "intent payload action=\"review-wake\" at=\"2026-11-25T00:52:55.583Z\" intentDirFiles=[]"
           },
           {
             "id": "machine-attribution-not-human",
@@ -921,12 +921,12 @@
           {
             "id": "officer-issued-its-own-resolve",
             "ok": true,
-            "detail": "callId=\"call-d4-officer-resolve-ctrl-0dsdv911gm0hfm0uf0svv02m\" found=true result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-0dsdv911gm0hfm0uf0svv02m\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targ\""
+            "detail": "callId=\"call-d4-officer-resolve-ctrl-14ojy2a095w7kx1fba5sg0bg\" found=true result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-14ojy2a095w7kx1fba5sg0bg\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targ\""
           },
           {
             "id": "resolve-admitted-under-its-own-binding",
             "ok": true,
-            "detail": "invocation-authority allow facts for \"call-d4-officer-resolve-ctrl-0dsdv911gm0hfm0uf0svv02m\"=[{\"instanceId\":\"inst-1crltnl0089j\",\"axis\":\"team.control\",\"decision\":\"allow\"}]"
+            "detail": "invocation-authority allow facts for \"call-d4-officer-resolve-ctrl-14ojy2a095w7kx1fba5sg0bg\"=[{\"instanceId\":\"inst-1crltnl0089j\",\"axis\":\"team.control\",\"decision\":\"allow\"}]"
           },
           {
             "id": "settlement-completed",
@@ -948,22 +948,22 @@
           {
             "id": "review-decision-is-durable",
             "ok": true,
-            "detail": "decision fact={\"requestId\":\"ctrl-0dsdv911gm0hfm0uf0svv02m\",\"decision\":\"allow\",\"at\":\"2026-11-24T18:35:43.366Z\"}"
+            "detail": "decision fact={\"requestId\":\"ctrl-14ojy2a095w7kx1fba5sg0bg\",\"decision\":\"allow\",\"at\":\"2026-11-25T00:52:55.738Z\"}"
           },
           {
             "id": "decision-precedes-execution",
             "ok": true,
-            "detail": "decisionAt=\"2026-11-24T18:35:43.366Z\" settlementTerminalAt=\"2026-11-24T18:35:43.475Z\""
+            "detail": "decisionAt=\"2026-11-25T00:52:55.738Z\" settlementTerminalAt=\"2026-11-25T00:52:55.867Z\""
           },
           {
             "id": "real-bytes-on-disk",
             "ok": true,
-            "detail": "file={\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-33-51Z-next/workspace/lane/worker-ask.txt\",\"exists\":true,\"bytes\":27,\"sha256\":\"ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3\"} expectedBytes=27"
+            "detail": "file={\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-51-18Z-next/workspace/lane/worker-ask.txt\",\"exists\":true,\"bytes\":27,\"sha256\":\"ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3\"} expectedBytes=27"
           },
           {
             "id": "worker-tool-result-not-an-error",
             "ok": true,
-            "detail": "write result=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-33-51Z-next/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+            "detail": "write result=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-51-18Z-next/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
           },
           {
             "id": "admission-allow-on-the-ask-lane",
@@ -1005,7 +1005,7 @@
           {
             "id": "duplicate-is-a-no-op",
             "ok": true,
-            "detail": "converged=true detail={\"requestId\":\"ctrl-1mq1b1v0l1l5qs0cypep10i1\",\"requestToken\":\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3Add3d24b9\",\"intentAt\":\"2026-11-24T18:35:43.567Z\",\"decisionAt\":\"2026-11-24T18:35:43.720Z\"}"
+            "detail": "converged=true detail={\"requestId\":\"ctrl-0yfbphz0vf4ncg0kxuk8d0l5\",\"requestToken\":\"review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3Ad32803ef\",\"intentAt\":\"2026-11-25T00:52:55.942Z\",\"decisionAt\":\"2026-11-25T00:52:56.095Z\"}"
           }
         ],
         "failing": []
@@ -1022,7 +1022,7 @@
           {
             "id": "machine-wake-attempted",
             "ok": true,
-            "detail": "machine attempt={\"holdLanded\":true,\"holdStatus\":200,\"cancelStatus\":200,\"resumeStatus\":200,\"thirdRequestId\":\"ctrl-0yg19n608fodl907mz0xw022\"}"
+            "detail": "machine attempt={\"holdLanded\":true,\"holdStatus\":200,\"cancelStatus\":200,\"resumeStatus\":200,\"thirdRequestId\":\"ctrl-13ejvdq0vewc4p1mgsg581kk\"}"
           },
           {
             "id": "stop-survives-the-machine-wake",
@@ -1054,7 +1054,7 @@
           {
             "id": "refusal-recorded",
             "ok": true,
-            "detail": "deny facts=[{\"refusalCode\":\"ADMISSION_ALPHA6_UNAVAILABLE\",\"axis\":\"host.service\",\"callId\":\"alpha6:6240fc3d-01f9-497b-80e1-470da3aa58c0:0\"}]"
+            "detail": "deny facts=[{\"refusalCode\":\"ADMISSION_ALPHA6_UNAVAILABLE\",\"axis\":\"host.service\",\"callId\":\"alpha6:b3415abb-fa17-4255-8a56-370b9bc4fe57:0\"}]"
           },
           {
             "id": "refusal-is-not-a-route",
@@ -1081,7 +1081,7 @@
           {
             "id": "approved-through-real-control-path",
             "ok": true,
-            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-0dsdv911gm0hfm0uf0svv02m\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:3de2d70fd3e3b6ac1e8da222b0882d114316c1a0\""
+            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-14ojy2a095w7kx1fba5sg0bg\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:05731794dda34221da98a1619c7a34c889ad59bb\""
           },
           {
             "id": "admission-fact-allow-lane-ask",
@@ -1091,7 +1091,7 @@
           {
             "id": "write-tool-result-not-an-error",
             "ok": true,
-            "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-33-51Z-next/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+            "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-51-18Z-next/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
           },
           {
             "id": "real-bytes-on-disk",
@@ -1118,7 +1118,7 @@
           {
             "id": "second-approved-through-real-control-path",
             "ok": true,
-            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1mq1b1v0l1l5qs0cypep10i1\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write-2\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:4d82347c67eaf9b91b5b47ffd71de98584b02a\""
+            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-0yfbphz0vf4ncg0kxuk8d0l5\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write-2\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:3db4161f9fc405b7fbe93cb4f2120740cd8de7\""
           },
           {
             "id": "second-admission-fact-allow-lane-ask",
@@ -1128,7 +1128,7 @@
           {
             "id": "second-write-tool-result-not-an-error",
             "ok": true,
-            "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-33-51Z-next/workspace/lane/worker-ask-2.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+            "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-51-18Z-next/workspace/lane/worker-ask-2.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
           },
           {
             "id": "second-real-bytes-on-disk",
@@ -1165,7 +1165,7 @@
           {
             "id": "approved-through-real-control-path",
             "ok": true,
-            "detail": "durable control-decision-recorded decision=allow decider={\"instanceId\":\"inst-1crltnl0089j\",\"kind\":\"instance\",\"role\":\"member\"} requestId=ctrl-0bvxuhc123025j0wt8a2e1re"
+            "detail": "durable control-decision-recorded decision=allow decider={\"instanceId\":\"inst-1crltnl0089j\",\"kind\":\"instance\",\"role\":\"member\"} requestId=ctrl-1ty81kd0325deq11zk5bz0hq"
           },
           {
             "id": "process-admission-fact-allow",
@@ -1211,7 +1211,7 @@
           {
             "id": "denied-through-real-control-path",
             "ok": true,
-            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1xxrzo21k29yc31rawhls0qn\\\",\\\"decision\\\":\\\"deny\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":4,\\\"decisionSequence\\\":5,\\\"createdAt\\\":\\\"2026-11-24T18:39:37.781\""
+            "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1xxrzo21k29yc31rawhls0qn\\\",\\\"decision\\\":\\\"deny\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":4,\\\"decisionSequence\\\":5,\\\"createdAt\\\":\\\"2026-11-25T00:56:21.140\""
           },
           {
             "id": "deny-fact-recorded",
@@ -1300,16 +1300,16 @@
     "ids": {
       "officer": "inst-1crltnl0089j",
       "worker": "inst-0ty67u70r99a",
-      "pendingRequestId": "ctrl-0dsdv911gm0hfm0uf0svv02m",
-      "pendingRequestId2": "ctrl-1mq1b1v0l1l5qs0cypep10i1",
-      "pendingRequestId3": "ctrl-0yg19n608fodl907mz0xw022",
-      "pendingProcessRequestId": "ctrl-0bvxuhc123025j0wt8a2e1re"
+      "pendingRequestId": "ctrl-14ojy2a095w7kx1fba5sg0bg",
+      "pendingRequestId2": "ctrl-0yfbphz0vf4ncg0kxuk8d0l5",
+      "pendingRequestId3": "ctrl-13ejvdq0vewc4p1mgsg581kk",
+      "pendingProcessRequestId": "ctrl-1ty81kd0325deq11zk5bz0hq"
     },
-    "worldId": "u5u5a5sfdev1-20261124T18-33-51Z-next",
-    "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-33-51Z-next",
+    "worldId": "u5u5a5sfdev1-20261125T00-51-18Z-next",
+    "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-51-18Z-next",
     "port": 13000,
-    "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/driver/logs/u5u5a5sfdev1-20261124T18-33-51Z-next/instance-port13000.log",
-    "refusalWorldId": "u5u5a5sfdev1-20261124T18-35-50Z-next",
+    "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/driver/logs/u5u5a5sfdev1-20261125T00-51-18Z-next/instance-port13000.log",
+    "refusalWorldId": "u5u5a5sfdev1-20261125T00-53-02Z-next",
     "negativeArms": {
       "denied": {
         "requestId": "ctrl-1xxrzo21k29yc31rawhls0qn",
@@ -1320,7 +1320,7 @@
         "cancelStatus": 200
       }
     },
-    "bootedAt": 1795545231453,
-    "elapsedMs": 463340
+    "bootedAt": 1795567878448,
+    "elapsedMs": 404798
   }
 ]

@@ -1,0 +1,6 @@
+# cmd: env TEAM_TEST_HOST=next node --import ./tests/next-host/host-loader.mjs -e import('@deepseek-ai/dsh-scope/package.json',{with:{type:'json'}}).then(m=>console.log('PLAIN-NODE dsh-scope version='+m.default.version))
+# cwd: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut
+
+PLAIN-NODE dsh-scope version=0.2.2-rc.5
+
+[exit 0]

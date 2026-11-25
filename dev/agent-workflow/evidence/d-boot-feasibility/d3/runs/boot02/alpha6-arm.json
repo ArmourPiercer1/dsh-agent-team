@@ -1,9 +1,9 @@
 {
   "spawned": true,
-  "port": 3196,
+  "port": 13000,
   "threw": false,
   "reachable": true,
-  "bootUrl": "http://127.0.0.1:3196/?token=<redacted>",
+  "bootUrl": "http://127.0.0.1:13000/?token=<redacted>",
   "error": "",
   "errorHead": "",
   "rowRefused": true,
@@ -16,10 +16,10 @@
   "recordedFactPresent": false,
   "recordedFactReachable": true,
   "recordedFactReason": "round 68: the row gate (host.ts validateTeamPluginConfig -> centre-config.ts) builds the product host-surface point at the refusal and records the invocation-authority fact + REFUSED/not-started settlement before the unchanged typed throw; this probe reads them back from disk",
-  "refusalFactFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-01-20Z/centre/alpha6.host-surface.facts.jsonl",
+  "refusalFactFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-40-55Z-next/centre/alpha6.host-surface.facts.jsonl",
   "refusalFactCount": 1,
   "refusalFact": {
-    "callId": "alpha6:b559f3b3-2819-4271-928d-f5c05b2e478d:0",
+    "callId": "alpha6:288bbe99-39b7-4bea-b499-16350055b17e:0",
     "decision": "deny",
     "refusalCode": "ADMISSION_ALPHA6_UNAVAILABLE",
     "axis": "host.service",
@@ -37,11 +37,11 @@
       "REFUSED"
     ]
   },
-  "refusalSettlementRecordFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-01-20Z/centre/settlement/host-surface/alpha6/exec-c5bb0162838341eb06d2cc5996a6f10054ec4173.settlement.json",
+  "refusalSettlementRecordFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-40-55Z-next/centre/settlement/host-surface/alpha6/exec-c270e66a206707667db3d834dd36a75ea724655e.settlement.json",
   "refusalSettlementError": null,
   "wakeIntentFiles": 0,
-  "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261125T00-01-20Z/instance-port3196.log",
-  "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-01-20Z",
+  "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261125T00-40-55Z-next/instance-port13000.log",
+  "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-40-55Z-next",
   "configGate": "ADMISSION_ALPHA6_UNAVAILABLE: ADMISSION_ALPHA6_ROUTING_REQUIRED — alpha6ReviewRouting needs a v5 Blueprint whose authored `reviewRouting` block is enabled — with no authored policy there is no routing decision to take, and Alpha.6 has no implicit default. a coherent configuration (ADMISSION_ALPHA6_ROUTING_REQUIRED / _CENTRE_REQUIRED / _WAKE_INTENT_PATH_REQUIRED). A routing decision executes nothing, so no axis is invented: the wake is a governed DELIVERY with durable intent + confirmation facts, and the Officer's calls are admitted under the OFFICER's binding",
   "refusalTable": {
     "code": "ADMISSION_ALPHA6_UNAVAILABLE",

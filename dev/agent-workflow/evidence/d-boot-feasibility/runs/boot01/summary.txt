@@ -1,1 +1,1 @@
-RUN-SUMMARY run=a5sf-live-member-2026-11-24T23-43-47-989Z-b1 suite=a5sf-live-member overall=PASS cases=6 PASS:6 worlds=u5u5a5sfdev1-20261124T23-43-48Z recordClass=DEV-LIVE (not candidate evidence)
+RUN-SUMMARY run=a5sf-live-member-2026-11-25T00-30-13-278Z-b1 suite=a5sf-live-member overall=PASS cases=6 PASS:6 worlds=u5u5a5sfdev1-20261125T00-30-13Z-next recordClass=DEV-LIVE (not candidate evidence)

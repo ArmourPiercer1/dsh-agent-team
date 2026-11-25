@@ -1,0 +1,205 @@
+{
+  "schema": "census-identity-compare/1",
+  "head": "5cb5c606203eaf07dd78a2a5c67b442899db2377",
+  "run": "45517751283",
+  "job": "138881626487",
+  "note": "The graded identity set is the set of FAILING test identities (ci-pr-gate #census: reports.map(r=>r.ids)). Both captures report failed=0, so both graded sets are empty and therefore identical. The per-root counts are also identical. The per-root digest differs by capture because task_id embeds the capture number; it is not an identity-set signal.",
+  "captures": [
+    {
+      "capture": 1,
+      "source": ".artifacts/census/census-20261125T003534Z-14620-1.json",
+      "digest": "sha256:8b8e21c2d8052f1b6627562cbe463a97b3c1dabb9f681a367565ed0b00ee7dbe"
+    },
+    {
+      "capture": 2,
+      "source": ".artifacts/census/census-20261125T003534Z-14620-2.json",
+      "digest": "sha256:820337ac65c59531f1cca41c9e515eac8a20ea3405a0279722c7003711b3d5ae"
+    }
+  ],
+  "totals": {
+    "roots": 11,
+    "files": 599,
+    "assertions": 7424,
+    "failedCapture1": 0,
+    "failedCapture2": 0,
+    "gradedIdentitySetsEqual": true
+  },
+  "roots": [
+    {
+      "root": "packages/client",
+      "capture1": {
+        "files": 29,
+        "assertions": 512,
+        "skipped": 0,
+        "state": "PASS"
+      },
+      "capture2": {
+        "files": 29,
+        "assertions": 512,
+        "skipped": 0,
+        "state": "PASS"
+      },
+      "shapeEqual": true
+    },
+    {
+      "root": "packages/contracts",
+      "capture1": {
+        "files": 13,
+        "assertions": 150,
+        "skipped": 0,
+        "state": "PASS"
+      },
+      "capture2": {
+        "files": 13,
+        "assertions": 150,
+        "skipped": 0,
+        "state": "PASS"
+      },
+      "shapeEqual": true
+    },
+    {
+      "root": "packages/domain",
+      "capture1": {
+        "files": 43,
+        "assertions": 805,
+        "skipped": 0,
+        "state": "PASS"
+      },
+      "capture2": {
+        "files": 43,
+        "assertions": 805,
+        "skipped": 0,
+        "state": "PASS"
+      },
+      "shapeEqual": true
+    },
+    {
+      "root": "packages/domain/compatibility",
+      "capture1": {
+        "files": 7,
+        "assertions": 76,
+        "skipped": 0,
+        "state": "PASS"
+      },
+      "capture2": {
+        "files": 7,
+        "assertions": 76,
+        "skipped": 0,
+        "state": "PASS"
+      },
+      "shapeEqual": true
+    },
+    {
+      "root": "packages/legacy",
+      "capture1": {
+        "files": 7,
+        "assertions": 101,
+        "skipped": 0,
+        "state": "PASS"
+      },
+      "capture2": {
+        "files": 7,
+        "assertions": 101,
+        "skipped": 0,
+        "state": "PASS"
+      },
+      "shapeEqual": true
+    },
+    {
+      "root": "packages/remote",
+      "capture1": {
+        "files": 16,
+        "assertions": 244,
+        "skipped": 0,
+        "state": "PASS"
+      },
+      "capture2": {
+        "files": 16,
+        "assertions": 244,
+        "skipped": 0,
+        "state": "PASS"
+      },
+      "shapeEqual": true
+    },
+    {
+      "root": "packages/runtime",
+      "capture1": {
+        "files": 409,
+        "assertions": 4514,
+        "skipped": 0,
+        "state": "PASS"
+      },
+      "capture2": {
+        "files": 409,
+        "assertions": 4514,
+        "skipped": 0,
+        "state": "PASS"
+      },
+      "shapeEqual": true
+    },
+    {
+      "root": "packages/runtime/controlled-fs",
+      "capture1": {
+        "files": 4,
+        "assertions": 42,
+        "skipped": 0,
+        "state": "PASS"
+      },
+      "capture2": {
+        "files": 4,
+        "assertions": 42,
+        "skipped": 0,
+        "state": "PASS"
+      },
+      "shapeEqual": true
+    },
+    {
+      "root": "packages/storage",
+      "capture1": {
+        "files": 23,
+        "assertions": 287,
+        "skipped": 0,
+        "state": "PASS"
+      },
+      "capture2": {
+        "files": 23,
+        "assertions": 287,
+        "skipped": 0,
+        "state": "PASS"
+      },
+      "shapeEqual": true
+    },
+    {
+      "root": "packages/testkit",
+      "capture1": {
+        "files": 34,
+        "assertions": 527,
+        "skipped": 0,
+        "state": "PASS"
+      },
+      "capture2": {
+        "files": 34,
+        "assertions": 527,
+        "skipped": 0,
+        "state": "PASS"
+      },
+      "shapeEqual": true
+    },
+    {
+      "root": "packages/tools",
+      "capture1": {
+        "files": 14,
+        "assertions": 166,
+        "skipped": 0,
+        "state": "PASS"
+      },
+      "capture2": {
+        "files": 14,
+        "assertions": 166,
+        "skipped": 0,
+        "state": "PASS"
+      },
+      "shapeEqual": true
+    }
+  ]
+}

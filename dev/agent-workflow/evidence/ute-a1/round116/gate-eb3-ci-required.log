@@ -1,0 +1,7 @@
+# cmd: node scripts/eb3-ci-required.mjs
+# cwd: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut
+# started: 2026-11-25T01:21:10Z
+
+EB3-CI-REQUIRED pass workflows=11 findings=0
+
+EXIT=0

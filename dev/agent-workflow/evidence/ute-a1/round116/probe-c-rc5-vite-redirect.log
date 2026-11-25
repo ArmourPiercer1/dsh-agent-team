@@ -1,0 +1,19 @@
+# cmd: env TEAM_TEST_HOST=next node node_modules/vitest/vitest.mjs run --config .scratch/r116/probe/vitest.probe-alias.config.ts
+# cwd: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut
+
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut
+
+stdout | .scratch/r116/probe/host-probe.test.ts > host resolution probe > records the tree Vite resolved for @deepseek-ai/*
+PROBE dsh-scope version=0.2.2-rc.5
+PROBE dsh-tools version=0.2.2-rc.5
+
+ ✓ .scratch/r116/probe/host-probe.test.ts (1 test) 2ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  09:04:55
+   Duration  125ms (transform 33ms, setup 0ms, import 41ms, tests 2ms, environment 0ms)
+
+
+[exit 0]

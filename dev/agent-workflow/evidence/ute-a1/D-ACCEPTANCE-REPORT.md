@@ -1,14 +1,24 @@
 # D acceptance report — UTE vNext A1 cut + centre (candidate)
 
-> ## ⚠️ ENTRY POINT — read [`CANDIDATE-REPORT.md`](CANDIDATE-REPORT.md) first (round 115, 2026-11-24)
+> ## ⚠️ ENTRY POINT — read [`CANDIDATE-REPORT.md`](CANDIDATE-REPORT.md) first (round 116, 2026-11-25)
 >
 > **This file is the append-only CHRONOLOGICAL RECORD, not the current truth.** The single current statement
 > of the candidate — identity/HEAD/base/PR state, the static closure and exactly what its numbers do and do not
 > prove, the single-authority verdict, the P1–P5 ladder with the OS negative controls and the declared
-> exceptions, Required CI (last fully green hosted set + why census skips on a draft), the C1–C18 summary with
-> every UNSUPPORTED/ENV-LIMITED row named, host-modification authority (`CORE PATCH BUDGET = 0`, both pins
-> pristine), the candid limits list, the reviewer's exact reproduction commands, and the boundaries in force —
-> lives in **[`CANDIDATE-REPORT.md`](CANDIDATE-REPORT.md)**.
+> exceptions, Required CI (**the final hosted Required set is green at `5cb5c6062`, with `ci-census` executed:
+> 2 captures, 599 files / 7,424 assertions each, identical identity sets; the PR was restored to DRAFT
+> immediately after**), the C1–C18 summary with every UNSUPPORTED/ENV-LIMITED row named, host-modification
+> authority (`CORE PATCH BUDGET = 0`, both pins pristine), the candid limits list, the reviewer's exact
+> reproduction commands, and the boundaries in force — lives in **[`CANDIDATE-REPORT.md`](CANDIDATE-REPORT.md)**.
+>
+> **Round 116 additions folded into that report:** the two hosted reds found and fixed in this stretch (the
+> devex `maxRecords` capacity bound, measured; the dispatch-parity evidence regenerated deliberately); the fresh
+> dual-host candidate-gate verdict at `92be91dfb` (`62 judges / 60 PROVEN / 2 known-refuted / 0 env-limited`,
+> `pass` on both hosts) with the explicit proof that `packages/*/src` is unchanged up to `5cb5c6062`, so the
+> verdict is representative — and is **not** claimed to have run at `5cb5c6062`; the rc.5 matrix outcome
+> (18/18 B-ladder arms on both hosts; the 40 host-importing vitest suites **still not gradable** through the
+> one selector — now measured as `ENV-LIMITED` at the Vite layer, `round116/VITEST-HOST-PROBE.md`); and the
+> security findings' dispositions (SEC-01 fixed, SEC-02 fixed with history retained, SEC-03/SEC-04 declared).
 >
 > Nothing below is deleted, corrected retroactively, or re-ordered: the round sections (114 → 55) keep the
 > numbers of the head they were measured at, and they are **historical where they disagree with

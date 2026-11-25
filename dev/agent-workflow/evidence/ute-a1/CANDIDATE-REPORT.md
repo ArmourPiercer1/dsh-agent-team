@@ -6,7 +6,7 @@ claims, what is measured, what is NOT measured, and what the owner must decide. 
 historical where they disagree with this file) and it does not replace `C1-C18-SIGNOFF.md`, which is the
 itemised per-contract-row sign-off this file summarises.
 
-**Round 115, 2026-11-24.** Every number below was measured in `.worktrees/vnext-a1-cut` at the HEAD named in
+**Round 116, 2026-11-25.** Every number below was measured in `.worktrees/vnext-a1-cut` at the HEAD named in
 §1 and is traceable to a named log or artifact. Where a claim is not measured, it says so.
 
 ---
@@ -16,9 +16,9 @@ itemised per-contract-row sign-off this file summarises.
 | field | value | how to check |
 | --- | --- | --- |
 | branch | `vnext/a1-cut` | `git rev-parse --abbrev-ref HEAD` |
-| **HEAD** | **`974c643de747d846a9ebeb2edb82677813ade467`** | `git log -1` → `974c643de chore(ute-vnext): round-114 postcommit gate logs at 194a5c3ce` |
+| **HEAD** | **`5cb5c606203eaf07dd78a2a5c67b442899db2377`** | `git log -1` → `5cb5c6062 fix(ci): regenerate the dispatch-parity evidence for the round-114 control suite (round 115b)` |
 | base | `master @ a19d1df01` (frozen A0, PR #821) | `git merge-base --is-ancestor HEAD origin/master` → false; `origin/master` = `a19d1df01` |
-| PR | **#822 — DRAFT (unmerged)** | `gh pr view 822 --json isDraft,state,baseRefName,headRefOid` → `{"baseRefName":"master","isDraft":true,"state":"OPEN","headRefOid":"974c643de747d846a9ebeb2edb82677813ade467"}` |
+| PR | **#822 — DRAFT (unmerged)** | `gh pr view 822 --json isDraft,state,baseRefName,headRefOid,autoMergeRequest` → `{"autoMergeRequest":null,"baseRefName":"master","isDraft":true,"state":"OPEN","headRefOid":"5cb5c606203eaf07dd78a2a5c67b442899db2377"}` |
 | worktree | `.worktrees/vnext-a1-cut` (sole writer) | — |
 | A0 contract implemented | `docs/plans/memo/ute-p0-20261121/` — `01-ASSET-INVENTORY.md` (37/180/69,512 census), `03-RETIRE-KEEP.md` (retire/keep map), `04-SEAMS.md` (the P1–P5 proof obligations), `06-CAPABILITY-CONTRACT.md` (the C1–C18 list A1 must dispose of); frozen evidence is read-only in this candidate | files unchanged |
 | record class of every live claim | **`DEV-LIVE`** — a real booted pinned host, **not a gate** | §5, §6 |
@@ -37,8 +37,8 @@ PRODUCT-PROVEN, the live layer is non-required by owner ruling, and the model in
 
 ## 2. Static closure — the four zeros, the vehicle counts, and what they do NOT prove
 
-Fresh at this HEAD (logs: `round115/gate-ute-cut-closure.log`, `round115/gate-ute-p0-assets.log`,
-`round115/gate-place-dist-glue.log`):
+Fresh at this HEAD (logs: `round116/gate-ute-cut-closure.log`, `round116/gate-ute-p0-assets.log`,
+`round116/gate-place-dist-glue.log`):
 
 ```
 $ node scripts/ute-cut-closure.mjs --check
@@ -154,6 +154,20 @@ are `OS-1/2/3` plus the provider's own kernel-level refusals.
 | **5 persistent bash** | `ADM-125` positive (the real positive control) / `ADM-75` negative (`ADMISSION_EXECUTION_UNAUTHORIZED`, zero spawns, zero confines); `ADM-68` in the ladder is the **declared non-run** (the ladder world compiles no execution authorization) | `d3:persistent-subprocess` — rc.2 **and** rc.5, 2 agreeing boots, **PROVEN**: first call admitted (`process.exec allow`), durable shell state written, a second turn reuses the **same** shell and reads it back, both settlements `ADMITTED→RUNNING→COMPLETED` | the shell is wrapped by the host `sandbox` provider (`sandbox.confine`; bubblewrap 0.11.1 verified usable, Landlock launcher fallback): the in-lane file is written (32 B) while the out-of-lane write is refused — the shell itself reports `Read-only file system`, and the driver outside the sandbox finds no file (0 B) | `ADM-68` is a disclosed, labelled non-run (a skip that prints a machine line; never a pass) |
 | **6 run_code / PTC** | `ADM-76` negative (typed `ADMISSION_PTC_UNAVAILABLE` + ruling status, zero worker, `REFUSED`/`not-started`), `ADM-79`, `ADM-87`; `ADM-69`/`ADM-147` positives are **`NOT APPLICABLE — PRODUCT UNSUPPORTED`**, asserted by `ADM-80`/`ADM-148` | **no live judge and none owed**: the product does not offer the capability, so the refusal is the deliverable | the refusal happens **before** any worker exists (zero effect); no OS profile is created for a call that never runs | **`UNSUPPORTED BY PRODUCT RULING`** (owner, 2026-11-24): `docs/reviews/20261124-0151.txt` §PTC, `ADR-ptc-unsupported.md`, `ptc-product-ruling.mjs` |
 
+**rc.5 test-matrix outcome, in one place** (`RC5-TEST-MATRIX.md`; numbers from round 112/116 measurements):
+
+- **The 18 B-ladder arms are green on BOTH hosts** — `18/18` on rc.2 and `18/18` on rc.5 (16 pass + the same
+  2 declared non-runs each), through the one selector. The rc.5 world mounts the host's exported executor
+  services and the batch dispatch shape; no arm, assertion, skip or timeout moved.
+- **The 40 host-importing vitest suites are still not gradable on rc.5 through the one selector** — and round
+  116 now *measured* why instead of assuming it: the one selector and the Node loader are correct (plain-Node
+  control resolves `0.2.2-rc.5`), but **Vite resolves bare `@deepseek-ai/*` before Node's loader is asked**, so
+  `NODE_OPTIONS=--import` and `server.deps.inline` both leave the suites on `0.2.0-rc.2`. A Vite-side redirect
+  derived from the selector's mapping *would* work but is a **second selection mechanism**, so it is refused.
+  The finding is **`ENV-LIMITED`, layer = Vite**, 0 of 40 counted as rc.5 coverage; the 5 representative suites
+  that ran green under `TEAM_TEST_HOST=next` are a **false green** (they graded rc.2 modules) and are not
+  coverage. Evidence: `round116/VITEST-HOST-PROBE.md`, `round116/probe-*.log`, `RC5-TEST-MATRIX.md` §10.
+
 **Declared exceptions, in one place (they are promises, not gaps):**
 
 1. **PTC / `run_code` — `UNSUPPORTED BY PRODUCT RULING`.** The refusal is typed, durable and machine-reported;
@@ -173,22 +187,51 @@ are `OS-1/2/3` plus the provider's own kernel-level refusals.
 
 ## 5. Required CI
 
-### 5.1 The last fully green hosted set, with census
+### 5.1 The final hosted Required set at this head — every layer green, census executed
 
-**Run `45429461306`, head `a4a00fc816124d3d82bbebd8d37f833d7bc172c1`, 2026-11-24T15:46:52Z — every layer and
-the synthetic `ci-required` context SUCCESS, with the census actually RUN.** (Immediately preceding fully green
-set: run `45424962377` @ `fc4bac62e2`, 15:23Z, same shape — two independent heads.)
+**Run `45517751283` (event `pull_request`, 2026-11-25T00:23:49Z) @ head `5cb5c606203eaf07dd78a2a5c67b442899db2377`
+— every layer and the synthetic `ci-required` context SUCCESS, with the census actually RUN.** The hosted
+check-run table for this head is saved verbatim at `round116/hosted-check-runs-5cb5c6062.tsv`.
 
-| job | conclusion | what that layer covers |
+| job (id) | conclusion | what that layer covers |
 | --- | --- | --- |
-| `synthesize-merge-tree` | success | the candidate tree the layer jobs grade |
-| `ci-fast` | success | the fast change-set legs (cheap static/graph/tooling checks) |
-| `ci-product` | success | the product's own suites |
-| `ci-integration` | success | the migrated UTE capability suites (`tests/checks/eb3-ute-migrated-suites.txt`, 238 tests) plus the EB tooling legs (incl. `devex-diag`, the leg that was red — §5.3) |
-| `ci-security` | success | the token-runner / security layer |
-| `ci-census / census-runtime` | success | the nine-root census with the pristine pinned host provisioned from `tests/paths.mjs` |
-| `ci-required` | success | the synthetic context that grades **every** layer: absence, skip, cancel, ENV_BLOCK, refused and failure are all **NOT green** |
-| `ci-required-deferred` | skipped | the complement job that runs only on a draft/deferred PR |
+| `synthesize-merge-tree` (138881480001) | success | the candidate tree the layer jobs grade |
+| `pr-gate` (138881479726) | success | the PR-shape gate |
+| `candidate-protection` (138881479801) | success | the draft/protected-branch guard |
+| `pr-settlement-gate` (138881480131) | success | the settlement marker check |
+| `ci-fast / ci-fast` (138881626146) | success | the fast change-set legs |
+| `ci-product / ci-product` (138881626116) | success | the product's own suites |
+| `ci-integration / ci-integration` (138881626234) | success | the migrated UTE capability suites plus the EB tooling legs — **including the `devex-diag` leg that was red (§5.3a)** |
+| `ci-security / ci-security` (138881626166) | success | the token-runner / security layer |
+| `ci-census / census-runtime` (138881626487) | success | the nine-root census with the pristine pinned host (621.6 s) |
+| `ci-required` (138891893317) | **success** | the synthetic context that grades **every** layer: absence, skip, cancel, ENV_BLOCK, refused and failure are all **NOT green** |
+| `ci-required-deferred` (138882850386) | skipped | the complement job; skipped because the PR was **ready** for this run (see §5.2) |
+
+**The census was not a skip.** Hosted job log (`round116/hosted-ci-census-45517751283.log`, extracted machine
+lines from `gh api …/jobs/138881626487/logs`; capture evidence copied to
+`round116/census-evidence-1.json` / `-2.json`):
+
+```
+DSH-CENSUS-POPULATION baseline=ok roots=11 files=599 baseline_files=599 growth=none added=0
+DSH-CENSUS-CAPTURE capture=1 mode=live order=capture-major tasks=11 passed=11 failed=0 incomplete=0 assertions_executed=7424 assertions_total=7424 skipped_total=0
+DSH-CENSUS-CAPTURE capture=2 mode=live order=capture-major tasks=11 passed=11 failed=0 incomplete=0 assertions_executed=7424 assertions_total=7424 skipped_total=0
+DSH-CENSUS-PLAN execution=plan tasks=22 roots=11 captures=2 plan=sha256:bb56587f… host=639ed015397290b3745d163aafe02ffee4aa3f84
+DSH-CI-LEG leg=census verdict=pass seconds=621.6 … shards=1 aggregate=PASS expected=22 observed=22 codes=none
+```
+
+**2 captures, `599f` / `7424l` each, identical identity sets.** The identity set this gate grades is the set of
+**failing** test identities (`scripts/ci-pr-gate.mjs:2148-2156`); both captures report `failed=0`, so both
+graded sets are empty and therefore identical, and the per-root counts/shapes are identical too
+(`round116/hosted-census-identity-compare.json`: 11 roots, 599 files, 7,424 assertions, all root shapes equal
+between captures). The per-root digest differs only because the capture number is embedded in `task_id`; it is
+not an identity-set signal.
+
+**The PR was restored to DRAFT immediately after** — `gh pr view 822` now reports `isDraft=true`,
+`autoMergeRequest=null`, `headRefOid=5cb5c6062…`. That conversion fires a fresh `pull_request` evaluation
+(run `45520935697`, 00:48:23Z) whose `ci-required` is **failure** for exactly one reason: `ci-census` is
+`skipped` on a draft (§5.2). **That is the draft mechanism, not a candidate red** — the final Required set that
+was actually executed at this head is the green run above, and no hosted green is claimed for a draft-state
+re-evaluation.
 
 ### 5.2 `ci-census` skips on a draft — by design, and it is load-bearing
 
@@ -196,75 +239,106 @@ set: run `45424962377` @ `fc4bac62e2`, 15:23Z, same shape — two independent he
 `:205` runs a complementary `ci-required-deferred` job on exactly the negated condition. So **while PR #822 is
 a draft, census does not run and `ci-required` cannot be green** — the deferred job reports the skip, and
 `ci-required` counts it as NOT green. That is the mechanism, not a malfunction: the owner's draft state is what
-suppresses the census.
+suppresses the census, and the round-116 green set exists precisely because the PR was briefly marked ready for
+that one hosted evaluation.
 
-### 5.3 The honest statement about "the final head"
+### 5.3 The two reds found and fixed in this stretch — and why neither is a weakened assertion
 
-**The final head must re-earn the set.** At the HEAD measured by this report (`974c643de`) the hosted set is
-**red**, and the two causes are named:
+**(a) The `devex-diag` capacity bound (`maxRecords` 600 → 900).** At `974c643de`, `ci-integration` failed in
+`EB4-B/D/E tooling suites` → `tests/u7-3-devex/devex-integration.test.mjs` **E4/E5** with
+`BOUND HIT: more than maxRecords 600 committed run records … REFUSED, no partial report is produced` (run
+`45508260944`, job `138849199239`, step 19; reproduced locally). Measured cause: the branch carries **602**
+committed `u5-run-record/1` records. `scripts/integration-order.mjs` `BOUNDS.maxRecords` was raised
+**600 → 900** with the measurement recorded in the file's own BOUNDS header:
 
-- `ci-census: skipped` — because the PR is a draft (§5.2). Nothing in this candidate can change that while the
-  draft stays draft.
-- `ci-integration: failure` — one step: `EB4-B/D/E tooling suites` → `tests/u7-3-devex/devex-integration.test.mjs`
-  arms **E4/E5** with `BOUND HIT: more than maxRecords 600 committed run records … REFUSED, no partial report
-  is produced` (run `45508260944`, job `138849199239`, step 19). Measured cause: the branch now carries **602**
-  committed `u5-run-record/1` records (see §5.4), i.e. the audit's *capacity budget* — not an assertion — was
-  exceeded. **Fixed in this round** by raising the budget **with a measurement** (the repo's own doctrine), and
-  re-measured green locally: `devex-diag` leg **44 tests / 44 pass / 0 fail** and `integration-order` producing
-  its report without `BOUND HIT` (`round115/gate-devex-diag.log`). The hosted leg can only be re-earned after a
-  push, which is the coordinator's run.
-
-Nothing above is a claim that the hosted set is green at the final head. It is a claim about what was measured,
-where, and what is now locally green.
-
-### 5.4 The round-115 change, and why it is not a weakened assertion
-
-`scripts/integration-order.mjs` `BOUNDS.maxRecords` **600 → 900**. Measurement at `974c643de` (recorded in the
-file's own BOUNDS header):
-
-| measure | value |
+| measure at `974c643de` | value |
 | --- | --- |
 | tracked `.json` under `dev/agent-workflow/evidence/**` (`git ls-files`) | **10,440** (12 over the 512 KiB cap, never read) |
 | files mentioning `u5-run-record/1` | **623** |
 | files that **parse** as `u5-run-record/1` | **602** |
-| `maxCandidates` (unchanged) | 12,000 vs 10,440 measured (~1,560 headroom) |
+| `maxCandidates` (unchanged) | 12,000 vs 10,440 measured |
 
 The bound is a **capacity budget**, never a safety assertion — the script's own header says "raise the bound
-with a measurement" and records two earlier raises (2026-11-13, 2026-11-22/24) done exactly this way. The
-controls that make a bound-hit meaningful are untouched and were re-run green: `E7` still builds
-`BOUNDS.maxRecords + 1` fixture records and still requires `BOUND HIT` (a partial audit is never a clean
-report), `E8` still requires a late record to be graded without `BOUND HIT`, `E4` still requires `--strict` to
-fail while any record does not bind the candidate head. **No committed evidence was deleted or trimmed to fit
-the bound; no test assertion, timeout, retry or skip was widened.**
+with a measurement" and records two earlier raises done exactly this way. **No assertion was weakened:** `E7`
+still builds `BOUNDS.maxRecords + 1` fixture records and still requires `BOUND HIT`, `E8` still requires a late
+record to be graded without `BOUND HIT`, `E4` still requires `--strict` to fail while any record does not bind
+the candidate head. No committed evidence was deleted or trimmed. Hosted proof: `ci-integration` is **success**
+in the green set (§5.1). Local proof: `round116/gate-devex-diag.log` (44/44). **Re-measured at this head:** `EB3-RUN-MANIFEST` now counts **634** tracked run records — 602 at round 115 plus
+the 32 run records of the dual-host `92be91dfb` candidate-gate evidence (13 already committed at `5cb5c6062`,
+19 staged with this round's evidence). Still well under the raised 900 bound; the delta is recorded, not hidden.
 
----
-
-### 5.5 The local gate block at this HEAD, pasted verbatim
-
-From `dev/agent-workflow/evidence/ute-a1/round115/` (each file also carries its own `EXIT=` line):
+**(b) The dispatch-parity evidence was stale (`92be91dfb`).** Hosted `ci-integration` at `92be91dfb` failed on
+`scripts/test-catalog.test.mjs` → `dispatch: the committed parity evidence still describes the resolved set`:
+`+ sha256:b5b99294… / - sha256:f8488aa9…`. Cause: round 114 added `tests/checks/d4-evidence-consistency.test.mjs`
+to a dispatch leg, so the resolved dispatch union grew by exactly one suite (77 → 78 files) while the committed
+parity evidence (`dev/agent-workflow/evidence/tinf-m6-dispatch-parity/old-vs-new-argv.txt`) still pinned the
+previous union digest. **The control refused correctly** rather than let the dispatched set drift away from its
+evidence. The evidence was regenerated deliberately with the repo's own generator and its declared base:
 
 ```
-UTE-CUT-CLOSURE pass deleted=148 references=3 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 retiredSurfaces=12 findings=0
-UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 wave1=146 wave2=0 cut=cut(148/148) findings=0
-place-dist-glue: done (35 placement(s))
-docs:sync --check: docs=193 notes=4 plans=152(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
-EB3-CI-REQUIRED pass workflows=11 findings=0
-DSH-TEST-CATALOG tests=786 digest=sha256:8982e6e9d6c029234b185be68d97930db21d7171c0b41659e3d0a2b9c9b1fd4e refused=0 findings=0
+node scripts/dispatch-tests.mjs --parity --old-ref e5bf05670
+union old=25 new=78 set=sha256:b5b992944b59753bf4afb1f4ddff0e872bd1e5bf4c520b7bd25bd49caae92da2
+DISPATCH-PARITY mode=inspect DIFFERS steps=19 old_files=25 new_files=78 problems=0
+```
+
+The only added file is `tests/checks/d4-evidence-consistency.test.mjs`; `problems=0`, nothing missing. **No
+assertion was relaxed, no suite removed, no timeout touched** — the union digest and the file count moved
+together, which is exactly what the control demands. Full note: `round115/dispatch-parity-regeneration.md`;
+hosted proof: `pr-gate` and `ci-integration` are success at `5cb5c6062` (§5.1).
+
+### 5.4 The local gate block at this HEAD, pasted verbatim
+
+From `dev/agent-workflow/evidence/ute-a1/round116/` (each file also carries its own `EXIT=` line):
+
+```
+$ A5SF_REQUIRE_PINNED_HOST=1 node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1
 DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 set=sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975
-  (tests 255 / pass 252 / fail 0 / skipped 3)
-DSH-TEST-DISPATCH mode=run leg=devex-diag suites=2 files=2 exit=0 set=sha256:08ea42463381f08e6797e90afa6c9bc910a7dc6e4b1e3d7891f94bfce22bb3e1
-  (tests 44 / pass 44 / fail 0)
+tests 255 / pass 252 / fail 0 / skipped 3
+
+$ node scripts/dispatch-tests.mjs --run --leg devex-diag
+tests 44 / pass 44 / fail 0 / skipped 0   (set=sha256:08ea42463381f08e6797e90afa6c9bc910a7dc6e4b1e3d7891f94bfce22bb3e1)
+
+$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+DSH-TEST-CATALOG tests=786 digest=sha256:8982e6e9d6c029234b185be68d97930db21d7171c0b41659e3d0a2b9c9b1fd4e refused=0 findings=0
+(discovered/collected 734, excluded 14, uncollected 38; by runner node=147 none=7 vitest=632)
+
+$ node scripts/ute-cut-closure.mjs --check
+UTE-CUT-CLOSURE pass deleted=148 references=3 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 retiredSurfaces=12 placements=self findings=0
+
+$ node scripts/ute-p0-assets.mjs --check
+UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 wave1=146 wave2=0 cut=cut(148/148) findings=0
+
+$ node scripts/docs-sync.mjs --check
+docs:sync --check: docs=193 notes=4 plans=152(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+
+$ node scripts/place-dist-glue.mjs
+place-dist-glue: done (35 placement(s))          # every line (byte-identical)
+
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=11 findings=0
+
+$ node scripts/eb3-security-run.mjs --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt --timeout 20000
 EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0 clock_ms=20000
-EB3-RUN-MANIFEST pass records=602 strict=0 incomplete=11 findings=0
-  (UTE G1 nine-file argv: tests 89 / pass 89 / fail 0 / skipped 0)
-DSH-CI-LEG leg=graph-parse verdict=pass … leg=state-freshness verdict=pass … leg=append-only-log verdict=pass
-DSH-CI-LEG leg=artifacts-at-head verdict=pass … leg=census verdict=pass
-DSH-CI-VERDICT pass pass=10 fail=0 skip=0 skipped=none legs=10 refused=0 refusedlegs=none seconds=294.9
+
+$ node --test --test-force-exit --test-timeout=480000 --test-reporter=spec <the nine UTE G1 files>
+tests 89 / pass 89 / fail 0 / skipped 0
+
+$ node scripts/eb3-run-manifest.mjs
+EB3-RUN-MANIFEST pass records=634 strict=0 incomplete=11 findings=0
+
+$ node scripts/ci-pr-gate.mjs --full --census-captures 2
+DSH-CI-VERDICT pass pass=10 fail=0 skip=0 skipped=none legs=10 refused=0 refusedlegs=none seconds=285.5
+DSH-CI-LEG leg=census verdict=pass seconds=241.3 detail=… captured 599f/7424l, 599f/7424l vs baseline-declared 626 / 7936; 2 captures, identical identity sets … identity set IDENTICAL to the published baseline
+EXIT=0
 ```
 
-`ci-pr-gate`'s own run line for that block: `DSH-CI-RUN head=974c643de mode=full node=v24.21.0 … workers=4`,
-census `599f/7424l` captured twice with **identical identity sets** (comparison file
-`dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-comparison-20261124T232818Z-3.json`).
+`ci-pr-gate`'s own run line for that block: ``DSH-CI-RUN head=5cb5c6062 mode=full … workers=4` → `DSH-CI-VERDICT pass pass=10 fail=0 skip=0 … seconds=286.4` (`round116/gate-ci-pr-gate.log`).`
+
+### 5.5 What a green block means — and does not
+
+Only that the *static and in-process* obligations named in each row hold at this head. A green `ci-pr-gate`
+means the local full gate produced its verdict; it is **not** Required CI, which only exists hosted (§5.1). A
+green candidate gate would still be `DEV-LIVE`, never PRODUCT-PROVEN (§8.2).
 
 ## 6. C1–C18 sign-off
 
@@ -305,6 +379,19 @@ Two known documentation defects are named in `C1-C18-SIGNOFF.md` §6 rather than
 driver README's stale REFUTED text (**F-1**, corrected in round 114 with a dated banner and a new machine check
 `tests/checks/d4-evidence-consistency.test.mjs`) and this repo's older `D-ACCEPTANCE-REPORT.md` §2.2 rows for
 C6/C7 (**F-2**, stale prose; the sign-off's values are the measured ones).
+
+**Security findings — dispositions, so none is mistaken for an open item** (`SECURITY-REVIEW-20261125.md`
+§ "Disposition"; `D-ACCEPTANCE-REPORT.md` ROUND 114):
+
+| finding | severity | disposition | where it stands |
+| --- | --- | --- | --- |
+| **SEC-01** admission fact not `fsync`'d | Low (durability) | **FIXED** — `packages/runtime/src/plugin/vnext/fact-ledger.mjs` fsyncs the file (and the directory on create) before `record()` returns; a refused fsync is a named fail-closed refusal and the settlement record is never opened; arms `SEC-01a…d`. Remaining bound: a physical power cut is not injectable in-process, so the ordering is pinned and the cut is not observed. | §8.6 |
+| **SEC-02** d4 README contradicted `results.json` | Low (evidence integrity) | **FIXED, history retained** — dated correction banner, round-87/88 text kept as `[HISTORICAL]`; machine check `tests/checks/d4-evidence-consistency.test.mjs` (RED on the pre-correction README). | `d-boot-feasibility/d4/README.md` |
+| **SEC-03** host-capability tools have no managed lane | Low (declared boundary) | **DECLARED, no behaviour change** — `CAPABILITY-MATRIX-C.md` row **C-host-capability** and acceptance-table **row 35**; never counted as confinement. | §8.5 |
+| **SEC-04** ungoverned rows outside every invariant | Informational | **DECLARED (unchanged)** — a labelled product mode, not a governed row. | §8.5 |
+
+No finding remains **open**. SEC-01/SEC-02 were defects and are fixed with arms; SEC-03/SEC-04 are declared
+boundaries of this generation and are owner decision 4 below.
 
 ---
 
@@ -358,16 +445,28 @@ log line (`host:"legacy"`/`source:tests/paths.mjs#TEST_USE_BASELINE_SHA`, `host:
    missing item is named: **`DEEPSEEK_API_KEY`** (optionally `DEEPSEEK_BASE_URL`).
 2. **No row is PRODUCT-PROVEN.** The only live layer is the candidate acceptance gate, which is
    **NON-REQUIRED by owner ruling** (`knownNonRequired` in `dev/ci/eb3-ci-manifest.json`); a green there is
-   `DEV-LIVE` at most. Last dual-host verdict: **62 judges / 60 PROVEN / 2 known-refuted / 0 env-limited,
-   `pass` on both hosts** at head `41d579119` (verdict
-   `dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-24T17-17-46-158Z/verdict.json`), one
-   disclosed dual-host run costing **83 m 48 s**. That verdict is **bound to `41d579119`, not to this HEAD**;
-   `git diff 41d579119..HEAD -- packages/*/src` is **not** empty (the round-114 ledger `fsync` is a product
-   change), so the machine record does **not** describe this head's product code. The final head must re-run it.
-3. **40 host-importing vitest suites cannot be graded on rc.5 through the single selector.** Vite resolves the
-   repo install before Node's loader (measured: a probe still imported `dsh-scope` `0.2.0-rc.2` under
-   `TEAM_TEST_HOST=next`); a `resolve.alias` would be a second selection mechanism, so those 40 stay rc.2-only
-   and are **not** counted as rc.5 coverage.
+   `DEV-LIVE` at most. **The current dual-host verdict was re-run fresh at `92be91dfb`** —
+   `CANDIDATE-GATE pass hosts=legacy,next judges=62 proven=60 known-refuted=2 env-limited=0`, 2 agreeing boots
+   per driver, one disclosed dual-host run (verdict
+   `dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-24T23-43-47-693Z/verdict.json`, summary copied
+   to `round116/candidate-gate-92be91dfb-summary.txt`). The 2 known-refuted are the single enumerated
+   `d4:ask-execute-process`, once per host, preserved as REFUTED (§4.2). **This verdict was NOT run at
+   `5cb5c6062`.** It is still representative of this head's product code because the product code is unchanged
+   between the two heads: `git diff --stat 92be91dfb..5cb5c6062 -- 'packages/*/src'` prints **nothing** (exit 0,
+   zero lines; saved as `round116/product-diff-92be91dfb-5cb5c6062.txt`). The commits in between are evidence
+   and evidence-regeneration only. A verdict is a claim about product code; the product code is identical, so
+   the claim transfers — it is **not** a claim that the gate ran at `5cb5c6062`.
+3. **40 host-importing vitest suites cannot be graded on rc.5 through the single selector — now measured, not
+   assumed: `ENV-LIMITED`, layer = Vite.** Round 116 ran a bounded probe (1 throwaway probe + 5 representative
+   suites, 2 client / 3 runtime). The selector and the Node loader are correct (plain-Node control resolves
+   `dsh-scope` `0.2.2-rc.5`), but **Vite resolves bare `@deepseek-ai/*` before Node's loader is asked**:
+   `TEAM_TEST_HOST=next NODE_OPTIONS=--import=…/host-loader.mjs` still yielded `0.2.0-rc.2`, and
+   `server.deps.inline` was inert. The 5 suites stayed green **while importing rc.2 modules** — a false green,
+   not coverage. A Vite `resolveId`/alias derived from the selector's own mapping **would** work (measured
+   `0.2.2-rc.5`) but is a **second host-selection mechanism**, so it is refused. **0 of 40 counted as rc.5
+   coverage.** What the host would need: a Vite/Vitest seam that lets the registered Node loader own bare
+   specifier resolution, or a host-published Vite plugin parameterised by the selected tree. Evidence:
+   `round116/VITEST-HOST-PROBE.md`, `round116/probe-*.log`, `RC5-TEST-MATRIX.md` §10.
 4. **The 18 B-ladder arms are green on BOTH hosts** (18/18 rc.2 and 18/18 rc.5; 16 pass + the same 2 declared
    non-runs each), but they are **in-process `MECHANISM`**, not boots; C-ptc stays unsupported.
 5. **Two declared boundaries (not controls):** **SEC-03** — host-capability tools (`subagent`,
@@ -412,12 +511,12 @@ log line (`host:"legacy"`/`source:tests/paths.mjs#TEST_USE_BASELINE_SHA`, `host:
 ## 9. Reviewer's checklist — the exact commands and the expected verdict lines
 
 Run in `.worktrees/vnext-a1-cut`. Every command is copy-pasteable; the expected line is what this round measured
-(logs under `dev/agent-workflow/evidence/ute-a1/round115/`).
+(logs under `dev/agent-workflow/evidence/ute-a1/round116/`; round-115 logs remain for the devex-bound row).
 
 | # | command | expected verdict line |
 | --- | --- | --- |
-| 1 | `git log -1 --format='%H %s'` | `974c643de747d846a9ebeb2edb82677813ade467 chore(ute-vnext): round-114 postcommit gate logs at 194a5c3ce` |
-| 2 | `gh pr view 822 --json isDraft,state,baseRefName` | `{"baseRefName":"master","isDraft":true,"state":"OPEN"}` |
+| 1 | `git log -1 --format='%H %s'` | `5cb5c606203eaf07dd78a2a5c67b442899db2377 fix(ci): regenerate the dispatch-parity evidence for the round-114 control suite (round 115b)` (the settlement comment names the round-116 commit on top) |
+| 2 | `gh pr view 822 --json isDraft,state,baseRefName` | `{"autoMergeRequest":null,"baseRefName":"master","isDraft":true,"state":"OPEN","headRefOid":"5cb5c6062…"}` |
 | 3 | `node scripts/ute-cut-closure.mjs --check` | `UTE-CUT-CLOSURE pass deleted=148 … prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 … findings=0` |
 | 4 | `node scripts/ute-p0-assets.mjs --check` | `UTE-P0-ASSETS pass modules=37 files=180 lines=69512 … cut=cut(148/148) findings=0` |
 | 5 | `node scripts/place-dist-glue.mjs` | `place-dist-glue: done (35 placement(s))` (every line `(byte-identical)`) |
@@ -425,19 +524,20 @@ Run in `.worktrees/vnext-a1-cut`. Every command is copy-pasteable; the expected 
 | 7 | `node scripts/eb3-ci-required.mjs` | `EB3-CI-REQUIRED pass workflows=11 findings=0` |
 | 8 | `node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7` | `DSH-TEST-CATALOG tests=786 digest=sha256:8982e6e9… refused=0 findings=0` (collected 734 / uncollected 38 / excluded 14) |
 | 9 | `A5SF_REQUIRE_PINNED_HOST=1 node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1` | `DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 set=sha256:edd4f1c4…` and `tests 255 / pass 252 / fail 0 / skipped 3` |
-| 10 | `node scripts/dispatch-tests.mjs --run --leg devex-diag` | `… exit=0 set=sha256:08ea4246…` and `tests 44 / pass 44 / fail 0` (the round-115 bound fix) |
+| 10 | `node scripts/dispatch-tests.mjs --run --leg devex-diag` | `… exit=0 set=sha256:08ea4246…` and `tests 44 / pass 44 / fail 0` (the round-115 bound fix, re-run here) |
 | 11 | `node scripts/eb3-security-run.mjs --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt --timeout 20000` | `EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0` |
-| 12 | `node scripts/eb3-run-manifest.mjs` | `EB3-RUN-MANIFEST pass records=602 strict=0 incomplete=11 findings=0` |
+| 12 | `node scripts/eb3-run-manifest.mjs` | `EB3-RUN-MANIFEST pass records=634 strict=0 incomplete=11 findings=0` (32 more tracked run records than round 115: the dual-host `92be91dfb` candidate-gate evidence; still under the raised 900 bound) |
 | 13 | `node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/ute-g1-fs/lib/refusal-categories.test.mjs tests/ute-g1-fs/product-route-image.test.mjs tests/ute-g1-search/lane-suite.test.mjs tests/ute-g1-web/lane-suite.test.mjs tests/ute-g1-process/lane-suite.test.mjs tests/ute-g1-agentctl/lane-suite.test.mjs tests/ute-g1-uistate/lane-suite.test.mjs` (the exact CI argv) | `tests 89 / pass 89 / fail 0 / skipped 0` |
 | 14 | `node scripts/ci-pr-gate.mjs --full --census-captures 2` | `DSH-CI-VERDICT pass pass=10 fail=0 skip=0 … refused=0 refusedlegs=none` |
 | 15 | **live drivers** (two agreeing boots each; rc.2 default, rc.5 with `TEAM_TEST_HOST=next`) — `node tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs --boots 2`, `run-boot-d2.mjs --boots 2`, `run-boot-d3.mjs --boots 2`, `probe-d4-routed-wake.mjs --boots 2` | each driver's own `RESULT PASS (2/2 boots; agreeing pair=true)` (d3 prints `evidence-complete=true allProven=true`, d4 `blocked=true` for the one declared refusal); the judge-by-judge verdicts are the §4 tables above and `D-ACCEPTANCE-REPORT.md` §3.2 |
-| 16 | **candidate gate, both hosts** (NON-REQUIRED; ~84 min) — `node scripts/candidate-acceptance-gate.mjs --hosts both` | `CANDIDATE-GATE pass host=both judges=62 proven=60 known-refuted=2 env-limited=0` (the 2 are the single enumerated `d4:ask-execute-process`, once per host) — **must be re-run at the final head; the recorded verdict is bound to `41d579119`** |
+| 16 | **candidate gate, both hosts** (NON-REQUIRED; ~84 min) — `node scripts/candidate-acceptance-gate.mjs --hosts both` | `CANDIDATE-GATE pass hosts=legacy,next judges=62 proven=60 known-refuted=2 env-limited=0` (the 2 are the single enumerated `d4:ask-execute-process`, once per host). The recorded verdict is bound to **`92be91dfb`**, not to this head; it is representative because `git diff --stat 92be91dfb..5cb5c6062 -- 'packages/*/src'` is empty (§8.2) |
 | 17 | `git -C tests/deepseek-harness-test-use status --porcelain \| wc -l` and the same for `tests/deepseek-harness-next` | `0` and `0`; `rev-parse HEAD` = `639ed01539…` and `9c2670d3bc…` |
 | 18 | `GH_TOKEN=$(gh auth token) node scripts/pr-settlement-gate.mjs --repo ArmourPiercer1/dsh-agent-team --pr 822` | `DSH-SETTLEMENT-VERDICT PASS marker=none matches=<n> candidates=<n>` — i.e. a dated settlement comment whose body carries **this** 40-hex head sha (a pushed commit mechanically retires the previous one, §8.5.2) |
 
 **What a reviewer should conclude from a green block.** Only that the *static and in-process* obligations named
 in each row hold at this head. A green row 14 means the local full gate produced its verdict; it is **not**
-Required CI, which only exists hosted (§5). A green row 16 would still be `DEV-LIVE`, never PRODUCT-PROVEN.
+Required CI, which only exists hosted (§5). A green row 16 would still be `DEV-LIVE`, never PRODUCT-PROVEN. Row 18 is the mechanical settlement check: the
+comment must carry **this** 40-hex head, so pushing the round-116 commit retires the previous marker.
 
 ---
 
@@ -469,8 +569,9 @@ Required CI, which only exists hosted (§5). A green row 16 would still be `DEV-
    "PRODUCT-PROVEN" never appear), or make it required (then it must be green at the final head, and its ~84 min
    dual-host cost lands on every PR).
 2. **The draft → ready flip is yours, and it is what unlocks census.** While #822 is a draft, `ci-census` does
-   not run and `ci-required` therefore cannot be green (§5.2). The coordinator's separate hosted run is the
-   only place that can produce the final green set.
+   not run and `ci-required` therefore cannot be green (§5.2). The final green hosted set already exists for
+   `5cb5c6062` because the PR was briefly marked ready for that one evaluation and restored to DRAFT
+   immediately after (§5.1); any *further* hosted green still requires the same brief ready flip.
 3. **The real-model gap.** `DEEPSEEK_API_KEY` (optionally `DEEPSEEK_BASE_URL`) is the single missing item for a
    real-model acceptance run. Supply it, or rule that this generation ships with `ENV-LIMITED` real-model
    evidence named as such.
@@ -480,3 +581,8 @@ Required CI, which only exists hosted (§5). A green row 16 would still be `DEV-
 5. **The round-115 capacity-budget raise** (`integration-order.mjs` `maxRecords` 600 → 900, measured at 602).
    Approve it as the maintenance it is, or rule that the devex evidence-bound audit must not gate Required CI.
    Either way, no committed evidence was trimmed and no assertion was weakened.
+6. **The rc.5 vitest population.** 40 suites (26 client + 14 runtime) stay rc.2-only because Vite, not the
+   selector, decides their host (§8.3, measured round 116). Decide: commission a **host-published Vite-side
+   selection seam** (then these 40 can be graded on rc.5 through one authority), rule these suites
+   **host-version-agnostic by contract** (they stop being a coverage gap by definition), or accept the gap with
+   its measured `ENV-LIMITED` label. A Team-authored Vite alias is refused and is not an option.

@@ -1,0 +1,13 @@
+# cmd: node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+# cwd: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut
+# started: 2026-11-25T01:21:08Z
+
+test-catalog (test-catalog/1) — discovery + the node:test predicate the dispatcher resolves legs against
+  tests=786 instruments=3 digest=sha256:8982e6e9d6c029234b185be68d97930db21d7171c0b41659e3d0a2b9c9b1fd4e
+  DISCOVERED_AND_COLLECTED 734
+  EXCLUDED_WITH_REASON     14
+  UNCOLLECTED              38
+  by runner: node=147 none=7 vitest=632
+DSH-TEST-CATALOG tests=786 digest=sha256:8982e6e9d6c029234b185be68d97930db21d7171c0b41659e3d0a2b9c9b1fd4e refused=0 findings=0
+
+EXIT=0

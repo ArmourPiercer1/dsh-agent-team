@@ -1,31 +1,31 @@
 {
   "writeSettled": true,
-  "requestId": "ctrl-1neqrlr1ycosc81pxrxnx1tp",
+  "requestId": "ctrl-08a8uk4057fnlv0jjzfq20ft",
   "resolveOutcome": {
     "call": {
       "rootSessionId": "session-dboot-d4-root",
-      "requestToken": "dboot-d4-resolve-ctrl-1neqrlr1ycosc81pxrxnx1tp",
-      "requestId": "ctrl-1neqrlr1ycosc81pxrxnx1tp",
+      "requestToken": "dboot-d4-resolve-ctrl-08a8uk4057fnlv0jjzfq20ft",
+      "requestId": "ctrl-08a8uk4057fnlv0jjzfq20ft",
       "decision": "allow"
     },
-    "result": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-1neqrlr1ycosc81pxrxnx1tp\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-1crltnl0089j\",\"role\":\"member\"},\"scope\":{\"rootSessionId\":\"session-dboot-d4-root\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0ty67u70r99a\"},\"targetInstanceId\":\"inst-0ty67u70r99a\",\"actionName\":\"admission-ask\",\"correlation\":\"admission:call-d4-worker-write\",\"toolName\":\"write\",\"operationFingerprint\":\"sha256:eed29509e316b51595e0fd9551335257afb3b7993d2448d3b6a59fc74bafc7c4\",\"authorityScope\":{\"operationClass\":\"write\",\"matcher\":{\"kind\":\"exact\",\"resource\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-07-22Z/workspace/lane/worker-ask.txt\"}}},\"requestSequence\":9,\"decisionSequence\":12,\"crea",
+    "result": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-08a8uk4057fnlv0jjzfq20ft\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-1crltnl0089j\",\"role\":\"member\"},\"scope\":{\"rootSessionId\":\"session-dboot-d4-root\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0ty67u70r99a\"},\"targetInstanceId\":\"inst-0ty67u70r99a\",\"actionName\":\"admission-ask\",\"correlation\":\"admission:call-d4-worker-write\",\"toolName\":\"write\",\"operationFingerprint\":\"sha256:643d17daa13f57ee06768555086b09d6c682f7c12f0f794b2e1b7580888a0cbc\",\"authorityScope\":{\"operationClass\":\"write\",\"matcher\":{\"kind\":\"exact\",\"resource\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-44-37Z-next/workspace/lane/worker-ask.txt\"}}},\"requestSequence\":9,\"decisionSequence\":12,",
     "isError": false
   },
   "workerWriteCall": {
     "callId": "call-d4-worker-write",
     "name": "write",
     "arguments": {
-      "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-07-22Z/workspace/lane/worker-ask.txt",
+      "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-44-37Z-next/workspace/lane/worker-ask.txt",
       "content": "DBOOT_D4_WORKER_ASK_CALLED\n"
     },
     "result": {
       "callId": "call-d4-worker-write",
       "isError": false,
-      "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-07-22Z/workspace/lane/worker-ask.txt</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+      "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-44-37Z-next/workspace/lane/worker-ask.txt</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
     }
   },
   "file": {
-    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-07-22Z/workspace/lane/worker-ask.txt",
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-44-37Z-next/workspace/lane/worker-ask.txt",
     "exists": true,
     "content": "DBOOT_D4_WORKER_ASK_CALLED\n",
     "bytes": 27,
@@ -33,7 +33,7 @@
   },
   "settlement": {
     "executionId": "exec-e14318d017ca1dc2ba9c1821dfa714eee89178b2",
-    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-07-22Z/centre/settlement/inst-0ty67u70r99a/exec-e14318d017ca1dc2ba9c1821dfa714eee89178b2.settlement.json",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-44-37Z-next/centre/settlement/inst-0ty67u70r99a/exec-e14318d017ca1dc2ba9c1821dfa714eee89178b2.settlement.json",
     "present": true,
     "state": "COMPLETED",
     "bodyOutcome": "completed",
@@ -43,7 +43,7 @@
       "RUNNING",
       "COMPLETED"
     ],
-    "terminalAt": "2026-11-25T00:10:09.095Z"
+    "terminalAt": "2026-11-25T00:46:13.483Z"
   },
   "facts": [
     {
@@ -54,15 +54,15 @@
       "instanceGeneration": 0,
       "toolName": "write",
       "axis": "fs.write",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-07-22Z/workspace/lane/worker-ask.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-44-37Z-next/workspace/lane/worker-ask.txt",
       "definitionSource": "",
-      "policyGeneration": "a5sf1:bbfb0faa612f8a37a0cf6c54a2dec44f",
+      "policyGeneration": "a5sf1:629e8fc1f28391e140998076f25fb9f7",
       "blueprintRevision": "",
       "owner": "session-dboot-d4-root",
       "decision": "allow",
       "laneDecision": "ask",
       "kind": "invocation-authority",
-      "at": "2026-11-25T00:10:09.067Z"
+      "at": "2026-11-25T00:46:13.451Z"
     },
     {
       "callId": "call-d4-worker-write",
@@ -71,9 +71,9 @@
       "agentId": "session-team-child-ecd32f24e3090ec60b7270eebdb92a6c",
       "outcome": "completed",
       "isError": false,
-      "policyGeneration": "a5sf1:bbfb0faa612f8a37a0cf6c54a2dec44f",
+      "policyGeneration": "a5sf1:629e8fc1f28391e140998076f25fb9f7",
       "kind": "execution",
-      "at": "2026-11-25T00:10:09.093Z"
+      "at": "2026-11-25T00:46:13.481Z"
     }
   ],
   "verdict": {
@@ -88,7 +88,7 @@
       {
         "id": "approved-through-real-control-path",
         "ok": true,
-        "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1neqrlr1ycosc81pxrxnx1tp\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:eed29509e316b51595e0fd9551335257afb3b799\""
+        "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-08a8uk4057fnlv0jjzfq20ft\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:643d17daa13f57ee06768555086b09d6c682f7c1\""
       },
       {
         "id": "admission-fact-allow-lane-ask",
@@ -98,7 +98,7 @@
       {
         "id": "write-tool-result-not-an-error",
         "ok": true,
-        "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-07-22Z/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+        "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T00-44-37Z-next/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
       },
       {
         "id": "real-bytes-on-disk",

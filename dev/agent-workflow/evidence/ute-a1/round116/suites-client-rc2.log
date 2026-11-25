@@ -1,0 +1,16 @@
+# 2 representative packages/client vitest suites (package vitest.config.ts)
+# cmd: node ../../node_modules/vitest/vitest.mjs run test/team-dock.client.spec.tsx test/team-members.client.spec.tsx
+
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/client
+
+ ✓ test/team-members.client.spec.tsx (12 tests) 87ms
+ ✓ test/team-dock.client.spec.tsx (12 tests) 125ms
+
+ Test Files  2 passed (2)
+      Tests  24 passed (24)
+   Start at  09:05:11
+   Duration  2.22s (transform 2.20s, setup 24ms, import 3.35s, tests 212ms, environment 645ms)
+
+
+[exit 0]

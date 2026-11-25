@@ -1,0 +1,7 @@
+# cmd: node scripts/ute-cut-closure.mjs --check
+# cwd: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut
+# started: 2026-11-25T01:21:08Z
+
+UTE-CUT-CLOSURE pass deleted=148 references=3 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 retiredSurfaces=12 placements=self findings=0
+
+EXIT=0

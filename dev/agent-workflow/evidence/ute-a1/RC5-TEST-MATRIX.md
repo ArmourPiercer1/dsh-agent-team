@@ -137,7 +137,7 @@ world rewrite above, **not** a larger timeout; no gate timeout was changed.
 
 | # | population | measured | why rc.5 cannot grade it through the ONE selector |
 | --- | --- | --- | --- |
-| 5 | 40 vitest suites that load host code at runtime (26 `packages/client/test/*.client.spec.tsx` via `@deepseek-ai/dsh-client-test-runtime`, 14 `packages/runtime/test/*` via `dsh-tools`/`dsh-scope`/`dsh-system-prompt`/`dsh-mcp`/`cordis`) | rc.2: PASS inside the 599-file / 7424-test root run | Vite resolves `@deepseek-ai/*` from the repo install **before** Node's ESM loader runs. Measured: with `TEAM_TEST_HOST=next NODE_OPTIONS=--import=tests/next-host/host-loader.mjs`, a probe suite still imported `@deepseek-ai/dsh-scope/package.json` version **`0.2.0-rc.2`**. A `resolve.alias` in `vitest.config.ts` would make the matrix greener but would be a **second host-selection mechanism** (explicitly forbidden), and it would move the whole root population. So these 40 are **rc.2-only by mechanism**, and are *not* counted as rc.5 coverage; the 590 host-free vitest files are graded once, on either host |
+| 5 | 40 vitest suites that load host code at runtime (26 `packages/client/test/*.client.spec.tsx` via `@deepseek-ai/dsh-client-test-runtime`, 14 `packages/runtime/test/*` via `dsh-tools`/`dsh-scope`/`dsh-system-prompt`/`dsh-mcp`/`cordis`) | rc.2: PASS inside the 599-file / 7424-test root run | Vite resolves `@deepseek-ai/*` from the repo install **before** Node's ESM loader runs. Measured: with `TEAM_TEST_HOST=next NODE_OPTIONS=--import=tests/next-host/host-loader.mjs`, a probe suite still imported `@deepseek-ai/dsh-scope/package.json` version **`0.2.0-rc.2`**. A `resolve.alias` in `vitest.config.ts` would make the matrix greener but would be a **second host-selection mechanism** (explicitly forbidden), and it would move the whole root population. So these 40 are **rc.2-only by mechanism**, and are *not* counted as rc.5 coverage; the 590 host-free vitest files are graded once, on either host. **Round 116 ran the bounded probe that this row asked for: ENV-LIMITED, layer = the Vite module runner — the one selector is correct (plain-Node control resolves rc.5) but Vite resolves before Node's loader, so `NODE_OPTIONS=--import` and `server.deps.inline` are both inert; a Vite-side redirect works but is a second selection mechanism and is refused. See §10 and `round116/VITEST-HOST-PROBE.md`.** |
 
 The 15-suite bound migration set (238 tests) is a subset of this runner limit; 14 of its 15 suites have
 no host dependency at all, and the one host import (`f15-mcp-live-loss.test.ts` → `scopeOf` from
@@ -189,10 +189,15 @@ stays 0; `tests/deepseek-harness-next` and `tests/deepseek-harness-test-use` are
 ## 6. What is NOT covered (stated plainly)
 
 1. ~~**18 B-ladder arms** (rc.5) — red, §4.2.~~ **CLOSED in round 112: 18/18 on both hosts (§9).**
-2. **40 host-importing vitest suites** (rc.5) — runner-limited, §4.3. This is the single largest
-   uncovered block; closing it requires either a runner change driven by the *same* selector (a
-   `resolve.alias` in `vitest.config.ts` that calls `testHostMode()`), or a decision that these units
-   are host-version-agnostic. That is a design decision, not a green cell.
+2. **40 host-importing vitest suites** (rc.5) — runner-limited, §4.3. Round 116 probed the two candidate
+   one-mechanism paths and both failed: `NODE_OPTIONS=--import` (the SAME loader every `node:test` leg and
+   live boot uses) is **not consulted** by Vite, and `server.deps.inline` is inert for resolution (measured:
+   the modules stay `0.2.0-rc.2`). A Vite alias/plugin derived from the selector's own mapping **would** work
+   (measured: `0.2.2-rc.5`) but is a **second host-selection mechanism** and is refused. This block therefore
+   stays open as **ENV-LIMITED at the Vite layer** (§10), not as a green cell: closing it needs a
+   runner/host capability (Vite delegating bare-specifier resolution to the registered Node loader, or a
+   host-published Vite plugin parameterised by the selected tree), or an owner ruling that these 26 client +
+   14 runtime suites are host-version-agnostic by contract.
 3. **38 uncollected files** — governed by the catalog ratchet `--max-uncollected 41`; not executed, not
    counted.
 4. **350 leg-declared node suites not in the rc.5-selected run** (the 51-suite `tinf-instruments` leg
@@ -374,3 +379,58 @@ Two properties this round did **not** get for free, recorded so a reader cannot 
 
 The precommit `ci-pr-gate` was also PASS 10/10 (287.5 s) on the same tree; both runs' logs are in the
 directory.
+
+---
+
+## 10. ROUND 116 — the vitest population probe: **ENV-LIMITED at the Vite layer** (0 of 40 counted)
+
+Round 116 asked the §6/§4.3 question as an experiment instead of an assumption: *can the 40 vitest suites that
+value-import `@deepseek-ai/*` be graded on rc.5 through the SAME one selector, without a second mechanism?*
+Bounded: one throwaway probe + **5 representative suites** (2 client, 3 runtime), each run under rc.2 and under
+`TEAM_TEST_HOST=next` + the same Node host loader. Full write-up: `round116/VITEST-HOST-PROBE.md`; raw logs in
+`round116/probe-*.log` and `round116/suites-*.log`.
+
+### 10.1 The measurement (versions are the probe's own output)
+
+| # | setup | resolved `@deepseek-ai/*` | log |
+| --- | --- | --- | --- |
+| A | no env (baseline) | `0.2.0-rc.2` | `round116/probe-a-baseline-rc2.log` |
+| B | `TEAM_TEST_HOST=next` + `NODE_OPTIONS=--import=…/host-loader.mjs` | **`0.2.0-rc.2`** | `round116/probe-b-rc5-node-loader.log` |
+| B2 | same loader, **plain Node** import (control) | `0.2.2-rc.5` | `round116/probe-b2-plain-node-loader.log` |
+| D | `server.deps.inline` + the same loader | **`0.2.0-rc.2`** | `round116/probe-d-rc5-inline-node-loader.log` |
+| C | Vite `resolveId` redirect derived from `resolveSelectedHostModule` | `0.2.2-rc.5` | `round116/probe-c-rc5-vite-redirect.log` |
+
+B2 is the load-bearing control: the selector and the loader are **correct and active**. B/D fail because Vite
+resolves bare specifiers itself before Node's ESM loader is asked; the hook in `scripts/run-tests-hooks.mjs:68`
+matches only bare `@deepseek-ai/*` specifiers and has no absolute-path rule. `--import` is load-bearing for
+every `node:test` leg and live boot, and inert inside the Vite graph.
+
+### 10.2 The representative suites are green — on rc.2 modules, so NOT coverage
+
+| suites | rc.2 baseline | rc.5-selected + loader | reading |
+| --- | --- | --- | --- |
+| 3 runtime (`f15-mcp-live-loss`, `a5sf-service-install`, `mcp-blueprint-initial-grant`) | 62 / 62 pass | 62 / 62 pass | the modules imported were still rc.2 (probe B) |
+| 2 client (`team-dock`, `team-members`) — package `vitest.config.ts` | 24 / 24 pass | 24 / 24 pass | same; the client config's own plugin redirects to the rc.2 **source** tree (`packages/client/vitest.config.ts:18-27,146-150`) |
+
+The identical green is a **false green** if quoted as rc.5: it grades the legacy host inside an rc.5-selected
+process. **0 of the 40 are counted as rc.5 coverage**; the population cell stays N/A.
+
+### 10.3 The refusal, stated exactly
+
+- `resolve.alias` / a Vite plugin derived from the selector's mapping **would work** (probe C). It is refused:
+  it is a **second host-selection mechanism** in a different resolver, duplicating the decision (and its
+  containment/subpath rules) into Vite, and it would move the whole root population.
+- `server.deps.inline` changes *who transforms*, not *who resolves* (probe D) — inert.
+- Extending the loader with an absolute-path `load` hook would still be a second path→tree mapping and would
+  not reach the client package, whose `resolveId` plugin short-circuits first.
+
+**Blocker to name to the host:** Vite/Vitest 8.2.2 / 4.1.11 expose no seam that delegates a bare-specifier
+resolution to the registered Node loader; the host would need to publish a Vite-side resolution plugin
+parameterised by the selected tree (a host capability the selector merely points at), or a runner option that
+lets `--import` hooks own bare-specifier resolution. No timeout, retry, skip or assertion was touched by this
+probe, and the probe lived only in gitignored `.scratch/` (the tree adds no test file; see §11 booking delta).
+
+### 10.4 Gate block at this head
+
+Round 116 gates are recorded in `round116/README.md` and `round116/` logs; the candidate report §5.5 carries
+the same verdict lines.
