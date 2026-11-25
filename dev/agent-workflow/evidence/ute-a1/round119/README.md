@@ -123,8 +123,9 @@ alone 3.6 s. No assertion was weakened; the arm fails if the scrub stops droppin
 | `gate-eb3-run-manifest.log` | `EB3-RUN-MANIFEST pass records=639 strict=0 incomplete=11 findings=0` (634 at the committed head; +5 = the archived real-model RUN records, with duplicated copies dropped — §G) |
 | `gate-ci-pr-gate.log` | `ci-pr-gate --full --census-captures 2` — see the settlement comment for the pasted verdict |
 
-The catalog is **unchanged** by this round (788/736/14/38, same digest); the leg's test count moves
-**+1** because the new arm rides the existing collected suite.
+The catalog is **unchanged** by this round (788/736/14/38, same digest): the arm rides a suite that
+already existed. The per-PR `ute-vnext-a1` leg is also unchanged (267/264/0/3) — this suite rides the
+**ci-census `b4/1 subprocess boundary`** lane, not that leg, and the census population is file-based.
 
 ## G. Evidence layout, and the corrected snapshot
 

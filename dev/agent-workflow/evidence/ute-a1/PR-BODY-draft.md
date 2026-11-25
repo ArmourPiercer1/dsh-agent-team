@@ -178,9 +178,11 @@ It names the code path under test — `packages/runtime/team-services/src/subpro
   caller's value and **never** the inherited one (the ambient value is dropped before the opt-in is
   applied), and unrelated credential-shaped names stay absent.
 
-Measured: the suite **18/18 pass**; the leg's test count moves **+1** (267 tests, 264 pass, 0 fail,
-3 skipped); **the catalog does not move** (tests 788 / collected 736 / excluded 14 / uncollected 38, same
-digest `sha256:15451525…`). No assertion weakened; the arm fails if the scrub stops dropping any name.
+Measured: the suite **18/18 pass**. **The catalog does not move** (tests 788 / collected 736 / excluded
+14 / uncollected 38, same digest `sha256:15451525…`) — the arm rides an already-collected suite — and the
+per-PR `ute-vnext-a1` leg is unchanged (267 / 264 / 0 / 3) because this suite belongs to the ci-census
+`b4/1 subprocess boundary` lane, not that leg. No assertion weakened; the arm fails if the scrub stops
+dropping any name.
 
 ### 4. Status truth — rows kept where they were
 
