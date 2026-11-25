@@ -72,7 +72,7 @@ owner-named id is the seat model, not an API model name; the host default is val
 been written under shell `/tmp`, which the sandboxed shell could not see at run time
 (`real-model/diagnostic/attempt1-proxy-missing-console.log`); attempt 2's recorder used
 `new URL(req.url, UPSTREAM)` and dropped the `/anthropic` prefix, producing a 404 that was a **recorder
-bug**, not a model error (`real-model/archive/2026-11-25T16-16Z-diagnostic-attempt1/`). The 200/43-tools
+bug**, not a model error (`real-model/archive/2026-11-25T16-21Z-diagnostic-attempt2-proxy404/`). The 200/43-tools
 capture is attempt 3 after fixing the prefix.
 
 ## D. Task 2 — the key-inheritance control (collected, catalog delta 0)
@@ -120,7 +120,7 @@ alone 3.6 s. No assertion was weakened; the arm fails if the scrub stops droppin
 | `gate-eb3-ci-required.log` | `EB3-CI-REQUIRED pass workflows=11 findings=0` |
 | `gate-bound-vitest.log` | `EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0` |
 | `gate-ute-g1-argv.log` | the census G1 argv lane: tests 89 / pass 89 / fail 0 |
-| `gate-eb3-run-manifest.log` | `EB3-RUN-MANIFEST pass records=642 strict=0 incomplete=11 findings=0` (634 at the committed head; +8 = the archived real-model/diagnostic RUN records, with duplicated copies dropped — §G) |
+| `gate-eb3-run-manifest.log` | `EB3-RUN-MANIFEST pass records=639 strict=0 incomplete=11 findings=0` (634 at the committed head; +5 = the archived real-model RUN records, with duplicated copies dropped — §G) |
 | `gate-ci-pr-gate.log` | `ci-pr-gate --full --census-captures 2` — see the settlement comment for the pasted verdict |
 
 The catalog is **unchanged** by this round (788/736/14/38, same digest); the leg's test count moves
@@ -130,18 +130,19 @@ The catalog is **unchanged** by this round (788/736/14/38, same digest); the leg
 
 - Real runs preserved: `../d-boot-feasibility/real-model/archive/2026-11-25T16-15Z-real-legacy/`
   (the legacy run's root artifacts + console log) and its two RUN records in
-  `.../archive/2026-11-25T16-15-36-219Z/`; the next host's two RUN records in `.../archive/2026-11-25T16-16-34-959Z/`
-  and that run's console log at the evidence root (`console-next-20261125T161536Z.log`). The committed
+  `.../archive/2026-11-25T16-15-36-219Z/`; the next host's root artifacts in
+  `.../archive/2026-11-25T16-15Z-real-next-artifacts/`, its two RUN records in
+  `.../archive/2026-11-25T16-16-34-959Z/` and its console log at the evidence root
+  (`console-next-20261125T161536Z.log`). The committed
   root `probe.json`/`runs/` remain the round-111 **scripted** baseline; a driver-made duplicate archive of
   those scripted runs was dropped rather than committed twice.
 - **Correction, disclosed:** a snapshot first created as `archive/2026-11-25T16-21Z-real-next/` had been
   copied *after* a diagnostic invocation had overwritten the root `probe.json`/`results.json`, so it
-  mislabelled diagnostic data as next-host evidence. It was removed; its contents were re-filed as
-  `archive/2026-11-25T16-16Z-diagnostic-attempt1/` (their true identity) and the next-host snapshot was
-  rebuilt from the console log + the two RUN records. The next host's **root-level**
-  `results.json`/`agreement.json` were overwritten by the diagnostic and are **not** reconstructed; the
-  console log and RUN records are the preserved verdict, and they are sufficient (both boots `FAIL`,
-  `agreeing=true`).
+  mislabelled data as next-host evidence. It was removed. The next host's root artifacts were later
+  identified (their boot records carry `hostSha 9c2670d3bc`) and are preserved as
+  `archive/2026-11-25T16-15Z-real-next-artifacts/`; the diagnostic's own working state is kept separately
+  as `archive/2026-11-25T16-21Z-diagnostic-attempt2-proxy404/`. Nothing was reconstructed: every host now
+  has its own probe, results, agreement and RUN records (both boots `ERROR`/`FAIL`, `agreeing=true`).
 - Diagnostic: `../d-boot-feasibility/real-model/diagnostic/` (`real-request-capture.json`, `proxy.log`,
   `console-capture.log`, `attempt1-proxy-missing-console.log`).
 

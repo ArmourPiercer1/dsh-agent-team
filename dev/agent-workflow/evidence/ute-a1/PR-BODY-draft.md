@@ -204,8 +204,8 @@ PRODUCT-PROVEN.
 - bound vitest leg (`eb3-security-run --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt`):
   `PASS suites=15 files=15 passed=238 failed=0`.
 - UTE G1 argv census lane: `tests 89 / pass 89 / fail 0`.
-- `eb3-run-manifest`: `pass records=642 strict=0 incomplete=11 findings=0` (634 at the committed head; +8 =
-  the archived real-model/diagnostic RUN records, duplicated copies dropped).
+- `eb3-run-manifest`: `pass records=639 strict=0 incomplete=11 findings=0` (634 at the committed head; +5 =
+  the archived real-model RUN records, duplicated copies dropped).
 - `ci-pr-gate --full --census-captures 2`: `DSH-CI-VERDICT pass pass=10 fail=0 skip=0 legs=10 refused=0` (census leg pass, 2 captures with
   identical identity sets). **Attempt 1 was red and is preserved**
   (`round119/gate-ci-pr-gate-attempt1-RED-flaky-port-3981.log`): the census capture timed out connecting to

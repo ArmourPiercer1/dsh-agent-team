@@ -37,12 +37,12 @@ remains the committed round-111 `ENV-LIMITED` record (the root `runs/` are likew
 `ENV-LIMITED.txt` is the 2026-11-25 artifact and is **not** the current level.
 
 Preserved evidence: `archive/2026-11-25T16-15Z-real-legacy/` (the legacy run's root artifacts — probe,
-results, agreement, run.log — plus its console log), with the two legacy RUN records in
-`archive/2026-11-25T16-15-36-219Z/`; the two next-host RUN records are in `archive/2026-11-25T16-16-34-959Z/`
-with that run's console log at this evidence root (`console-next-20261125T161536Z.log`). For the
-next host the root-level `results.json`/`agreement.json` were later overwritten by the diagnostic
-invocation (§0.4), so its preserved verdict is the console log plus the two RUN records; this is
-disclosed rather than reconstructed.
+results, agreement, run.log — plus its console log) with the two legacy RUN records in
+`archive/2026-11-25T16-15-36-219Z/`; and `archive/2026-11-25T16-15Z-real-next-artifacts/` (the next host's
+root artifacts) with its two RUN records in `archive/2026-11-25T16-16-34-959Z/` and its console log at this
+evidence root (`console-next-20261125T161536Z.log`). Both hosts therefore have their own probe, results,
+agreement and RUN records; the diagnostic passes that overwrote the root files are archived separately
+(§0.4).
 
 ### 0.2 Model id and route (measured, not assumed)
 
@@ -125,7 +125,7 @@ DEEPSEEK_BASE_URL=http://127.0.0.1:13270/anthropic TEAM_TEST_HOST=legacy \
 Disclosed diagnostic attempts: the first used a `/tmp` recorder file the shell could not see (no
 provider contact — `diagnostic/attempt1-proxy-missing-console.log`); the second had a recorder
 path-prefix bug that forwarded `/v1/messages` instead of `/anthropic/v1/messages` and produced a 404
-(a recorder bug, not a model error — `archive/2026-11-25T16-16Z-diagnostic-attempt1/`). The third is
+(a recorder bug, not a model error — `archive/2026-11-25T16-21Z-diagnostic-attempt2-proxy404/`). The third is
 the 200 / 43-tools record above.
 
 ### 0.5 Leakage self-check (mechanical)

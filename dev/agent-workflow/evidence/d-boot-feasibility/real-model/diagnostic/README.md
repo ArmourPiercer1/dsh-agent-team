@@ -14,11 +14,11 @@ be answered without changing the driver.
 | `diagnostic3-root-artifacts/` | the root artifacts the third recorder run left behind (`probe.json`, `results.json`, `agreement.*`, `run.log`, `run-ledger.jsonl`, `runs/boot01`) | the **same** `REAL-ROUTE-AVAILABLE` probe and the same 20× `FAIL` / `not-run` result, preserved here because the root `probe.json`/`runs/` remain the **round-111 scripted** record (`../probe.json` is still `ENV-LIMITED`) |
 | `d4-rec-proxy.mjs` | the recorder itself (diagnostic-only; not wired into any driver or CI leg) | reproducibility of the capture |
 
-The **second** recorder attempt is not here: it wrote into
-`../archive/2026-11-25T16-16Z-diagnostic-attempt1/` before the recorder's path-prefix bug was fixed. That
-attempt's capture showed a 404 because the recorder forwarded `/v1/messages` instead of
-`/anthropic/v1/messages` — a **recorder** bug, not a model error. It is kept as history, not as evidence of
-the route.
+The **second** recorder attempt (the 404) left one boot of driver-archived working state at
+`../archive/2026-11-25T16-21Z-diagnostic-attempt2-proxy404/`. Its capture showed a 404 because the recorder
+forwarded `/v1/messages` instead of `/anthropic/v1/messages` — a **recorder** bug, not a model error. It is
+kept as history, not as evidence of the route. The **first** attempt (dead port) left no run record: the
+host pointed at a port nothing listened on, and its console log is `attempt1-proxy-missing-console.log`.
 
 Endpoint probe (values never recorded, names only): `GET /models` advertises `deepseek-flash` and
 `deepseek-v4-pro`; `POST /anthropic/v1/messages` returns 200 for `deepseek-flash`, `deepseek-v4-flash` and
