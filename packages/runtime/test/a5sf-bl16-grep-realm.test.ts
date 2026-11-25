@@ -360,9 +360,11 @@ async function attach(w: WorldHandles): Promise<unknown[]> {
 }
 
 async function call(w: WorldHandles, name: string, args: Record<string, unknown>): Promise<SearchToolResult> {
-  // HOST SHAPE, not a config spelling: rc.2 dispatches the single-call object;
-  // rc.5 selects the per-scope EXECUTOR and takes a BATCH. Both go through the
-  // one existing adapter, so this arm never calls the other generation's shape.
+  // THE SERVICE'S SHAPE, not a host flag: the helper probes the LIVE tools
+  // object (`setExecutor` ⇒ the rc.5 per-scope EXECUTOR batch; `modeFor`/
+  // `defaultMode` ⇒ the rc.2 single call; neither ⇒ typed refusal), so this arm
+  // never calls the other generation's shape and round 123's removal of the
+  // version-keyed input changed no assertion.
   const settled = await executeToolDispatch(
     w.root.get('tools') as unknown as object,
     {
@@ -372,7 +374,6 @@ async function call(w: WorldHandles, name: string, args: Record<string, unknown>
       name,
       arguments: args,
     },
-    { hostMode: HOST_MODE },
   )
   const text = Array.isArray(settled.content) ? settled.content.map((part) => (part?.type === 'text' ? part.text ?? '' : '')).join('') : ''
   return { isError: settled.isError === true, text }

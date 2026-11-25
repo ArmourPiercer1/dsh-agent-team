@@ -41,10 +41,39 @@
  *
  * No version string is read anywhere: the shape is probed off the live object
  * exactly as the product probes it.
+ *
+ * ROUND 123 extends the SAME question to the test infrastructure. The World's
+ * dispatch helper (`tests/world-factory/lib/a5sf-fs-contract-world.mjs#executeToolDispatch`)
+ * used to pick the call shape from a `{ hostMode }` version flag — the exact
+ * decision the product closed in rounds 121/122. It now probes the LIVE tools
+ * service by public capability too, and the arms F–I below pin that:
+ *
+ *   F (world, batch)   `setExecutor` ⇒ the rc.5 BATCH, arguments as a JSON
+ *                      string, `results[0].result` returned.
+ *   G (world, single)  `modeFor` ⇒ the SINGLE CALL, never a `calls` key.
+ *   H (world, refusal) neither ⇒ `A5SF_TOOL_EXECUTOR_CAPABILITY_MISSING`, zero
+ *                      dispatches; the World's code is asserted EQUAL to the
+ *                      product's exported constant.
+ *   I (drift control)  on ONE fake service, the World's probe and the product's
+ *                      `hostToolDispatchShape` must answer the same shape; and
+ *                      on the same input both engines must emit the SAME call
+ *                      and settle on the SAME outcome — across every selector
+ *                      combination, so the two cannot drift apart silently.
  */
 import { describe, expect, it } from 'vitest'
 import type { AgentCtxDouble } from './t12a-live-bridge.mjs'
 import { createLiveWorld } from './t12a-live-bridge.mjs'
+// ROUND 123 — the World's dispatch helper and the PRODUCT's seam, side by side.
+import {
+  WORLD_NO_DISPATCH_CONTRACT,
+  executeToolDispatch,
+  worldToolDispatchShape,
+} from '../../../tests/world-factory/lib/a5sf-fs-contract-world.mjs'
+import {
+  TOOL_EXECUTOR_CAPABILITY_MISSING,
+  dispatchGovernedToolCall,
+  hostToolDispatchShape,
+} from '../src/plugin/vnext/tool-executor-mount.mjs'
 
 /** The world's team root (the boot root: a durable TeamSession row is synthesized). */
 const ROOT = 'session-r122-dispatch-root'
@@ -232,5 +261,154 @@ describe('round 122 — executeTool dispatches in the host-declared shape, and r
       ['defaultMode', 'setExecutor'],
     )
     expect(dispatched).toBe(0)
+  })
+})
+
+// ── ROUND 123 — the World's dispatch helper decides by capability, and the two
+// decisions are held to agree (drift control) ───────────────────────────────
+
+/** The public capabilities a fake tools service may (or may not) declare. */
+interface FakeServiceSpec {
+  readonly setExecutor?: boolean
+  readonly modeFor?: boolean
+  readonly defaultMode?: boolean
+}
+
+/**
+ * A tools service DOUBLE that records the ONE dispatch input it receives and
+ * answers in whichever shape that input declares. It is a fake, not a host: it
+ * exists so the World's helper and the product's seam can be handed the SAME
+ * capability surface and measured against each other without a boot.
+ */
+function makeToolsService(spec: FakeServiceSpec): {
+  service: Record<string, unknown>
+  dispatched: Record<string, unknown>[]
+} {
+  const dispatched: Record<string, unknown>[] = []
+  const service: Record<string, unknown> = {
+    execute: async (input: Record<string, unknown>) => {
+      dispatched.push(input)
+      const calls = input.calls
+      if (Array.isArray(calls)) {
+        return {
+          results: calls.map((call) => ({
+            result: { isError: false, value: { settled: (call as { id: string }).id }, content: [] },
+          })),
+        }
+      }
+      return { isError: false, value: { settled: String(input.callId) }, content: [] }
+    },
+  }
+  if (spec.setExecutor === true) {
+    service.setExecutor = () => undefined
+    // The seam asks the host's OWN selector whether a scope can dispatch; this
+    // double answers "yes" without pretending to be an execution path.
+    service.selectExecutor = () => ({ name: 'fake-executor' })
+  }
+  if (spec.modeFor === true) service.modeFor = () => 'native'
+  if (spec.defaultMode === true) service.defaultMode = 'native'
+  return { service, dispatched }
+}
+
+/** One canonical single call, so the two engines receive identical input. */
+function shapeCall(label: string): {
+  callId: string
+  name: string
+  arguments: Record<string, unknown>
+  signal: AbortSignal
+  agent: Record<string, unknown>
+} {
+  return {
+    callId: `r123-${label}`,
+    name: 'shape-probe',
+    arguments: { marker: label },
+    signal: new AbortController().signal,
+    agent: { marker: 'agent' },
+  }
+}
+
+/** `{value}` on success, `{code}` on a typed refusal — the two observable outcomes. */
+async function capture(run: () => Promise<unknown>): Promise<Record<string, unknown>> {
+  try {
+    return { value: await run() }
+  } catch (error) {
+    return { code: (error as { code?: string }).code ?? String(error) }
+  }
+}
+
+describe('round 123 — the World dispatches by PUBLIC CAPABILITY, and agrees with the product seam', () => {
+  it('F (world, batch): a service exposing `setExecutor` receives the rc.5 BATCH and `results[0].result` is returned', async () => {
+    const { service, dispatched } = makeToolsService({ setExecutor: true })
+    const outcome = await executeToolDispatch(service, shapeCall('batch'))
+    expect(dispatched).toHaveLength(1)
+    const input = dispatched[0]!
+    // The batch, not the single call: `calls` is the rc.5 contract, each entry is
+    // a `tool-call` and its `arguments` is a JSON STRING (the host's own shape).
+    expect(Array.isArray(input.calls)).toBe(true)
+    const calls = input.calls as { type: string, id: string, name: string, arguments: string }[]
+    expect(calls).toHaveLength(1)
+    expect(calls[0]).toMatchObject({ type: 'tool-call', id: 'r123-batch', name: 'shape-probe' })
+    expect(calls[0]!.arguments).toBe('{"marker":"batch"}')
+    expect(input.agent).toEqual({ marker: 'agent' })
+    expect(input.signal).toBeInstanceOf(AbortSignal)
+    // …and the settlement is the batch's first result, unwrapped.
+    expect(outcome).toEqual({ isError: false, value: { settled: 'r123-batch' }, content: [] })
+  })
+
+  it('G (world, single): a service exposing `modeFor` receives the SINGLE CALL, never a batch', async () => {
+    const { service, dispatched } = makeToolsService({ modeFor: true })
+    const outcome = await executeToolDispatch(service, shapeCall('single'))
+    expect(dispatched).toHaveLength(1)
+    const input = dispatched[0]!
+    expect('calls' in input).toBe(false)
+    expect(input).toMatchObject({ callId: 'r123-single', name: 'shape-probe', arguments: { marker: 'single' } })
+    expect(input.arguments).toEqual({ marker: 'single' })
+    expect(outcome).toEqual({ isError: false, value: { settled: 'r123-single' }, content: [] })
+  })
+
+  it('H (world, negative): a service declaring NEITHER contract is refused typed, with zero dispatches', async () => {
+    const { service, dispatched } = makeToolsService({})
+    const code = await codeOf(executeToolDispatch(service, shapeCall('none')))
+    expect(code).toBe(WORLD_NO_DISPATCH_CONTRACT)
+    // …and the World's typed code IS the product's: one vocabulary, two probes.
+    expect(code).toBe(TOOL_EXECUTOR_CAPABILITY_MISSING)
+    expect(dispatched).toHaveLength(0)
+  })
+
+  it('I (drift control): World and PRODUCT pick the same shape and emit the same call, service by service', async () => {
+    // The matrix is the whole public-contract surface both probes read: each
+    // selector alone, both registry selectors, both contracts at once (rc.5's
+    // `setExecutor` must win), and neither.
+    const cases: { label: string, spec: FakeServiceSpec, shape: string | undefined }[] = [
+      { label: 'set-executor', spec: { setExecutor: true }, shape: 'executor-mount' },
+      { label: 'mode-for', spec: { modeFor: true }, shape: 'registry-dispatch' },
+      { label: 'default-mode', spec: { defaultMode: true }, shape: 'registry-dispatch' },
+      { label: 'both-registry-selectors', spec: { modeFor: true, defaultMode: true }, shape: 'registry-dispatch' },
+      { label: 'both-contracts', spec: { setExecutor: true, modeFor: true, defaultMode: true }, shape: 'executor-mount' },
+      { label: 'neither', spec: {}, shape: undefined },
+    ]
+    for (const entry of cases) {
+      // SAME OBJECT, both probes: the agreement is measured, not asserted about
+      // two look-alike fakes.
+      const probeTarget = makeToolsService(entry.spec).service
+      expect(worldToolDispatchShape(probeTarget)).toBe(hostToolDispatchShape(probeTarget))
+      expect(worldToolDispatchShape(probeTarget)).toBe(entry.shape)
+
+      // SAME INPUT, both engines: the emitted call and the settled outcome must
+      // be identical — a drift in either direction reds this arm.
+      const worldSide = makeToolsService(entry.spec)
+      const productSide = makeToolsService(entry.spec)
+      // ONE call object handed to both engines, so `signal`/`agent` are the same
+      // references and the only variable left is the engine.
+      const call = shapeCall(entry.label)
+      const worldOutcome = await capture(() => executeToolDispatch(worldSide.service, call))
+      const productOutcome = await capture(() => dispatchGovernedToolCall(productSide.service, call))
+      expect(worldOutcome).toEqual(productOutcome)
+      expect(worldSide.dispatched).toEqual(productSide.dispatched)
+    }
+    // A non-service is not a dispatch contract for either probe.
+    for (const value of [undefined, null, 'tools-service']) {
+      expect(worldToolDispatchShape(value)).toBe(hostToolDispatchShape(value as never))
+    }
   })
 })

@@ -635,15 +635,14 @@ async function buildLadderWorld ({ label, ceiling, dir, presentation = 'both' })
     identityOf: settlementIdentity,
   })
 
-  // THE HOST'S OWN CALL SHAPE. rc.2 takes one call; rc.5 takes a batch whose call arguments are a
-  // JSON STRING and whose result is `batch.results[0].result`. The existing helper owns that split
-  // (round 110 re-used it for route C rather than inventing a second mechanism); the ladder passes
-  // only the call it wants dispatched and unwraps the SAME result shape the arms already assert on.
+  // THE SERVICE'S OWN CALL SHAPE. The helper probes the LIVE tools service (`setExecutor` ⇒ the batch
+  // whose call arguments are a JSON STRING and whose result is `batch.results[0].result`; `modeFor`/
+  // `defaultMode` ⇒ one call) — round 123 removed the version-keyed `hostMode` input, so this ladder
+  // no longer tells the helper which shape to emit; the service does.
   const dispatch = async (name, args, callId) => {
     const settled = await executeToolDispatch(
       root.get('tools'),
       { signal: new AbortController().signal, callId, name, arguments: args, agent: scopeOfTool(name) },
-      { hostMode: HOST_MODE },
     )
     const text = Array.isArray(settled.content)
       ? settled.content.map((part) => (part?.type === 'text' ? part.text : '')).join('')

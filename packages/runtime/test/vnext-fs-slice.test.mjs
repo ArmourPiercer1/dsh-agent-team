@@ -527,8 +527,11 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
   const completions = []
 
   const dispatch = async (name, args, callId, options = {}) => {
-    // B4: rc.5 takes a BATCH input (`calls:[{type:'tool-call', …}]` with JSON-string arguments)
-    // and answers `batch.results[0].result`; the legacy shape stays verbatim for rc.2.
+    // B4: the helper picks the shape from the LIVE tools service's public capability (`setExecutor`
+    // ⇒ the rc.5 BATCH with JSON-string arguments and `batch.results[0].result`; `modeFor`/
+    // `defaultMode` ⇒ the rc.2 single call). No host generation is passed: round 123 removed the
+    // version-keyed input, so a service that declares no contract is refused typed instead of being
+    // coerced into the selected host's shape.
     const settled = await executeToolDispatch(root.get('tools'), {
       signal: options.signal ?? new AbortController().signal,
       callId,
@@ -536,7 +539,6 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
       arguments: args,
       agent: agentKey,
     }, {
-      hostMode: HOST_MODE,
       // THE OBSERVATION POINT. The composition hands the host's OWN returned value to the product's
       // observer; nothing here fabricates an event or re-enters the scheduler.
       onCompletion: ({ calls, completion }) => {

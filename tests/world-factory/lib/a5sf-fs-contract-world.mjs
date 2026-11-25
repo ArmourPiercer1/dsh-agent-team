@@ -260,29 +260,90 @@ export function provideWorkingDirectoryDouble(ctx, defaultDirectory) {
   })
 }
 
+/** The typed code for "this tools service offers neither dispatch contract". */
+export const WORLD_NO_DISPATCH_CONTRACT = 'A5SF_TOOL_EXECUTOR_CAPABILITY_MISSING'
+
 /**
- * B4 — dispatch one tool call in the SHAPE THE SELECTED HOST ACCEPTS.
+ * The world's OWN capability probe: which call shape does THIS tools service
+ * accept? Decided ONLY by the public methods the live object exposes — never by
+ * a host generation, a version string, a `package.json` read or a
+ * `try { rc5 } catch { rc2 }`.
  *
- * rc.5 replaced `tools.execute({callId, name, arguments})` with a BATCH input
+ * WHY IT IS INDEPENDENT OF THE PRODUCT'S PROBE (round 123). The product's
+ * `hostToolDispatchShape` (`packages/runtime/src/plugin/vnext/tool-executor-mount.mjs`)
+ * answers the same question, and the whole point of the drift-control arm is
+ * that the two answers agree on the SAME object. Importing the product's
+ * function here would make that arm a tautology, so this is a second honest
+ * reading of the same public contract, and the round-123 arms in
+ * `packages/runtime/test/vnext-tool-dispatch-shape.test.ts` compare them service
+ * by service — same input, same shape, or the round is red.
+ *
+ * rc.5 `tools.setExecutor` = a per-scope EXECUTOR mount, dispatched as one BATCH
  * (`{calls:[{type:'tool-call', id, name, arguments: <JSON string>}], signal,
- * agent}`, `packages/core/tools/src/index.ts:375-377`) whose result is
- * `batch.results[0].result`. Calling the legacy shape there is not a milder
- * version of the call: the arguments stay an object and the call is rejected.
- * The legacy shape is kept verbatim for the legacy host so the rc.2 legs are
- * byte-for-byte unchanged.
+ * agent}` with `batch.results[0].result`). rc.2 `tools.modeFor` /
+ * `tools.defaultMode` = the registry dispatches itself, one SINGLE CALL.
+ *
+ * @param {object|undefined|null} tools - the live tools service.
+ * @returns {'executor-mount'|'registry-dispatch'|undefined} `undefined` when the
+ *   service declares neither contract (a typed refusal for the caller).
+ */
+export function worldToolDispatchShape(tools) {
+  if (tools === undefined || tools === null || typeof tools !== 'object') return undefined
+  if (typeof tools.setExecutor === 'function') return 'executor-mount'
+  if (typeof tools.modeFor === 'function' || 'defaultMode' in tools) return 'registry-dispatch'
+  return undefined
+}
+
+/**
+ * The world's typed refusal for a tools service that declares no dispatch
+ * contract. It carries the same machine-greppable `code` the product's seam
+ * raises, so a test-infra absence can never be mistaken for a product refusal of
+ * another kind — and the drift-control arm asserts the two codes are equal.
+ */
+export class WorldToolDispatchRefusal extends Error {
+  /**
+   * @param {string} code - the greppable code (see {@link WORLD_NO_DISPATCH_CONTRACT}).
+   * @param {string} detail - what is missing.
+   */
+  constructor(code, detail) {
+    super(`a5sf-fs-contract-world: ${code}: ${detail}`)
+    this.name = 'WorldToolDispatchRefusal'
+    this.code = code
+    this.detail = detail
+  }
+}
+
+/**
+ * B4 — dispatch one tool call in the shape the LIVE tools service declares.
+ *
+ * ROUND 123 replaces the `{ hostMode }` input: a host generation is not a
+ * dispatch contract, and keying test infrastructure on one was the same defect
+ * the product closed in rounds 121/122. The decision is now
+ * {@link worldToolDispatchShape} over the object the composition actually
+ * loaded — the same public-capability rule the product uses — so a world run
+ * against a synthetic service whose capabilities do not match the selected host
+ * fails by NAME instead of silently emitting the other host's shape.
  *
  * @param {object} tools - `root.get('tools')`.
  * @param {{callId: string, name: string, arguments: unknown, signal: AbortSignal, agent: object}} call
- * @param {object} host
- * @param {'legacy'|'next'} host.hostMode - which host generation's call shape to use.
- * @param {(input: {calls: readonly object[], completion: object}) => void} [host.onCompletion] - receives
+ * @param {object} [options]
+ * @param {(input: {calls: readonly object[], completion: object}) => void} [options.onCompletion] - receives
  *   the host's OWN returned value before it is unwrapped. rc.5 announces a pre-dispatch cancellation
  *   only in that value (`batch.results[].result`), never through `tools/result`; a caller that wants to
  *   observe it must see the completion, and this is the one place the composition still has it.
  * @returns {Promise<object>} the settled tool result.
  */
-export async function executeToolDispatch(tools, call, { hostMode, onCompletion }) {
-  if (hostMode === 'next') {
+export async function executeToolDispatch(tools, call, { onCompletion } = {}) {
+  const shape = worldToolDispatchShape(tools)
+  if (shape === undefined) {
+    throw new WorldToolDispatchRefusal(
+      WORLD_NO_DISPATCH_CONTRACT,
+      'the mounted tools service exposes neither `tools.setExecutor` nor the built-in registry dispatch'
+      + ' (`modeFor`/`defaultMode`), so this world has no governed call shape to dispatch; refusing instead of'
+      + ' emitting whichever shape the selected host happens to accept',
+    )
+  }
+  if (shape === 'executor-mount') {
     const batch = await tools.execute({
       calls: [{ type: 'tool-call', id: call.callId, name: call.name, arguments: JSON.stringify(call.arguments) }],
       signal: call.signal,
@@ -796,7 +857,7 @@ export async function makeFsContractWorld({
         name,
         arguments: args,
         agent: agentKey,
-      }, { hostMode })
+      })
       const text = Array.isArray(settled.content)
         ? settled.content.map((part) => {
           if (part?.type === 'text') return part.text

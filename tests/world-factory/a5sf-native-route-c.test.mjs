@@ -348,15 +348,18 @@ const sectionNames = async (root, scope) =>
   (await root.systemPrompt.assemble({ scope })).sections.map((section) => section.name)
 
 async function dispatch(root, agent, name, args) {
-  // The ONE dispatch-shape helper: rc.2 takes a single call, rc.5 a batch. Same
-  // world, same assertions — only the host's public call shape differs.
+  // The ONE dispatch-shape helper: the shape is probed from the LIVE tools
+  // service's public capability (`setExecutor` ⇒ the rc.5 batch; `modeFor`/
+  // `defaultMode` ⇒ the rc.2 single call; neither ⇒ typed refusal). Round 123
+  // removed the version-keyed input, so this world never tells it which shape
+  // to emit.
   const settled = await executeToolDispatch(root.tools, {
     signal: new AbortController().signal,
     callId: `a5sf-route-c-${name}`,
     name,
     arguments: args,
     agent,
-  }, { hostMode: HOST_MODE })
+  })
   const text = Array.isArray(settled.content)
     ? settled.content.map((part) => (part?.type === 'text' ? part.text : '')).join('')
     : ''
