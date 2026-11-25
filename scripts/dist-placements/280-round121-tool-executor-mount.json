@@ -1,0 +1,13 @@
+{
+  "schema": "dist-placements/1",
+  "family": "round121-tool-executor-mount",
+  "summary": "Round 121 (ute-vnext-a1): the host-shape dispatch seam. tsc never emits .mjs, and the realm row imports this module at module load, so the shipped `files: [\"dist\"]` face would fail with ERR_MODULE_NOT_FOUND at the FIRST governed member realm mount without the byte-identical placement.",
+  "note": "The module is the ONE place that decides a host's tool-dispatch shape by PUBLIC CAPABILITY (`tools.setExecutor` = the 0.2.2-rc.5 executor mount; `tools.modeFor`/`defaultMode` = the 0.2.0-rc.2 built-in registry dispatch; neither = a typed refusal). It is imported by `packages/runtime/src/plugin/live/a5sf-realm-row.mjs` (placed by 010-runtime-live-rows.json), which is why this placement must exist: the row's dist copy carries a relative `../vnext/tool-executor-mount.mjs` specifier. The sibling `.d.mts` declaration files are TypeScript-only and are NOT placed (they are not imported at runtime).",
+  "placements": [
+    {
+      "src": "packages/runtime/src/plugin/vnext/tool-executor-mount.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/tool-executor-mount.mjs",
+      "note": "The capability-detected host executor mount + the governed dispatch entry. Imported at module load by the realm row, so a governed Member realm cannot mount without it."
+    }
+  ]
+}

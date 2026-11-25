@@ -538,6 +538,22 @@ log line (`host:"legacy"`/`source:tests/paths.mjs#TEST_USE_BASELINE_SHA`, `host:
    coverage.** What the host would need: a Vite/Vitest seam that lets the registered Node loader own bare
    specifier resolution, or a host-published Vite plugin parameterised by the selected tree. Evidence:
    `round116/VITEST-HOST-PROBE.md`, `round116/probe-*.log`, `RC5-TEST-MATRIX.md` §10.
+   **AMENDED round 121 (2026-11-26): the population is now MEASURED on rc.5, 42 of 44 files.**
+   `RC5-TEST-MATRIX.md` §11 built the Vite/Node seam (round 118) and §11.6 closes the product gap that
+   kept 3 runtime suites red on rc.5: the dispatch seam
+   (`packages/runtime/src/plugin/vnext/tool-executor-mount.mjs`) detects the host's dispatch contract by
+   PUBLIC CAPABILITY (`tools.setExecutor` = rc.5 executor mount; `modeFor`/`defaultMode` = rc.2 registry),
+   mounts the host's own `@deepseek-ai/dsh-tool-executor-native` on the Member's agent scope, and refuses
+   by name (`A5SF_TOOL_EXECUTOR_CAPABILITY_MISSING`) when neither exists. Measured: rc.2 42/44 files /
+   532 of 535 tests; **rc.5 42/44 / 532 of 535** (was 39/44, 505/519). The remaining 3 reds are the same
+   pre-existing, host-independent client failures on both hosts. Two disclosures belong to this number:
+   (a) round 118's rc.5 counts were measured on a SPLIT module graph (`resolve.preserveSymlinks: true`
+   gave two `@deepseek-ai/dsh-scope` instances); the Vite adapter now unifies that one case and
+   `host-resolution-consistency.test.mjs` pins it (12/12), so §11.6's numbers are the first measured on a
+   unified graph; (b) `agent-bindings.mjs#executeTool` still emits the rc.2 single-call shape (`:4058`) —
+   not on any red path this round, unchanged, and named as open rather than counted as migrated. **This is
+   coverage, not a freeze:** no row becomes PRODUCT-PROVEN and the candidate gate has still not run at a
+   frozen version.
 4. **The 18 B-ladder arms are green on BOTH hosts** (18/18 rc.2 and 18/18 rc.5; 16 pass + the same 2 declared
    non-runs each), but they are **in-process `MECHANISM`**, not boots; C-ptc stays unsupported.
 5. **Two declared boundaries (not controls):** **SEC-03** — host-capability tools (`subagent`,

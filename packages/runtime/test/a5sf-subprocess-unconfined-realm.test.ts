@@ -60,6 +60,11 @@ import {
 } from '../team-services/src/subprocess.js'
 import type { ConfinedProcessProvider, ConfinedStreamProcess } from '../team-services/src/subprocess.js'
 import { A5SF_SUBPROCESS_UNCONFINED_REALM } from '../team-services/src/mount.js'
+import { testHostMode } from '../../../tests/next-host/host-select.mjs'
+import { dispatchGovernedToolCall, mountHostToolExecutor } from '../src/plugin/vnext/tool-executor-mount.mjs'
+import { provideWorkingDirectoryDouble } from '../../../tests/world-factory/lib/a5sf-fs-contract-world.mjs'
+
+const HOST_MODE = testHostMode()
 
 const REPO = realpathSync(join(__dirname, '../../..'))
 
@@ -263,8 +268,20 @@ async function mountWorld(options: WorldOptions): Promise<World> {
   const root = new Context()
   await root.plugin(SystemPrompt)
   await root.plugin(ToolRuntime)
+  // ROUND 121 (rc.5 inject parity): the pinned search module statically injects
+  // `workingDirectory` on rc.5, and Cordis DEFERS a plugin whose static inject is
+  // unmet — the module then registers nothing and every arm would be measuring an
+  // absent module rather than a refused mount. The LABELLED DOUBLE answers only
+  // the session directory question; rc.2 has no such service and must not grow
+  // one (this branch is on the harness's own host selector, not a product one).
+  if (HOST_MODE === 'next') provideWorkingDirectoryDouble(root, world)
   await root.plugin(BaseFs, {})
   await root.plugin(BaseSubprocessService, {})
+  // The same one host-shape seam the product row uses: rc.5 needs the host's own
+  // executor mounted in the dispatching scope (rc.2's registry dispatches by
+  // itself and this is a no-op there). Mounted on the ROOT so both the tool and
+  // the isolation scope can resolve it.
+  await mountHostToolExecutor({ scope: root, tools: root.get('tools') as object })
 
   const standingKey = {}
   const standing = createScope(root, standingKey)
@@ -395,10 +412,11 @@ describe('BL-17 — a subprocess consumer cannot be mounted on a realm with no c
       expect(fibers.length).toBeGreaterThan(0)
       expect(w.realm.installation.members[0]?.faces.subprocess).not.toBeNull()
 
-      const tools = w.root.get('tools') as unknown as {
-        execute(input: Record<string, unknown>): Promise<{ isError?: boolean; content?: { type?: string; text?: string }[] }>
-      }
-      const settled = await tools.execute({
+      const tools = w.root.get('tools') as unknown as object
+      // The PRODUCT seam resolves the governed executor for THIS scope and
+      // dispatches in the host's own shape; on rc.5 an unmounted executor is a
+      // typed refusal instead of the host's generic error.
+      const settled = await dispatchGovernedToolCall(tools, {
         signal: new AbortController().signal,
         callId: 'bl17-u2-grep',
         agent: w.agentKey,

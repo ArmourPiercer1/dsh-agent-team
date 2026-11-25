@@ -98,6 +98,54 @@ six manifest-classification controls.
 **No capability level moves.** The table below keeps the levels it had; only the definition of the top level
 changed.
 
+## ROUND 121 (2026-11-26) — the rc.5 DISPATCH SEAM: the 11-test product gap closes on BOTH hosts (no capability row moves)
+
+**The round-118 rc.5 red was a real product gap and is now closed.** Three vitest suites
+(`a5sf-bl16-grep-realm`, `a5sf-subprocess-unconfined-realm`, `issue2-real-preset-restriction`) were red on
+`0.2.2-rc.5` because that host DELETED built-in dispatch: `tools.execute` delegates to
+`selectExecutor(scope)`, which throws `ToolExecutorUnavailableError` (`TOOL_EXECUTOR_UNAVAILABLE`) when
+the composition selected none. A Team realm mounted into a scope with no executor could not dispatch at
+all. Round 118 reproduced it; this round reproduced it again first (BL-16 9/10, BL-17 2/4, issue2
+suite-level, matching test-for-test), then fixed the PRODUCT.
+
+**The fix is one capability-detected seam**, `packages/runtime/src/plugin/vnext/tool-executor-mount.mjs`:
+probe the LIVE tools service for `setExecutor` (rc.5 executor mount) versus `modeFor`/`defaultMode` (rc.2
+registry dispatch). rc.5: mount the HOST's own exported plugin `{name, inject, apply}` of
+`@deepseek-ai/dsh-tool-executor-native` on the Member's agent scope (skip when a selection already
+exists). rc.2: mount nothing — the registry dispatches, exactly as before. Neither contract: record the
+absence and refuse the first governed call with `A5SF_TOOL_EXECUTOR_CAPABILITY_MISSING`. No removed API
+is emulated, no version is sniffed, and there is no fallback: a composition that cannot dispatch is
+refused by NAME.
+
+**Admission is untouched.** The centre (`centre-install.mjs` → `admission-port.mjs`) installs
+`tools/pre-execute` listeners and `tools.guard()` denials on the SAME scope, and the host's own pipeline
+is what dispatches them before the body (rc.5 `pipeline.js:386,402`). Pinned by four controls in BL-16:
+positive (a governed `grep` reaches the mounted executor — record `{shape:'executor-mount', mounted:true,
+name:'native-tool-executor'}`, host `selectExecutor(agent)` is a `NativeToolExecutor`, exactly one centre
+fact `decision:'allow'`, spawns +1); negative (the mount's own `dispose()` ⇒ the call REFUSES with
+`A5SF_TOOL_EXECUTOR_UNAVAILABLE`, 0 spawns, 0 facts); negative (a DENIED lane is still denied with the
+executor mounted: `isError`, secret absent, 0 spawns, centre fact `decision:'deny'`); and the rc.2 arm
+(all 13 arms green, record `{shape:'registry-dispatch', mounted:false}`).
+
+**Measured population, 44 files, both hosts:** rc.2 **42/44 files, 532/535**; rc.5 **42/44, 532/535**
+(was 39/44, 505/519). The 3 remaining reds are the pre-existing host-independent client failures. No
+suite skipped, no timeout widened, no assertion weakened, no retry added.
+
+**Also corrected this round:** round 118 attributed the empty managed-tool forward (`[]`) to the
+executor gap. It was not — rc.5's tool modules statically inject `workingDirectory`, which the synthetic
+worlds did not provide, and Cordis SILENTLY DEFERS a plugin whose static inject is unmet, registering
+nothing. Both defects are fixed; the test-side half is the labelled `provideWorkingDirectoryDouble` under
+`if (HOST_MODE === 'next')` that other rc.5-adapted suites already use. A second, MEASUREMENT-side defect
+is recorded too: under `resolve.preserveSymlinks: true` Vite loaded host-internal `@deepseek-ai/*`
+imports from the symlink path while the adapter answered realpaths (one file, two module instances — two
+`dsh-scope` copies, `Symbol("dsh.scope")` mismatched, a scoped `systemPrompt.section()` landing in the
+global layer). The Vite adapter now unifies that ONE case (inside the importer's own pinned tree); the
+resolver's decline contract is unchanged and the consistency test pins the new arm (12/12).
+
+**Level:** development evidence on two pinned hosts — **no row moves, nothing becomes PRODUCT-PROVEN**
+(the candidate gate is a VERSION gate and no version is frozen). Trail: `round121/README.md`,
+`round121/POPULATION.md`, `RC5-TEST-MATRIX.md` §11.6.
+
 ## ROUND 120 (2026-11-26) — REAL-MODEL acceptance: 20/20 PROVEN on both hosts (`DEV-LIVE-real-model`; row 34 moves, no capability row does)
 
 **Row 34 moves.** The round-119 blocker was the driver's real branch, not the environment; this round

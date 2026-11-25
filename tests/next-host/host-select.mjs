@@ -407,6 +407,53 @@ export function createHostResolver(repoRoot, mode = testHostMode()) {
       if (file === null) return null // legacy only: the default (rc.2) resolution is the same host
       return { file, parsed }
     },
+    /**
+     * ONE MODULE INSTANCE PER PINNED TREE (round 121) — the Vite adapter's
+     * host-internal answer.
+     *
+     * `resolveForImporter` DECLINES a host-internal importer on purpose (the
+     * host answers for its own dependencies). Under Vite that default answer
+     * keeps the per-package `node_modules/@deepseek-ai/<pkg>` SYMLINK path when
+     * `resolve.preserveSymlinks: true` (the Windows-sandbox requirement in
+     * `vitest.config.ts`), while THIS resolver answers realpaths — so ONE file
+     * loaded as TWO modules. Measured on rc.5 (round 121, probe deleted after
+     * use): the host held one `@deepseek-ai/dsh-scope` copy for its own
+     * `systemPrompt` layers and a second for the test's `createScope`, so
+     * `scopeOf(ctx)` (a `Symbol("dsh.scope")` tag) did not match across the
+     * split and a SCOPED `systemPrompt.section()` from a host module landed in
+     * the GLOBAL layer — colliding with a legitimate second managed mount
+     * ("prompt section \"tool:glob\" is already registered"). rc.2 never split
+     * because its default answer and this resolver name the same install.
+     *
+     * This answers the SAME realpath a Team importer gets, but ONLY when the
+     * specifier resolves INSIDE THE IMPORTER'S OWN pinned tree (then it is the
+     * same code and the same package version: this unifies instances and
+     * nothing else). Every other case still declines, so a cross-generation
+     * subject row and the host's vendor installs are untouched, and a
+     * containment violation is never swallowed.
+     *
+     * @param {string} spec - bare specifier.
+     * @param {string} importerPath - the importing HOST file.
+     * @returns {string|null} the realpath to use, or null to decline.
+     */
+    resolveHostInternalRealpath: (spec, importerPath) => {
+      const parsed = parseHostSpecifier(spec)
+      if (parsed === null) return null
+      if (importerPath === undefined || importerPath === null) return null
+      const importer = realPathOf(importerPath)
+      if (importer === null) return null
+      const ownTree = pinnedTrees.find((tree) => isInsideReal(importer, tree))
+      if (ownTree === undefined) return null
+      let own = null
+      try {
+        own = resolveBuilt(spec)
+      } catch (error) {
+        if (error instanceof HostSelectionError && error.code === 'HOST_RESOLUTION_ESCAPED') throw error
+        own = null
+      }
+      if (own === null || !isInsideReal(own, ownTree)) return null
+      return own
+    },
     resolveSourceForImporter: (spec) => {
       const parsed = parseHostSpecifier(spec)
       if (parsed === null) return null

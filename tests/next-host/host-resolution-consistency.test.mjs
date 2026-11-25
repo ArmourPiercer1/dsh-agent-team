@@ -165,17 +165,39 @@ for (const mode of MODES) {
     assert.ok(resolver.hostTree === tree || real(resolver.hostTree) === tree)
   })
 
-  test(`[${mode}] a host-internal importer is declined (the host answers for its own dependencies)`, async () => {
+  test(`[${mode}] a host-internal importer: the resolver declines, the Vite adapter unifies ONE realpath`, async () => {
     const resolver = createHostResolver(REPO_ROOT, mode)
     // A REAL file inside the host root (the entry just resolved) is the importer.
     const internal = (await resolver.resolveForImporter('@deepseek-ai/dsh-scope', undefined))?.file
     assert.ok(typeof internal === 'string' && inside(internal, resolver.resolveRoot))
+    // THE RESOLVER'S CONTRACT IS UNCHANGED: a host-internal importer is declined
+    // so the host answers for its own dependencies.
     assert.equal(resolver.resolveForImporter('@deepseek-ai/dsh-tools', internal), null)
-    // The Vite plugin applies the same rule (its `resolveId` is what Vite
-    // calls): undefined means "let the host's own resolution answer", never a
-    // forced redirect of a host-internal import.
+    // THE VITE ADAPTER (round 121) — ONE MODULE INSTANCE PER PINNED TREE. Under
+    // `resolve.preserveSymlinks: true` the host's own default answer keeps the
+    // per-package `node_modules/@deepseek-ai/<pkg>` SYMLINK path while this
+    // resolver names realpaths, so ONE file was loaded as TWO modules
+    // (measured: two `@deepseek-ai/dsh-scope` copies, a scoped
+    // `systemPrompt.section()` from a host module landing in the GLOBAL layer,
+    // and a legitimate second managed mount refusing on the name collision).
+    // When the specifier resolves INSIDE the importer's own pinned tree the
+    // adapter must answer the SAME realpath a TEAM importer gets.
     const plugin = createHostVitePlugin({ repoRoot: REPO_ROOT, mode })
-    assert.equal(plugin.resolveId('@deepseek-ai/dsh-tools', internal), undefined)
+    const teamAnswer = resolver.resolveForImporter('@deepseek-ai/dsh-tools', TEAM_IMPORTER)
+    const sameTree = resolver.resolveHostInternalRealpath('@deepseek-ai/dsh-tools', internal)
+    assert.equal(
+      plugin.resolveId('@deepseek-ai/dsh-tools', internal),
+      sameTree === null ? undefined : sameTree,
+      `[${mode}] the adapter must answer exactly the unification answer`,
+    )
+    if (sameTree !== null) {
+      assert.equal(real(sameTree), real(teamAnswer.file), `[${mode}] a host-internal import must name the SAME file a Team importer gets`)
+      assert.ok(inside(sameTree, resolver.resolveRoot), `[${mode}] the unified file escaped the selected host root`)
+    }
+    // EVERYTHING ELSE STILL DECLINES: a Team (non-host) importer has no
+    // host-internal answer at all, so nothing outside a pinned tree is ever
+    // redirected by this rule.
+    assert.equal(resolver.resolveHostInternalRealpath('@deepseek-ai/dsh-tools', TEAM_IMPORTER), null)
   })
 }
 

@@ -77,6 +77,7 @@ import AgentLoop from '@deepseek-ai/dsh-agent-loop'
 import AgentPresetRegistry from '@deepseek-ai/dsh-agent-preset-registry'
 import { parse as parseYaml } from 'yaml'
 import { applyBuiltInToolDeny } from '../../tools/src/index.js'
+import { dispatchGovernedToolCall, mountHostToolExecutor } from '../src/plugin/vnext/tool-executor-mount.mjs'
 
 const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), 'issue2-fixtures')
 const PRESET_FIXTURE_YML = join(FIXTURES, 'presets', 'i2-standard', 'agent.cordis.yml')
@@ -125,6 +126,15 @@ async function harness(
   await ctx.plugin(SessionStore)
   await ctx.plugin(SystemPrompt)
   await ctx.plugin(ToolRuntime)
+  // ROUND 121 — the composition must be able to DISPATCH. rc.5 deleted
+  // `ToolRuntime.mode` and made `tools.execute` delegate to a per-scope
+  // EXECUTOR, so a harness that mounts none throws ToolExecutorUnavailableError
+  // on the first dispatch (measured: this suite failed at load, 0 tests
+  // collected). The mount is the host's own plugin, resolved by PUBLIC
+  // CAPABILITY (`tools.setExecutor`), and it is a no-op on rc.2 where the
+  // registry dispatches itself. Nothing about the preset/deny assertions
+  // changes — this only restores the dispatch mechanism they always assumed.
+  await mountHostToolExecutor({ scope: ctx, tools: ctx.get('tools') as object })
   await ctx.plugin(AgentRegistry)
   await ctx.plugin(SessionProjectionRegistry)
   await ctx.plugin(AgentLoop, { agents: [] })
@@ -288,22 +298,24 @@ const W = await (async () => {
   //      over the production dispatch endpoint; this is the in-repo
   //      twin.) ─────────────────────────────────────────────────────────
   const controllerA = new AbortController()
-  const deniedDispatch = await ctx.tools.execute({
+  // The host's own dispatch SHAPE (rc.5 batch / rc.2 single call), through the
+  // product seam that also refuses a composition with no executor.
+  const deniedDispatch = await dispatchGovernedToolCall(ctx.tools as never, {
     signal: controllerA.signal,
-    callId: `i2-s7-denied` as never,
+    callId: `i2-s7-denied`,
     name: 'fixture-shell',
     arguments: {},
-    agent: researcherCold.handle.agent as never,
+    agent: researcherCold.handle.agent,
   })
   out.s7DeniedIsError = deniedDispatch.isError === true
   out.s7DeniedText = deniedDispatch.content[0]?.type === 'text' ? deniedDispatch.content[0].text : JSON.stringify(deniedDispatch.content)
   const controllerB = new AbortController()
-  const allowedDispatch = await ctx.tools.execute({
+  const allowedDispatch = await dispatchGovernedToolCall(ctx.tools as never, {
     signal: controllerB.signal,
-    callId: `i2-s7-allowed` as never,
+    callId: `i2-s7-allowed`,
     name: 'fixture-shell',
     arguments: {},
-    agent: expert.handle.agent as never,
+    agent: expert.handle.agent,
   })
   out.s7AllowedIsError = allowedDispatch.isError
   out.s7AllowedText = allowedDispatch.content[0]?.type === 'text' ? allowedDispatch.content[0].text : JSON.stringify(allowedDispatch.content)

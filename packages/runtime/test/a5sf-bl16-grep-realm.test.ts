@@ -71,6 +71,13 @@ import {
 } from '../team-services/src/subprocess.js'
 import type { ConfinedProcessProvider, ConfinedStreamProcess } from '../team-services/src/subprocess.js'
 import type { SpawnRequest } from '../sandbox-provider/provider.js'
+import { testHostMode } from '../../../tests/next-host/host-select.mjs'
+import { dispatchGovernedToolCall } from '../src/plugin/vnext/tool-executor-mount.mjs'
+import type { HostToolExecutorRecord } from '../src/plugin/vnext/tool-executor-mount.mjs'
+import { bindingFromCompiledMember, installMemberCentre } from '../src/plugin/vnext/centre-install.mjs'
+import { executeToolDispatch, provideWorkingDirectoryDouble } from '../../../tests/world-factory/lib/a5sf-fs-contract-world.mjs'
+
+const HOST_MODE = testHostMode()
 
 const REPO = realpathSync(join(__dirname, '../../..'))
 const LAUNCHER = join(REPO, 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py')
@@ -80,6 +87,7 @@ interface RowModule {
   mountMemberA5sfRealm(input: Record<string, unknown>): Promise<{ dispose(): Promise<void>; mountNativeToolModules?: unknown }>
   attachA5sfNativeToolModules(realm: unknown, root: unknown, config: unknown, agentKey: unknown): Promise<unknown[]>
   a5sfRealmConfigOf(config: Record<string, unknown>): unknown
+  hostToolExecutorOfRealm(realm: unknown): HostToolExecutorRecord | undefined
 }
 
 interface SearchToolResult {
@@ -276,6 +284,15 @@ async function worldWith(
   const root = new Context()
   await root.plugin(SystemPrompt)
   await root.plugin(ToolRuntime)
+  // ROUND 121 / B3 host parity (rc.5): the pinned `dsh-tool-fs-search` statically
+  // injects `workingDirectory` on rc.5 (it did not on rc.2). Cordis DEFERS a
+  // plugin whose static inject is unmet, so without this the preset plane AND the
+  // managed attach would register nothing — the round-118 `forwarded []`. The
+  // LABELLED DOUBLE answers only "which directory is this session in?" and is
+  // mounted ONLY on rc.5, where the inject exists (the same double, from the same
+  // helper, that four other rc.5-adapted suites mount). rc.2 has no such service
+  // and must not grow one.
+  if (HOST_MODE === 'next') provideWorkingDirectoryDouble(root, inside)
   await root.plugin(BaseFs, {})
   await root.plugin(BaseSubprocess, {})
   const sinkPath = join(world, `consult-${realmId}.jsonl`)
@@ -343,15 +360,20 @@ async function attach(w: WorldHandles): Promise<unknown[]> {
 }
 
 async function call(w: WorldHandles, name: string, args: Record<string, unknown>): Promise<SearchToolResult> {
-  const settled = await (w.root.get('tools') as unknown as {
-    execute(input: Record<string, unknown>): Promise<{ isError?: boolean; content?: { type?: string; text?: string }[] }>
-  }).execute({
-    signal: new AbortController().signal,
-    callId: `bl16-${name}-${Math.random().toString(16).slice(2)}`,
-    agent: w.agentKey,
-    name,
-    arguments: args,
-  })
+  // HOST SHAPE, not a config spelling: rc.2 dispatches the single-call object;
+  // rc.5 selects the per-scope EXECUTOR and takes a BATCH. Both go through the
+  // one existing adapter, so this arm never calls the other generation's shape.
+  const settled = await executeToolDispatch(
+    w.root.get('tools') as unknown as object,
+    {
+      signal: new AbortController().signal,
+      callId: `bl16-${name}-${Math.random().toString(16).slice(2)}`,
+      agent: w.agentKey,
+      name,
+      arguments: args,
+    },
+    { hostMode: HOST_MODE },
+  )
   const text = Array.isArray(settled.content) ? settled.content.map((part) => (part?.type === 'text' ? part.text ?? '' : '')).join('') : ''
   return { isError: settled.isError === true, text }
 }
@@ -371,6 +393,16 @@ interface FactLike {
 async function factsOf(path: string): Promise<FactLike[]> {
   if (!existsSync(path)) return []
   return (await readGuardConsultFile(path)) as unknown as FactLike[]
+}
+
+/** The rejection of a promise, or a failure if it resolved (the refusal arms). */
+async function caught(promise: Promise<unknown>): Promise<unknown> {
+  try {
+    await promise
+  } catch (error) {
+    return error
+  }
+  throw new Error('expected the call to be refused, but it settled')
 }
 
 /** Is this host's Landlock `content-read` leg enforced? R6m/R7m need it. */
@@ -681,6 +713,172 @@ describe('BL-16 realm wiring — the routed grep/glob resolve the CONFINED subpr
       await w.realm.dispose()
     }
   }, 60_000)
+})
+
+// ---------------------------------------------------------------------------
+// ROUND 121 — THE FOUR CONTROLS on the host-shape seam (the round-118 defect).
+//
+// The suites above prove the ROUTED FACE decides. These arms prove the thing
+// that was missing: the governed Member scope can DISPATCH at all on rc.5, the
+// executor it dispatches through is the host's own (identified, not asserted by
+// faith), and mounting it did NOT create a second path around admission.
+//
+//   C1a POSITIVE  a governed member-scope call reaches the MOUNTED executor
+//                 (identity + plugin name + one admission fact saying allow)
+//   C1b NEGATIVE  the SAME completed arms work on rc.2 with the registry
+//                 dispatch shape (the executor record is the rc.2 marker)
+//   C2  NEGATIVE  executor deliberately NOT mounted => the call is REFUSED
+//                 with the product's NAMED code (rc.5); on rc.2 the arm shows
+//                 the registry still dispatches (no capability was invented)
+//   C3  NEGATIVE  a DENIED lane is still denied with the executor mounted
+//                 (the mount is not an admission bypass)
+// ---------------------------------------------------------------------------
+interface CentreFactLike {
+  callId?: string
+  toolName?: string
+  axis?: string
+  locator?: string
+  decision?: string
+}
+
+/** Install the REAL centre on the Member's agent context, recording its facts. */
+function installCentreOn(w: WorldHandles): { facts: CentreFactLike[]; centre: { dispose(): void } } {
+  const facts: CentreFactLike[] = []
+  const centre = installMemberCentre({
+    ctx: w.agentCtx,
+    binding: bindingFromCompiledMember({
+      member: {
+        identity: IDENTITY,
+        policy: { ok: true, value: ceiling(lane([inside]), lane([inside])) },
+      },
+      agentId: IDENTITY.memberInstanceId,
+      sessionId: 'session-bl16-centre',
+      workspaceRoot: inside,
+      owner: 'team-root-bl16',
+    }),
+    recordAdmission: (fact) => { facts.push(fact as CentreFactLike) },
+    recordExecution: () => undefined,
+  })
+  return { facts, centre }
+}
+
+/** Dispatch through the PRODUCT seam: it names the executor or refuses typed. */
+async function governedCall(w: WorldHandles, callId: string, path: string): Promise<SearchToolResult> {
+  const settled = await dispatchGovernedToolCall(w.root.get('tools') as object, {
+    callId,
+    name: 'grep',
+    arguments: { pattern: 'INSIDE-NEEDLE', path },
+    agent: w.agentKey,
+    signal: new AbortController().signal,
+  })
+  const text = Array.isArray(settled.content) ? settled.content.map((part) => (part?.type === 'text' ? part.text ?? '' : '')).join('') : ''
+  return { isError: settled.isError === true, text }
+}
+
+describe('BL-16 round-121 controls — dispatch reaches the host executor, admission still decides', () => {
+  it('C1a: a governed member call reaches the MOUNTED host executor, and the centre records the allow', async () => {
+    const w = await worldWith(effectiveOf(lane([inside]), lane([inside]), lane([inside])), 'realm-bl16-c1a')
+    const { facts, centre } = installCentreOn(w)
+    try {
+      await attach(w)
+      // WHAT THE ROW DID. The record is the row's own answer, not a guess:
+      // on rc.5 it mounted the host plugin package's executor; on rc.2 the
+      // registry dispatches and the row mounted nothing.
+      const record = row.hostToolExecutorOfRealm(w.realm)
+      expect(record).toBeDefined()
+      if (HOST_MODE === 'next') {
+        expect(record).toMatchObject({ shape: 'executor-mount', mounted: true, name: 'native-tool-executor' })
+        // ...and the HOST resolves that very executor for the Member's scope.
+        const selected = (w.root.get('tools') as unknown as { selectExecutor(scope: unknown): { constructor?: { name?: string } } })
+          .selectExecutor(w.agentKey)
+        expect(selected?.constructor?.name).toBe('NativeToolExecutor')
+      } else {
+        expect(record).toMatchObject({ shape: 'registry-dispatch', mounted: false })
+      }
+      const before = w.spawns.count
+      const outcome = await governedCall(w, 'bl16-c1a-grep', inside)
+      expect(outcome.isError).toBe(false)
+      expect(outcome.text).toContain('INSIDE-NEEDLE')
+      expect(w.spawns.count).toBe(before + 1)
+      // ADMISSION STILL HAPPENED, on the path the executor ran: the centre's
+      // own fact exists for THIS call and says allow. A mount that bypassed
+      // admission would leave this empty while the tool still ran.
+      expect(facts).toHaveLength(1)
+      expect(facts[0]).toMatchObject({ callId: 'bl16-c1a-grep', toolName: 'grep', decision: 'allow', locator: inside })
+    } finally {
+      centre.dispose()
+      await w.realm.dispose()
+    }
+  }, 30_000)
+
+  it('C2: with NO executor mounted the call is REFUSED by name (rc.5); rc.2 keeps dispatching', async () => {
+    const w = await worldWith(effectiveOf(lane([inside]), lane([inside]), lane([inside])), 'realm-bl16-c2')
+    const { facts, centre } = installCentreOn(w)
+    try {
+      await attach(w)
+      const record = row.hostToolExecutorOfRealm(w.realm)
+      if (HOST_MODE === 'next') {
+        // DELIBERATELY UNMOUNT: the row mounted the host executor, so its own
+        // disposer removes it. This is the "composition forgot the mount"
+        // state, made reachable on purpose.
+        expect(typeof record?.dispose).toBe('function')
+        await record?.dispose?.()
+        const before = w.spawns.count
+        const refused = await caught(governedCall(w, 'bl16-c2-grep', inside))
+        // THE NAMED REFUSAL, not a generic failure and not a silent no-op.
+        expect(refused).toMatchObject({ code: 'A5SF_TOOL_EXECUTOR_UNAVAILABLE' })
+        expect(String((refused as { message?: string }).message)).toContain('A5SF_TOOL_EXECUTOR_UNAVAILABLE')
+        // Nothing ran and nothing was admitted: a refusal BEFORE dispatch.
+        expect(w.spawns.count).toBe(before)
+        expect(facts).toHaveLength(0)
+      } else {
+        // rc.2 ARM, UNCHANGED: there is no executor service to forget, the
+        // registry dispatches, and the record carries no disposer. The call
+        // succeeds exactly as before this round.
+        expect(record).toMatchObject({ shape: 'registry-dispatch', mounted: false })
+        expect(record?.dispose).toBeUndefined()
+        const before = w.spawns.count
+        const outcome = await governedCall(w, 'bl16-c2-grep', inside)
+        expect(outcome.isError).toBe(false)
+        expect(w.spawns.count).toBe(before + 1)
+        expect(facts).toHaveLength(1)
+        expect(facts[0]).toMatchObject({ decision: 'allow' })
+      }
+    } finally {
+      centre.dispose()
+      await w.realm.dispose()
+    }
+  }, 30_000)
+
+  it('C3: a DENIED lane is still denied with the executor mounted (no admission bypass)', async () => {
+    const w = await worldWith(effectiveOf(lane([inside]), lane([inside]), lane([inside])), 'realm-bl16-c3')
+    const { facts, centre } = installCentreOn(w)
+    try {
+      await attach(w)
+      // The executor IS mounted (the C1a positive state), and the call targets
+      // a path the binding's read lane does not admit.
+      expect(row.hostToolExecutorOfRealm(w.realm)?.mounted).toBe(HOST_MODE === 'next')
+      const before = w.spawns.count
+      const outcome = await governedCall(w, 'bl16-c3-grep', outside)
+      expect(outcome.isError).toBe(true)
+      expect(outcome.text).not.toContain('OUTSIDE-SECRET-MUST-NOT-LEAK')
+      // The body never ran: the mount added a dispatch mechanism, not a way
+      // around the guard the centre installs on the same scope.
+      expect(w.spawns.count).toBe(before)
+      const centreFact = facts.find((fact) => fact.callId === 'bl16-c3-grep')
+      expect(centreFact).toBeDefined()
+      expect(centreFact).toMatchObject({ toolName: 'grep', decision: 'deny', locator: outside })
+      // ORDERING, measured: the centre's pre-execute runs FIRST, so the call
+      // never reached the realm's spawn-time guard at all — the realm sink has
+      // NO allow for it (and no spawn happened). Two authorities, neither
+      // skipped: the outer one refused, the inner one was never asked.
+      const realmFacts = await factsOf(w.sinkPath)
+      expect(realmFacts.filter((fact) => fact.locator === outside && fact.decision === 'allow')).toHaveLength(0)
+    } finally {
+      centre.dispose()
+      await w.realm.dispose()
+    }
+  }, 30_000)
 })
 
 /** Drain every stream of a raw provider handle, then report the exit. */

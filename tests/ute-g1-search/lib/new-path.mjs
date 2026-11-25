@@ -45,6 +45,7 @@ import { dirname, join, resolve } from 'node:path'
 import { register } from 'node:module'
 import { pathToFileURL } from 'node:url'
 
+import { hostToolExecutorSpecifier } from '../../next-host/host-executor.mjs'
 import { CORPUS } from './corpus.mjs'
 import { loadNextSearchHost, nextSearchHostIdentity } from './host-next.mjs'
 import { snapshotTree } from './effect-oracle.mjs'
@@ -181,6 +182,9 @@ export async function mountNextHostRouteCWorld({ label, fixtureRoot, cwd, readRo
     }
 
     const realm = await row.mountMemberA5sfRealm({
+      // ROUND 121: bare `ToolRuntime` world = no deployment bundle, so the
+      // composition names the host's executor module (rc.5 only).
+      ...(hostToolExecutorSpecifier(REPO_ROOT, 'next') === undefined ? {} : { hostToolExecutorSpecifier: hostToolExecutorSpecifier(REPO_ROOT, 'next') }),
       root: agent.ctx,
       a5sfConfig: row.a5sfRealmConfigOf({ a5sfEvidencePath: sinkPath }),
       provider: () => ({

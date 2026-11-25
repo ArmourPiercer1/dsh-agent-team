@@ -66,6 +66,7 @@ import { join, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { findTestRepoRoot, testUseTree } from '../../paths.mjs'
 import { assertNextHostTree } from '../../next-host/host-next-lib.mjs'
+import { hostToolExecutorSpecifier } from '../../next-host/host-executor.mjs'
 import { resolveSelectedHostModule, testHostMode } from '../../next-host/host-select.mjs'
 
 /** The Member identity every arm runs under. */
@@ -665,7 +666,11 @@ export async function makeFsContractWorld({
 
   const fsInstances = []
   const InstrumentedFs = instrumentedFileSystemClass(LocalFileSystem, fsInstances)
+  const hostExecutorSpecifier = hostToolExecutorSpecifier(repoRoot, hostMode)
   const realm = await row.mountMemberA5sfRealm({
+    // ROUND 121: a synthetic world assembles the tools service itself, so it
+    // must also say where the host's executor plugin lives (rc.5 only).
+    ...(hostExecutorSpecifier === undefined ? {} : { hostToolExecutorSpecifier: hostExecutorSpecifier }),
     root: agent.ctx,
     a5sfConfig: row.a5sfRealmConfigOf({ a5sfEvidencePath: sinkPath }),
     provider: () => ({

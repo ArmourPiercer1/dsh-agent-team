@@ -46,11 +46,25 @@ export function createHostVitePlugin({ repoRoot, mode = testHostMode(), source =
     name: name ?? (source ? 'team-host-source-adapter' : 'team-host-resolution-adapter'),
     enforce: 'pre',
     resolveId(spec, importer) {
-      const result = source
-        ? resolver.resolveSourceForImporter(spec)
-        : resolver.resolveForImporter(spec, importer)
-      if (result === null || result === undefined) return undefined
-      return result.file
+      if (source) {
+        const result = resolver.resolveSourceForImporter(spec)
+        return result === null || result === undefined ? undefined : result.file
+      }
+      const result = resolver.resolveForImporter(spec, importer)
+      if (result !== null && result !== undefined) return result.file
+      // ONE MODULE INSTANCE PER PINNED TREE (round 121). The resolver DECLINES
+      // a host-internal importer on purpose, and with
+      // `resolve.preserveSymlinks: true` Vite's default answer then keeps the
+      // per-package `node_modules/@deepseek-ai/<pkg>` SYMLINK path while this
+      // adapter names realpaths — the same file became TWO modules (measured on
+      // rc.5: two `@deepseek-ai/dsh-scope` copies, so a scoped
+      // `systemPrompt.section()` from a host module landed in the GLOBAL layer
+      // and collided with a legitimate second managed mount). Answer the SAME
+      // realpath a Team importer gets when the specifier resolves inside the
+      // importer's OWN pinned tree; every other host-internal import keeps
+      // declining so the host's own install still answers for itself.
+      const unified = resolver.resolveHostInternalRealpath(spec, importer)
+      return unified === null || unified === undefined ? undefined : unified
     },
   }
 }

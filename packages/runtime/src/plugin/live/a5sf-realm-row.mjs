@@ -90,6 +90,7 @@ import {
   parseProductRealmDeclaration,
 } from '../../../team-services/src/product-assembly.js'
 import { TeamServiceInstallError } from '../../../team-services/src/types.js'
+import { mountHostToolExecutor } from '../vnext/tool-executor-mount.mjs'
 import { skillCatalogOf } from './a5sf-skill-provider.mjs'
 
 /** The row-config key carrying the JSONL evidence path (JSON-safe string). */
@@ -363,6 +364,29 @@ const COMPILED_REALM_ANSWERS = new WeakMap()
  */
 export function compiledAnswerOfRealm(realm) {
   return realm === null || typeof realm !== 'object' ? undefined : COMPILED_REALM_ANSWERS.get(realm)
+}
+
+/** The host-dispatch record behind a mounted realm (round 121, see `tool-executor-mount.mjs`). */
+const HOST_TOOL_EXECUTORS = new WeakMap()
+
+/**
+ * The host dispatch shape a mounted realm was given, or `undefined` for an
+ * object this row did not produce.
+ *
+ * Shape of the answer: `{ shape, mounted, name, plugin?, dispose? }` —
+ * `shape` is `'executor-mount'` (rc.5), `'registry-dispatch'` (rc.2) or
+ * `undefined` (a tools double with NO dispatch contract: the mount records the
+ * absence and the first governed call refuses by name); `mounted` says whether
+ * THIS row mounted the host executor, and `name` is the host plugin's own name
+ * (`native-tool-executor`) or the shape marker. A control that wants to prove
+ * dispatch reaches the host's executor resolves it through
+ * `governedToolExecutorOf(tools, agent)` (`tool-executor-mount.mjs`), which
+ * names the executor's class; this record names what the row did.
+ *
+ * @param realm - a realm returned by {@link mountMemberA5sfRealm}.
+ */
+export function hostToolExecutorOfRealm(realm) {
+  return realm === null || typeof realm !== 'object' ? undefined : HOST_TOOL_EXECUTORS.get(realm)
 }
 
 export function a5sfRealmConfigOf(config) {
@@ -829,10 +853,18 @@ export function a5sfAgentToolSurface(root, runtimeAgent) {
  *   forwarded to the realm mount so the confined Provider can verify a receipt
  *   minted for THIS execution. Omitted = default-preserving fail-closed asks.
  *   It is a liveness reader, never an allow source.
+ * @param {string} [input.hostToolExecutorSpecifier] - ROUND 121: WHERE the
+ *   host's own tool-executor plugin module lives, when the composition knows
+ *   better than plain Node resolution (a synthetic world that assembles a bare
+ *   `ToolRuntime` without the deployment bundle; a bundler-injected URL). It is
+ *   forwarded verbatim to the executor seam, which imports exactly that
+ *   module - the package is never guessed from a version. Omitted = the
+ *   package name, which is the right answer inside a real deployment whose
+ *   bundle mounts the executor already (then nothing is mounted here at all).
  * @returns {Promise<object | undefined>} the mounted realm (`dispose()` must be
  *   kept on the row), or `undefined` when not configured / nothing compiled.
  */
-export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member, approvedAskAuthority }) {
+export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member, approvedAskAuthority, hostToolExecutorSpecifier }) {
   if (a5sfConfig === undefined || a5sfConfig === null) return undefined
   // GOVERNED REALM (2026-11-11): the neutral key promised that the COMPOSITION
   // provides the compiled realm. A row that carries it and finds no provider
@@ -977,6 +1009,43 @@ export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member,
   // realm enforces - re-compiling it in the glue would be a second policy, and
   // a binding that disagrees with the face is worse than no binding.
   const mounted = await mountA5sfRealm(mountInput)
+  // ROUND 121 — THE GOVERNED SCOPE OWNS ITS DISPATCH SHAPE.
+  //
+  // rc.5 deleted `ToolRuntime.mode` and made `tools.execute` delegate to a
+  // per-scope EXECUTOR (`selectExecutor(agent)`); a composition that mounted
+  // none throws the host's TOOL_EXECUTOR_UNAVAILABLE on every governed call.
+  // The realm is mounted ON the Member's agent Context, so THIS is the scope
+  // the centre judges and the scope a governed call dispatches in: ensure it
+  // has the host's own dispatch contract, resolved by PUBLIC CAPABILITY PROBE
+  // (`tools.setExecutor` -> rc.5 mount; `tools.modeFor`/`defaultMode` -> rc.2
+  // registry dispatch, nothing to mount; neither -> typed refusal). No removed
+  // API is emulated, and no executor is written here: the host's own plugin is
+  // mounted, so every call still passes the centre's pre-execute/guard stages
+  // that the host pipeline dispatches.
+  //
+  // A failure here ABANDONS the mount: the realm was already installed, so it
+  // is disposed before the typed refusal travels (a half-mounted Member with no
+  // dispatch is worse than a refused one).
+  let hostToolExecutor
+  try {
+    hostToolExecutor = await mountHostToolExecutor({
+      scope: root,
+      tools: root.get('tools'),
+      ...(hostToolExecutorSpecifier === undefined ? {} : { specifier: hostToolExecutorSpecifier }),
+    })
+  } catch (error) {
+    try {
+      await mounted.dispose()
+    } catch {
+      // The mount/dispatch refusal is the failure that must be reported.
+    }
+    throw error
+  }
+  // The executor record rides the SAME object identity the caller holds (a
+  // WeakMap, never a spread: the realm's surface is live). `mounted: false` is
+  // the rc.2 registry-dispatch answer or "the deployment already selected one",
+  // never a degraded mode — see `tool-executor-mount.mjs`.
+  HOST_TOOL_EXECUTORS.set(mounted, hostToolExecutor)
   // A WeakMap, not a spread: the mounted realm's surface is a live object with methods, and copying
   // it would produce a husk whose `dispose()` is detached from the fibers it describes. The compiled
   // answer is attached to the SAME object identity the caller already holds.
@@ -1020,6 +1089,51 @@ function declaredInjectNamesOf(module) {
   if (Array.isArray(declared)) return declared.map((name) => String(name))
   if (typeof declared !== 'object') return []
   return Object.keys(declared)
+}
+
+/**
+ * ROUND 121 — the MISSING-INJECTION pre-check (the empty-forward root cause).
+ *
+ * Cordis SILENTLY DEFERS a plugin whose static `inject` is unmet: `apply` never
+ * runs, the module registers NOTHING, and a managed attach then observes an
+ * empty frontier. On rc.5 the pinned fs/search/shell modules statically inject
+ * `workingDirectory` (rc.2 did not), so a host-free world that never mounted it
+ * got `A5SF_EXPECTED_TOOLS_UNSHADOWED … forwarded []` — a refusal that named
+ * the SYMPTOM. This check answers the CAUSE, before the ownership probe runs,
+ * and only for entries that DECLARE `expectedTools`: those are the managed
+ * names whose absence is a governance hazard. Undeclared entries keep the
+ * documented "a module may forward nothing" behaviour exactly.
+ *
+ * It names the service and the entry; it never supplies a provider (a synthetic
+ * `workingDirectory` in product code would be a second cwd authority, and the
+ * host-free harness is where a labelled double belongs).
+ *
+ * @param {readonly object[]} modules - the imported `{ module, specifier, expectedTools? }` entries.
+ * @param {object} root - the agent Context the realm is mounted on.
+ * @returns {{module: string, service: string, expected: readonly string[]}[]}
+ */
+function unmetManagedInjections(modules, root) {
+  const unmet = []
+  for (const entry of modules) {
+    const expected = entry?.expectedTools
+    if (expected === undefined || expected === null || expected.length === 0) continue
+    for (const service of declaredInjectNamesOf(entry.module)) {
+      let present
+      try {
+        present = typeof root?.get === 'function' ? root.get(service) : undefined
+      } catch {
+        present = undefined
+      }
+      if (present === undefined || present === null) {
+        unmet.push({
+          module: String(entry?.module?.name ?? entry?.specifier ?? 'configured module'),
+          service,
+          expected: Object.freeze([...expected]),
+        })
+      }
+    }
+  }
+  return unmet
 }
 
 /**
@@ -1245,6 +1359,22 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
   }
   const beforeDefinitions = new Map([...before].map((name) => [name, toolsService.get(name, coverageScope)]))
   const nativeToolModules = [...configuredModules, ...await Promise.all(appended.map(loadNativeModule))]
+  // ROUND 121 — name the CAUSE of an empty managed frontier before the probe
+  // observes it. A declared `expectedTools` entry whose required inject is
+  // absent from this scope can only be DEFERRED by Cordis, so the attach would
+  // otherwise report "declared X but forwarded []" and hide which host
+  // capability the composition failed to mount. Refuse, naming the service.
+  const unmetInjections = unmetManagedInjections(nativeToolModules, root)
+  if (unmetInjections.length > 0) {
+    throw new A5sfNativeAssemblyError(
+      'A5SF_NATIVE_MODULE_INJECTION_UNMET',
+      `the configured ${A5SF_NATIVE_TOOL_MODULES_KEY} declare expectedTools but their required host services are absent from this`
+      + ` scope (${unmetInjections.map((entry) => `${entry.module} expects ${JSON.stringify(entry.expected)} but the scope provides no '${entry.service}'`).join('; ')});`
+      + ' Cordis SILENTLY DEFERS a plugin whose static inject is unmet, so it would register nothing and the managed names would fall back'
+      + ' to the PRESET definitions with zero guard facts — mount the host service (e.g. the 0.2.2-rc.5 `workingDirectory`) instead of'
+      + ' mounting an empty shadow (fail closed)',
+    )
+  }
   const expansion = await nativeToolMountsOf(nativeToolModules, realm)
   const fibers = await realm.mountNativeToolModules(
     expansion.mounts,

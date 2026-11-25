@@ -36,5 +36,6 @@ export function createHostResolver(repoRoot: string, mode?: HostMode): {
   defaultResolutionIsSelectedHost: boolean
   isHostInternal(importerPath: string): boolean
   resolveForImporter(spec: string, importerPath?: string): HostResolution | null
+  resolveHostInternalRealpath(spec: string, importerPath?: string): string | null
   resolveSourceForImporter(spec: string): (HostResolution & { built: string }) | null
 }

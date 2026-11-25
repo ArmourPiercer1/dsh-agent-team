@@ -527,3 +527,61 @@ left in §4.3 are unrelated (hosted-runner network deny, etc.).
   `ute-vnext-a1` leg so the mechanism is guarded per PR.
 - **No row becomes PRODUCT-PROVEN.** The rc.5 product gap above means the vitest population cannot be
   called CANDIDATE-ACCEPTED as a whole either: 3 suites are not accepted on rc.5 yet.
+
+---
+
+## 11.6 ROUND 121 (2026-11-26) — the dispatch seam closes the 11-test rc.5 gap; §11.3/§11.4 re-measured
+
+**SUPERSEDES §11.3's table and §11.4's third row.** The population rule, the 44 files and the run
+commands are unchanged; only the result is. Measured at `HEAD` of this round (see
+`round121/POPULATION.md` and the four `round121/vitest-*.log`).
+
+| population | rc.2 (this round) | rc.5 (round 118) | rc.5 (this round) |
+| --- | --- | --- | --- |
+| 26 client suites | 24 files / **343 of 346** | 24 files / 343 of 346 | 24 files / **343 of 346** |
+| 18 runtime+testkit suites | **18 files / 189 of 189** | 15 files / 162 of 173 | **18 files / 189 of 189** |
+| **44 total** | **42 files / 532 of 535** | 39 files / 505 of 519 | **42 files / 532 of 535** |
+
+State delta, explicitly: rc.5 goes **39/44 files → 42/44** and **505/519 tests → 532/535**. rc.2 goes
+**529/532 → 532/535** — the same three counts added (the three round-121 control arms in BL-16), all
+green. The two remaining reds on BOTH hosts are the pre-existing host-independent client failures
+(§11.4 row 2), byte-identical in both logs.
+
+| the 3 formerly-red suites | rc.5 before | rc.5 now | rc.2 now |
+| --- | --- | --- | --- |
+| `a5sf-bl16-grep-realm.test.ts` | FAIL (9 of 10) | **PASS 13/13** | **PASS 13/13** |
+| `a5sf-subprocess-unconfined-realm.test.ts` | FAIL (2 of 4) | **PASS 4/4** | **PASS 4/4** |
+| `issue2-real-preset-restriction.test.ts` | FAIL (suite-level) | **PASS 13/13** | **PASS 13/13** |
+
+**The rc.5 product gap is CLOSED at the product level**, and the mechanism is a public-capability seam,
+not an emulation: `packages/runtime/src/plugin/vnext/tool-executor-mount.mjs` probes the LIVE tools
+service for `setExecutor` (rc.5 executor mount) versus `modeFor`/`defaultMode` (rc.2 registry dispatch),
+mounts the HOST's own `@deepseek-ai/dsh-tool-executor-native` plugin object on the Member's agent scope
+in the first case, does nothing in the second, and refuses with `A5SF_TOOL_EXECUTOR_CAPABILITY_MISSING`
+when neither contract exists (a tools double that never dispatches: the absence is recorded and the
+first governed CALL refuses under the same code). Admission is untouched: the centre's `tools/pre-execute`
++ `tools.guard()` still run inside the host's own pipeline on the same scope, pinned by the four
+round-121 controls (§C/§E of `round121/README.md`) including a DENIED lane with the executor mounted.
+
+**§11.4's third row is re-attributed, not merely re-run.** The empty managed-tool forward was NOT the
+executor: rc.5's tool modules statically inject `workingDirectory`, a service the synthetic worlds did
+not provide, and Cordis SILENTLY DEFERS a plugin whose static inject is unmet — so the modules registered
+nothing and the forward was `[]`. The executor absence was a second, independent defect in the same
+suites. Both are fixed; the test-side fix is the labelled `provideWorkingDirectoryDouble` under
+`if (HOST_MODE === 'next')` that every other rc.5-adapted suite already uses.
+
+**A measurement defect found and fixed in the same round (test infrastructure).** Under
+`resolve.preserveSymlinks: true` Vite resolved host-internal `@deepseek-ai/*` imports by symlink path
+while the adapter answered realpaths: ONE file, TWO module instances. Measured on rc.5 (throwaway probe,
+deleted): two `@deepseek-ai/dsh-scope` copies, so `scopeOf(ctx)` (a `Symbol("dsh.scope")` tag) mismatched
+and a SCOPED `systemPrompt.section()` from a host module landed in the GLOBAL layer, colliding with a
+legitimate second mount. The Vite adapter now answers the same realpath a Team importer gets **only** when
+the specifier resolves inside the importer's OWN pinned tree; the resolver's documented decline contract
+is unchanged, `host-resolution-consistency.test.mjs` pins the new arm (12/12), and it joins the
+`ute-vnext-a1` leg. Consequence for reading round 118: that population's rc.5 numbers were measured on a
+split module graph — same host generation (the guard proves it), but a graph this round unified.
+
+**What does NOT move:** no row becomes PRODUCT-PROVEN (the candidate gate is a VERSION gate, no version
+frozen), the 3 pre-existing client failures stay red on both hosts, and `agent-bindings.mjs#executeTool`
+still emits the rc.2 single-call shape (`:4058`) — named as open in `round121/README.md` §J because it is
+not on any measured red path this round.
