@@ -1,0 +1,1 @@
+RUN-SUMMARY run=a5sf-real-model-real-2026-11-25T16-15-45-951Z-b2 suite=a5sf-real-model-acceptance overall=FAIL cases=20 FAIL:20 worlds=none partial=true abortedAt=probe recordClass=DEV-LIVE (not candidate evidence)

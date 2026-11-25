@@ -238,7 +238,8 @@ are `OS-1/2/3` plus the provider's own kernel-level refusals.
    positive, as `REFUSED`, or as "not-started". Ruling: `SCOPE-subprocess-ask.md` §2/§4, review
    `20261124-2120` ruling 1.
 3. **`ENV-LIMITED`, not proven:** the five hosted-runner arms above (network-deny OS enforcement) and the
-   real-model layer (no `DEEPSEEK_API_KEY`, §8).
+   real-model layer — the key was supplied on 2026-11-26 and the route answers, but the real-model driver
+   aborts before the first judge (a DRIVER gap, §8.1).
 
 ---
 
@@ -496,12 +497,18 @@ log line (`host:"legacy"`/`source:tests/paths.mjs#TEST_USE_BASELINE_SHA`, `host:
 ## 8. Limits and unproven claims (the candid list)
 
 1. **The model is a scripted mock in every live boot** (`packages/tools/harness/mock-deepseek.mjs`). No
-   model-driven choice, retry or adversarial tool selection is measured. **REAL MODEL = `ENV-LIMITED`**: the
-   round-111 probe found no `DEEPSEEK_API_KEY` and no `DEEPSEEK_BASE_URL` in the launch environment, no provider
-   credential in any of the 45 test worlds, and no local model server on the test bands; `--model real` refuses
-   to proceed, writes `probe.json` + `ENV-LIMITED.txt`, exits 4, boots nothing, writes **no RUN record**. The
-   real-model driver exists and is validated **`SCRIPTED-ONLY`** (20/20 judges, 2 agreeing boots). The exact
-   missing item is named: **`DEEPSEEK_API_KEY`** (optionally `DEEPSEEK_BASE_URL`).
+   model-driven choice, retry or adversarial tool selection is measured. **REAL MODEL — attempted 2026-11-26,
+   NOT ACHIEVED.** The credential the round-111 probe named was supplied: `probe.json` now reads
+   `REAL-ROUTE-AVAILABLE` and both pinned hosts booted on the real endpoint and answered a real model turn
+   (`deepseek-v4-flash`, HTTP 200). But `--model real --boots 2` exits **1** on **both** hosts (legacy 200 s,
+   next 31 s, 2/2 boots each) because the driver's real branch reads the Leader's model-visible surface from
+   `world.mock.requests` (`run-real-model.mjs:2156-2160`), which is empty without a mock: all 20 judges are
+   `FAIL`/not-run and the four negative controls (deny / Stop / duplicate-approval / restart-no-replay) are
+   never reached. **The remaining work is the driver, not the environment** — real request capture,
+   non-vacuous turn gates, discovered call ids and real prompts. The product route itself was measured sound
+   with a pass-through recorder: the real request carried 43 tools including all six required `team_*` tools,
+   and the model answered with `bash`/`grep` tool calls, so no product defect is implicated.
+   `REAL-MODEL-ACCEPTANCE.md` §0 is the evidence; no row moves.
 2. **No row is PRODUCT-PROVEN.** The candidate acceptance gate is a **VERSION gate** by owner ruling
    (2026-11-25): required at a frozen candidate SHA, never a per-PR required context (§1.1). No version has
    been frozen, so a green run is still `DEV-LIVE` evidence and upgrades nothing. **The current dual-host
@@ -638,9 +645,11 @@ retires the previous marker.
    not run and `ci-required` therefore cannot be green (§5.2). The final green hosted set already exists for
    `5cb5c6062` because the PR was briefly marked ready for that one evaluation and restored to DRAFT
    immediately after (§5.1); any *further* hosted green still requires the same brief ready flip.
-3. **The real-model gap.** `DEEPSEEK_API_KEY` (optionally `DEEPSEEK_BASE_URL`) is the single missing item for a
-   real-model acceptance run. Supply it, or rule that this generation ships with `ENV-LIMITED` real-model
-   evidence named as such.
+3. **The real-model gap is now a DRIVER gap.** The credential has been supplied and the route answers
+   (`REAL-ROUTE-AVAILABLE`, both hosts, `deepseek-v4-flash` 200), but the real-model driver's real branch
+   aborts before the first judge (§8.1). Commission that driver work (request capture + call-id discovery +
+   real prompts), or rule that this generation ships with `ENV-LIMITED` / `SCRIPTED-ONLY` real-model evidence
+   named as such.
 4. **The two declared uncovered boundaries** — host-capability tools with no managed I/O lane (SEC-03) and
    ungoverned rows outside every invariant (SEC-04). Accept them as declared limits of this generation, or
    commission the lane work in a later phase.

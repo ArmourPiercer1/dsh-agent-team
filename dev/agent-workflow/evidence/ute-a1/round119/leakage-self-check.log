@@ -1,0 +1,11 @@
+== git grep -l <owner-supplied key value> over the tracked tree
+clean: no tracked file contains the key value (git grep exit 1)
+
+== git status --porcelain | .env check
+clean: no .env in git status
+
+== git ls-files | .env check
+clean: no .env is tracked
+
+== evidence artifacts scanned for the key value
+clean: no evidence/artifact contains the key value

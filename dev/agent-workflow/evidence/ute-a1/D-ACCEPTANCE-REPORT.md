@@ -98,6 +98,35 @@ six manifest-classification controls.
 **No capability level moves.** The table below keeps the levels it had; only the definition of the top level
 changed.
 
+## ROUND 119 (2026-11-26) — the real route is AVAILABLE; the real-model driver's real branch aborts (no row moves)
+
+The owner supplied the credential the round-111 probe named. The environment precondition is now
+satisfied: `probe.json` reads `REAL-ROUTE-AVAILABLE` (`available=true`, `missing=null`), and both pinned
+hosts booted on the **real** endpoint and answered a real model turn (`deepseek-v4-flash`, HTTP 200).
+
+**Acceptance was NOT achieved.** `--model real --boots 2` exits **1** on both hosts (legacy 200 s,
+next 31 s; 2/2 boots each) because the driver selects the Leader's model-visible surface from
+`world.mock.requests`, which is `null` under `--model real` (`run-real-model.mjs:2156-2160`). All 20
+judges are recorded `FAIL` with `selected case produced no verdict (fail-closed)`, and the pair "agrees"
+only in failing identically (`agreeing=true differing=[]`). The four negative controls (deny / Stop /
+duplicate-approval / restart-no-replay) were **not reached**, so there are no typed replies to record.
+
+The product route itself was measured with the driver unchanged (diagnostic recorder): the real request
+carried **43 tools including all six** `team_*` tools the judge requires, and the real model answered with
+reasoning plus `bash`/`grep` tool calls — it does not perform the scripted choreography the bare markers
+encode. So the blocker is the driver's real branch (surface capture, vacuous `sawReply` gates, fixed
+call-id lookups), not the environment and not the product.
+
+No row moves: **row 34 stays `ENV-LIMITED` + `SCRIPTED-ONLY`** (its limitation text now names the driver
+work instead of the missing credential), no `DEV-LIVE-real-model` level is claimed, and no model-behaviour
+row is upgraded. Evidence: `dev/agent-workflow/evidence/d-boot-feasibility/real-model/REAL-MODEL-ACCEPTANCE.md` §0.
+
+**Leakage self-check:** `git grep` for the key value over the tracked tree prints nothing; `git status`
+shows no `.env`.
+
+**What is still unproven:** every judge on a real model, the four negative controls, and every
+model-behaviour claim the round-111 section listed.
+
 ## ROUND 114 — the three security findings are dispositioned (no capability row moves)
 
 Round 113's review (`SECURITY-REVIEW-20261125.md`) left SEC-01/SEC-02/SEC-03 open. This round closes them;
@@ -384,7 +413,7 @@ Hosts, exactly as the drivers printed them (`candidate:` row, first log line of 
 | 31 | P0-2 pre-dispatch abort observation (`pre-dispatch-abort.mjs`) | **MECHANISM** | **MECHANISM** (`SLICE-21/30/37/38`, assertions unchanged) | **MECHANISM** (same arms, both hosts; round 106 adds the ruled-law controls `SLICE-40/41/42` on both hosts) | **CLOSED BY OWNER RULING (round 106, review `20261124-2120` ruling 2)** — the lawful no-settlement boundary is ruled and tested; `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` remains a diagnostic report, never a settlement. The observer is still not wired into a booted host's own agent loop: a coverage limit, not an acceptance blocker |
 | 32 | OS confinement negative controls (§3.1) | ENV-LIMITED where the OS capability is absent | measured | measured (round 78 shape) | the host/OS limit is the limit; no product switch exists |
 | 33 | search face, Shape B (in-lane `grep`, out-of-lane refused) | DEV-LIVE | **PROVEN** (round 64/98) | **PROVEN** (round 78) | Shape B is the declared support level; not full dynamic permission governance |
-| 34 | REAL-MODEL acceptance harness (`run-real-model.mjs`, 20 judges) | **ENV-LIMITED** (harness `SCRIPTED-ONLY`) | **20/20 PROVEN, 2/2 agreeing boots — SCRIPTED-ONLY** (round 111) | not run | the ENVIRONMENT: no real model route for a test host; the exact missing item is **`DEEPSEEK_API_KEY`** (optionally `DEEPSEEK_BASE_URL`), resolved by the pinned `llm-deepseek-api-key` adapter (`deepseek-official`) in both pinned hosts. `probe.json` is the machine record. With that credential the same command becomes the real acceptance run and only then may the level become `DEV-LIVE-real-model` |
+| 34 | REAL-MODEL acceptance harness (`run-real-model.mjs`, 20 judges) | **ENV-LIMITED** (harness `SCRIPTED-ONLY`) | **20/20 PROVEN, 2/2 agreeing boots — SCRIPTED-ONLY** (round 111) | not run | **Round 119 update:** the credential exists and the real route now answers (`REAL-ROUTE-AVAILABLE`, `deepseek-v4-flash` 200 on both hosts), but `--model real --boots 2` exits 1 on both hosts because the driver reads the Leader surface from `world.mock.requests` (`run-real-model.mjs:2156-2160`) — all 20 judges FAIL/not-run and the four negative controls are never reached. The remaining blocker is the DRIVER's real branch, not the environment: it needs real request capture, non-vacuous turn gates and discovered call ids. Only when every judge is PROVEN on both boots may the level become `DEV-LIVE-real-model` |
 | 35 | **host-capability tools** (`subagent`, `send_message`, `interrupt_agent`, `skill`, the 15 `team_*`) | **DECLARED UNCOVERED BOUNDARY (SEC-03)** | **n/a — not a confinement claim** (admitted on `team.control`/host authority; probe A15 measures the only `allow` with no lane) | **n/a** | **The declared boundary: these tools have NO managed fs/net lane.** Their effects are performed by host services, so the centre's lane algebra does not bound them; they are closed and admitted (`ADM-31`/`ADM-32`) but a hostile-code model must treat them as capabilities outside the sandbox (`SECURITY-REVIEW-20261125.md` §6 item 4). Named here so the boundary cannot be read as a control; **never counted as PROVEN for confinement.** |
 
 **The dual-host candidate gate — ROUND 109 result (NON-REQUIRED; this fact does not upgrade any row).**
@@ -1547,7 +1576,10 @@ Every D record uses the product's **scripted mock model** over `dsh web` (D-BOOT
 mock model, p6t6 directive`). Each round's "what this does NOT prove" names "a real-model interleaving
 (scripted mock)" (`D-BOOT-FEASIBILITY.md:529`, `:678`, `:776`). So no claim here covers model-driven
 choice, retries, or adversarial tool selection. *Would prove it:* the same judges with a real model, and
-the interleaving recorded rather than scripted.
+the interleaving recorded rather than scripted. **Round 119:** the real route now exists (both hosts
+answered `deepseek-v4-flash` with 200), but the real-model driver aborts at its mock-only surface read
+(`run-real-model.mjs:2156-2160`), so every D record here still uses the scripted mock and the gap above
+stands unchanged.
 
 ### 6.8 In-process vs live — the distinction, everywhere it matters
 

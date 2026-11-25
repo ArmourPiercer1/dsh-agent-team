@@ -1,16 +1,166 @@
 # REAL-MODEL ACCEPTANCE — the probe, the harness, and the level actually reached
 
-**Round:** review `20261125-0058` Stage B, second item ("a controlled real-model scenario, not a scripted model").
 **Driver:** `tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs`
-**Evidence:** this directory (`probe.json`, `ENV-LIMITED.txt`, `runs/`, `run-ledger.jsonl`).
-**Branch / HEAD at probe time:** `vnext/a1-cut` @ `82da9ca9f` (probe recorded its own HEAD).
+**Evidence:** this directory (`probe.json`, `runs/`, `run-ledger.jsonl`, `diagnostic/`, `archive/`).
+**Latest round:** 2026-11-26, branch `vnext/a1-cut` @ `b2f4b1a08` (sole-writer worktree).
+**Previous round (kept verbatim below):** 2026-11-25, `82da9ca9f` — `ENV-LIMITED`.
 
-> **THE LEVEL CLAIMED: `ENV-LIMITED`.** The harness is complete and executable; the ENVIRONMENT has no
-> real model route for a test host. Nothing in this round is a real-model run, and no run is labelled as
-> one. The scripted self-validation below is labelled **SCRIPTED-ONLY** in the artifact and in every RUN
-> record.
+> ## THE LEVEL: the real route is AVAILABLE; REAL-MODEL ACCEPTANCE IS **NOT ACHIEVED**.
+> The owner-supplied key was present, **both** hosts booted on a **real endpoint** and answered a real
+> model turn, and the driver exited **1** on both hosts because its real-mode instrument aborts before
+> the first judge: `world.mock.requests` is `null` when no mock exists. All 20 judges are recorded
+> `FAIL` / not-run. This is **not** acceptance, **not** `DEV-LIVE-real-model`, and **not** `ENV-LIMITED`
+> either — the environment precondition is satisfied and the blocker is in the driver.
 
 ---
+
+## 0. Dated result — 2026-11-26 (review `20261125-0058` Stage B follow-up)
+
+### 0.1 The two required runs
+
+```
+set -a; . /home/armourpiercer/projects/dsh-agent-team/.env; set +a
+TEAM_TEST_HOST=legacy node tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs --model real --boots 2
+TEAM_TEST_HOST=next   node tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs --model real --boots 2
+```
+
+The key is read by NAME inside the driver (`DEEPSEEK_API_KEY`); it is never printed, echoed or hashed.
+
+| host | pin | exit | boots | per-boot overall | agreement | duration |
+| --- | --- | --- | --- | --- | --- | --- |
+| legacy (rc.2) | `639ed01539` | **1** | 2/2 booted, both aborted after the first real turn | `ERROR` → RUN record `FAIL` | `agreeing=true differing=[]` | **200 s** |
+| next (rc.5) | `9c2670d3bc` | **1** | 2/2 booted, both aborted after the first real turn | `ERROR` → RUN record `FAIL` | `agreeing=true differing=[]` | **31 s** |
+
+Probe: the 2026-11-26 run wrote `level: "REAL-ROUTE-AVAILABLE"`, `available: true`, `missing: null`; that
+record is preserved as `diagnostic/diagnostic3-root-artifacts/probe.json` because the **root** `probe.json`
+remains the committed round-111 `ENV-LIMITED` record (the root `runs/` are likewise the scripted baseline).
+`ENV-LIMITED.txt` is the 2026-11-25 artifact and is **not** the current level.
+
+Preserved evidence: `archive/2026-11-25T16-15Z-real-legacy/` (the legacy run's root artifacts — probe,
+results, agreement, run.log — plus its console log), with the two legacy RUN records in
+`archive/2026-11-25T16-15-36-219Z/`; the two next-host RUN records are in `archive/2026-11-25T16-16-34-959Z/`
+with that run's console log at this evidence root (`console-next-20261125T161536Z.log`). For the
+next host the root-level `results.json`/`agreement.json` were later overwritten by the diagnostic
+invocation (§0.4), so its preserved verdict is the console log plus the two RUN records; this is
+disclosed rather than reconstructed.
+
+### 0.2 Model id and route (measured, not assumed)
+
+- The driver has **no model-id option**: it reads `DEEPSEEK_API_KEY` and an optional base URL
+  (`--base-url` / `DEEPSEEK_BASE_URL`, `run-real-model.mjs:280-290`). The model is chosen by the host
+  composition — `cordis.patch.yml:169-171` `staticModel { provider: deepseek-official, model:
+  deepseek-v4-flash }` and the pinned bundle's `agent-default-model` — not by the driver.
+- On the wire (diagnostic, §0.4) the host requested **`deepseek-v4-flash`** at
+  `POST https://api.deepseek.com/anthropic/v1/messages` → HTTP **200**.
+- Endpoint probe (names only): `GET /models` advertises `deepseek-flash`, `deepseek-v4-pro`;
+  `POST /anthropic/v1/messages` accepted `deepseek-flash`, `deepseek-v4-flash`, `deepseek-v4-pro`
+  (200 each) and refused `deepseek-v4.1-flash-1017` (400 — "supported API model names are
+  deepseek-flash, deepseek-v4-pro"). The owner-named id is the **seat** model of the coding session,
+  not an API model name; the host's own default is valid.
+
+### 0.3 Per-judge result — 20 judges × 2 boots × 2 hosts
+
+Every judge is recorded `FAIL` with `detail.reason = "selected case produced no verdict
+(fail-closed)"`, because the probe threw in the discovery stage of each boot:
+
+| judge | legacy b1 / b2 | next b1 / b2 |
+| --- | --- | --- |
+| `rm:enablement` | FAIL / FAIL | FAIL / FAIL |
+| `rm:officer-up` | FAIL / FAIL | FAIL / FAIL |
+| `rm:officer-binding` | FAIL / FAIL | FAIL / FAIL |
+| `rm:routed-wake` | FAIL / FAIL | FAIL / FAIL |
+| `rm:case-created` | FAIL / FAIL | FAIL / FAIL |
+| `rm:router-officer` | FAIL / FAIL | FAIL / FAIL |
+| `rm:wake-delivered` | FAIL / FAIL | FAIL / FAIL |
+| `rm:officer-decides` | FAIL / FAIL | FAIL / FAIL |
+| `rm:ask-executes-after-review` | FAIL / FAIL | FAIL / FAIL |
+| `rm:duplicate-route` | FAIL / FAIL | FAIL / FAIL |
+| `rm:sticky-stop` | FAIL / FAIL | FAIL / FAIL |
+| `rm:refusal` | FAIL / FAIL | FAIL / FAIL |
+| `rm:ask-execute` | FAIL / FAIL | FAIL / FAIL |
+| `rm:ask-execute-2` | FAIL / FAIL | FAIL / FAIL |
+| `rm:ask-denied` | FAIL / FAIL | FAIL / FAIL |
+| `rm:ask-stopped` | FAIL / FAIL | FAIL / FAIL |
+| `rm:leader-creates-worker` | FAIL / FAIL | FAIL / FAIL |
+| `rm:collect` | FAIL / FAIL | FAIL / FAIL |
+| `rm:duplicate-approval` | FAIL / FAIL | FAIL / FAIL |
+| `rm:restart-no-replay` | FAIL / FAIL | FAIL / FAIL |
+
+**The four negative controls — deny, Stop, duplicate-approval, restart-no-replay — were NOT REACHED.**
+There is no typed reply to record for any of them: the run stopped before the ask, the wake, the
+decision, the duplicate attempt and the restart. Their reply cells are therefore *not observed*, not
+*preserved as absent*.
+
+### 0.4 The exact blocker (driver, not product; environment, not model)
+
+`run-real-model.mjs:2156` selects the Leader surface from `requests()`, and `requests()` is
+`world.mock?.requests ?? []` (`:1913`). Under `--model real` there is no mock (`world.mock === null`),
+so the array is `[]`, `leaderSurface` is `[]`, and `:2160` throws
+`the Leader surface lost 'team_delegate'`. Two further real-mode gaps would be hit immediately after it:
+`sawReply()` returns `true` unconditionally in real mode (so the discovery/officer/worker "answered"
+gates assert nothing), and every judge below is keyed to the scripted mock's fixed call ids
+(`call-d4-worker-write`, `call-rm-leader-collect`, …), which a real model never emits. The real branch of
+this driver was written but never executed end to end.
+
+That the **product route itself is sound** was measured separately, with the driver UNCHANGED:
+
+- pass-through recorder, `diagnostic/real-request-capture.json`: two real requests, both **200**; the
+  second carried **43 tools**, including all six the judge requires — `team_delegate`, `team_collect`,
+  `team_resolve_control`, `team_list_pending_control`, `team_create_member`, `team_archive_member` —
+  plus nine more `team_*` tools;
+- the durable Leader session of the same boot: one real assistant turn with reasoning and two tool calls
+  (`bash`, `grep`); the real model ran and tool-called, but it does not perform the scripted
+  choreography the bare markers encode;
+- session title event names the route: `provider deepseek-official, model deepseek-v4-flash`.
+
+Commands (recorder is a diagnostic file, NOT part of the driver; it forwards to the real endpoint and
+records request BODIES only — never headers):
+
+```
+node .artifacts/tmp/d4-rec-proxy.mjs            # PORT=13270, UPSTREAM=https://api.deepseek.com/anthropic
+DEEPSEEK_BASE_URL=http://127.0.0.1:13270/anthropic TEAM_TEST_HOST=legacy \
+  node tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs --model real --boots 1
+```
+
+Disclosed diagnostic attempts: the first used a `/tmp` recorder file the shell could not see (no
+provider contact — `diagnostic/attempt1-proxy-missing-console.log`); the second had a recorder
+path-prefix bug that forwarded `/v1/messages` instead of `/anthropic/v1/messages` and produced a 404
+(a recorder bug, not a model error — `archive/2026-11-25T16-16Z-diagnostic-attempt1/`). The third is
+the 200 / 43-tools record above.
+
+### 0.5 Leakage self-check (mechanical)
+
+- `git grep -l "$DEEPSEEK_API_KEY" -- .` over the tracked tree → **no output** (the value is held only
+  in a shell variable and never echoed).
+- `git status --porcelain` → **no `.env` entry**; `.env` stays untracked and ignored at the repo root.
+- No key value or fragment was written into an evidence artifact, console log, commit message or PR
+  comment; the probe records NAMES only, the recorder records request bodies (no headers).
+
+### 0.6 Verdict
+
+Neither host is PROVEN. The pair "agrees" only in that both boots fail identically; agreement on an
+aborted probe is not agreement of the judged behaviour. **No status row moves** and no
+`DEV-LIVE-real-model` level is claimed. Still unproven: all 20 judges on a real model, the four negative
+controls, and every model-behaviour row they cover. Completing it needs the driver's real branch
+finished (real request capture + call-id discovery + real prompts), not a different environment.
+
+---
+
+# HISTORY — the 2026-11-25 `ENV-LIMITED` round (status superseded; kept verbatim)
+
+> As originally recorded:
+>
+> **Round:** review `20261125-0058` Stage B, second item ("a controlled real-model scenario, not a scripted model").
+> **Driver:** `tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs`
+> **Evidence:** this directory (`probe.json`, `ENV-LIMITED.txt`, `runs/`, `run-ledger.jsonl`).
+> **Branch / HEAD at probe time:** `vnext/a1-cut` @ `82da9ca9f` (probe recorded its own HEAD).
+>
+> > **THE LEVEL CLAIMED: `ENV-LIMITED`.** The harness is complete and executable; the ENVIRONMENT has no
+> > real model route for a test host. Nothing in this round is a real-model run, and no run is labelled as
+> > one. The scripted self-validation below is labelled **SCRIPTED-ONLY** in the artifact and in every RUN
+> > record.
+
+
 
 ## 1. Probe — what was asked of the environment, and what it answered
 

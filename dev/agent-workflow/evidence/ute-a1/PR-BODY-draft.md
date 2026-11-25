@@ -7,7 +7,7 @@ named in the same row or section.
 
 | field | value |
 | --- | --- |
-| **Head measured for every number below** | **round 117 sits on `818eae405` (base of the round-117 commit set; the round-117 documentation commit is its child and is named in the settlement comment). Round 117 is a CONTRACT round: the owner ruled the Candidate Acceptance Gate a VERSION gate, so `PRODUCT-PROVEN` is redefined (`CANDIDATE-REPORT.md` §1.1, `VERSION-GATE.md`) — no capability level moved and no measurement was re-taken.** **Round 116 sat on `5cb5c6062` (the dispatch-parity evidence regeneration), and its settlement comment names the round-116 documentation commit on top. The hosted Required set was executed at `5cb5c6062` (run `45517751283`: every layer + `ci-required` success, `ci-census` 2 captures / 599f / 7424l each, identical identity sets), and the PR was restored to DRAFT immediately after.** The round-115 row that follows keeps its own head (`5f79acb73` + postcommit commit) and its numbers (the candidate report + the measured `devex-diag` bound fix + this round's gate logs) plus the postcommit-logs commit named in the settlement comment; its gate block is the round-115 section immediately below.** Round 114 sat on `b5da23b4b` + the round-114 commit set (`194a5c3ce` fixes + `974c643de` post-commit gate logs); it closes SEC-01/SEC-02, declares SEC-03, and leaves every driver verdict and capability level untouched.** Round 110 leaves the driver verdicts of `acc72e58e` untouched; its own head is `fc170f929060133b3897cb1f0b769c20a928c893` + the round-110 commit (the documentation/observation commit carrying this body is its child, named in the settlement comment)**; the round-106/102/98/95/89 sections that name `563feac13` / `10d8a67ae` / `a95be5f11` / `d322b17aa` / `97d7d7c8d` / `c29da52d3` keep their own round's numbers and are labelled as such |
+| **Head measured for every number below** | **Round 119 (2026-11-26) — real-model attempt on both hosts, NOT achieved: the real route answers (`REAL-ROUTE-AVAILABLE`, `deepseek-v4-flash` HTTP 200 on both) but `--model real --boots 2` exits 1 on BOTH hosts because the driver reads the Leader surface from the mock (`run-real-model.mjs:2156-2160`); all 20 judges are FAIL/not-run and the four negative controls are never reached; no row moves and PR #822 stays DRAFT. Plus a collected key-inheritance control (P5-KEY-INHERITANCE, catalog delta 0).** **round 117 sits on `818eae405` (base of the round-117 commit set; the round-117 documentation commit is its child and is named in the settlement comment). Round 117 is a CONTRACT round: the owner ruled the Candidate Acceptance Gate a VERSION gate, so `PRODUCT-PROVEN` is redefined (`CANDIDATE-REPORT.md` §1.1, `VERSION-GATE.md`) — no capability level moved and no measurement was re-taken.** **Round 116 sat on `5cb5c6062` (the dispatch-parity evidence regeneration), and its settlement comment names the round-116 documentation commit on top. The hosted Required set was executed at `5cb5c6062` (run `45517751283`: every layer + `ci-required` success, `ci-census` 2 captures / 599f / 7424l each, identical identity sets), and the PR was restored to DRAFT immediately after.** The round-115 row that follows keeps its own head (`5f79acb73` + postcommit commit) and its numbers (the candidate report + the measured `devex-diag` bound fix + this round's gate logs) plus the postcommit-logs commit named in the settlement comment; its gate block is the round-115 section immediately below.** Round 114 sat on `b5da23b4b` + the round-114 commit set (`194a5c3ce` fixes + `974c643de` post-commit gate logs); it closes SEC-01/SEC-02, declares SEC-03, and leaves every driver verdict and capability level untouched.** Round 110 leaves the driver verdicts of `acc72e58e` untouched; its own head is `fc170f929060133b3897cb1f0b769c20a928c893` + the round-110 commit (the documentation/observation commit carrying this body is its child, named in the settlement comment)**; the round-106/102/98/95/89 sections that name `563feac13` / `10d8a67ae` / `a95be5f11` / `d322b17aa` / `97d7d7c8d` / `c29da52d3` keep their own round's numbers and are labelled as such |
 | **Base** | `master @ a19d1df01` (frozen A0, PR #821) |
 | **PR state** | **DRAFT**, `state=OPEN`, never merged (`gh pr view 822 --json isDraft,state,headRefOid`) |
 | **Record class** | every live claim is `DEV-LIVE` (a real host boot, **not a gate**); no capability row is PRODUCT-PROVEN. **`PRODUCT-PROVEN` in force** = gate-backed at the **frozen candidate SHA** of a version, with the version gate **Required** and green at that SHA and its `version-gate-receipt.json` verified there — **NOT** "covered by every PR's Required CI" |
@@ -123,6 +123,98 @@ unchanged** — the new verifier-controls suite, declared by the `version-gate-v
 `EB3-RUN-MANIFEST` **records=634 strict=0 incomplete=11 findings=0**; `ci-pr-gate --full --census-captures 2`
 **PASS 10/10**. New scannable-surface delta: **one collected node:test suite** (`version-gate-verify.test.mjs`)
 and **zero new workflow files**; the three new `scripts/*.mjs` modules are not test surfaces.
+
+## ROUND 119 — real-model attempt on BOTH hosts: the route answers, the DRIVER aborts; plus the key-inheritance control (no row moves)
+
+Base `b2f4b1a08` + the round-119 commit named in the settlement comment. Branch `vnext/a1-cut`, PR **#822
+stays DRAFT** — no merge, no ready flip, no history rewrite. **No capability level moves; no row becomes
+`DEV-LIVE-real-model` or `PRODUCT-PROVEN`.**
+
+### 1. The credential was supplied, and the real route IS available
+
+The owner provided the key the round-111 probe named. The 2026-11-26 run's probe reads
+`REAL-ROUTE-AVAILABLE` (`available=true`, `missing=null`), preserved as
+`real-model/diagnostic/diagnostic3-root-artifacts/probe.json` (the root `probe.json`/`runs/` remain the
+round-111 scripted baseline). Both pinned hosts were run on the **real**
+provider with **no mock** (`--model real --boots 2`, 20 judges, fresh dated evidence root):
+
+| host | pin | exit | boots | per-boot | agreement | duration |
+| --- | --- | --- | --- | --- | --- | --- |
+| legacy rc.2 | `639ed01539` | **1** | 2/2 booted | `ERROR` → RUN `FAIL` | `agreeing=true differing=[]` | 200 s |
+| next rc.5 | `9c2670d3bc` | **1** | 2/2 booted | `ERROR` → RUN `FAIL` | `agreeing=true differing=[]` | 31 s |
+
+**Acceptance was NOT achieved.** All **20/20 judges** on each host/boot are `FAIL` with
+`selected case produced no verdict (fail-closed)`. The four negative controls — **deny, Stop, duplicate
+approval, restart-no-replay** — were **NOT REACHED**, so there is no typed reply to record for any of them.
+Both boots agreeing means only that both fail identically; it is not agreement of judged behaviour.
+
+### 2. The blocker is the driver's real branch, not the environment
+
+`requests()` is `world.mock?.requests ?? []`; under `--model real` there is no mock, so the Leader-surface
+read returns `[]` and `run-real-model.mjs:2160` throws `the Leader surface lost 'team_delegate'`. Two more
+real-mode gaps wait behind it: `sawReply()` returns `true` unconditionally in real mode (vacuous turn
+gates), and every judge is keyed to the scripted mock's fixed call ids. The real branch of this driver was
+written but never executed end to end.
+
+**The product route itself was measured sound, driver unchanged** (pass-through recorder, request bodies
+only): two real `POST /anthropic/v1/messages` requests both 200, model **`deepseek-v4-flash`**; the second
+carried **43 tools including all six** the judge requires (`team_delegate`, `team_collect`,
+`team_resolve_control`, `team_list_pending_control`, `team_create_member`, `team_archive_member`); the
+same boot's durable session shows one real assistant turn with reasoning and two tool calls
+(`bash`, `grep`) — the real model runs and tool-calls, but does not perform the scripted choreography the
+bare marker prompts encode. Diagnostic failures are disclosed (a dead-port recorder attempt; a recorder
+path-prefix bug that produced a 404 — a recorder bug, not a model error).
+
+### 3. Task 2 — the credential-inheritance control (collected; catalog delta 0)
+
+New arm **`P5-KEY-INHERITANCE`** in the existing collected suite `tests/world-factory/a5sf-sub-contract.test.mjs`.
+It names the code path under test — `packages/runtime/team-services/src/subprocess.ts:1145-1154`
+(`SENSITIVE_ENV_PATTERN` / `confinedChildEnvironment()`) — in every failure message, and proves, with a
+**positive control** that a plain `child_process` child DOES see `DEEPSEEK_API_KEY`:
+
+- **inherited env:** the governed Bash child **and its grandchild** see none of `DEEPSEEK_API_KEY`,
+  `*_KEY`, `*_PASSWORD`, `*_SECRET`, `*_TOKEN`, while an ordinary name still arrives;
+- **direct env:** an explicit `spec.env` entry is the caller's own deliberate opt-in — the child gets the
+  caller's value and **never** the inherited one (the ambient value is dropped before the opt-in is
+  applied), and unrelated credential-shaped names stay absent.
+
+Measured: the suite **18/18 pass**; the leg's test count moves **+1** (267 tests, 264 pass, 0 fail,
+3 skipped); **the catalog does not move** (tests 788 / collected 736 / excluded 14 / uncollected 38, same
+digest `sha256:15451525…`). No assertion weakened; the arm fails if the scrub stops dropping any name.
+
+### 4. Status truth — rows kept where they were
+
+`D-ACCEPTANCE-REPORT.md` gains a `ROUND 119` section and row 34 keeps **`ENV-LIMITED` + `SCRIPTED-ONLY`**
+with its limitation text now naming the **driver** work (not the credential). `C1-C18-SIGNOFF.md` §2 and
+`CANDIDATE-REPORT.md` §8.1/§6.7 record the same: the model-behaviour rows (C1, C3, C12, C13 base, C14b,
+the `d3`/`d4` live rows) still rest on the scripted mock, `CANDIDATE-ACCEPTED` is not reached, and no row is
+PRODUCT-PROVEN.
+
+### 5. Gate block at this head (verdict lines pasted)
+
+- `ute-vnext-a1`: `mode=run leg=ute-vnext-a1 suites=8 files=8 exit=0`; tests **267 / 264 / 0 / 3**.
+- `test-catalog --max-uncollected 41 --max-excluded 7`: `tests=788 digest=sha256:15451525… refused=0
+  findings=0` (exit 0). The plain invocation prints the same census and exits 2 **by design**
+  (`refused=38 findings=38` — the uncollected set is disclosed, never printed green).
+- `ute-cut-closure --check`: `cut=cut(0/148) findings=0`.
+- `ute-p0-assets --check`: `modules=37 files=180 lines=69512 cut=cut(148/148) findings=0`.
+- `docs-sync --check`: `docs=193 … findings=0 blocking=0 contracts=20 pairs compared`.
+- `place-dist-glue`: `done (35 placement(s))`.
+- `eb3-ci-required`: `pass workflows=11 findings=0`.
+- bound vitest leg (`eb3-security-run --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt`):
+  `PASS suites=15 files=15 passed=238 failed=0`.
+- UTE G1 argv census lane: `tests 89 / pass 89 / fail 0`.
+- `eb3-run-manifest`: `pass records=642 strict=0 incomplete=11 findings=0` (634 at the committed head; +8 =
+  the archived real-model/diagnostic RUN records, duplicated copies dropped).
+- `ci-pr-gate --full --census-captures 2`: `DSH-CI-VERDICT pass pass=10 fail=0 skip=0 legs=10 refused=0` (census leg pass, 2 captures with
+  identical identity sets). **Attempt 1 was red and is preserved**
+  (`round119/gate-ci-pr-gate-attempt1-RED-flaky-port-3981.log`): the census capture timed out connecting to
+  the fixed port `3981` used by `packages/runtime/test/u6-mcp-017-regression.test.ts`, which is a
+  fixed-port race, not a product assertion — 9/10 legs passed, and the identical re-run is green with both
+  captures agreeing.
+
+Full evidence: `dev/agent-workflow/evidence/ute-a1/round119/README.md`,
+`dev/agent-workflow/evidence/d-boot-feasibility/real-model/REAL-MODEL-ACCEPTANCE.md` §0.
 
 ## ROUND 116 — the newest measurements folded in: hosted green with census, two reds fixed, the rc.5 vitest probe
 

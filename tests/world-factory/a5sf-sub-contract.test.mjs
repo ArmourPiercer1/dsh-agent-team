@@ -45,6 +45,18 @@
  *       overrides applied; and the measured divergence from upstream: the
  *       proxy overlay `scrubbedParentEnv()` applies is ABSENT, so a Node child
  *       ignores inherited proxy variables and connects directly.
+ *   P5-KEY-INHERITANCE (2026-11-25 external review) — the credential the
+ *       booted DSH host inherits from its launcher (`DEEPSEEK_API_KEY`) is
+ *       ABSENT in a governed Bash child, for every secret-shaped suffix
+ *       (`KEY`/`PASSWORD`/`SECRET`/`TOKEN`), both in the child's own
+ *       environment and in a grandchild's inherited one; a plain
+ *       `child_process` child WOULD see it (the positive control that keeps
+ *       the negative non-vacuous); and a DIRECT spec entry is the caller's own
+ *       deliberate opt-in whose value cannot be the inherited one. The filter
+ *       under test is `confinedChildEnvironment` at
+ *       `packages/runtime/team-services/src/subprocess.ts:1145-1154`
+ *       (`SENSITIVE_ENV_PATTERN` / the function) — every assertion message
+ *       names that site.
  *
  * NOT DUPLICATING LAYER A: no arm here concludes "the lane refused". A deny
  * fact appears only as the ordering/attribution witness for a property this
@@ -64,6 +76,7 @@
  * Run: node --test tests/world-factory/a5sf-sub-contract.test.mjs
  */
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import test, { after } from 'node:test'
 import { dirname } from 'node:path'
@@ -224,6 +237,12 @@ const CASES = [
     label: 'p5-proxy',
     options: { shellClass: { programs: ['bash'] } },
     run: armProxyDivergence,
+  },
+  {
+    title: 'P5-KEY-INHERITANCE: the host-inherited DEEPSEEK_API_KEY and every KEY/PASSWORD/SECRET/TOKEN name are ABSENT in a governed Bash child (and its grandchild), while a plain child sees them and a direct spec entry is the caller\'s own opt-in',
+    label: 'p5-key-inheritance',
+    options: { shellClass: { programs: ['bash'] } },
+    run: armKeyInheritance,
   },
   {
     title: 'GEN-NATIVE-MODULE-BOUNDARY: the shipped bash-local executor reaches the confined face and is refused at argv[0]; unconfined it runs',
@@ -747,6 +766,126 @@ async function armProxyDivergence(world) {
     assert.equal(unconfinedEnv.SEC, '')
   } finally {
     if (dispose !== undefined) await dispose()
+    restoreAmbientEnv(snapshot)
+  }
+}
+
+// ---------------------------------------------------------------------------
+// P5-KEY-INHERITANCE — the credential the booted host inherits from its launcher
+// ---------------------------------------------------------------------------
+
+/**
+ * THE CODE PATH UNDER TEST, named exactly (file:line, not "the scrub").
+ * `SENSITIVE_ENV_PATTERN = /KEY|PASSWORD|SECRET|TOKEN/i` at
+ * `packages/runtime/team-services/src/subprocess.ts:1145`;
+ * `confinedChildEnvironment()` at `:1154` applies it to the AMBIENT parent
+ * environment before the spec's explicit entries. Every failure below names it.
+ */
+const ENV_SCRUB_SITE = 'packages/runtime/team-services/src/subprocess.ts:1145-1154 (SENSITIVE_ENV_PATTERN / confinedChildEnvironment)'
+
+/** The exact inherited name the pinned host's `llm-deepseek-api-key` adapter resolves, plus one per suffix. */
+const INHERITED_KEY_NAMES = Object.freeze([
+  'DEEPSEEK_API_KEY',
+  'A5SF_PROBE_KEY',
+  'A5SF_PROBE_PASSWORD',
+  'A5SF_PROBE_SECRET',
+  'A5SF_PROBE_TOKEN',
+])
+const INHERITED_PLAIN_NAME = 'A5SF_PROBE_PLAIN'
+const INHERITED_MARKER = 'a5sf-inherited-marker-value'
+const DIRECT_MARKER = 'a5sf-direct-opt-in-value'
+const NESTED_SEPARATOR = '---A5SF-NESTED-CHILD---'
+
+/** `env` prints the child's whole environment; only the names above are read, and no value is ever asserted into a message. */
+function envProbeCommand() {
+  return ['env', `printf '%s\\n' '${NESTED_SEPARATOR}'`, 'bash -c env'].join('; ')
+}
+
+function parseKeyEnvOutput(text) {
+  const map = {}
+  for (const line of String(text ?? '').split('\n')) {
+    const at = line.indexOf('=')
+    if (at <= 0) continue
+    map[line.slice(0, at)] = line.slice(at + 1)
+  }
+  return map
+}
+
+function splitNested(text) {
+  const raw = String(text ?? '')
+  const at = raw.indexOf(NESTED_SEPARATOR)
+  return at === -1
+    ? { self: parseKeyEnvOutput(raw), nested: {} }
+    : { self: parseKeyEnvOutput(raw.slice(0, at)), nested: parseKeyEnvOutput(raw.slice(at)) }
+}
+
+async function armKeyInheritance(world) {
+  const snapshot = snapshotAmbientEnv([...INHERITED_KEY_NAMES, INHERITED_PLAIN_NAME])
+  try {
+    // The shape the review names: the key is INJECTED INTO THE BOOTED HOST's
+    // environment by its launcher (`world.startRealProvider()` does exactly
+    // this via `process.env`), so every governed child inherits it unless the
+    // scrub drops it. One marker per suffix, the same value for each.
+    for (const name of INHERITED_KEY_NAMES) process.env[name] = INHERITED_MARKER
+    process.env[INHERITED_PLAIN_NAME] = INHERITED_MARKER
+
+    // ── POSITIVE CONTROL (the negative must not be vacuous) ──────────────────
+    // A plain, UNGOVERNED child of this process sees the very name and value.
+    const plain = execFileSync('/bin/bash', ['-c', envProbeCommand()], { env: { ...process.env }, encoding: 'utf8' })
+    const plainEnv = splitNested(plain).self
+    assert.equal(plainEnv.DEEPSEEK_API_KEY, INHERITED_MARKER,
+      `POSITIVE CONTROL FAILED: an ungoverned child must see DEEPSEEK_API_KEY (otherwise the negative below proves nothing) — site: ${ENV_SCRUB_SITE}`)
+
+    // ── UNIT: the published scrub, called directly ───────────────────────────
+    const scrub = world.seams.subprocess.confinedChildEnvironment(undefined)
+    for (const name of INHERITED_KEY_NAMES) {
+      assert.equal(Object.hasOwn(scrub, name), false,
+        `confinedChildEnvironment() must drop the inherited credential-shaped name ${name} — site: ${ENV_SCRUB_SITE}`)
+    }
+    assert.equal(scrub[INHERITED_PLAIN_NAME], INHERITED_MARKER,
+      `confinedChildEnvironment() must keep an ordinary name (${INHERITED_PLAIN_NAME}) — site: ${ENV_SCRUB_SITE}`)
+
+    // ── NEGATIVE (INHERITED ENV): the governed Bash child and its grandchild ─
+    const governed = await world.spawn(spawnSpec({
+      argv: ['/bin/bash', '-c', envProbeCommand()],
+      cwd: world.fixtures.inside,
+      shell: shellDeclaration(),
+    }))
+    assert.equal(governed.error, undefined, `the governed env probe must be admitted: ${String(governed.error)}`)
+    const { self, nested } = splitNested(governed.text)
+    for (const name of INHERITED_KEY_NAMES) {
+      assert.equal(Object.hasOwn(self, name), false,
+        `the GOVERNED Bash child must not inherit ${name} from the host environment — site: ${ENV_SCRUB_SITE}`)
+      assert.equal(Object.hasOwn(nested, name), false,
+        `the governed child's GRANDCHILD must not inherit ${name} either (the scrub is the process environment, not one spawn) — site: ${ENV_SCRUB_SITE}`)
+    }
+    assert.equal(self[INHERITED_PLAIN_NAME], INHERITED_MARKER,
+      `the governed child must still receive ordinary names (${INHERITED_PLAIN_NAME}) — site: ${ENV_SCRUB_SITE}`)
+    assert.equal(nested[INHERITED_PLAIN_NAME], INHERITED_MARKER,
+      `the governed child's grandchild must still receive ordinary names (${INHERITED_PLAIN_NAME}) — site: ${ENV_SCRUB_SITE}`)
+
+    // ── DIRECT ENV: an explicit spec entry is the CALLER's own opt-in ────────
+    // Measured product semantics: the scrub filters the AMBIENT environment and
+    // the spec's explicit entries are applied AFTER it (a string is a deliberate
+    // opt-in). The inherited value therefore cannot ride in through this shape:
+    // the child sees the caller's own value, never the host's key.
+    const direct = await world.spawn(spawnSpec({
+      argv: ['/bin/bash', '-c', envProbeCommand()],
+      cwd: world.fixtures.inside,
+      shell: shellDeclaration(),
+      env: { DEEPSEEK_API_KEY: DIRECT_MARKER },
+    }))
+    assert.equal(direct.error, undefined, `the direct-env probe must be admitted: ${String(direct.error)}`)
+    const directEnv = splitNested(direct.text).self
+    assert.equal(directEnv.DEEPSEEK_API_KEY, DIRECT_MARKER,
+      `a DIRECT spec entry is the caller's explicit opt-in and reaches the child — site: ${ENV_SCRUB_SITE}`)
+    assert.notEqual(directEnv.DEEPSEEK_API_KEY, INHERITED_MARKER,
+      `the DIRECT shape must never carry the INHERITED credential value (the ambient one is dropped before the opt-in is applied) — site: ${ENV_SCRUB_SITE}`)
+    for (const name of INHERITED_KEY_NAMES.filter((n) => n !== 'DEEPSEEK_API_KEY')) {
+      assert.equal(Object.hasOwn(directEnv, name), false,
+        `an unrelated inherited credential-shaped name (${name}) must still be absent when one direct entry is supplied — site: ${ENV_SCRUB_SITE}`)
+    }
+  } finally {
     restoreAmbientEnv(snapshot)
   }
 }

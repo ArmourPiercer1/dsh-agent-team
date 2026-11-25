@@ -49,6 +49,18 @@ facts, never interchangeable: **`CANDIDATE-ACCEPTED`** = the row's deterministic
 not a substitute. Model-behaviour rows need a real-model run at the pin to reach `CANDIDATE-ACCEPTED`; that
 run is a later round and is not started. **No row is PRODUCT-PROVEN.**
 
+**ROUND 119 (2026-11-26) — the real-model run was attempted and did not complete (no row moves).** The
+credential the round-111 probe named was supplied: `probe.json` now reads `REAL-ROUTE-AVAILABLE`, and both
+pinned hosts booted on the real endpoint and answered a real turn (`deepseek-v4-flash`, HTTP 200). But
+`--model real --boots 2` exits **1** on both hosts because the driver reads the Leader's model-visible
+surface from `world.mock.requests` (`run-real-model.mjs:2156-2160`), which is empty under a real route:
+all 20 judges are recorded `FAIL` / not-run and the four negative controls (deny / Stop /
+duplicate-approval / restart-no-replay) are never reached. **The model-behaviour rows — C1, C3, C12,
+C13 (base), C14b and the `d3`/`d4` live rows — therefore still rest on the scripted mock**;
+`CANDIDATE-ACCEPTED` is not reached for any of them and no row is PRODUCT-PROVEN. The blocker is the
+driver's real branch, not the environment. Evidence:
+`dev/agent-workflow/evidence/d-boot-feasibility/real-model/REAL-MODEL-ACCEPTANCE.md` §0.
+
 ## 3. Gate coverage key
 
 The merge gate is the synthetic `ci-required` context over the five `ci-*` layers
@@ -179,4 +191,5 @@ row, the same measurement reads: **18 numbered criteria + C14b** = 7 MECHANISM, 
   candidate SHA — the version gate Required and green there, its receipt verified there — **and** a row
   whose proposition one of the 31 judges actually asserts (§3.1). A row outside that coverage can never
   become PRODUCT-PROVEN through this gate, however many times it is frozen. Today no version is frozen, no
-  protection rule is applied, and every model in every boot is scripted.
+  protection rule is applied, and every model in every boot is scripted (round 119's real-model attempt
+  aborted in the driver before any judge — §2 — so this sentence is unchanged).
