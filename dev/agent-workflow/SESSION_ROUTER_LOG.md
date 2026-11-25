@@ -11391,3 +11391,61 @@ cut-closure `cut(0/148)`; p0-assets `37/180/69512` `cut(148/148)`; docs-sync `19
 failed`; UTE G1 argv 89/89; `eb3-run-manifest` records=602 findings=0; `ci-pr-gate --full --census-captures 2`
 `pass=10 fail=0` (294.9 s, census `599f/7424l` ×2, identical identity sets). No capability row moves; no row is
 PRODUCT-PROVEN; the draft stays draft.
+
+## 2026-11-25 — round 117 (vnext/a1-cut, PR #822 DRAFT): the Candidate Acceptance Gate becomes a VERSION gate
+
+**Owner ruling (2026-11-25), implemented.** The Candidate Acceptance Gate is a **VERSION gate, not a per-PR
+gate**: NOT required on ordinary PRs (one dual-host run is a measured `83 m 48 s` / 16 real host boots — a 10x
+slowdown of the daily loop for no value on docs/script PRs), and the formal gate for a candidate/release
+**version** — it must run, be green, and be **Required** at the **frozen candidate SHA** before a version is
+declared deliverable. The rejected alternative is **"required on every PR"**, recorded as rejected for that
+exact trade-off (`OWNER-DECISIONS.md` §"ROUND 117").
+
+**`PRODUCT-PROVEN` redefined (the single truth in force).** *Gate-backed at the frozen candidate SHA of a
+version, with the version gate Required and green at that SHA and its `version-gate-receipt.json` verified
+there* — **NOT** "covered by every PR's Required CI". **No row is PRODUCT-PROVEN today**, and none becomes so
+until such a gate is frozen. The gate grades **31 judges per host** (62 dual-host) and covers only **C2, C3,
+C5, C6, C8, C9, C12 and C13's fs/subprocess base**; it **never** covers C1, C4, C7's cold half, C10, C11,
+C13's PTC/web/terminals/userQuestions faces, C14, C14b, C15, C16, C17, C18. Updated to that one definition:
+`CANDIDATE-REPORT.md` (§1.1), `D-ACCEPTANCE-REPORT.md` (§"ROUND 117" + status table + the ladder-defining
+round), `CAPABILITY-MATRIX-C.md`, `C1-C18-SIGNOFF.md` (row-by-row `VG` column + §3.1 never-covered table),
+`MIGRATED-SUITE-STATUS.md`, `OWNER-DECISIONS.md`, `PR-BODY-draft.md` and the posted PR #822 body, plus the new
+operational `VERSION-GATE.md`.
+
+**Mechanism.** `.github/workflows/candidate-acceptance.yml` now triggers on `push` tags `v*` / branches
+`release/**`, `candidate/**`, on `workflow_dispatch` with an optional full-40-hex `head` input, and keeps
+`pull_request: [labeled, synchronize, reopened]` **only as the non-required opt-in** (label PRESENT). Strict
+binding: `graded head == checked-out head == requested SHA`, artifact newer than the start marker. A green run
+publishes `version-gate-receipt.json` (schemaVersion/head/verdict/judges/knownRefutedIds/hosts/startedAt/
+finishedAt/gateVersion/verdictFile{path,digest}) at
+`dev/agent-workflow/evidence/candidate-acceptance-gate/`; it references the gate's OWN `verdict.json` by path +
+sha256 — no second driver evidence format. The stable `version-gate (Required at frozen candidate SHA)` job
+re-verifies with `scripts/version-gate-verify.mjs` (`if: always()` on the version path, so a red grading job
+REFUSES instead of being skipped green). `dev/ci/eb3-ci-manifest.json` carries the explicit classification
+(`requiredPerPR:false`, `requiredAtFrozenCandidateSha:true`) and `scripts/eb3-ci-required.mjs` **asserts** it:
+`CI_VERSION_GATE_CLASSIFICATION_MISSING`, `_CONTEXT_MISSING`, `_PROMOTED_TO_REQUIRED` (as a layer, a layer leg,
+an aggregate call, or `workflow_call`), `_TRIGGER_MISSING`, `_FREEZE_MECHANICS_MISSING`, `_PR_PATH_UNGATED`.
+`ci-required`'s layer set is untouched and `workflows=` stays **11**.
+
+**Verifier (fail closed).** `scripts/version-gate-verify.mjs` exits 0 only on: receipt exists, exact schema,
+`head` == requested, `verdict == pass`, `envLimited == 0`, known-refuted set exactly the enumeration
+(`scripts/candidate-acceptance-known-refuted.mjs`, the one id `d4:ask-execute-process`), and the digest-bound
+verdict agreeing on head/hosts/judges/REFUTED ids. 20 named `VERSION_GATE_*` refusal codes, never a generic
+error. Controls: `scripts/version-gate-verify.test.mjs` **22 tests**, collected via the new
+`version-gate-verify-unit` dispatch leg (booked catalog delta: tests 786 → 787, collected 734 → 735, uncollected
+38 and excluded 14 unchanged).
+
+**Gates at this round (`dev/agent-workflow/evidence/ute-a1/round117/`):** `ute-vnext-a1` **255/252/0/3**
+(`sha256:edd4f1c4…` unchanged); `version-gate-verify-unit` **22/22**; catalog **787 tests / 735 collected / 38
+uncollected / 14 excluded**, digest `sha256:5f94024c…`, findings=0; `ute-cut-closure cut(0/148)`; `ute-p0-assets
+37/180/69512 cut(148/148)`; `docs-sync 193 docs / 0 findings`; place-dist-glue 35 byte-identical;
+`eb3-ci-required pass workflows=11 findings=0`; bound vitest 238/0; UTE G1 argv 89/89; `eb3-run-manifest
+records=634 findings=0`; `ci-pr-gate --full --census-captures 2` **PASS 10/10**. No capability row moves; no row
+is PRODUCT-PROVEN; the PR stays DRAFT.
+
+**Not exercised (disclosed).** The version gate has NOT run end-to-end as a version gate (no tag/push/dispatch
+with `head`, hosted artifact→verifier path unmeasured) and NO branch/tag protection rule has been applied — the
+exact ruleset (`version-gate (Required at frozen candidate SHA)` on a `release/**` ruleset, never on the
+default-branch PR rules; tag protection by a tag ruleset, which cannot carry required checks) and the freeze
+procedure are in `VERSION-GATE.md` §5–§6. Local evidence: the receipt writer/verifier against the repo's own
+`92be91dfb` verdict (`62/60/2/0`, exit 0) with wrong-head/missing-receipt refusals, `round117/version-gate-dryrun.log`.

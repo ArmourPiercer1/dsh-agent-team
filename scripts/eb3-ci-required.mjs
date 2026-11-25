@@ -913,6 +913,133 @@ export function checkSuiteLists({ root = ROOT, manifest = loadManifest(root), ov
 }
 
 /**
+ * THE VERSION GATE'S CLASSIFICATION IS ASSERTED, NOT TOLERATED (owner ruling 2026-11-25).
+ *
+ * `candidate-acceptance` is a VERSION gate: required at the FROZEN candidate SHA of a
+ * version, never a per-PR required context. The manifest says so (`classification`,
+ * `requiredPerPR: false`, `requiredAtFrozenCandidateSha: true`); this function makes that
+ * sentence a mechanical fact in BOTH directions:
+ *
+ *   * the classification must be PRESENT and EXACT on every declared entry for the
+ *     workflow, and the stable `version-gate` job must stay declared
+ *     (CI_VERSION_GATE_CLASSIFICATION_MISSING / CI_VERSION_GATE_CONTEXT_MISSING);
+ *   * the workflow may NOT appear in `layers[]`, may NOT be called by the Required
+ *     aggregate, and may NOT be `workflow_call`-able — i.e. it may not be PROMOTED to a
+ *     required layer (CI_VERSION_GATE_PROMOTED_TO_REQUIRED);
+ *   * the version-path triggers and the optional `head` input must stay declared
+ *     (CI_VERSION_GATE_TRIGGER_MISSING);
+ *   * the freeze mechanics must stay in the workflow — the verifier and the receipt
+ *     (CI_VERSION_GATE_FREEZE_MECHANICS_MISSING);
+ *   * the PR path must stay label-gated, so removing the gate cannot silently turn the
+ *     84-minute run into an every-PR run (CI_VERSION_GATE_PR_PATH_UNGATED).
+ *
+ * WHY NOT JUST `knownNonRequired`. Before this rule the manifest only said "declared";
+ * a future edit could drop the classification (leaving a bare non-required entry) or add
+ * the workflow to a layer (making it a merge gate) and every existing check would pass.
+ */
+export const VERSION_GATE_WORKFLOW = '.github/workflows/candidate-acceptance.yml'
+export const VERSION_GATE_CLASSIFICATION = 'version gate: required at a frozen candidate SHA, never a per-PR required context'
+export const VERSION_GATE_JOB = 'version-gate'
+export const VERSION_GATE_PR_LABEL = 'candidate-acceptance'
+
+/**
+ * @param {object} p
+ * @param {Map<string,object>} p.docs  workflow path → parsed YAML
+ * @param {object} [p.manifest]       defaults to the tracked manifest
+ * @returns {{findings: Array<{code: string, detail: string}>}}
+ */
+export function checkVersionGateClassification({ docs, manifest = loadManifest() }) {
+  const findings = []
+  const add = (code, detail) => findings.push({ code, detail })
+  const declared = (manifest.knownNonRequired ?? []).filter((k) => k.workflow === VERSION_GATE_WORKFLOW)
+  if (declared.length === 0) {
+    add('CI_VERSION_GATE_CLASSIFICATION_MISSING', `${VERSION_GATE_WORKFLOW} has no knownNonRequired entry; the version-gate classification (required at a frozen candidate SHA, never a per-PR required context) must stay declared in ${MANIFEST_REL}`)
+    return { findings }
+  }
+  for (const entry of declared) {
+    const where = `${VERSION_GATE_WORKFLOW}#${String(entry.job)}`
+    if (entry.classification !== VERSION_GATE_CLASSIFICATION) {
+      add('CI_VERSION_GATE_CLASSIFICATION_MISSING', `${where}: classification=${JSON.stringify(entry.classification ?? null)}; the version-gate classification must read exactly ${JSON.stringify(VERSION_GATE_CLASSIFICATION)} — a bare non-required entry is not the same fact`)
+    }
+    if (entry.requiredPerPR !== false) {
+      add('CI_VERSION_GATE_CLASSIFICATION_MISSING', `${where}: requiredPerPR=${JSON.stringify(entry.requiredPerPR ?? null)} — the version gate is NEVER a per-PR required context, so this must be false`)
+    }
+    if (entry.requiredAtFrozenCandidateSha !== true) {
+      add('CI_VERSION_GATE_CLASSIFICATION_MISSING', `${where}: requiredAtFrozenCandidateSha=${JSON.stringify(entry.requiredAtFrozenCandidateSha ?? null)} — this must be true, or the version gate stops being the gate a version must pass`)
+    }
+  }
+  if (!declared.some((entry) => entry.job === VERSION_GATE_JOB)) {
+    add('CI_VERSION_GATE_CONTEXT_MISSING', `${VERSION_GATE_WORKFLOW} declares no "${VERSION_GATE_JOB}" job entry — the stable required context (the one a branch/tag protection rule can require) is gone; the SHA-bearing grading job cannot be required by name`)
+  }
+
+  // ── promotion: nothing may make it a required layer or a callable of the Required summary.
+  for (const layer of manifest.layers ?? []) {
+    if (layer.workflow === VERSION_GATE_WORKFLOW || layer.job === 'candidate-acceptance' || layer.job === VERSION_GATE_JOB) {
+      add('CI_VERSION_GATE_PROMOTED_TO_REQUIRED', `layer ${layer.id} names ${VERSION_GATE_WORKFLOW}#${String(layer.job)} — the version gate must never enter ci-required's layer set (an every-PR 84 min dual-host run is a 10x slowdown of the daily loop)`)
+    }
+    for (const leg of layer.legs ?? []) {
+      const cmd = Array.isArray(leg.cmd) ? leg.cmd.join(' ') : ''
+      if (/scripts\/(candidate-acceptance-gate|version-gate-verify|version-gate-receipt)\.mjs/u.test(cmd)) {
+        add('CI_VERSION_GATE_PROMOTED_TO_REQUIRED', `layer ${layer.id} leg "${String(leg.id)}" invokes \`${cmd}\` — the version gate's scripts may not be a Required layer leg`)
+      }
+    }
+  }
+  const agg = manifest.aggregate ?? {}
+  const aggDoc = docs?.get(agg.workflow)
+  if (aggDoc !== undefined) {
+    const aggText = JSON.stringify(aggDoc)
+    if (aggText.includes(`./${VERSION_GATE_WORKFLOW}`)) {
+      add('CI_VERSION_GATE_PROMOTED_TO_REQUIRED', `${agg.workflow} calls ./${VERSION_GATE_WORKFLOW} — a required summary that needs the version gate makes it a per-PR context`)
+    }
+    for (const jobId of agg.jobs ?? []) {
+      if (jobId === 'candidate-acceptance' || jobId === VERSION_GATE_JOB) {
+        add('CI_VERSION_GATE_PROMOTED_TO_REQUIRED', `${agg.workflow}#${jobId} is declared as an aggregate job — the version gate may not be part of the Required summary`)
+      }
+    }
+  }
+  const doc = docs?.get(VERSION_GATE_WORKFLOW)
+  if (doc === undefined) {
+    add('CI_VERSION_GATE_CLASSIFICATION_MISSING', `${VERSION_GATE_WORKFLOW} is unreadable/absent, so its classification cannot be checked`)
+    return { findings }
+  }
+  const on = doc.on ?? doc[true] ?? {}
+  if ('workflow_call' in on) {
+    add('CI_VERSION_GATE_PROMOTED_TO_REQUIRED', `${VERSION_GATE_WORKFLOW} is workflow_call-able — that is exactly how a reusable layer becomes a Required context`)
+  }
+  // ── the version path must stay declared.
+  if (!('push' in on)) {
+    add('CI_VERSION_GATE_TRIGGER_MISSING', `${VERSION_GATE_WORKFLOW} has no push trigger — a released tag/branch would run no version gate`)
+  } else {
+    const push = on.push ?? {}
+    const tags = Array.isArray(push?.tags) ? push.tags : []
+    const branches = Array.isArray(push?.branches) ? push.branches : []
+    if (tags.length === 0 && branches.length === 0) {
+      add('CI_VERSION_GATE_TRIGGER_MISSING', `${VERSION_GATE_WORKFLOW} push trigger names neither tags nor branches — the version path is unreachable`)
+    }
+  }
+  const dispatch = on.workflow_dispatch
+  if (dispatch === undefined) {
+    add('CI_VERSION_GATE_TRIGGER_MISSING', `${VERSION_GATE_WORKFLOW} has no workflow_dispatch — a frozen SHA that is not the tip of a release ref could not be graded`)
+  } else if (dispatch === null || typeof dispatch !== 'object' || dispatch.inputs?.head === undefined) {
+    add('CI_VERSION_GATE_TRIGGER_MISSING', `${VERSION_GATE_WORKFLOW} workflow_dispatch declares no optional "head" input — grading a frozen SHA without moving a ref must stay possible`)
+  }
+  // ── the freeze mechanics must stay visible in the workflow.
+  const text = JSON.stringify(doc)
+  for (const token of ['scripts/version-gate-verify.mjs', 'version-gate-receipt.json']) {
+    if (!text.includes(token)) {
+      add('CI_VERSION_GATE_FREEZE_MECHANICS_MISSING', `${VERSION_GATE_WORKFLOW} no longer mentions ${token} — the receipt/verifier pair IS the freeze rule; removing it leaves the gate with no machine-visible artefact`)
+    }
+  }
+  // ── the PR path must stay label-gated.
+  const grading = doc.jobs?.['candidate-acceptance']
+  const gradingIf = String(grading?.if ?? '')
+  if (!gradingIf.includes(`contains(github.event.pull_request.labels.*.name, '${VERSION_GATE_PR_LABEL}')`)) {
+    add('CI_VERSION_GATE_PR_PATH_UNGATED', `${VERSION_GATE_WORKFLOW}#candidate-acceptance if=${JSON.stringify(grading?.if ?? null)} no longer tests for the "${VERSION_GATE_PR_LABEL}" label — the PR path would become an every-PR 84 min run instead of an explicit opt-in`)
+  }
+  return { findings }
+}
+
+/**
  * @param {object} p
  * @param {Map<string,string>} p.files  repo-relative path → workflow YAML text
  * @param {object} [p.manifest]          defaults to the tracked manifest
@@ -1159,6 +1286,8 @@ export function checkRequiredJobs({ files, manifest = loadManifest() }) {
       add('CI_JOB_UNDECLARED', `${path}#${jobId} is not declared in ${MANIFEST_REL} — its Required status would be invisible`, { job: jobId })
     }
   }
+
+  for (const f of checkVersionGateClassification({ docs, manifest }).findings) findings.push(f)
 
   checkProductLegs({ docs, manifest, add })
   return { findings }

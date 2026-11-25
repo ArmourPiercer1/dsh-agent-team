@@ -1,5 +1,17 @@
 # The 16 migrated capability suites — measured, not assumed
 
+> **ROUND 117 (2026-11-25) — DEFINITION CHANGE, no measurement changes here.** The owner ruled that the
+> Candidate Acceptance Gate is a **VERSION gate**: required at the **frozen candidate SHA** of a version,
+> **never** a per-PR required context (an every-PR dual-host run is ~84 min / 16 host boots). `PRODUCT-PROVEN`
+> now means *gate-backed at the frozen candidate SHA of a version, with the version gate Required and green at
+> that SHA and its `version-gate-receipt.json` verified there* — **not** "covered by every PR's Required CI".
+> **No row is PRODUCT-PROVEN today.** The gate's 31 judges cover C2, C3, C5, C6, C8, C9, C12 and C13's
+> fs/subprocess base only; they never cover C1, C4, C7's cold half, C10, C11, C13's PTC/web/terminals/user
+> faces, C14, C14b, C15, C16, C17 or C18 (`VERSION-GATE.md` §2). Every "no row is PRODUCT-PROVEN" sentence
+> below stays true; where a sentence gives the OLD rule (for example "gate-backed only when an owner makes the
+> gate required" or "`V@B=yes` requires a bound executable gate" read as the Required CI suite), the rule in
+> this banner supersedes it — the bound gate is the VERSION gate at a frozen SHA.
+
 **CURRENT (round 71, judge semantics): 238/238, E3 GREEN, leg green.** The latest round is at the
 end (§"Round 71 (judge semantics)"); the round-30/31 narrative below is kept as history and its
 counts are that round's, not the current ones.
@@ -3405,8 +3417,9 @@ missed although the durable row and its decision existed. The wait now reads the
 unchanged from round 96; the probe is an existing scannable-surface file, so `ute-p0-assets` has no new
 delta. Gate evidence for this round is pasted in the settlement comment.
 
-**Not proven / not claimed.** (1) The level is **DEV-LIVE**, not PRODUCT-PROVEN: no bound executable
-gate exercises this row, and `V@B=yes` requires one. (2) Only `write`/`writeText` carry the live R3
+**Not proven / not claimed.** (1) The level is **DEV-LIVE**, not PRODUCT-PROVEN: the bound executable gate is
+the VERSION gate at a frozen candidate SHA (owner ruling 2026-11-25), no version has been frozen, and this row
+is not in the gate's 31-judge coverage anyway. (2) Only `write`/`writeText` carry the live R3
 receipt; subprocess/PTY and `apply_patch` remain R4. (3) The duplicate-route attempt itself leaves no
 durable fact; the judge proves convergence (one wake) and records the two product call sites. (4) The
 scripted model is the only double.
@@ -3463,7 +3476,8 @@ that realm (a shell on the same realm is refused too), not per-file carving; Sha
 face in the closed vocabulary) remains the only shape that can express a nested deny precisely.
 
 **Not proven:** a boot-level AgentSetup arm for the realmless refusal (in-process rule + source placement
-only); any PRODUCT-PROVEN status (no bound executable gate exercises these rows; the level is MECHANISM).
+only); any PRODUCT-PROVEN status (no version is frozen, and the gate's 31 judges do not cover these rows; the
+level is MECHANISM).
 
 ## Round 99 (2026-11-24) — the R3 receipt reaches the PROCESS face: MECHANISM proven, the LIVE process leg blocked by a named assembly gap
 
@@ -3651,10 +3665,10 @@ TYPED code and zero executions; on rc.5 the acknowledgement settles with `code=n
 need an rc.5-shape repair OR a product/owner decision; round 105 does not guess which, and it does
 NOT add the id to `KNOWN_REFUTED` (only `d4:ask-execute-process` is enumerated).
 
-**Levels:** no row moves. The gate is non-required; rc.2 is green and rc.5 is FAIL. C-alpha6 and the
-R3 `write` receipt remain **DEV-LIVE** on both hosts. The governed process face remains
-**NOT-PRODUCT-PROVEN**. No row is PRODUCT-PROVEN, and no row becomes gate-backed without an owner
-decision to make the gate required.
+**Levels:** no row moves. The gate is a VERSION gate (non-required on PRs; no version frozen); rc.2 is green
+and rc.5 is FAIL. C-alpha6 and the R3 `write` receipt remain **DEV-LIVE** on both hosts. The governed process
+face remains **NOT-PRODUCT-PROVEN**. No row is PRODUCT-PROVEN, and no row becomes gate-backed without the
+version freeze (`VERSION-GATE.md` §6) — a per-PR requirement is not the gate the owner chose.
 
 ---
 
@@ -3703,8 +3717,8 @@ name drives the same drain; M3-7 asserts the neither-name shape still refuses. N
 member (`ok=true`, `deliveredSeq=40`) and again after `member.restore`; it refuses only the ARCHIVED
 target. The clause predicate was not relaxed — it grew strictly more observability.
 
-**Levels:** no row moves. Both rows stay DEV-LIVE on rc.5. The gate remains non-required, so no row
-becomes PRODUCT-PROVEN.
+**Levels:** no row moves. Both rows stay DEV-LIVE on rc.5. No version is frozen, so no row becomes
+PRODUCT-PROVEN.
 
 ---
 

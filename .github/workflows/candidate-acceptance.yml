@@ -1,49 +1,68 @@
-# candidate-acceptance — THE CANDIDATE ACCEPTANCE LAYER. **NOT Required CI.**
+# candidate-acceptance — THE VERSION GATE. **Required at a FROZEN CANDIDATE SHA, never per-PR Required.**
 #
-# Review `docs/reviews/20261124-1341.txt` §4.4 asks for the key DEV-LIVE
-# scenarios to become "an executable, reviewable candidate gate". This workflow
-# is that layer, and nothing more:
+# THE OWNER RULING (2026-11-25, `dev/agent-workflow/evidence/ute-a1/OWNER-DECISIONS.md` §"ROUND 117").
+# This workflow is the formal gate for a candidate/release VERSION, not a gate on ordinary PRs:
 #
+#   * It IS the gate a version must pass: it runs at the FROZEN candidate SHA, publishes a
+#     `version-gate-receipt.json` bound to that SHA, and its stable `version-gate` context is what the
+#     release branch/tag protection rule requires. `PRODUCT-PROVEN` now means "gate-backed at the frozen
+#     candidate SHA of a version, with the version gate Required and green at that SHA" — NOT "covered by
+#     every PR's Required CI".
 #   * It is NOT a layer of `.github/workflows/ci-required.yml`, it is NOT in
-#     `dev/ci/eb3-ci-manifest.json`'s `layers`, and it is NOT a branch-protection
-#     context. `ci-required`'s layer list is unchanged by this file.
-#   * It is registered in the manifest as an explicitly NON-REQUIRED job so
-#     `scripts/eb3-ci-required.mjs` sees it declared rather than silently
-#     undeclared (CANDIDATE-AUDIT.md counts one more workflow, ten → eleven).
-#   * It is manual (`workflow_dispatch`) and label-scoped: it runs on
-#     `pull_request: [labeled, synchronize, reopened]` and the JOB gates on the
-#     `candidate-acceptance` label being PRESENT (not on the label-add event
-#     alone). Review `20261125-0058` §4.2: the old `labeled`-only trigger left a
-#     later push with no result for the new HEAD while a check context from the
-#     previous HEAD stayed visible. Now every candidate HEAD of a labelled PR
-#     gets its own run. A green run here means "the four D drivers ran on both
-#     pinned hosts with two agreeing boots and only the enumerated known-refuted
-#     judge is REFUTED". It does NOT mean a capability row is PRODUCT-PROVEN: a
-#     row becomes gate-backed only when a gate is REQUIRED by branch protection
-#     AND green, and this layer is deliberately non-required (owner ruling).
+#     `dev/ci/eb3-ci-manifest.json`'s `layers`, and it is NOT a context on the default-branch PR rules.
+#     `ci-required`'s layer set is unchanged by this file.
+#   * Its cost is why: one dual-host run is **~84 minutes of wall clock** on a warm machine (round 109:
+#     17:17:46 → 18:41:34 = 83 m 48 s; an earlier pair measured 74 m 41 s). It provisions and builds BOTH
+#     pinned pristine hosts and boots the product four times per host — 16 real host boots, deliberately
+#     heavier than the whole daily Required set. An every-PR 84-minute run is a 10x slowdown of the daily
+#     loop for no added value on docs/script PRs.
 #
-# HEAD BINDING (`20261125-0058` §4.2). The job name carries the SHA it graded,
-# the gate's own summary prints `head=<sha>`, and the `Bind the graded head`
-# step asserts that SHA equals `github.sha` AND that the checked-out HEAD
-# equals `github.sha`. A verdict artifact from another commit can therefore
-# never be read as a result for this HEAD: the run fails typed instead.
+# TRIGGERS (this file is the trigger declaration):
 #
-# COST (`20261125-0058` §4.3), measured, not estimated: one dual-host run is
-# **~84 minutes of wall clock** on a warm machine (round 109: 17:17:46 →
-# 18:41:34 = 83 m 48 s; an earlier pair measured 74 m 41 s, a single rc.5 host
-# run ~19-28 min). It provisions and builds BOTH pinned pristine hosts and
-# boots the product four times per host. That is deliberately heavier than the
-# whole daily Required set (the ten-leg `ci-pr-gate --full` is a few minutes),
-# which is exactly why this layer is NOT Required: it must never become a merge
-# gate for an unrelated PR.
+#   push            tags `v*` and branches `release/**`, `candidate/**` — the version path. A pushed
+#                   candidate/release ref runs the gate at that commit with no per-PR involvement.
+#   workflow_dispatch  optional `head` input (full 40-hex SHA, default `github.sha`). This is how a frozen
+#                   SHA that is not the tip of a release ref is graded without moving any ref. The SHA is
+#                   resolved and checked out explicitly; a branch name or short SHA is REFUSED.
+#   pull_request    `[labeled, synchronize, reopened]` on `master`, gated on the `candidate-acceptance`
+#                   label being PRESENT. This is the **non-required opt-in** path ONLY: a developer may
+#                   request a run, and the label is not (and must never become) a merge requirement. The
+#                   PR-path job name says `(opt-in, not required)`; the stable `version-gate` job does not
+#                   run on this path, so no PR can produce the required version-gate context.
 #
-# The single verdict is `scripts/candidate-acceptance-gate.mjs`'s own; this
-# workflow only provisions the two pinned hosts and runs it. The gate performs
-# no retries and widens no timeout: a hung driver is a FAIL naming its timeout.
-name: candidate-acceptance (candidate acceptance layer, NOT Required CI)
+# HEAD BINDING (strict, `20261125-0058` §4.2 + the 2026-11-25 version-gate ruling). The requested SHA is
+# resolved ONCE, exported, and used for the checkout. After grading, the run fails typed unless
+# `graded head == checked-out head == requested SHA`, and the verdict artifact was written by THIS run
+# (newer than the start marker). `graded == requested` is asserted again by the receipt writer and by the
+# verifier in the `version-gate` job, so three independent steps would have to agree for a stale verdict
+# to be read as this SHA's result.
+#
+# FREEZE RULE, MECHANICALLY VISIBLE. A green grading run publishes `version-gate-receipt.json`
+# (schema: `scripts/version-gate-receipt.mjs`; verified by `scripts/version-gate-verify.mjs`). The receipt
+# binds the requested SHA to the gate's OWN `verdict.json` by path + sha256 digest — no second evidence
+# format is invented for the drivers. The `version-gate` job then re-reads that receipt from the uploaded
+# artifact and refuses unless its head equals the requested SHA, its verdict is `pass`, `envLimited` is 0
+# and the known-refuted set is EXACTLY the gate's enumeration. Configuration for the owner:
+# `dev/agent-workflow/evidence/ute-a1/VERSION-GATE.md`.
+#
+# The single verdict is `scripts/candidate-acceptance-gate.mjs`'s own; this workflow only provisions the
+# two pinned hosts and runs it. The gate performs no retries and widens no timeout: a hung driver is a
+# FAIL naming its timeout.
+name: candidate-acceptance (VERSION GATE at a frozen candidate SHA; NOT per-PR Required)
 
 on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - 'release/**'
+      - 'candidate/**'
   workflow_dispatch:
+    inputs:
+      head:
+        description: 'Full 40-hex commit SHA to grade (default: the dispatching ref / github.sha)'
+        required: false
+        default: ''
   pull_request:
     branches: [master]
     types: [labeled, synchronize, reopened]
@@ -53,38 +72,76 @@ permissions:
   pull-requests: read
 
 concurrency:
-  # One run per graded HEAD. `cancel-in-progress` stays false: superseding a
-  # head's evidence is better than cancelling it, and the `head=` assertion
-  # makes a stale result impossible to mistake for the current one.
-  group: candidate-acceptance-${{ github.sha }}
+  # One run per graded SHA. `cancel-in-progress` stays false: superseding a SHA's evidence is better than
+  # cancelling it, and the `head=` assertion makes a stale result impossible to mistake for the current one.
+  group: candidate-acceptance-${{ github.event.inputs.head || github.sha }}
   cancel-in-progress: false
 
 jobs:
   candidate-acceptance:
-    name: candidate-acceptance (NOT Required) head=${{ github.sha }}
+    # The check name carries the SHA it grades and says which path this run is on.
+    name: >-
+      candidate-acceptance ${{ github.event_name == 'pull_request' && '(opt-in, not required)' || '(VERSION GATE, NOT per-PR Required)' }} head=${{ github.event.inputs.head || github.sha }}
     runs-on: ubuntu-latest
-    # FOUR boots per driver set, both hosts: ~33 min/host measured locally
-    # (D4 alone is 2 x ~6.5 min; the measured full dual-host pair is ~75 min),
-    # plus two host builds. This is a ceiling for the whole non-required run,
-    # not a driver-timeout widening: the driver timeout remains
+    outputs:
+      requested: ${{ steps.head.outputs.requested }}
+    # FOUR boots per driver set, both hosts: ~33 min/host measured locally (D4 alone is 2 x ~6.5 min; the
+    # measured full dual-host pair is ~75-84 min), plus two host builds and this repository's build. This is
+    # a ceiling for the whole run, not a driver-timeout widening: the driver timeout remains
     # `DRIVER_TIMEOUT_MS` inside the gate script.
     timeout-minutes: 120
-    # HEAD BINDING: the label must be PRESENT on the PR, for every trigger type
-    # (`labeled`, `synchronize`, `reopened`). The event's own label name only
-    # exists on `labeled`, so the presence test is the durable one.
+    # HEAD BINDING: on the PR path the label must be PRESENT for every trigger type; the event's own label
+    # name only exists on `labeled`, so the presence test is the durable one. The version path (push /
+    # dispatch) needs no label.
     if: >-
+      github.event_name == 'push' ||
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request' &&
        contains(github.event.pull_request.labels.*.name, 'candidate-acceptance'))
     steps:
-      - name: Checkout (full history; the RUN record binds a real commit)
+      # STRICT HEAD RESOLUTION, BEFORE CHECKOUT. `workflow_dispatch` may name any frozen 40-hex SHA; every
+      # other event grades `github.sha`. No branch/tag name and no abbreviated SHA is accepted, because
+      # "the head I graded" must be one immutable commit for the receipt to mean anything.
+      - name: Resolve the requested head SHA (strict)
+        id: head
+        shell: bash
+        env:
+          DISPATCH_HEAD: ${{ github.event.inputs.head }}
+        run: |
+          set -euo pipefail
+          REQUESTED="${DISPATCH_HEAD:-$GITHUB_SHA}"
+          if ! printf '%s' "$REQUESTED" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "::error::VERSION-GATE refused: requested head '${REQUESTED}' is not a full 40-hex SHA; a branch name, tag or abbreviated SHA cannot be frozen"
+            exit 1
+          fi
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ] && [ "$REQUESTED" != "$GITHUB_SHA" ]; then
+            echo "::error::VERSION-GATE refused: only workflow_dispatch may grade a SHA other than github.sha (requested ${REQUESTED}, event commit ${GITHUB_SHA})"
+            exit 1
+          fi
+          echo "requested=$REQUESTED" >> "$GITHUB_OUTPUT"
+          echo "REQUESTED_HEAD=$REQUESTED" >> "$GITHUB_ENV"
+          echo "VERSION-GATE requested head=${REQUESTED} event=${{ github.event_name }}"
+
+      - name: Checkout the requested head (the tree this run grades)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # Bind to the SHA this run will grade (the PR merge commit for
-          # `pull_request` events), so the checked-out tree and `github.sha`
-          # are the same commit by construction.
-          ref: ${{ github.sha }}
+          ref: ${{ steps.head.outputs.requested }}
+
+      - name: Assert the checkout IS the requested head
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHECKED_OUT=$(git rev-parse HEAD)
+          if ! git rev-parse --verify --quiet "${REQUESTED_HEAD}^{commit}" > /dev/null; then
+            echo "::error::VERSION-GATE refused: ${REQUESTED_HEAD} is not a commit in this repository"
+            exit 1
+          fi
+          if [ "$CHECKED_OUT" != "$REQUESTED_HEAD" ]; then
+            echo "::error::VERSION-GATE refused: checked-out ${CHECKED_OUT} != requested ${REQUESTED_HEAD}"
+            exit 1
+          fi
+          echo "VERSION-GATE checkout head=${CHECKED_OUT} == requested (strict)"
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -186,6 +243,13 @@ jobs:
           pnpm run build
           pnpm build:composition
 
+      # The verifier's own negative controls run as a collected node:test leg (declared in
+      # `dev/ci/eb3-ci-manifest.json` as `version-gate-verify-unit`). They are cheap and they prove the
+      # freeze check refuses before the ~84 min grading step is trusted.
+      - name: Version-gate verifier controls (node:test leg)
+        shell: bash
+        run: node scripts/dispatch-tests.mjs --run --leg version-gate-verify-unit
+
       - name: Mark the gate start (stale-artifact guard)
         shell: bash
         run: |
@@ -197,12 +261,11 @@ jobs:
         shell: bash
         run: node scripts/candidate-acceptance-gate.mjs --hosts both
 
-      # HEAD BINDING (`20261125-0058` §4.2). The verdict artifact names the SHA
-      # it graded; this step prints that SHA and REFUSES the run unless it is
-      # exactly `github.sha`, the checked-out HEAD is the same commit, and the
-      # artifact was WRITTEN BY THIS RUN. A verdict copied or left over from
-      # another HEAD therefore cannot satisfy this context for the current one.
-      - name: Bind the graded head to this run's github.sha
+      # HEAD BINDING (`20261125-0058` §4.2). The verdict artifact names the SHA it graded; this step prints
+      # that SHA and REFUSES the run unless it is exactly the requested SHA, the checked-out HEAD is the same
+      # commit, and the artifact was WRITTEN BY THIS RUN. A verdict copied or left over from another SHA
+      # therefore cannot satisfy this context for the requested one.
+      - name: Bind the graded head to the requested SHA
         shell: bash
         run: |
           set -euo pipefail
@@ -213,21 +276,112 @@ jobs:
             exit 1
           fi
           GRADED=$(node -e "const j=require(process.argv[1]); process.stdout.write(String(j.head))" "$VERDICT")
-          echo "CANDIDATE-GATE head=${GRADED} github.sha=${GITHUB_SHA} checked-out=${CHECKED_OUT} machine=${VERDICT}"
-          if [ "$CHECKED_OUT" != "$GITHUB_SHA" ]; then
-            echo "::error::STALE CHECKOUT: git HEAD ${CHECKED_OUT} != github.sha ${GITHUB_SHA}"
+          echo "CANDIDATE-GATE head=${GRADED} requested=${REQUESTED_HEAD} checked-out=${CHECKED_OUT} machine=${VERDICT}"
+          if [ "$CHECKED_OUT" != "$REQUESTED_HEAD" ]; then
+            echo "::error::VERSION-GATE refused: STALE CHECKOUT: git HEAD ${CHECKED_OUT} != requested ${REQUESTED_HEAD}"
             exit 1
           fi
-          if [ "$GRADED" != "$GITHUB_SHA" ]; then
-            echo "::error::STALE CANDIDATE-GATE: the verdict grades ${GRADED} but this run is for ${GITHUB_SHA}"
+          if [ "$GRADED" != "$REQUESTED_HEAD" ]; then
+            echo "::error::VERSION-GATE refused: STALE CANDIDATE-GATE: the verdict grades ${GRADED} but this run is for ${REQUESTED_HEAD}"
             exit 1
           fi
-          echo "CANDIDATE-GATE head=${GITHUB_SHA} bound (graded head == github.sha, artifact fresh)"
+          echo "VERDICT_PATH=$VERDICT" >> "$GITHUB_ENV"
+          echo "CANDIDATE-GATE head=${REQUESTED_HEAD} bound (graded head == checked-out head == requested SHA, artifact fresh)"
 
-      - name: Upload the gate's verdict and its per-host evidence
+      # THE FREEZE ARTIFACT. Only a green grading run reaches this step (a red gate fails the job before
+      # it), and the writer refuses a non-pass verdict, a mismatched head, or a non-zero envLimited. The
+      # receipt lands at a STABLE path under the gate's evidence root and references this run's verdict by
+      # path + sha256 digest.
+      - name: Publish version-gate-receipt.json (freeze artifact)
+        shell: bash
+        run: |
+          set -euo pipefail
+          RECEIPT_OUT=dev/agent-workflow/evidence/candidate-acceptance-gate/version-gate-receipt.json
+          node scripts/version-gate-receipt.mjs --verdict "$VERDICT_PATH" --requested-head "$REQUESTED_HEAD" --out "$RECEIPT_OUT"
+          node -e "
+            const r = require('./' + process.argv[1]);
+            if (r.head !== process.argv[2]) { console.error('::error::VERSION-GATE receipt head ' + r.head + ' != requested ' + process.argv[2]); process.exit(1); }
+            if (r.verdict !== 'pass') { console.error('::error::VERSION-GATE receipt verdict ' + r.verdict); process.exit(1); }
+            if (r.judges.envLimited !== 0) { console.error('::error::VERSION-GATE receipt envLimited ' + r.judges.envLimited); process.exit(1); }
+            console.log('VERSION-GATE receipt head=' + r.head + ' verdict=' + r.verdict + ' proven=' + r.judges.proven + ' known-refuted=' + r.judges.knownRefuted + ' env-limited=' + r.judges.envLimited);
+          " "$RECEIPT_OUT" "$REQUESTED_HEAD"
+
+      - name: Upload the gate's verdict, receipt and per-host evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: candidate-acceptance-${{ github.sha }}-${{ github.run_id }}
+          name: version-gate-bundle-${{ github.run_id }}
           path: dev/agent-workflow/evidence/candidate-acceptance-gate/
+          if-no-files-found: warn
+
+  # THE REQUIRED CONTEXT. A STABLE check name (no SHA in it) is the one a branch/tag protection rule can
+  # require; the grading job above carries the SHA. `if: always()` is deliberate: a skipped required check
+  # must never be able to look like a pass, so when the grading job fails this job still runs and REFUSES
+  # (the receipt is absent) instead of being skipped green.
+  version-gate:
+    name: version-gate (Required at frozen candidate SHA)
+    needs: candidate-acceptance
+    if: ${{ github.event_name != 'pull_request' && always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve the requested head SHA (strict)
+        id: head
+        shell: bash
+        env:
+          DISPATCH_HEAD: ${{ github.event.inputs.head }}
+        run: |
+          set -euo pipefail
+          REQUESTED="${DISPATCH_HEAD:-$GITHUB_SHA}"
+          if ! printf '%s' "$REQUESTED" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "::error::VERSION-GATE refused: requested head '${REQUESTED}' is not a full 40-hex SHA"
+            exit 1
+          fi
+          echo "requested=$REQUESTED" >> "$GITHUB_OUTPUT"
+          echo "REQUESTED_HEAD=$REQUESTED" >> "$GITHUB_ENV"
+
+      - name: Checkout the requested head (for the verifier's own code)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.head.outputs.requested }}
+
+      - name: Assert the checkout IS the requested head
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHECKED_OUT=$(git rev-parse HEAD)
+          if [ "$CHECKED_OUT" != "$REQUESTED_HEAD" ]; then
+            echo "::error::VERSION-GATE refused: checked-out ${CHECKED_OUT} != requested ${REQUESTED_HEAD}"
+            exit 1
+          fi
+
+      - name: Download the version-gate bundle (verdict + receipt)
+        uses: actions/download-artifact@v4
+        with:
+          name: version-gate-bundle-${{ github.run_id }}
+          path: dev/agent-workflow/evidence/candidate-acceptance-gate
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      # FAIL CLOSED. `scripts/version-gate-verify.mjs` exits 0 only when the receipt exists, its schema is
+      # exact, its head equals the requested SHA, its verdict is `pass`, `envLimited` is 0, the known-refuted
+      # set is EXACTLY the gate's enumeration, and the referenced verdict file matches the receipt's sha256
+      # digest. Every other outcome is a named REFUSED code (never a generic error, never a vacuous pass).
+      - name: Verify the freeze receipt at the requested SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/version-gate-verify.mjs \
+            --receipt dev/agent-workflow/evidence/candidate-acceptance-gate/version-gate-receipt.json \
+            --head "$REQUESTED_HEAD"
+
+      - name: Upload the verified receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: version-gate-receipt-${{ github.event.inputs.head || github.sha }}-${{ github.run_id }}
+          path: dev/agent-workflow/evidence/candidate-acceptance-gate/version-gate-receipt.json
           if-no-files-found: warn

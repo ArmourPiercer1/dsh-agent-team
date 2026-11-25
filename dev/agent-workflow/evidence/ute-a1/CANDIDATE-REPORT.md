@@ -6,8 +6,12 @@ claims, what is measured, what is NOT measured, and what the owner must decide. 
 historical where they disagree with this file) and it does not replace `C1-C18-SIGNOFF.md`, which is the
 itemised per-contract-row sign-off this file summarises.
 
-**Round 116, 2026-11-25.** Every number below was measured in `.worktrees/vnext-a1-cut` at the HEAD named in
-§1 and is traceable to a named log or artifact. Where a claim is not measured, it says so.
+**Round 117, 2026-11-25.** Every number below was measured in `.worktrees/vnext-a1-cut` at the HEAD named in
+§1 and is traceable to a named log or artifact. Where a claim is not measured, it says so. **Round 117's
+change is a CONTRACT change, not a measurement**: the owner ruled that the Candidate Acceptance Gate is a
+**VERSION gate** (required at a frozen candidate SHA, never a per-PR required context), so the definition of
+`PRODUCT-PROVEN` changed — §1.1 states it, `VERSION-GATE.md` is the operational procedure, and every document
+that defines or consumes the term now points at that one definition.
 
 ---
 
@@ -16,7 +20,7 @@ itemised per-contract-row sign-off this file summarises.
 | field | value | how to check |
 | --- | --- | --- |
 | branch | `vnext/a1-cut` | `git rev-parse --abbrev-ref HEAD` |
-| **HEAD** | **`5cb5c606203eaf07dd78a2a5c67b442899db2377`** | `git log -1` → `5cb5c6062 fix(ci): regenerate the dispatch-parity evidence for the round-114 control suite (round 115b)` |
+| **HEAD measured** | **`818eae405e13d02786398e336dc605039a148e72`** (base of the round-117 commit set; the round-117 documentation head is its child and is named in the settlement comment) | `git log -1` → `818eae405 docs(evidence): round-116 — fold the newest numbers into the acceptance status table` |
 | base | `master @ a19d1df01` (frozen A0, PR #821) | `git merge-base --is-ancestor HEAD origin/master` → false; `origin/master` = `a19d1df01` |
 | PR | **#822 — DRAFT (unmerged)** | `gh pr view 822 --json isDraft,state,baseRefName,headRefOid,autoMergeRequest` → `{"autoMergeRequest":null,"baseRefName":"master","isDraft":true,"state":"OPEN","headRefOid":"5cb5c606203eaf07dd78a2a5c67b442899db2377"}` |
 | worktree | `.worktrees/vnext-a1-cut` (sole writer) | — |
@@ -30,8 +34,51 @@ with **one** admission decision per call, compiled into a lane, executed on a su
 OS boundary, and closed by **one** durable settlement. No legacy plane is wrapped as an internal component, no
 legacy fallback exists, and no second registry/mount/executor can be selected by configuration (§3).
 The candidate is **not** a product acceptance, **not** a release, and **not** merge-ready: no row is
-PRODUCT-PROVEN, the live layer is non-required by owner ruling, and the model in every boot is a scripted mock
-(§8).
+PRODUCT-PROVEN, no version has been frozen and no version gate has been run as a version gate, and the model
+in every boot is a scripted mock (§8).
+
+---
+
+## 1.1 The Candidate Acceptance Gate is a VERSION gate — and the `PRODUCT-PROVEN` definition in force
+
+**Owner ruling, 2026-11-25** (recorded as DECIDED in `OWNER-DECISIONS.md` §"ROUND 117"). The Candidate
+Acceptance Gate is a **version gate**, not a per-PR gate:
+
+- it is **NOT required on ordinary PRs** — an every-PR dual-host run is a measured **~84 minutes / 16 real
+  host boots** (round 109: `83 m 48 s`), a 10x slowdown of the daily loop for no added value on docs/script
+  PRs;
+- it **IS the formal gate for a candidate/release version**: it must run, be green, and be **Required** at
+  the **frozen candidate SHA** before a version is declared deliverable;
+- the rejected alternative is **"required on every PR"** (rejected for that cost/relevance trade-off; it is
+  recorded as the rejected option, not as an oversight).
+
+**`PRODUCT-PROVEN` — the single definition now in force, and the only one any document in this tree may use:**
+
+> A capability row is **PRODUCT-PROVEN** only when a candidate/release **version** has been frozen: the
+> version gate ran at the **frozen candidate SHA**, is **green** there, its `version-gate-receipt.json`
+> verifies (head == frozen SHA, verdict `pass`, `envLimited` 0, known-refuted set exactly the enumerated
+> one), **and** the `version-gate` context is **Required** by the release branch/tag protection rule.
+> It is **NOT** "covered by every PR's Required CI".
+
+**No row is PRODUCT-PROVEN today**, and no row becomes so until such a version gate is frozen, Required and
+green at that SHA. The mechanism (`version-gate-receipt.json` schema, the typed verifier, the exact
+branch/tag ruleset the owner must apply, and the freeze procedure) is **`VERSION-GATE.md`**; the workflow is
+`.github/workflows/candidate-acceptance.yml`, and `scripts/eb3-ci-required.mjs` **asserts** the manifest's
+version-gate classification so it cannot be promoted into a required layer or stripped of its meaning.
+
+**Coverage, so nobody infers blanket coverage.** The gate grades **31 judges per host** (62 per dual-host
+run). Those judges can speak to **C2, C3, C5, C6, C8, C9, C12 and C13's fs/subprocess base faces**. They
+**never** cover **C1, C4, C7** (the cold-wake half), **C10, C11**, **C13's PTC arm and its
+web/terminals/userQuestions faces**, **C14**, **C14b** (the network-deny invariant is never judged live),
+**C15, C16, C17 or C18**. A green version gate is therefore not a claim about those rows at all. The full
+judge list and per-row mapping is `VERSION-GATE.md` §2.
+
+**What is NOT exercised (stated plainly, not rounded up).** The version gate has **not** run end-to-end as a
+version gate: no `v*` tag, no `release/**`/`candidate/**` push, and no `workflow_dispatch` with a `head`
+input has been fired; the hosted artifact→verifier path is unmeasured; and **no branch/tag protection rule
+has been applied** — those are owner actions (`VERSION-GATE.md` §5–§6). What IS exercised: the receipt writer
+and the verifier against this repository's own latest gate verdict, the verifier's negative controls, and the
+manifest-classification controls (§9 rows 19–21).
 
 ---
 
@@ -338,7 +385,9 @@ EXIT=0
 
 Only that the *static and in-process* obligations named in each row hold at this head. A green `ci-pr-gate`
 means the local full gate produced its verdict; it is **not** Required CI, which only exists hosted (§5.1). A
-green candidate gate would still be `DEV-LIVE`, never PRODUCT-PROVEN (§8.2).
+green run of the candidate gate is **not** PRODUCT-PROVEN by itself — PRODUCT-PROVEN needs the version freeze
+of §1.1 (frozen SHA + Required context + green + verified receipt), which has not happened and is an owner
+action (`VERSION-GATE.md`).
 
 ## 6. C1–C18 sign-off
 
@@ -355,7 +404,7 @@ its table has **21 sign-off rows**. That file is the measurement; this section i
 | **ENV-LIMITED** | **1** | **C14b** |
 | **UNSUPPORTED BY PRODUCT RULING** | **5** | **C13 (PTC arm)**, **C13 (process-ask arm)**, **C14**, **C17**, **C18** |
 | **NOT PROVEN** | **0** | — |
-| **PRODUCT-PROVEN** | **0** | — (no row claims it) |
+| **PRODUCT-PROVEN** | **0** | — (no row claims it; the definition in force is §1.1 — a frozen, Required, green version gate at a candidate SHA, not "covered by every PR's Required CI") |
 
 Folded back to the contract's own granularity (18 numbered criteria + C14b = 19 rows): 7 MECHANISM,
 8 DEV-LIVE, 1 ENV-LIMITED, 3 UNSUPPORTED (C13's two arms are one row, plus C14/C17/C18), 0 NOT PROVEN.
@@ -443,9 +492,10 @@ log line (`host:"legacy"`/`source:tests/paths.mjs#TEST_USE_BASELINE_SHA`, `host:
    to proceed, writes `probe.json` + `ENV-LIMITED.txt`, exits 4, boots nothing, writes **no RUN record**. The
    real-model driver exists and is validated **`SCRIPTED-ONLY`** (20/20 judges, 2 agreeing boots). The exact
    missing item is named: **`DEEPSEEK_API_KEY`** (optionally `DEEPSEEK_BASE_URL`).
-2. **No row is PRODUCT-PROVEN.** The only live layer is the candidate acceptance gate, which is
-   **NON-REQUIRED by owner ruling** (`knownNonRequired` in `dev/ci/eb3-ci-manifest.json`); a green there is
-   `DEV-LIVE` at most. **The current dual-host verdict was re-run fresh at `92be91dfb`** —
+2. **No row is PRODUCT-PROVEN.** The candidate acceptance gate is a **VERSION gate** by owner ruling
+   (2026-11-25): required at a frozen candidate SHA, never a per-PR required context (§1.1). No version has
+   been frozen, so a green run is still `DEV-LIVE` evidence and upgrades nothing. **The current dual-host
+   verdict was re-run fresh at `92be91dfb`** —
    `CANDIDATE-GATE pass hosts=legacy,next judges=62 proven=60 known-refuted=2 env-limited=0`, 2 agreeing boots
    per driver, one disclosed dual-host run (verdict
    `dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-24T23-43-47-693Z/verdict.json`, summary copied
@@ -497,9 +547,9 @@ log line (`host:"legacy"`/`source:tests/paths.mjs#TEST_USE_BASELINE_SHA`, `host:
 12. **Alpha.6 review routing is `DEV-LIVE`, not PRODUCT-PROVEN.** The routed wake is PROVEN on both hosts,
     2 agreeing boots (case created with frozen identity, router selects the unique lawful Officer, the wake is
     delivered with zero management-plane executions, the Officer decides in its own session and the decision
-    precedes the settlement, duplicate route yields one wake, sticky Stop survives a machine wake) — but it
-    rides the non-required gate, and the **cold-wake** half (an intent written before a restart and consumed
-    after) is **not** a live judge.
+    precedes the settlement, duplicate route yields one wake, sticky Stop survives a machine wake) — but no
+    version gate has been frozen, and the **cold-wake** half (an intent written before a restart and consumed
+    after) is **not** a live judge at all.
 13. **In-process vs live is a real distinction everywhere.** `MECHANISM` arms run in-process over real pinned
     components with named stand-ins that decide nothing; the compiled member answer is an **input**, so policy
     **compilation** is not exercised. `DEV-LIVE` boots are real host processes but not gates.
@@ -530,14 +580,19 @@ Run in `.worktrees/vnext-a1-cut`. Every command is copy-pasteable; the expected 
 | 13 | `node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/ute-g1-fs/lib/refusal-categories.test.mjs tests/ute-g1-fs/product-route-image.test.mjs tests/ute-g1-search/lane-suite.test.mjs tests/ute-g1-web/lane-suite.test.mjs tests/ute-g1-process/lane-suite.test.mjs tests/ute-g1-agentctl/lane-suite.test.mjs tests/ute-g1-uistate/lane-suite.test.mjs` (the exact CI argv) | `tests 89 / pass 89 / fail 0 / skipped 0` |
 | 14 | `node scripts/ci-pr-gate.mjs --full --census-captures 2` | `DSH-CI-VERDICT pass pass=10 fail=0 skip=0 … refused=0 refusedlegs=none` |
 | 15 | **live drivers** (two agreeing boots each; rc.2 default, rc.5 with `TEAM_TEST_HOST=next`) — `node tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs --boots 2`, `run-boot-d2.mjs --boots 2`, `run-boot-d3.mjs --boots 2`, `probe-d4-routed-wake.mjs --boots 2` | each driver's own `RESULT PASS (2/2 boots; agreeing pair=true)` (d3 prints `evidence-complete=true allProven=true`, d4 `blocked=true` for the one declared refusal); the judge-by-judge verdicts are the §4 tables above and `D-ACCEPTANCE-REPORT.md` §3.2 |
-| 16 | **candidate gate, both hosts** (NON-REQUIRED; ~84 min) — `node scripts/candidate-acceptance-gate.mjs --hosts both` | `CANDIDATE-GATE pass hosts=legacy,next judges=62 proven=60 known-refuted=2 env-limited=0` (the 2 are the single enumerated `d4:ask-execute-process`, once per host). The recorded verdict is bound to **`92be91dfb`**, not to this head; it is representative because `git diff --stat 92be91dfb..5cb5c6062 -- 'packages/*/src'` is empty (§8.2) |
+| 16 | **candidate gate, both hosts** (the VERSION gate; non-required on PRs, ~84 min) — `node scripts/candidate-acceptance-gate.mjs --hosts both` | `CANDIDATE-GATE pass hosts=legacy,next judges=62 proven=60 known-refuted=2 env-limited=0` (the 2 are the single enumerated `d4:ask-execute-process`, once per host). The recorded verdict is bound to **`92be91dfb`**, not to this head; it is representative because `git diff --stat 92be91dfb..5cb5c6062 -- 'packages/*/src'` is empty (§8.2) |
 | 17 | `git -C tests/deepseek-harness-test-use status --porcelain \| wc -l` and the same for `tests/deepseek-harness-next` | `0` and `0`; `rev-parse HEAD` = `639ed01539…` and `9c2670d3bc…` |
 | 18 | `GH_TOKEN=$(gh auth token) node scripts/pr-settlement-gate.mjs --repo ArmourPiercer1/dsh-agent-team --pr 822` | `DSH-SETTLEMENT-VERDICT PASS marker=none matches=<n> candidates=<n>` — i.e. a dated settlement comment whose body carries **this** 40-hex head sha (a pushed commit mechanically retires the previous one, §8.5.2) |
+| 19 | **version-gate receipt + verifier dry run** (round 117, temp dir; no receipt committed for an unfrozen SHA) — `node scripts/version-gate-receipt.mjs --verdict dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-24T23-43-47-693Z/verdict.json --requested-head 92be91dfb… --out $TMP/version-gate-receipt.json && node scripts/version-gate-verify.mjs --receipt $TMP/version-gate-receipt.json --head 92be91dfb…` | `VERSION-GATE-RECEIPT written head=92be91dfb… verdict=pass proven=60 known-refuted=2 env-limited=0 hosts=legacy,next` then `VERSION-GATE-VERIFY pass head=92be91dfb… hosts=legacy,next proven=60 known-refuted=2 env-limited=0`, exit 0; the two negatives (wrong head → `REFUSED VERSION_GATE_HEAD_MISMATCH`, missing receipt → `REFUSED VERSION_GATE_RECEIPT_MISSING`) exit 1. Log `round117/version-gate-dryrun.log` |
+| 20 | `node scripts/dispatch-tests.mjs --run --leg version-gate-verify-unit` | 22 tests / 22 pass / 0 fail — missing receipt, wrong head, verdict≠pass, unexpected known-refuted id, schema drift (extra/missing/wrong type), schemaVersion drift, digest mismatch, missing verdict file, `envLimited>0`, dropped known-refuted id, non-SHA head, judges partition — each its OWN named code |
+| 21 | `node scripts/eb3-ci-required.mjs` | `EB3-CI-REQUIRED pass workflows=11 findings=0`, including the manifest classification assertion; its six controls in `scripts/eb3-ci-required.test.mjs` red on classification removal, `requiredPerPR:true`, deletion of the stable `version-gate` job entry, layer promotion (both directions), and removal of the PR label gate |
 
 **What a reviewer should conclude from a green block.** Only that the *static and in-process* obligations named
 in each row hold at this head. A green row 14 means the local full gate produced its verdict; it is **not**
-Required CI, which only exists hosted (§5). A green row 16 would still be `DEV-LIVE`, never PRODUCT-PROVEN. Row 18 is the mechanical settlement check: the
-comment must carry **this** 40-hex head, so pushing the round-116 commit retires the previous marker.
+Required CI, which only exists hosted (§5). A green row 16 is not PRODUCT-PROVEN by itself: rows 19–21 are the
+version-gate controls, and PRODUCT-PROVEN needs the frozen-SHA freeze of §1.1 (`VERSION-GATE.md`). Row 18 is
+the mechanical settlement check: the comment must carry **this** 40-hex head, so pushing the round-117 commit
+retires the previous marker.
 
 ---
 
@@ -564,10 +619,11 @@ comment must carry **this** 40-hex head, so pushing the round-116 commit retires
 
 ## What the owner must decide before merge (the exact short list)
 
-1. **The live layer's status.** The candidate acceptance gate is NON-REQUIRED by your ruling, so no row can
-   become PRODUCT-PROVEN. Decide: keep it non-required (the candidate stays `DEV-LIVE` forever, and the words
-   "PRODUCT-PROVEN" never appear), or make it required (then it must be green at the final head, and its ~84 min
-   dual-host cost lands on every PR).
+1. **DECIDED (2026-11-25) — the live layer's status.** The candidate acceptance gate is a **VERSION gate**:
+   required at a frozen candidate SHA, never a per-PR required context (§1.1). The alternative "required on
+   every PR" was **rejected** (its ~84 min dual-host cost would land on every PR for no value on docs/script
+   changes). What remains is the owner ACTION, not a decision: apply the ruleset in `VERSION-GATE.md` §5 and run
+   the freeze procedure in §6. Until then no row is PRODUCT-PROVEN.
 2. **The draft → ready flip is yours, and it is what unlocks census.** While #822 is a draft, `ci-census` does
    not run and `ci-required` therefore cannot be green (§5.2). The final green hosted set already exists for
    `5cb5c6062` because the PR was briefly marked ready for that one evaluation and restored to DRAFT

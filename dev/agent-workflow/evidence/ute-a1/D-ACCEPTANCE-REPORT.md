@@ -11,6 +11,18 @@
 > authority (`CORE PATCH BUDGET = 0`, both pins pristine), the candid limits list, the reviewer's exact
 > reproduction commands, and the boundaries in force — lives in **[`CANDIDATE-REPORT.md`](CANDIDATE-REPORT.md)**.
 >
+> **ROUND 117 (2026-11-25) — CONTRACT CHANGE: the Candidate Acceptance Gate is a VERSION gate, and
+> `PRODUCT-PROVEN` is redefined.** The owner ruled that the gate is required at a **frozen candidate SHA**
+> and **never** a per-PR required context (an every-PR dual-host run is ~84 min / 16 host boots — a 10x
+> slowdown for no value on docs/script PRs; the rejected alternative is recorded as rejected). `PRODUCT-PROVEN`
+> now means "gate-backed at the frozen candidate SHA of a version, with the version gate Required and green at
+> that SHA", **not** "covered by every PR's Required CI". **No row is PRODUCT-PROVEN today**; the gate covers
+> exactly the **31 judges per host** (C2, C3, C5, C6, C8, C9, C12, C13 fs/subprocess base) and **never** C1,
+> C4, C7 (cold half), C10, C11, C13's PTC/web/terminals/userQuestions faces, C14, C14b, C15, C16, C17, C18.
+> The single definition and the freeze procedure are in **`VERSION-GATE.md`** and `CANDIDATE-REPORT.md` §1.1;
+> `OWNER-DECISIONS.md` §"ROUND 117" records the ruling. The round-116 block below is the previous round's
+> record.
+>
 > **Round 116 additions folded into that report:** the two hosted reds found and fixed in this stretch (the
 > devex `maxRecords` capacity bound, measured; the dispatch-parity evidence regenerated deliberately); the fresh
 > dual-host candidate-gate verdict at `92be91dfb` (`62 judges / 60 PROVEN / 2 known-refuted / 0 env-limited`,
@@ -29,6 +41,54 @@
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 <!-- ROUND 109 — THE HISTORICAL ACCEPTANCE TABLE. Current truth = CANDIDATE-REPORT.md. -->
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+## ROUND 117 (2026-11-25) — CONTRACT: the gate is a VERSION gate, so PRODUCT-PROVEN is redefined
+
+**Owner ruling.** The Candidate Acceptance Gate is a **VERSION gate, not a per-PR gate**. It is NOT required on
+ordinary PRs — an every-PR 84-minute dual-host run (round 109 measured `83 m 48 s`, 16 real host boots) is a
+10x slowdown of the daily loop for no added value on docs/script PRs. It IS the formal gate for a
+candidate/release **version**: it must run, be green, and be **Required** at the **frozen candidate SHA**
+before a version is declared deliverable. The rejected alternative is **"required on every PR"**, rejected for
+that cost/relevance trade-off (it is recorded as rejected, not as an open option).
+
+**The definition in force — this section SUPERSEDES every older sentence in this file that defines
+`PRODUCT-PROVEN` or "gate-backed".** It is the same text as `CANDIDATE-REPORT.md` §1.1 and `VERSION-GATE.md`
+§1:
+
+> A capability row is **PRODUCT-PROVEN** only when a candidate/release **version** has been frozen: the
+> version gate ran at the **frozen candidate SHA**, is **green** there, its `version-gate-receipt.json`
+> verifies (head == frozen SHA, verdict `pass`, `envLimited` 0, known-refuted set exactly the enumerated
+> one), **and** the `version-gate` context is **Required** by the release branch/tag protection rule.
+> It is **NOT** "covered by every PR's Required CI".
+
+**No row is PRODUCT-PROVEN today**, and none becomes so until a version gate is frozen, Required and green at
+that SHA. `DEV-LIVE` is unchanged as a record class: it is evidence from a booted host, and it is not a gate.
+
+**Mechanissm (see `VERSION-GATE.md`).** `.github/workflows/candidate-acceptance.yml` now triggers on
+`push` to tags `v*` / branches `release/**` and `candidate/**`, on `workflow_dispatch` with an optional
+40-hex `head` input, and on `pull_request: [labeled, synchronize, reopened]` **only as a non-required opt-in**
+(label present). The head binding is strict (`graded head == checked-out head == requested SHA`). A green run
+publishes `version-gate-receipt.json`, which references the gate's own `verdict.json` by path + sha256 digest;
+a separate stable `version-gate (Required at frozen candidate SHA)` job re-verifies it with
+`scripts/version-gate-verify.mjs` (typed refusals, fail-closed). `dev/ci/eb3-ci-manifest.json` now carries an
+explicit version-gate classification that `scripts/eb3-ci-required.mjs` **asserts** — adding the workflow to a
+required layer, stripping the classification, deleting the stable job, or un-gating the PR path is a red.
+
+**Coverage, stated so nobody infers blanket coverage.** The gate grades **31 judges per host** and they can
+speak only to **C2, C3, C5, C6, C8, C9, C12 and C13's fs/subprocess base faces**. They **never** cover **C1,
+C4, C7** (the cold-wake half), **C10, C11**, **C13's PTC arm and web/terminals/userQuestions faces**, **C14**,
+**C14b** (the network-deny invariant is never judged live), **C15, C16, C17, C18** — no freeze can promote
+those rows. Per-judge mapping: `VERSION-GATE.md` §2.
+
+**NOT exercised, and not claimed.** No `v*` tag, no `release/**`/`candidate/**` push and no `head`-input
+dispatch has been fired; the hosted artifact→verifier path is unmeasured; no branch/tag protection rule has
+been applied (owner action, `VERSION-GATE.md` §5–§6). What IS exercised: the receipt writer + verifier against
+this repository's own latest verdict (head `92be91dfb`, `62/60/2/0`, exit 0) with its wrong-head and
+missing-receipt refusals, the verifier's 22 negative-control tests (leg `version-gate-verify-unit`), and the
+six manifest-classification controls.
+
+**No capability level moves.** The table below keeps the levels it had; only the definition of the top level
+changed.
 
 ## ROUND 114 — the three security findings are dispositioned (no capability row moves)
 
@@ -220,9 +280,11 @@ typed** `member.archive` / `member.send` / `member.restore` replies (rpcId + ver
 judge-by-judge table below was measured at `10d8a67aeb7e189011faf2c131a73aa33b76fac3` and is unchanged.
 Worktree `.worktrees/vnext-a1-cut`, branch `vnext/a1-cut`, PR **#822 DRAFT — unmerged**.
 Record class: `DEV-LIVE` for every boot, in-process `MECHANISM` where marked. **No row is
-PRODUCT-PROVEN.** The candidate gate is **NON-REQUIRED by owner ruling**, so a green dual-host gate is
-still `DEV-LIVE` evidence: a row becomes gate-backed only when the gate is REQUIRED by branch
-protection **and** green at the final head.
+PRODUCT-PROVEN.** The candidate gate is a **VERSION gate** (owner ruling 2026-11-25, §"ROUND 117"): it is
+Required only at the **frozen candidate SHA** of a version and is **never** a per-PR required context, so a
+green dual-host run is still `DEV-LIVE` evidence. A row becomes PRODUCT-PROVEN only when a version gate is
+frozen, its `version-gate-receipt.json` verifies at that SHA, and the gate's `version-gate` context is
+Required and green there — not when "every PR's Required CI" is green.
 
 Hosts, exactly as the drivers printed them (`candidate:` row, first log line of every boot):
 
@@ -614,10 +676,12 @@ scope are checked in one place, and a stale artifact cannot be quoted as a fresh
   stale verdict from another commit can therefore not be read as this HEAD's result.
 - **Cost (round 109, measured).** One dual-host run is **83 m 48 s** of wall clock — deliberately
   heavier than the whole daily Required set, which is why this layer must not be a merge gate.
-- It does **not** upgrade a row. Every row in the table above stays at the level it had. A row
-  becomes **gate-backed only when the gate is REQUIRED by branch protection AND green** — that is an
-  owner decision, and this round does not claim it. A green non-required gate (rc.2 is green here)
-  is still DEV-LIVE evidence in the vocabulary of this report.
+- It does **not** upgrade a row. Every row in the table above stays at the level it had. A row becomes
+  **gate-backed only at the FROZEN candidate SHA of a version, with the version gate Required and green at
+  that SHA and its receipt verified there** (owner ruling 2026-11-25; `VERSION-GATE.md`). No version has been
+  frozen, so a green gate (rc.2 is green here) is still DEV-LIVE evidence in the vocabulary of this report.
+  The older wording — "required by branch protection and green at the final head" — is superseded: a per-PR
+  requirement on the final head is exactly what the owner rejected.
 - It does **not** re-implement, weaken or relax any driver judge; it reads the verdicts those judges
   already emit, and validates the records with the repository's existing validator.
 - It does **not** turn `d4:ask-execute-process` into a pass. The refutation stays enumerated with its
@@ -2420,8 +2484,11 @@ the pure-ask lane surviving the round-94 algebra, `reviewRouting.enabled` + `def
 Stop-while-pending → `ADMISSION_STOPPED`, zero bytes).
 
 **Level.** `C-alpha6` moves to **DEV-LIVE**. It cannot be PRODUCT-PROVEN: this repository reserves
-`V@B=yes` for a capability exercised by a bound executable gate, and the D4 probe is a driver with its
-own evidence contract, not that gate. No gate was invented; the level is capped honestly.
+`V@B=yes` for a capability exercised by a bound executable gate — and, per the **2026-11-25 owner ruling**
+(§"ROUND 117"), that gate is the VERSION gate at a frozen candidate SHA, not any gate on a PR. The D4 probe
+is a driver with its own evidence contract, not that gate, and no version has been frozen. No gate was
+invented; the level is capped honestly. *(This paragraph was written when "bound executable gate" meant the
+Required CI suite; the 2026-11-25 ruling changed what the bound gate is, not this row's level.)*
 
 **Not proven / still open.** Only `write`/`writeText` carry the live R3 receipt (the other FS mutations
 are mechanism-level; subprocess/PTY and `apply_patch` refuse at R4). The model is scripted. The

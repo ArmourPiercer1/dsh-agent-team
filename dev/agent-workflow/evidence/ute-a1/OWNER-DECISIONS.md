@@ -8,6 +8,56 @@ Ordered by how much they block: items 1–2 block D acceptance claims; items 3�
 
 ---
 
+## ROUND 117 (2026-11-25) — DECIDED: the Candidate Acceptance Gate is a VERSION gate
+
+**Status: DECIDED by the owner, 2026-11-25.** This is a ruling, not an open question; it is recorded here in
+the register of owner decisions because it changes the contract's definition of `PRODUCT-PROVEN`.
+
+**The decision.** The Candidate Acceptance Gate (`scripts/candidate-acceptance-gate.mjs`,
+`.github/workflows/candidate-acceptance.yml`) is a **VERSION gate, not a per-PR gate**.
+
+- It is **NOT required on ordinary PRs.**
+- It **IS the formal gate for a candidate/release version**: it must run, be green, and be **Required** at
+  the **frozen candidate SHA** before a version is declared deliverable.
+
+**The rationale (the measured basis, not an estimate).** One dual-host candidate-gate run is **~84 minutes
+of wall clock** on a warm machine (round 109 measured `17:17:46 → 18:41:34` = `83 m 48 s`; an earlier pair
+measured `74 m 41 s`). It provisions and builds **both** pinned pristine hosts and boots the product four
+times per host — **16 real host boots** — which is deliberately heavier than the whole daily Required set
+(the ten-leg `ci-pr-gate --full` is a few minutes). Requiring it on **every PR** would therefore be a **10x
+slowdown of the daily loop** for no added value on docs/script PRs, and would teach reviewers to bypass or
+defer it. At a version freeze the same cost buys exactly what it is for: one immutable SHA, both host
+generations, one machine verdict, one receipt.
+
+**The rejected alternative: "required on every PR".** Rejected explicitly, for that cost/relevance
+trade-off. It is recorded as a *rejected option*, not as an oversight or a pending decision. Anyone
+re-litigating it must argue against the measured 84-minute cost, not against an unstated assumption.
+
+**What changes in the contract.** `PRODUCT-PROVEN` is redefined — it now means:
+
+> *gate-backed at the **frozen candidate SHA** of a version, with the version gate **Required** and green at
+> that SHA and its `version-gate-receipt.json` verified there* — **NOT** "covered by every PR's Required CI".
+
+**No row is PRODUCT-PROVEN today**, and none becomes so until a version gate is frozen, Required and green at
+that SHA. The gate's 31 judges per host can only speak to **C2, C3, C5, C6, C8, C9, C12 and C13's
+fs/subprocess base faces**; they **never** cover C1, C4, C7's cold half, C10, C11, C13's PTC/web/terminals/
+userQuestions faces, C14, C14b, C15, C16, C17 or C18 — so no blanket coverage may be inferred.
+
+**The mechanism (implemented).** Version-path triggers (`push` tags `v*`, branches `release/**`,
+`candidate/**`; `workflow_dispatch` with an optional 40-hex `head`); the PR path stays a **non-required
+opt-in** (label-gated); strict head binding (`graded == checked-out == requested`); a published
+`version-gate-receipt.json` bound to the gate's own verdict by path + sha256 digest; a stable
+`version-gate (Required at frozen candidate SHA)` context verified fail-closed by
+`scripts/version-gate-verify.mjs`; and a manifest classification that `scripts/eb3-ci-required.mjs` **asserts**
+(promotion to a required layer, removal of the classification, deletion of the stable job, or un-gating the PR
+path is a red). Owner procedure and the exact ruleset: **`VERSION-GATE.md`** §5–§6.
+
+**What is NOT done by this decision.** No branch/tag protection rule has been applied (owner action), no
+version has been frozen, and the version gate has not been dispatched end-to-end. See
+`VERSION-GATE.md` §7–§8 for exactly what is and is not exercised.
+
+---
+
 ## ROUND 86 CORRECTION — the current state of each item (the sections below are the round-63 record)
 
 Four of the six are **answered or implemented**; keeping them listed as open decisions was the largest
@@ -251,5 +301,6 @@ approval fact on `host.service` IS adjudication, then wire the PA approval-fact 
 
 - No item may be closed by re-enabling an ungoverned plane, inventing an axis, or widening an invariant for the
   sake of a green row.
-- No row moves to PRODUCT-PROVEN on the strength of these documents; that needs the D report's limits read as
-  limits.
+- No row moves to PRODUCT-PROVEN on the strength of these documents; that needs the **version freeze**
+  (`VERSION-GATE.md` §6) — a frozen candidate SHA, the version gate Required and green there, and a verified
+  receipt — plus a judge that actually asserts the row.

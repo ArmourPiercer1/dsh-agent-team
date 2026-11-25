@@ -931,7 +931,10 @@
     {
       "workflow": ".github/workflows/candidate-acceptance.yml",
       "job": "candidate-acceptance",
-      "why": "CANDIDATE ACCEPTANCE LAYER — deliberately NOT a Required layer (review 20261124-1341 §4.4; owner ruling). It runs the four D acceptance drivers on both pinned hosts with two agreeing boots and emits one machine verdict, but it boots real hosts, so it must not decide every PR: folding it into ci-required would make a measured ~84 min dual-host boot (round 109: 83 m 48 s) a merge gate for unrelated changes, deliberately heavier than the whole daily Required set. Registering it here keeps its Required-ness visible (non-required) instead of leaving the job undeclared. TRIGGER (review 20261125-0058 §4.2): `pull_request: [labeled, synchronize, reopened]` on `master`, with the job gated on the `candidate-acceptance` label being PRESENT, so every candidate HEAD of a labelled PR produces its own result instead of only the head that received the label; the job name and the `Bind the graded head` step carry and assert `github.sha`. Still non-required: a capability row becomes gate-backed only when a gate is REQUIRED by branch protection AND green; this layer is not, so it upgrades no row.",
+      "classification": "version gate: required at a frozen candidate SHA, never a per-PR required context",
+      "requiredPerPR": false,
+      "requiredAtFrozenCandidateSha": true,
+      "why": "VERSION GATE — the formal gate for a candidate/release version, NEVER a per-PR required context (owner ruling 2026-11-25; recorded in dev/agent-workflow/evidence/ute-a1/OWNER-DECISIONS.md §ROUND 117). It runs the four D acceptance drivers on both pinned hosts with two agreeing boots and emits ONE machine verdict, then publishes a `version-gate-receipt.json` bound to the requested SHA. It is NOT a layer of ci-required and NOT a context on the default-branch PR rules: folding it in would make a measured ~84 min dual-host boot (round 109: 83 m 48 s, 16 real host boots) a merge gate for unrelated docs/script PRs — a 10x slowdown of the daily loop for no added value. TRIGGERS: `push` to tags `v*` and branches `release/**`/`candidate/**` (the version path), `workflow_dispatch` with an optional full-40-hex `head` input (default `github.sha`), and `pull_request: [labeled, synchronize, reopened]` gated on the `candidate-acceptance` label being PRESENT — that last one is the NON-REQUIRED OPT-IN path only. The grading job's name and the `Bind the graded head` step carry and assert the requested SHA; its stable `version-gate` sibling is the one branch/tag protection rule an owner requires. This entry's classification is ASSERTED by scripts/eb3-ci-required.mjs (CI_VERSION_GATE_CLASSIFICATION_MISSING / CI_VERSION_GATE_PROMOTED_TO_REQUIRED / CI_VERSION_GATE_FREEZE_MECHANICS_MISSING / CI_VERSION_GATE_PR_PATH_UNGATED), so it cannot be promoted to a required layer or have its version-gate meaning removed without a reviewed red.",
       "legs": [
         {
           "id": "candidate-acceptance-gate",
@@ -944,8 +947,31 @@
             "both"
           ],
           "why": "The workflow's one verdict step must be the gate over BOTH pinned hosts; a step that ran one host, or ran something weaker, would not be the candidate layer the review asked for."
+        },
+        {
+          "id": "version-gate-verify-unit",
+          "dispatch_id": "version-gate-verify-unit",
+          "cmd": [
+            "node",
+            "scripts/dispatch-tests.mjs",
+            "--run",
+            "--leg",
+            "version-gate-verify-unit"
+          ],
+          "suites": [
+            "scripts/version-gate-verify.test.mjs"
+          ],
+          "why": "The verifier's negative controls (missing receipt, wrong head, verdict fail, unexpected known-refuted id, schema drift, digest mismatch, envLimited>0) run BEFORE the ~84 min grading step, so a vacuous freeze check is red before a version is graded. They are declared here — and executed by the workflow — so test-catalog classifies the suite DISCOVERED_AND_COLLECTED instead of UNCOLLECTED (catalog delta booked in round 117: collected 734 -> 735)."
         }
       ]
+    },
+    {
+      "workflow": ".github/workflows/candidate-acceptance.yml",
+      "job": "version-gate",
+      "classification": "version gate: required at a frozen candidate SHA, never a per-PR required context",
+      "requiredPerPR": false,
+      "requiredAtFrozenCandidateSha": true,
+      "why": "THE STABLE REQUIRED CONTEXT. A check name cannot carry the graded SHA and still be requireable by a GitHub protection rule, so the SHA-bearing name lives on the grading job (`candidate-acceptance … head=<sha>`) and this `version-gate (Required at frozen candidate SHA)` job is the stable name an owner requires on the release branch/tag rule. It is `needs: candidate-acceptance` with `if: always()` on the version path: if grading fails it still runs and REFUSES via scripts/version-gate-verify.mjs rather than being SKIPPED green. It never runs on the PR opt-in path, so no PR can produce this context. Configuration procedure: dev/agent-workflow/evidence/ute-a1/VERSION-GATE.md."
     }
   ],
   "movedSuites": [

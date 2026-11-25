@@ -3,7 +3,14 @@
 Statuses used, and they are not interchangeable:
 
 - **MECHANISM** — the centre-side guarantee is implemented and has passing in-process arms.
-- **PRODUCT-PROVEN** — the above AND a real product assembly exercised it end to end.
+- **PRODUCT-PROVEN** — the above AND the row is gate-backed by the **VERSION gate** at the **frozen
+  candidate SHA** of a version: the gate ran there, is green, its `version-gate-receipt.json` verifies at that
+  SHA, and its `version-gate` context is **Required** by the release branch/tag protection rule (owner ruling
+  2026-11-25; `VERSION-GATE.md` §1). **NOT** "covered by every PR's Required CI" — the gate is never a per-PR
+  required context. **No row is PRODUCT-PROVEN today**, and the gate can only ever speak to the rows its 31
+  judges cover (C2, C3, C5, C6, C8, C9, C12, C13 fs/subprocess base); C1, C4, C7's cold half, C10, C11,
+  C13's PTC/web/terminals/userQuestions faces, C14, C14b, C15, C16, C17 and C18 can never reach it through
+  this gate (`VERSION-GATE.md` §2).
 - **ENV-LIMITED** — the cell's guarantee is implemented and is PROVEN on a host that offers the
   physical capability, but the measured runner does NOT offer it, so on that runner the cell is
   unproven and the only admissible evidence is the product's fail-closed refusal (round 82; see the
@@ -14,14 +21,16 @@ Statuses used, and they are not interchangeable:
   cannot be mistaken for a control; it is never counted as PROVEN for confinement. The host-capability
   tools row below (SEC-03) is the one such boundary on the capability surface.
 
-### Candidate-gate coverage — round 109 (NON-REQUIRED by owner ruling; NO level moves)
+### Candidate-gate coverage — round 109, reclassified ROUND 117 (VERSION gate; NO level moves)
 
 `scripts/candidate-acceptance-gate.mjs` runs the four D drivers as ONE executable layer per host
 (`--boots 2`, host via `TEAM_TEST_HOST`, `--hosts both` for the pair) and emits one machine verdict.
 The column below is a **coverage note, not a level**: it says which driver judge executes the row in
-the gate and what the latest measurement says. **No cell moves to PRODUCT-PROVEN.** A row becomes
-gate-backed only when the gate is REQUIRED by branch protection AND green at the final head; **the
-gate stays NON-REQUIRED by owner ruling**, so a green gate here cannot upgrade anything.
+the gate and what the latest measurement says. **No cell moves to PRODUCT-PROVEN.** Owner ruling
+**2026-11-25**: the gate is a **VERSION gate** — Required at the **frozen candidate SHA** of a version and
+**never** a per-PR required context; a row becomes gate-backed only when such a version is frozen and the
+gate is Required and green at that SHA, with its `version-gate-receipt.json` verified there
+(`VERSION-GATE.md`). No version has been frozen, so a green gate here cannot upgrade anything.
 
 **Round 109 — the dual-host gate is `pass` on BOTH pinned hosts in one run** (HEAD `41d579119` + the
 round-109 arm; measured **83 m 48 s**): rc.2 31 judges / **30 proven** / 1 known-refuted / 0
@@ -176,8 +185,10 @@ booted here. Policy COMPILATION is not exercised: the ceiling is an input.
 
 ## What this table is for
 
-It exists so no row can be silently upgraded by narration. A row moves to PRODUCT-PROVEN only with a
-real host boot line at a named commit. The `UNPROVEN (explicitly unavailable)` rows are the ones the
+It exists so no row can be silently upgraded by narration. A row moves to PRODUCT-PROVEN only through the
+version-gate freeze above: a **frozen candidate SHA**, the **version gate Required and green there**, and a
+**verified `version-gate-receipt.json`** at that SHA. A boot line at a named commit is necessary evidence, not
+sufficient — and a green PR run is not a freeze. The `UNPROVEN (explicitly unavailable)` rows are the ones the
 centre currently refuses — which is the A1 law working, not a defect: an unwired controlled call is
 refused rather than forwarded.
 
@@ -895,11 +906,11 @@ The eight pre-existing judges (`enablement`, `officer-up`, `officer-binding`, `r
 (deny / Stop-while-pending) still write zero bytes and settle `REFUSED`/`not-started`.
 
 **Why DEV-LIVE and not PRODUCT-PROVEN.** This repository's record classes reserve `V@B=yes` for a
-capability exercised by a BOUND executable gate (a suite leg with a verdict the CI gate reads). The D4
-probe is a driver with its own evidence contract, not that gate, and the DEV-LIVE grant is a named
-non-production world. The cell is therefore **DEV-LIVE** — a real booted product, a real router, a real
-Officer session, real bytes — but not a gate-bound PRODUCT-PROVEN claim. No gate was fabricated to make
-the level look higher.
+capability exercised by a BOUND executable gate. Since the **2026-11-25 owner ruling** that gate is the
+**VERSION gate at a frozen candidate SHA** (`VERSION-GATE.md`), and no version has been frozen. The D4 probe
+is a driver with its own evidence contract, and the DEV-LIVE grant is a named non-production world. The cell
+is therefore **DEV-LIVE** — a real booted product, a real router, a real Officer session, real bytes — but not
+a gate-bound PRODUCT-PROVEN claim. No gate was fabricated to make the level look higher.
 
 **Evidence:** `dev/agent-workflow/evidence/d-boot-feasibility/d4/runs/boot0{1,2}/`
 (`routed-judges.json`, `control-row-durable.json`, `route-probe.json`, `wake-measurement.json`,

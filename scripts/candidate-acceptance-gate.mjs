@@ -11,10 +11,12 @@
  * artifacts to ONE machine-readable verdict plus a human summary.
  *
  * WHAT THIS IS NOT. It is NOT Required CI, it does NOT change
- * `ci-required`'s layer set, and it does NOT upgrade a capability row. A row
- * becomes gate-backed only when a gate is BOTH required and green; this layer
- * is deliberately non-required, so every row it covers keeps the level it had
- * (`DEV-LIVE`). See `.github/workflows/candidate-acceptance.yml` and
+ * `ci-required`'s layer set, and it does NOT upgrade a capability row per PR.
+ * Owner ruling (2026-11-25): this gate is a VERSION gate. It is required at the
+ * FROZEN candidate SHA of a version (with the receipt verified at that SHA) and
+ * is NEVER a per-PR required context; a green run alone upgrades nothing. See
+ * `.github/workflows/candidate-acceptance.yml`,
+ * `dev/agent-workflow/evidence/ute-a1/VERSION-GATE.md` and
  * `dev/agent-workflow/evidence/ute-a1/D-ACCEPTANCE-REPORT.md`.
  *
  * IT DOES NOT RE-IMPLEMENT THE DRIVERS' JUDGES. Every verdict below is read
@@ -34,7 +36,8 @@
  * THE ACCEPTANCE RULE (closed, no tolerance):
  *   1. every judge the driver declares is PRESENT, exactly the enumerated set;
  *   2. every judge verdict is PROVEN, EXCEPT the exact ids enumerated in
- *      `KNOWN_REFUTED` below, each carrying its citation (never a pattern);
+ *      `KNOWN_REFUTED` in `scripts/candidate-acceptance-known-refuted.mjs`, each
+ *      carrying its citation (never a pattern);
  *   3. the two boots AGREE (`agreement.agreeing === true`, zero differing rows);
  *   4. every RUN record is VALID under `scripts/eb3-run-manifest.mjs`;
  *   5. no artifact is stale (each was written by THIS run).
@@ -62,6 +65,7 @@ import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { context as runManifestContext, validateRunRecord } from './eb3-run-manifest.mjs'
+import { KNOWN_REFUTED } from './candidate-acceptance-known-refuted.mjs'
 import { testHostMode } from '../tests/next-host/host-select.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -76,29 +80,13 @@ const BOOTS = 2
 const HOSTS = Object.freeze(['legacy', 'next'])
 
 /**
- * THE KNOWN-REFUTED ENUMERATION. An entry here is the ONLY way a non-PROVEN
- * judge may pass this gate. It is a literal id → citation map: a new REFUTED
- * judge does NOT inherit an exemption (nothing is matched by prefix, suffix or
- * pattern), and removing the entry makes the gate red until the enumeration is
- * deliberately edited in review.
- *
- * Today there is exactly one such judge. It is an APPROVED PRODUCT RULING
- * (owner, 2026-11-24), not a pending fix: this generation promises allow/deny
- * for Subprocess/PTY and explicitly does NOT support per-call `ask` for process
- * execution. The refusal is fail-closed (the real ask->approval->grant
- * consumption happened, then the spawn failed with NO_BACKEND before any
- * process existed: zero process, zero bytes, settlement FAILED).
- *
- * @type {Readonly<Record<string, Readonly<{citation: string, review: string, reason: string}>>>}
+ * THE KNOWN-REFUTED ENUMERATION lives in
+ * `scripts/candidate-acceptance-known-refuted.mjs` so that the gate AND the
+ * version-gate verifier (`scripts/version-gate-verify.mjs`) read ONE set: the
+ * verifier's allowed set is derived from it, never re-typed. See that module for
+ * the literal id -> citation map and the approved owner ruling behind the single
+ * entry. Nothing here matches by prefix, suffix or pattern.
  */
-const KNOWN_REFUTED = Object.freeze({
-  'd4:ask-execute-process': Object.freeze({
-    citation: 'dev/agent-workflow/evidence/ute-a1/SCOPE-subprocess-ask.md — STATUS: APPROVED BY OWNER (2026-11-24), §2 (what is explicitly NOT promised) and §4 (the exact current refusal evidence, both hosts)',
-    review: 'docs/reviews/20261124-2120.txt ruling 1 — the owner formally APPROVED the Subprocess/PTY scope (product scope only): Process Ask is `UNSUPPORTED BY PRODUCT RULING`, the same class as PTC (review `20261124-1341` §3.1 proposed the wording; §4.3 closed the product-scope question)',
-    reason: 'APPROVED BY PRODUCT RULING (2026-11-24): this generation promises `allow`/`deny` for Subprocess/PTY; per-call `ask` for process execution is NOT supported and remains fail-closed. The process ask chain really did run — a real durable ask, a real Officer allow, a consumed one-shot grant — then the persistent-bash backend lookup failed with the host\'s NO_BACKEND because the v5 per-tool bash binding realm carries no PTY terminal spec: the spawn failed BEFORE any process existed, zero bytes were produced, settlement is FAILED, and the receipt verifier was never reached. That is the approved promise, not a pending product fix; the refutation is preserved as REFUTED (never rewritten as a positive test, and never REFUSED/not-started).',
-  }),
-})
-
 /**
  * The judge set each driver DECLARES, pinned here so a driver that silently
  * drops or renames a judge cannot shrink the population this gate accepts.
@@ -669,14 +657,14 @@ async function main() {
     branch: BRANCH,
     hosts,
     verdict,
-    layer: 'candidate-acceptance (NON-REQUIRED; never Required CI)',
+    layer: 'candidate-acceptance (VERSION GATE: required only at a frozen candidate SHA, never a per-PR required context)',
     bootsPerDriver: BOOTS,
     timeoutMs: DRIVER_TIMEOUT_MS,
     knownRefuted: KNOWN_REFUTED,
     drivers: DRIVERS.map((d) => ({ id: d.id, script: d.script, judges: d.judges })),
     totals,
     perHost,
-    note: 'No row becomes PRODUCT-PROVEN from this gate. A row becomes gate-backed only when the gate is REQUIRED by branch protection AND green; this layer is deliberately non-required.',
+    note: 'No row becomes PRODUCT-PROVEN from a green run alone. PRODUCT-PROVEN means gate-backed at the FROZEN candidate SHA of a version, with the version gate Required and green at that SHA (owner ruling 2026-11-25). Never a per-PR required context.',
   }
   const verdictPath = join(OUT_DIR, 'verdict.json')
   const summaryPath = join(OUT_DIR, 'summary.txt')

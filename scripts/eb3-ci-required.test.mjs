@@ -121,3 +121,78 @@ test('eb3-ci-required: a declared step argv that disagrees with the manifest leg
   assert.equal(drift2.length, 1, JSON.stringify(drift2))
   assert.match(drift2[0].detail, /--test-force-exit_v2/u)
 })
+
+// ── THE VERSION GATE'S CLASSIFICATION IS ASSERTED, IN BOTH DIRECTIONS (owner ruling 2026-11-25).
+// `candidate-acceptance` is a VERSION gate: required at a frozen candidate SHA, never a per-PR
+// required context. These controls prove the gate reds if that sentence is removed OR if the workflow
+// is promoted into a required layer — the two ways the ruling could be silently undone.
+test('eb3-ci-required: the version-gate classification is PRESENT and exact on the real manifest', () => {
+  const findings = checkRequiredJobs({ files: workflowFiles(), manifest: loadManifest() }).findings
+    .filter((f) => f.code.startsWith('CI_VERSION_GATE_'))
+  assert.deepEqual(findings, [], `the real tree must carry the classification: ${JSON.stringify(findings)}`)
+})
+
+test('eb3-ci-required: removing the classification is CI_VERSION_GATE_CLASSIFICATION_MISSING', () => {
+  const manifest = deepClone(loadManifest())
+  const entry = manifest.knownNonRequired.find((k) => k.job === 'candidate-acceptance' && k.workflow.endsWith('candidate-acceptance.yml'))
+  assert.ok(entry, 'the candidate-acceptance declaration must exist')
+  delete entry.classification
+  const hit = checkRequiredJobs({ files: workflowFiles(), manifest }).findings
+    .filter((f) => f.code === 'CI_VERSION_GATE_CLASSIFICATION_MISSING')
+  assert.equal(hit.length, 1, JSON.stringify(hit))
+  assert.match(hit[0].detail, /candidate-acceptance/)
+})
+
+test('eb3-ci-required: relaxing requiredPerPR to true is CI_VERSION_GATE_CLASSIFICATION_MISSING', () => {
+  const manifest = deepClone(loadManifest())
+  const entry = manifest.knownNonRequired.find((k) => k.job === 'version-gate' && k.workflow.endsWith('candidate-acceptance.yml'))
+  assert.ok(entry, 'the stable version-gate context must be declared')
+  entry.requiredPerPR = true
+  const hit = checkRequiredJobs({ files: workflowFiles(), manifest }).findings
+    .filter((f) => f.code === 'CI_VERSION_GATE_CLASSIFICATION_MISSING')
+  assert.equal(hit.length, 1, JSON.stringify(hit))
+  assert.match(hit[0].detail, /requiredPerPR=true/)
+})
+
+test('eb3-ci-required: deleting the stable version-gate job entry is CI_VERSION_GATE_CONTEXT_MISSING', () => {
+  const manifest = deepClone(loadManifest())
+  manifest.knownNonRequired = manifest.knownNonRequired.filter((k) => !(k.workflow.endsWith('candidate-acceptance.yml') && k.job === 'version-gate'))
+  const hit = checkRequiredJobs({ files: workflowFiles(), manifest }).findings
+    .filter((f) => f.code === 'CI_VERSION_GATE_CONTEXT_MISSING')
+  assert.equal(hit.length, 1, JSON.stringify(hit))
+})
+
+test('eb3-ci-required: adding the version gate to a required layer is CI_VERSION_GATE_PROMOTED_TO_REQUIRED', () => {
+  // Direction A: the workflow becomes a layer.
+  const manifestA = deepClone(loadManifest())
+  manifestA.layers.push({
+    id: 'ci-version-gate',
+    workflow: '.github/workflows/candidate-acceptance.yml',
+    job: 'candidate-acceptance',
+    legs: [{ id: 'candidate-acceptance-gate', cmd: ['node', 'scripts/candidate-acceptance-gate.mjs'], check: ['--hosts', 'both'] }],
+  })
+  const hitA = checkRequiredJobs({ files: workflowFiles(), manifest: manifestA }).findings
+    .filter((f) => f.code === 'CI_VERSION_GATE_PROMOTED_TO_REQUIRED')
+  assert.ok(hitA.length >= 1, JSON.stringify(hitA))
+
+  // Direction B: a required layer leg runs the version gate's scripts without naming the workflow.
+  const manifestB = deepClone(loadManifest())
+  manifestB.layers[0].legs.push({ id: 'smuggled-version-gate', cmd: ['node', 'scripts/version-gate-verify.mjs'], check: [] })
+  const hitB = checkRequiredJobs({ files: workflowFiles(), manifest: manifestB }).findings
+    .filter((f) => f.code === 'CI_VERSION_GATE_PROMOTED_TO_REQUIRED')
+  assert.equal(hitB.length, 1, JSON.stringify(hitB))
+  assert.match(hitB[0].detail, /version-gate-verify/)
+})
+
+test('eb3-ci-required: removing the PR label gate makes the 84 min run every-PR (CI_VERSION_GATE_PR_PATH_UNGATED)', () => {
+  const files = workflowFiles()
+  const rel = '.github/workflows/candidate-acceptance.yml'
+  const before = files.get(rel)
+  const labelTest = "contains(github.event.pull_request.labels.*.name, 'candidate-acceptance')"
+  assert.ok(before.includes(labelTest), 'the label gate must exist in the workflow')
+  // Replace the durable label-presence test with a plain PR trigger: the exact regression the ruling forbids.
+  files.set(rel, before.replace(labelTest, "github.event_name == 'pull_request'"))
+  const hit = checkRequiredJobs({ files, manifest: loadManifest() }).findings
+    .filter((f) => f.code === 'CI_VERSION_GATE_PR_PATH_UNGATED')
+  assert.equal(hit.length, 1, JSON.stringify(hit))
+})

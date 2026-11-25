@@ -1,0 +1,46 @@
+$ node scripts/version-gate-receipt.mjs --verdict dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-24T23-43-47-693Z/verdict.json --requested-head 92be91dfb889f6abd0188656540753c1a52ca1cc --out $TMP/version-gate-receipt.json
+VERSION-GATE-RECEIPT written head=92be91dfb889f6abd0188656540753c1a52ca1cc verdict=pass proven=60 known-refuted=2 env-limited=0 hosts=legacy,next path=/tmp/tmp.kmaNefppel/version-gate-receipt.json
+EXIT=0
+
+--- receipt (dry run; NOT committed, this SHA is not frozen) ---
+{
+  "schemaVersion": 1,
+  "kind": "version-gate-receipt",
+  "head": "92be91dfb889f6abd0188656540753c1a52ca1cc",
+  "verdict": "pass",
+  "judges": {
+    "proven": 60,
+    "knownRefuted": 2,
+    "envLimited": 0
+  },
+  "knownRefutedIds": [
+    "d4:ask-execute-process"
+  ],
+  "hosts": [
+    "legacy",
+    "next"
+  ],
+  "startedAt": "2026-11-24T23:43:47.693Z",
+  "finishedAt": "2026-11-25T13:42:01.784Z",
+  "gateVersion": "candidate-acceptance-gate/1",
+  "verdictFile": {
+    "path": "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-24T23-43-47-693Z/verdict.json",
+    "digest": "sha256:f50aa51bf0cde7d7d44ba0db5b84f7eea857808dae5392ce25ee7538456b4e6b"
+  }
+}
+
+$ node scripts/version-gate-verify.mjs --receipt <tmp>/version-gate-receipt.json --head 92be91dfb889f6abd0188656540753c1a52ca1cc
+VERSION-GATE-VERIFY pass head=92be91dfb889f6abd0188656540753c1a52ca1cc hosts=legacy,next proven=60 known-refuted=2 env-limited=0 receipt=../../../../../../tmp/tmp.kmaNefppel/version-gate-receipt.json
+EXIT=0
+
+$ node scripts/version-gate-verify.mjs --receipt <tmp>/version-gate-receipt.json --head 818eae405e13d02786398e336dc605039a148e72   # negative: wrong head
+REFUSED VERSION_GATE_HEAD_MISMATCH the receipt is for 92be91dfb889f6abd0188656540753c1a52ca1cc but this check is for 818eae405e13d02786398e336dc605039a148e72 — a frozen-SHA receipt only speaks for its own SHA
+EXIT=1
+
+$ node scripts/version-gate-verify.mjs --receipt <tmp>/absent.json --head 92be91dfb…   # negative: missing receipt
+REFUSED VERSION_GATE_RECEIPT_MISSING /tmp/tmp.kmaNefppel/absent.json does not exist
+EXIT=1
+
+$ node scripts/version-gate-verify.mjs --receipt <tmp>/version-gate-receipt.json --head 92be91dfb…   # negative: receipt for another SHA assumed as HEAD
+REFUSED VERSION_GATE_HEAD_MISMATCH the receipt is for 92be91dfb889f6abd0188656540753c1a52ca1cc but this check is for 818eae405e13d02786398e336dc605039a148e72 — a frozen-SHA receipt only speaks for its own SHA
+EXIT=1

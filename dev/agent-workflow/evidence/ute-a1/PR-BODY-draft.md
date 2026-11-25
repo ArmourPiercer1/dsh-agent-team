@@ -7,13 +7,122 @@ named in the same row or section.
 
 | field | value |
 | --- | --- |
-| **Head measured for every number below** | **round 116 sits on `5cb5c6062` (the dispatch-parity evidence regeneration), and its settlement comment names the round-116 documentation commit on top. The hosted Required set was executed at `5cb5c6062` (run `45517751283`: every layer + `ci-required` success, `ci-census` 2 captures / 599f / 7424l each, identical identity sets), and the PR was restored to DRAFT immediately after.** The round-115 row that follows keeps its own head (`5f79acb73` + postcommit commit) and its numbers (the candidate report + the measured `devex-diag` bound fix + this round's gate logs) plus the postcommit-logs commit named in the settlement comment; its gate block is the round-115 section immediately below.** Round 114 sat on `b5da23b4b` + the round-114 commit set (`194a5c3ce` fixes + `974c643de` post-commit gate logs); it closes SEC-01/SEC-02, declares SEC-03, and leaves every driver verdict and capability level untouched.** Round 110 leaves the driver verdicts of `acc72e58e` untouched; its own head is `fc170f929060133b3897cb1f0b769c20a928c893` + the round-110 commit (the documentation/observation commit carrying this body is its child, named in the settlement comment)**; the round-106/102/98/95/89 sections that name `563feac13` / `10d8a67ae` / `a95be5f11` / `d322b17aa` / `97d7d7c8d` / `c29da52d3` keep their own round's numbers and are labelled as such |
+| **Head measured for every number below** | **round 117 sits on `818eae405` (base of the round-117 commit set; the round-117 documentation commit is its child and is named in the settlement comment). Round 117 is a CONTRACT round: the owner ruled the Candidate Acceptance Gate a VERSION gate, so `PRODUCT-PROVEN` is redefined (`CANDIDATE-REPORT.md` §1.1, `VERSION-GATE.md`) — no capability level moved and no measurement was re-taken.** **Round 116 sat on `5cb5c6062` (the dispatch-parity evidence regeneration), and its settlement comment names the round-116 documentation commit on top. The hosted Required set was executed at `5cb5c6062` (run `45517751283`: every layer + `ci-required` success, `ci-census` 2 captures / 599f / 7424l each, identical identity sets), and the PR was restored to DRAFT immediately after.** The round-115 row that follows keeps its own head (`5f79acb73` + postcommit commit) and its numbers (the candidate report + the measured `devex-diag` bound fix + this round's gate logs) plus the postcommit-logs commit named in the settlement comment; its gate block is the round-115 section immediately below.** Round 114 sat on `b5da23b4b` + the round-114 commit set (`194a5c3ce` fixes + `974c643de` post-commit gate logs); it closes SEC-01/SEC-02, declares SEC-03, and leaves every driver verdict and capability level untouched.** Round 110 leaves the driver verdicts of `acc72e58e` untouched; its own head is `fc170f929060133b3897cb1f0b769c20a928c893` + the round-110 commit (the documentation/observation commit carrying this body is its child, named in the settlement comment)**; the round-106/102/98/95/89 sections that name `563feac13` / `10d8a67ae` / `a95be5f11` / `d322b17aa` / `97d7d7c8d` / `c29da52d3` keep their own round's numbers and are labelled as such |
 | **Base** | `master @ a19d1df01` (frozen A0, PR #821) |
 | **PR state** | **DRAFT**, `state=OPEN`, never merged (`gh pr view 822 --json isDraft,state,headRefOid`) |
-| **Record class** | every live claim is `DEV-LIVE` (a real host boot, **not a gate**); no capability row is PRODUCT-PROVEN |
-| **Read first** | **[`dev/agent-workflow/evidence/ute-a1/CANDIDATE-REPORT.md`](https://github.com/ArmourPiercer1/dsh-agent-team/blob/vnext/a1-cut/dev/agent-workflow/evidence/ute-a1/CANDIDATE-REPORT.md) — the ONE reviewable candidate report (round 116): identity/HEAD/base/PR state, static closure and exactly what its numbers do and do not prove, the single-authority verdict, the P1–P5 ladder with the OS negative controls and the declared exceptions, Required CI (the final hosted Required set is green at `5cb5c6062` WITH census — 2 captures, 599f/7424l, identical identity sets — and why census skips on a draft), the C1–C18 summary with every UNSUPPORTED/ENV-LIMITED row named, host-modification authority, the candid limits list, the reviewer's exact reproduction commands, and the boundaries in force.** Then [`D-ACCEPTANCE-REPORT.md`](https://github.com/ArmourPiercer1/dsh-agent-team/blob/vnext/a1-cut/dev/agent-workflow/evidence/ute-a1/D-ACCEPTANCE-REPORT.md) — now explicitly the append-only chronological record (its header points at the candidate report) — plus `C1-C18-SIGNOFF.md` (the per-row sign-off), `SECURITY-REVIEW-20261125.md` (the adversarial audit) and `ARCHITECTURE-AUTHORITY-AUDIT.md` (the single-authority audit) |
+| **Record class** | every live claim is `DEV-LIVE` (a real host boot, **not a gate**); no capability row is PRODUCT-PROVEN. **`PRODUCT-PROVEN` in force** = gate-backed at the **frozen candidate SHA** of a version, with the version gate **Required** and green at that SHA and its `version-gate-receipt.json` verified there — **NOT** "covered by every PR's Required CI" |
+| **Read first** | **[`dev/agent-workflow/evidence/ute-a1/VERSION-GATE.md`](https://github.com/ArmourPiercer1/dsh-agent-team/blob/vnext/a1-cut/dev/agent-workflow/evidence/ute-a1/VERSION-GATE.md) — the ruling, the receipt schema, the exact branch/tag ruleset the owner must apply, the freeze procedure, and exactly what is NOT exercised.** Then **[`dev/agent-workflow/evidence/ute-a1/CANDIDATE-REPORT.md`](https://github.com/ArmourPiercer1/dsh-agent-team/blob/vnext/a1-cut/dev/agent-workflow/evidence/ute-a1/CANDIDATE-REPORT.md) — the ONE reviewable candidate report (round 116): identity/HEAD/base/PR state, static closure and exactly what its numbers do and do not prove, the single-authority verdict, the P1–P5 ladder with the OS negative controls and the declared exceptions, Required CI (the final hosted Required set is green at `5cb5c6062` WITH census — 2 captures, 599f/7424l, identical identity sets — and why census skips on a draft), the C1–C18 summary with every UNSUPPORTED/ENV-LIMITED row named, host-modification authority, the candid limits list, the reviewer's exact reproduction commands, and the boundaries in force.** Then [`D-ACCEPTANCE-REPORT.md`](https://github.com/ArmourPiercer1/dsh-agent-team/blob/vnext/a1-cut/dev/agent-workflow/evidence/ute-a1/D-ACCEPTANCE-REPORT.md) — now explicitly the append-only chronological record (its header points at the candidate report) — plus `C1-C18-SIGNOFF.md` (the per-row sign-off), `SECURITY-REVIEW-20261125.md` (the adversarial audit) and `ARCHITECTURE-AUTHORITY-AUDIT.md` (the single-authority audit) |
 | **How to review** | (1) read the audit's corrections table first — it lists every number the report used to get wrong; (2) re-run the gate block in §"Verification on this HEAD" (single commands, ~8 min with the census) and diff the verdict lines; (3) for any capability row, follow its `file:line`/evidence path and check it says what the row claims; (4) treat every `DEV-LIVE` row as unproven for acceptance purposes; (5) read `D-ACCEPTANCE-REPORT.md` §10 before forming a view — the two round-87/88 seams and the four rulings they need are there; (6) do **not** mark this PR ready or merge it — that is the owner's act. |
-| **Gate status at this head** | **Round 116 / `5cb5c6062` is the CURRENT block — see the round-116 section immediately below and `CANDIDATE-REPORT.md` §5: the fresh dual-host candidate gate at `92be91dfb` is `CANDIDATE-GATE pass hosts=legacy,next judges=62 proven=60 known-refuted=2` (with `packages/*/src` proven unchanged to `5cb5c6062`); the 18 B-ladder arms are 18/18 on rc.2 and rc.5; the 40 host-importing vitest suites are measured `ENV-LIMITED` at the Vite layer (0 of 40 counted); local `ci-pr-gate --full --census-captures 2` PASS 10/10; the hosted Required set at `5cb5c6062` is fully green WITH census, and the PR is DRAFT again.** The rows below keep the numbers of the head they were measured at. **Round 115 / `974c643de` — one reviewable candidate report and the hosted devex `BOUND HIT` fixed with a measured budget raise: `ute-vnext-a1` leg 255/252/0/3; `test-catalog` tests=786 collected=734; local `ci-pr-gate` PASS 10/10.** **Round 112 / `ba3b3b436` + the round-112 commit — the B ladder is GREEN on BOTH hosts: 18/18 rc.2 and 18/18 rc.5, leg 251/248/0/3 on both, no product change, no assertion weakened.** Full tables: `dev/agent-workflow/evidence/ute-a1/RC5-TEST-MATRIX.md` and `round116/VITEST-HOST-PROBE.md`. |
+| **Gate status at this head** | **Round 117 / `818eae405` is the CURRENT block — see the round-117 section immediately below: contract change only (VERSION gate + the `PRODUCT-PROVEN` redefinition), all gates re-run green (`dispatch-tests 255/252/0/3`, `test-catalog 787/735/14/38 findings=0` — collected +1 for the verifier's controls, booked; `eb3-ci-required pass workflows=11`; `docs-sync docs=193`; `ute-cut-closure cut(0/148)`; `ute-p0-assets cut(148/148)`; `place-dist-glue 35`; bound vitest 238/0; UTE G1 89/89; `EB3-RUN-MANIFEST 634`; `ci-pr-gate --full` PASS 10/10), and the version gate remains UNEXERCISED as a version gate (no tag/push/dispatch, no protection rule).** **Round 116 / `5cb5c6062` was the previous block — see the round-116 section immediately below and `CANDIDATE-REPORT.md` §5: the fresh dual-host candidate gate at `92be91dfb` is `CANDIDATE-GATE pass hosts=legacy,next judges=62 proven=60 known-refuted=2` (with `packages/*/src` proven unchanged to `5cb5c6062`); the 18 B-ladder arms are 18/18 on rc.2 and rc.5; the 40 host-importing vitest suites are measured `ENV-LIMITED` at the Vite layer (0 of 40 counted); local `ci-pr-gate --full --census-captures 2` PASS 10/10; the hosted Required set at `5cb5c6062` is fully green WITH census, and the PR is DRAFT again.** The rows below keep the numbers of the head they were measured at. **Round 115 / `974c643de` — one reviewable candidate report and the hosted devex `BOUND HIT` fixed with a measured budget raise: `ute-vnext-a1` leg 255/252/0/3; `test-catalog` tests=786 collected=734; local `ci-pr-gate` PASS 10/10.** **Round 112 / `ba3b3b436` + the round-112 commit — the B ladder is GREEN on BOTH hosts: 18/18 rc.2 and 18/18 rc.5, leg 251/248/0/3 on both, no product change, no assertion weakened.** Full tables: `dev/agent-workflow/evidence/ute-a1/RC5-TEST-MATRIX.md` and `round116/VITEST-HOST-PROBE.md`. |
+
+## ROUND 117 — CONTRACT: the Candidate Acceptance Gate is a VERSION gate, and `PRODUCT-PROVEN` is redefined
+
+Base `818eae405` plus the round-117 documentation commit named in the settlement comment. Branch `vnext/a1-cut`,
+base `master @ a19d1df01`, PR **#822 stays DRAFT** — no merge, no ready flip, no history rewrite, no upstream
+patch, **no retry, no widened timeout, no weakened judge, no added `knownRefuted`**. **No capability level
+moves.** This round changes a definition and the gate's trigger/binding shape, not a measurement.
+
+### 1. The ruling
+
+The Candidate Acceptance Gate is a **VERSION gate, not a per-PR gate** (owner, 2026-11-25; recorded as DECIDED
+in `OWNER-DECISIONS.md` §"ROUND 117"):
+
+- **NOT required on ordinary PRs** — one dual-host run is a measured **~84 min / 16 real host boots**
+  (round 109: `83 m 48 s`), a 10x slowdown of the daily loop for no value on docs/script PRs;
+- **IS the formal gate for a candidate/release version** — it must run, be green, and be **Required** at the
+  **frozen candidate SHA** before a version is declared deliverable;
+- the **rejected alternative is "required on every PR"**, recorded as rejected for that exact trade-off.
+
+**`PRODUCT-PROVEN` in force** (the single truth; `CANDIDATE-REPORT.md` §1.1 = `VERSION-GATE.md` §1 =
+`D-ACCEPTANCE-REPORT.md` §"ROUND 117"):
+
+> gate-backed at the **frozen candidate SHA** of a version, with the version gate **Required** and green at
+> that SHA and its `version-gate-receipt.json` verified there — **NOT** "covered by every PR's Required CI".
+
+**No row is PRODUCT-PROVEN today**, and none becomes so until a version gate is frozen, Required and green at
+that SHA.
+
+### 2. What the gate covers — the 31 judges, and what it never will
+
+Per host the gate grades **31 judges** (`d` 6, `d2` 4, `d3` 4, `d4` 17); 62 per dual-host run. They can speak to
+**C2, C3, C5, C6, C8, C9, C12 and C13's fs/subprocess base faces**. They **never** cover **C1, C4, C7** (the
+cold-wake half), **C10, C11**, **C13's PTC arm and its web/terminals/userQuestions faces**, **C14**, **C14b**
+(the network-deny invariant is never judged live), **C15, C16, C17, C18** — no freeze can promote those rows.
+Per-judge mapping in `VERSION-GATE.md` §2; the per-row `VG` column in `C1-C18-SIGNOFF.md` §3.1 now says this
+row by row instead of the old `CAND` token. **No blanket coverage may be inferred from a green gate.**
+
+### 3. The workflow now (triggers, head binding, freeze artifact)
+
+- **Triggers** (`.github/workflows/candidate-acceptance.yml`): `push` to tags `v*` and branches `release/**`,
+  `candidate/**`; `workflow_dispatch` with an optional **full 40-hex `head` input** (default `github.sha`);
+  `pull_request: [labeled, synchronize, reopened]` on `master` **only as the non-required opt-in**, gated on the
+  `candidate-acceptance` label being PRESENT. A branch name, tag or abbreviated SHA in `head` is REFUSED.
+- **Strict head binding**: the requested SHA is resolved once, used for the checkout, and the run fails typed
+  unless `graded head == checked-out head == requested SHA` and the verdict artifact was written by this run
+  (newer than the start marker). The SHA-bearing grading job is named
+  `candidate-acceptance (VERSION GATE, NOT per-PR Required) head=<sha>` on the version path and
+  `candidate-acceptance (opt-in, not required) head=<sha>` on the PR path.
+- **Freeze artifact**: a green run publishes `version-gate-receipt.json` (stable path
+  `dev/agent-workflow/evidence/candidate-acceptance-gate/version-gate-receipt.json`) with `schemaVersion`,
+  `head`, `verdict`, `judges{proven,knownRefuted,envLimited}`, `knownRefutedIds`, `hosts`, `startedAt`,
+  `finishedAt`, `gateVersion`, and `verdictFile{path,digest}` — the digest-bound reference to the gate's OWN
+  `verdict.json`. **No second evidence format is invented for the drivers.**
+- **The required context is stable**: a second job, `version-gate (Required at frozen candidate SHA)`, downloads
+  the bundle and re-verifies the receipt with `scripts/version-gate-verify.mjs --head <requested>`. It runs on
+  the version path with `if: always()`, so a failed grading job REFUSES instead of being skipped green; it never
+  runs on the PR opt-in path, so no PR can produce the required context.
+- **The manifest classification is asserted**, not tolerated: `dev/ci/eb3-ci-manifest.json` carries
+  `classification: "version gate: required at a frozen candidate SHA, never a per-PR required context"`,
+  `requiredPerPR:false`, `requiredAtFrozenCandidateSha:true` on both declared jobs, and
+  `scripts/eb3-ci-required.mjs` reds with `CI_VERSION_GATE_CLASSIFICATION_MISSING`,
+  `CI_VERSION_GATE_CONTEXT_MISSING`, `CI_VERSION_GATE_PROMOTED_TO_REQUIRED` (workflow as a layer, a layer leg
+  running the gate's scripts, an aggregate `uses:`/job, or `workflow_call`), `CI_VERSION_GATE_TRIGGER_MISSING`
+  (no push / no `head` input) and `CI_VERSION_GATE_PR_PATH_UNGATED` (the 84-minute run becomes every-PR).
+  `ci-required`'s **layer set is unchanged**; `workflows=` stays **11** (no new workflow file).
+
+### 4. The verifier's codes (fail closed, never a vacuous pass)
+
+`scripts/version-gate-verify.mjs` exits 0 **only** when the receipt exists, its schema is exact (unknown or
+missing key → drift), `head` == the requested SHA, `verdict == "pass"`, `judges.envLimited == 0`, the
+known-refuted id set is **exactly** the gate's enumeration (`scripts/candidate-acceptance-known-refuted.mjs`),
+and the referenced verdict file matches the receipt's sha256 digest and agrees with it (head, hosts, judge
+counts, REFUTED ids). Refusal codes are closed and named:
+`VERSION_GATE_RECEIPT_MISSING`, `_RECEIPT_UNREADABLE`, `_SCHEMA_DRIFT`, `_SCHEMA_VERSION_UNSUPPORTED`,
+`_HEAD_INVALID`, `_HEAD_MISMATCH`, `_VERDICT_NOT_PASS`, `_TIME_INVALID`, `_VERDICT_FILE_MISSING`,
+`_VERDICT_DIGEST_MISMATCH`, `_VERDICT_UNREADABLE`, `_VERDICT_SCHEMA_UNSUPPORTED`, `_VERDICT_HEAD_MISMATCH`,
+`_JUDGES_MISMATCH`, `_ENV_LIMITED_NONZERO`, `_KNOWN_REFUTED_UNEXPECTED`, `_KNOWN_REFUTED_MISSING`,
+`_HOSTS_MISMATCH`, `_HEAD_UNRESOLVED`, `_USAGE`. Its **negative controls are COLLECTED**
+(`scripts/version-gate-verify.test.mjs`, leg `version-gate-verify-unit`, 22 tests) and each plants one defect:
+missing receipt, wrong head, verdict≠pass, unexpected known-refuted id, schema drift (extra key / missing key /
+wrong type), `schemaVersion` drift, tampered verdict bytes, missing verdict file, `envLimited>0`, dropped
+known-refuted id, non-SHA head, judge-count disagreement.
+
+### 5. What this round does NOT do (stated, not rounded up)
+
+**The version gate has not run end-to-end as a version gate.** No `v*` tag, no `release/**`/`candidate/**`
+push and no `head`-input dispatch has been fired; the hosted two-job artifact→verifier path is unmeasured; and
+**no branch/tag protection rule has been applied** — that is the owner's action, spelled out copy-paste in
+`VERSION-GATE.md` §5 (require exactly `version-gate (Required at frozen candidate SHA)` on a `release/**`
+ruleset; do **NOT** add it to the default-branch PR rules; restrict the release tag by a tag ruleset, which
+cannot carry required status checks) with the freeze procedure in §6. What **is** exercised: the receipt writer
++ verifier against this repository's own latest verdict (head `92be91dfb`, `62/60/2/0`, exit 0; wrong-head and
+missing-receipt refusals exit 1 — `round117/version-gate-dryrun.log`), the 22 collected verifier controls, and
+six manifest-classification controls in `scripts/eb3-ci-required.test.mjs`.
+
+### 6. Gates at this head (all exit 0; logs in `round117/`)
+
+`dispatch-tests --run --leg ute-vnext-a1` **255 tests / 252 pass / 0 fail / 3 skipped**, set
+`sha256:edd4f1c4…` unchanged; `dispatch-tests --run --leg version-gate-verify-unit` **22/22**; `test-catalog
+--max-uncollected 41 --max-excluded 7` **tests=787 collected=735 excluded=14 uncollected=38, findings=0**
+(digest `sha256:5f94024c…`; **booked delta: collected 734 → 735, tests 786 → 787, uncollected/excluded
+unchanged** — the new verifier-controls suite, declared by the `version-gate-verify-unit` leg); `ute-cut-closure
+--check` **`cut(0/148)`**; `ute-p0-assets --check` **`cut(148/148) modules=37 files=180 lines=69512`**;
+`docs-sync --check` **docs=193 findings=0 blocking=0** (the new `VERSION-GATE.md` lives under
+`dev/agent-workflow/evidence/`, which it does not count); `place-dist-glue` **35 byte-identical**;
+`eb3-ci-required` **pass workflows=11 findings=0**; bound vitest **238/0**; UTE G1 argv **89/89**;
+`EB3-RUN-MANIFEST` **records=634 strict=0 incomplete=11 findings=0**; `ci-pr-gate --full --census-captures 2`
+**PASS 10/10**. New scannable-surface delta: **one collected node:test suite** (`version-gate-verify.test.mjs`)
+and **zero new workflow files**; the three new `scripts/*.mjs` modules are not test surfaces.
 
 ## ROUND 116 — the newest measurements folded in: hosted green with census, two reds fixed, the rc.5 vitest probe
 
@@ -76,8 +185,8 @@ driver; verdict
 `git diff --stat 92be91dfb..5cb5c6062 -- 'packages/*/src'` prints **nothing** (exit 0, zero lines; saved as
 `round116/product-diff-92be91dfb-5cb5c6062.txt`). Every intervening commit is evidence or evidence
 regeneration, so the verdict is representative of this head's product code — stated as a transfer over identical
-code, never as a run at this head. The layer stays **NON-REQUIRED**; a green there is `DEV-LIVE`, never
-PRODUCT-PROVEN.
+code, never as a run at this head. Since round 117 the layer is a **VERSION gate** (required at a frozen
+candidate SHA, never per-PR); it is not frozen, so a green there is `DEV-LIVE`, never PRODUCT-PROVEN.
 
 ### 4. The rc.5 matrix outcome — ladder closed, the vitest population measured
 
@@ -545,7 +654,7 @@ as the Provider's receipt authority, for `write`/`writeText` only.
   unchanged (`785 / 38 uncollected / 14 excluded`); bound vitest `ci-security 218 → 222` (four new
   arms), `ci-integration 238`; UTE G1 argv `89/89`. No new scannable file ⇒ no p4t6 delta.
 - **Not proven.** Only `write`/`writeText`; `editText`/`patchText`/`deleteFile`/`moveFile`, subprocess
-  and every other tool keep R4. No row is PRODUCT-PROVEN (DEV-LIVE is a record, not a gate). Real-model
+  and every other tool keep R4. No row is PRODUCT-PROVEN (DEV-LIVE is a record, not a gate; no version is frozen — round 117). Real-model
   interleaving is not measured.
 
 ## Latest round (96) — the R3 receipt extended to EVERY FS mutation (subprocess deliberately untouched)
@@ -585,7 +694,7 @@ subprocess face as the next step.
   two approvals: both files hold the bytes of their own approval, the first file is unchanged, the
   digests differ). Every existing judge is unchanged, `d4:routed-wake` stays REFUTED.
 - **Not proven.** No subprocess/PTY receipt exists (next owner-ruled step); no capability row is
-  PRODUCT-PROVEN (DEV-LIVE is a record, not a gate); the four new methods are proven at the
+  PRODUCT-PROVEN (DEV-LIVE is a record, not a gate; no version is frozen — round 117); the four new methods are proven at the
   production composition point and two of them live, but their tool shapes are declared, not shipped.
 
 ## What this branch is
@@ -1031,7 +1140,7 @@ failing assertion and ends mid-line at `D17` with no `DSH-TEST-DISPATCH` token, 
 ## Limits stated plainly (not claims)
 
 - **No gate-grade product acceptance.** The D boots are `DEV-LIVE` records with two agreeing boots each;
-  they are not gates and no row is PRODUCT-PROVEN. No capability under load: no multi-agent load beyond
+  they are not gates and no row is PRODUCT-PROVEN (and no version is frozen — round 117). No capability under load: no multi-agent load beyond
   two Members, no revocation-under-load, no Stop-under-load, no real Stop keypress.
 - **The model is a scripted mock** in every D record, so model-driven choice, retries and adversarial
   tool selection are not measured.
@@ -1215,7 +1324,8 @@ host filesystem (`27 bytes`, `sha256:ced10112…`), settlement `COMPLETED`/`comp
   survived the machine attempt and was cleared only by an explicit human prompt, after which the held
   wake was delivered and the third `write` executed.
 
-**Level: DEV-LIVE, not PRODUCT-PROVEN.** `V@B=yes` requires a bound executable gate; the D4 driver is
+**Level: DEV-LIVE, not PRODUCT-PROVEN.** `V@B=yes` requires a bound executable gate — since the 2026-11-25
+owner ruling, the VERSION gate at a frozen candidate SHA (`VERSION-GATE.md`); the D4 driver is
 not one, and no gate was invented. The cell moves from MECHANISM to **DEV-LIVE**.
 
 **Eight pre-existing judges unchanged and PROVEN**; deny and Stop-while-pending still write zero bytes
