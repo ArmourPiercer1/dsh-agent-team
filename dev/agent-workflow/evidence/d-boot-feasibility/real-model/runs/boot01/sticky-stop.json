@@ -9,7 +9,7 @@
     "holdStatus": 200,
     "cancelStatus": 200,
     "resumeStatus": 200,
-    "thirdRequestId": "ctrl-0bhom6o0ki6cqj0zbqv1i0ce"
+    "thirdRequestId": "ctrl-06lkmbz088jg9a0cwp8kl1me"
   },
   "stoppedAfter": true,
   "stoppedMarkersAfter": [
@@ -21,7 +21,7 @@
     "status": 200,
     "markersAfterResume": 0
   },
-  "resumedWakeDelivered": true,
+  "resumedWakeDelivered": false,
   "write3": {
     "settled": true,
     "file": {
@@ -31,5 +31,29 @@
     },
     "settlement": "COMPLETED",
     "result": false
+  },
+  "discovery": {
+    "worker-write-3": {
+      "slot": "worker-write-3",
+      "predicate": "name=write && file_path=\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-17-37Z/workspace/lane/worker-ask-3.txt\"",
+      "matched": {
+        "id": "call_00_ET_QKYPbCvAazTrVU19j8z87259",
+        "name": "write",
+        "turnIndex": 22,
+        "input": "{\"content\":\"DBOOT_D4_WORKER_ASK_CALLED_3\\n\",\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-17-37Z/workspace/lane/worker-ask-3.txt\"}"
+      },
+      "at": "2026-11-25T20:21:43.541Z"
+    },
+    "officer-resolve-third": {
+      "slot": "officer-resolve-third",
+      "predicate": "name=team_resolve_control && requestId=\"ctrl-06lkmbz088jg9a0cwp8kl1me\" && occurrence #1",
+      "matched": {
+        "id": "call_00_YNIPESiYBBI9wesbWa8C3973",
+        "name": "team_resolve_control",
+        "turnIndex": 29,
+        "input": "{\"decision\":\"allow\",\"note\":\"sandboxed probe: allow worker write within lane/\",\"requestId\":\"ctrl-06lkmbz088jg9a0cwp8kl1me\",\"requestToken\":\"dboot-d4-resolve-worker-write3\",\"rootSessionId\":\"session-real-model-root\"}"
+      },
+      "at": "2026-11-25T20:19:43.293Z"
+    }
   }
 }

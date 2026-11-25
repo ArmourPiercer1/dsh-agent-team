@@ -10,17 +10,17 @@
     {
       "id": "second-approved-through-real-control-path",
       "ok": true,
-      "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-0gvezn41bhd3hr0qvmpsq1d7\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0hvc2y01v51z\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-real-model-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1q9ehvo0zb4o\\\"},\\\"targetInstanceId\\\":\\\"inst-1q9ehvo0zb4o\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write-2\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:dc466f861fff01944dae239b88fb65b19bd3\""
+      "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-02wk9k51stj97418oluz30ju\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0hvc2y01v51z\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-real-model-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1q9ehvo0zb4o\\\"},\\\"targetInstanceId\\\":\\\"inst-1q9ehvo0zb4o\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call_00_ET_Oso1bLXlo4hRx0wTXbmk6504\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:a75a9300a7f15d6ad0b5a84\""
     },
     {
       "id": "second-admission-fact-allow-lane-ask",
       "ok": true,
-      "detail": "allow facts=[{\"callId\":\"call-d4-worker-write-2\",\"decision\":\"allow\",\"laneDecision\":\"ask\",\"axis\":\"fs.write\"}]"
+      "detail": "allow facts=[{\"callId\":\"call_00_ET_Oso1bLXlo4hRx0wTXbmk6504\",\"decision\":\"allow\",\"laneDecision\":\"ask\",\"axis\":\"fs.write\"}]"
     },
     {
       "id": "second-write-tool-result-not-an-error",
       "ok": true,
-      "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T20-57-49Z/workspace/lane/worker-ask-2.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+      "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-26-07Z/workspace/lane/worker-ask-2.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
     },
     {
       "id": "second-real-bytes-on-disk",
@@ -43,5 +43,29 @@
       "detail": "state=COMPLETED bodyOutcome=completed transitions=[\"ADMITTED\",\"RUNNING\",\"COMPLETED\"]"
     }
   ],
-  "failing": []
+  "failing": [],
+  "discovery": {
+    "worker-write-2": {
+      "slot": "worker-write-2",
+      "predicate": "name=write && file_path=\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-26-07Z/workspace/lane/worker-ask-2.txt\"",
+      "matched": {
+        "id": "call_00_ET_Oso1bLXlo4hRx0wTXbmk6504",
+        "name": "write",
+        "turnIndex": 16,
+        "input": "{\"content\":\"DBOOT_D4_WORKER_ASK_CALLED_2\\n\",\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-26-07Z/workspace/lane/worker-ask-2.txt\"}"
+      },
+      "at": "2026-11-25T20:27:41.966Z"
+    },
+    "officer-resolve-second": {
+      "slot": "officer-resolve-second",
+      "predicate": "name=team_resolve_control && requestId=\"ctrl-02wk9k51stj97418oluz30ju\" && occurrence #1",
+      "matched": {
+        "id": "call_00_ET_7iBCitqvUUBnBMOjDmEx4875",
+        "name": "team_resolve_control",
+        "turnIndex": 17,
+        "input": "{\"decision\":\"allow\",\"requestId\":\"ctrl-02wk9k51stj97418oluz30ju\",\"requestToken\":\"dboot-d4-officer-resolve-ctrl-02wk9k51stj97418oluz30ju\",\"rootSessionId\":\"session-real-model-root\"}"
+      },
+      "at": "2026-11-25T20:27:41.963Z"
+    }
+  }
 }

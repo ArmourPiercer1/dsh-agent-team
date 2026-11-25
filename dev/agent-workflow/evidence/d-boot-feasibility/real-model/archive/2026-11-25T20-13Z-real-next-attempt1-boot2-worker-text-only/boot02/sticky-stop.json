@@ -1,0 +1,59 @@
+{
+  "stoppedBefore": true,
+  "stoppedMarkersBefore": [
+    "stopped-be6cf2ae.json"
+  ],
+  "machineAttempted": true,
+  "machineAttempt": {
+    "holdLanded": true,
+    "holdStatus": 200,
+    "cancelStatus": 200,
+    "resumeStatus": 200,
+    "thirdRequestId": "ctrl-1291tmz15jwh5q051x5tx05z"
+  },
+  "stoppedAfter": true,
+  "stoppedMarkersAfter": [
+    "stopped-be6cf2ae.json"
+  ],
+  "wakeInputsWhileStopped": 0,
+  "humanResumeCleared": true,
+  "humanResume": {
+    "status": 200,
+    "markersAfterResume": 0
+  },
+  "resumedWakeDelivered": false,
+  "write3": {
+    "settled": true,
+    "file": {
+      "exists": true,
+      "bytes": 29,
+      "sha256": "2b28991b1453c91d156a15f550556549cbdbcb5856aa833b3fcfa7d5b3d1ea0e"
+    },
+    "settlement": "COMPLETED",
+    "result": false
+  },
+  "discovery": {
+    "worker-write-3": {
+      "slot": "worker-write-3",
+      "predicate": "name=write && file_path=\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-04-50Z-next/workspace/lane/worker-ask-3.txt\"",
+      "matched": {
+        "id": "call_00_ET_D33PeDr0TGjlxfNqZZGK1956",
+        "name": "write",
+        "turnIndex": 21,
+        "input": "{\"content\":\"DBOOT_D4_WORKER_ASK_CALLED_3\\n\",\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-04-50Z-next/workspace/lane/worker-ask-3.txt\"}"
+      },
+      "at": "2026-11-25T20:07:31.975Z"
+    },
+    "officer-resolve-third": {
+      "slot": "officer-resolve-third",
+      "predicate": "name=team_resolve_control && requestId=\"ctrl-1291tmz15jwh5q051x5tx05z\" && occurrence #1",
+      "matched": {
+        "id": "call_01_e00loTe3k2a0JeABvUCx9949",
+        "name": "team_resolve_control",
+        "turnIndex": 24,
+        "input": "{\"decision\":\"allow\",\"note\":\"Worker write to a lane file inside the session workspace, matching the delegated worker task.\",\"requestId\":\"ctrl-1291tmz15jwh5q051x5tx05z\",\"requestToken\":\"dboot-d4-allow-worker-write-3\",\"rootSessionId\":\"session-real-model-root\"}"
+      },
+      "at": "2026-11-25T20:05:31.725Z"
+    }
+  }
+}

@@ -9,7 +9,7 @@
     "holdStatus": 200,
     "cancelStatus": 200,
     "resumeStatus": 200,
-    "thirdRequestId": "ctrl-1junwp90nofwoy08j273r1t4"
+    "thirdRequestId": "ctrl-0t5xlsu1u37jc71gpmm0c1fy"
   },
   "stoppedAfter": true,
   "stoppedMarkersAfter": [
@@ -31,5 +31,29 @@
     },
     "settlement": "COMPLETED",
     "result": false
+  },
+  "discovery": {
+    "worker-write-3": {
+      "slot": "worker-write-3",
+      "predicate": "name=write && file_path=\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-26-07Z/workspace/lane/worker-ask-3.txt\"",
+      "matched": {
+        "id": "call_00_ET_DjB4ROBXso9pVe0ngXeg1035",
+        "name": "write",
+        "turnIndex": 21,
+        "input": "{\"content\":\"DBOOT_D4_WORKER_ASK_CALLED_3\\n\",\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-26-07Z/workspace/lane/worker-ask-3.txt\"}"
+      },
+      "at": "2026-11-25T20:28:02.119Z"
+    },
+    "officer-resolve-third": {
+      "slot": "officer-resolve-third",
+      "predicate": "name=team_resolve_control && requestId=\"ctrl-0t5xlsu1u37jc71gpmm0c1fy\" && occurrence #1",
+      "matched": {
+        "id": "call_00_ET_aJ41qXRLBv7FGTO7n9Ji3965",
+        "name": "team_resolve_control",
+        "turnIndex": 30,
+        "input": "{\"decision\":\"allow\",\"requestId\":\"ctrl-0t5xlsu1u37jc71gpmm0c1fy\",\"requestToken\":\"dboot-d4-officer-resolve-ctrl-0t5xlsu1u37jc71gpmm0c1fy\",\"rootSessionId\":\"session-real-model-root\"}"
+      },
+      "at": "2026-11-25T20:28:02.116Z"
+    }
   }
 }

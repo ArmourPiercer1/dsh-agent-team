@@ -1,0 +1,49 @@
+{
+  "askAppeared": true,
+  "ids": {
+    "officer": "inst-0hvc2y01v51z",
+    "worker": "inst-1q9ehvo0zb4o",
+    "pendingRequestId": "ctrl-18ferzo15shnox0afqkza1if",
+    "pendingRequestId2": null,
+    "pendingRequestId3": null,
+    "pendingProcessRequestId": null
+  },
+  "askRow": {
+    "requestId": "ctrl-18ferzo15shnox0afqkza1if",
+    "kind": "leader-approval",
+    "targetInstanceId": "inst-1q9ehvo0zb4o",
+    "actionName": "admission-ask",
+    "toolName": "write",
+    "correlation": "admission:call_00_ET_covH3l4wL5rCcKsIlsCh3471",
+    "status": "pending",
+    "createdAt": "2026-11-25T20:27:38.689Z",
+    "subject": {
+      "kind": "instance",
+      "instanceId": "inst-1q9ehvo0zb4o"
+    },
+    "executionCoupling": "inline",
+    "requestSequence": 9,
+    "operationFingerprint": "sha256:10c6b85f1948de2f6cbd9cc6b987ed18bdf92384b202f4f1546a81f9af426cdf",
+    "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-26-07Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:6222f190a73de02099ac16d446a6f67d)"
+  },
+  "requests": [
+    {
+      "requestId": "ctrl-18ferzo15shnox0afqkza1if",
+      "kind": "leader-approval",
+      "targetInstanceId": "inst-1q9ehvo0zb4o",
+      "actionName": "admission-ask",
+      "toolName": "write",
+      "correlation": "admission:call_00_ET_covH3l4wL5rCcKsIlsCh3471",
+      "status": "pending",
+      "createdAt": "2026-11-25T20:27:38.689Z",
+      "subject": {
+        "kind": "instance",
+        "instanceId": "inst-1q9ehvo0zb4o"
+      },
+      "executionCoupling": "inline",
+      "requestSequence": 9,
+      "operationFingerprint": "sha256:10c6b85f1948de2f6cbd9cc6b987ed18bdf92384b202f4f1546a81f9af426cdf",
+      "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-26-07Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:6222f190a73de02099ac16d446a6f67d)"
+    }
+  ]
+}

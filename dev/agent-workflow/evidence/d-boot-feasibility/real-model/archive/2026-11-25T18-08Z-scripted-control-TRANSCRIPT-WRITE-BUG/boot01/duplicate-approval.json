@@ -1,0 +1,47 @@
+{
+  "measurement": {
+    "error": "DISCOVERY-MISS(duplicate-resolve): name=team_resolve_control && requestId=\"ctrl-1fb7rh21v4y6yt08v5stw00v\" && occurrence #2 matched no observed tool_use block in 33 observed turn(s)",
+    "attempt": null,
+    "fileBefore": null,
+    "fileAfter": null,
+    "decisions": null,
+    "executions": null
+  },
+  "verdict": {
+    "proposition": "a DUPLICATE approval attempt on an already-settled leg yields ONE decision and ONE execution: no second grant is minted and the approved bytes do not change",
+    "verdict": "REFUTED",
+    "clauses": [
+      {
+        "id": "duplicate-attempt-issued",
+        "ok": false,
+        "detail": "callId=<none> result= isError=undefined"
+      },
+      {
+        "id": "one-decision",
+        "ok": false,
+        "detail": "control-decision-recorded rows for the request=null"
+      },
+      {
+        "id": "one-execution",
+        "ok": false,
+        "detail": "settlements naming the approved call=null"
+      },
+      {
+        "id": "bytes-unchanged",
+        "ok": true,
+        "detail": "before=undefined after=undefined bytes=undefined"
+      },
+      {
+        "id": "duplicate-arm-ran",
+        "ok": false,
+        "detail": "DISCOVERY-MISS(duplicate-resolve): name=team_resolve_control && requestId=\"ctrl-1fb7rh21v4y6yt08v5stw00v\" && occurrence #2 matched no observed tool_use block in 33 observed turn(s)"
+      }
+    ],
+    "failing": [
+      "duplicate-attempt-issued",
+      "one-decision",
+      "one-execution",
+      "duplicate-arm-ran"
+    ]
+  }
+}

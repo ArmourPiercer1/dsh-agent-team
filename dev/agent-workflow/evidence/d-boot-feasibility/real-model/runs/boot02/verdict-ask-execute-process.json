@@ -9,13 +9,13 @@
     },
     {
       "id": "approved-through-real-control-path",
-      "ok": true,
-      "detail": "durable control-decision-recorded decision=allow decider={\"instanceId\":\"inst-0hvc2y01v51z\",\"kind\":\"instance\",\"role\":\"member\"} requestId=ctrl-14gdxdy0rhnvnd18hc71801s"
+      "ok": false,
+      "detail": "durable control-decision-recorded decision=deny decider={\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"} requestId=ctrl-10jllou1cy2c7113r6pxo1bh"
     },
     {
       "id": "process-admission-fact-allow",
       "ok": true,
-      "detail": "process.exec allow facts=[{\"callId\":\"call-d4-worker-bash\",\"decision\":\"allow\",\"laneDecision\":\"ask\",\"axis\":\"process.exec\"}]"
+      "detail": "process.exec allow facts=[{\"callId\":\"call_00_ET_ggIRlULZ3zfcgYMMdCpy0455\",\"decision\":\"allow\",\"laneDecision\":\"ask\",\"axis\":\"process.exec\"}]"
     },
     {
       "id": "bash-tool-result-not-an-error",
@@ -39,6 +39,7 @@
     }
   ],
   "failing": [
+    "approved-through-real-control-path",
     "bash-tool-result-not-an-error",
     "in-lane-write-lands",
     "settlement-completed"

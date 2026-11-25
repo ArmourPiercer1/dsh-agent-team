@@ -1,17 +1,17 @@
 {
   "seen": true,
-  "callId": "call-d4-officer-resolve-ctrl-0r3iv77018bxo8000oj9x1ch",
+  "callId": "call_00_ET_5h1gEIDZnNuvdCBOZwRV3650",
   "call": {
-    "rootSessionId": "session-real-model-root",
-    "requestToken": "dboot-d4-resolve-ctrl-0r3iv77018bxo8000oj9x1ch",
-    "requestId": "ctrl-0r3iv77018bxo8000oj9x1ch",
-    "decision": "allow"
+    "decision": "allow",
+    "requestId": "ctrl-18kejfu1l7xao102mfoi81ng",
+    "requestToken": "dboot-d4-officer-resolve-ctrl-18kejfu1l7xao102mfoi81ng",
+    "rootSessionId": "session-real-model-root"
   },
-  "result": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-0r3iv77018bxo8000oj9x1ch\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-0hvc2y01v51z\",\"role\":\"member\"},\"scope\":{\"rootSessionId\":\"session-real-model-root\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-1q9ehvo0zb4o\"},\"targetInstanceId\":\"inst-1q9ehvo0zb4o\",\"actionName\":\"admission-ask\",\"correlation\":\"admission:call-d4-worker-write-2\",\"toolName\":\"write\",\"operationFingerprint\":\"sha256:bd12ae3dd006f47d80d2e9cea6d37db87cf24061d158b24a0d484c425b2833dc\",\"authorityScope\":{\"operationClass\":\"write\",\"matcher\":{\"kind\":\"exact\",\"resource\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T20-46-29Z/workspace/lane/worker-ask-2.txt\"}}},\"requestSequence\":13,\"decisionSequence\":1",
+  "result": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-18kejfu1l7xao102mfoi81ng\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-0hvc2y01v51z\",\"role\":\"member\"},\"scope\":{\"rootSessionId\":\"session-real-model-root\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-1q9ehvo0zb4o\"},\"targetInstanceId\":\"inst-1q9ehvo0zb4o\",\"actionName\":\"admission-ask\",\"correlation\":\"admission:call_00_SCiXZDcgJ6rFqFolCoS67794\",\"toolName\":\"write\",\"operationFingerprint\":\"sha256:3dbe4450225b456d7bdd9e1fd5d52a3e2f6c2bd6fb0b62c43e26f5007a658a1b\",\"authorityScope\":{\"operationClass\":\"write\",\"matcher\":{\"kind\":\"exact\",\"resource\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-17-37Z/workspace/lane/worker-ask-2.txt\"}}},\"requestSequence\":13,\"decisionS",
   "isError": false,
   "settlement": {
-    "executionId": "exec-bb4a78e652d08cab874d828a67827546e1ed3b6f",
-    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T20-46-29Z/centre/settlement/inst-0hvc2y01v51z/exec-bb4a78e652d08cab874d828a67827546e1ed3b6f.settlement.json",
+    "executionId": "exec-2ee069efd1fca245e3dbff5fed22bee818bc1c2f",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-17-37Z/centre/settlement/inst-0hvc2y01v51z/exec-2ee069efd1fca245e3dbff5fed22bee818bc1c2f.settlement.json",
     "present": true,
     "state": "COMPLETED",
     "bodyOutcome": "completed",
@@ -21,6 +21,6 @@
       "RUNNING",
       "COMPLETED"
     ],
-    "terminalAt": "2026-11-24T20:49:16.206Z"
+    "terminalAt": "2026-11-25T20:19:08.772Z"
   }
 }

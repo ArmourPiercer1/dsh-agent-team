@@ -1,0 +1,61 @@
+{
+  "proposition": "a Member `write` whose disposition is `ask` raises a REAL Control request, is approved through the REAL control path, and then executes: the confined Provider verifies the minted receipt and writes the exact approved bytes, settled COMPLETED",
+  "verdict": "PROVEN",
+  "clauses": [
+    {
+      "id": "control-request-raised",
+      "ok": true,
+      "detail": "requestRaised=true"
+    },
+    {
+      "id": "approved-through-real-control-path",
+      "ok": true,
+      "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-00qhdgc14xkuzz1h6ryta016\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0hvc2y01v51z\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-real-model-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1q9ehvo0zb4o\\\"},\\\"targetInstanceId\\\":\\\"inst-1q9ehvo0zb4o\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:9a8680d12467a970672267acad8213adf9755e\""
+    },
+    {
+      "id": "admission-fact-allow-lane-ask",
+      "ok": true,
+      "detail": "allow facts=[{\"callId\":\"call-d4-worker-write\",\"decision\":\"allow\",\"laneDecision\":\"ask\",\"axis\":\"fs.write\"}]"
+    },
+    {
+      "id": "write-tool-result-not-an-error",
+      "ok": true,
+      "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T18-24-16Z/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+    },
+    {
+      "id": "real-bytes-on-disk",
+      "ok": true,
+      "detail": "file exists=true bytes=27 sha256=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3 expectedSha256=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3"
+    },
+    {
+      "id": "settlement-completed",
+      "ok": true,
+      "detail": "state=COMPLETED bodyOutcome=completed transitions=[\"ADMITTED\",\"RUNNING\",\"COMPLETED\"]"
+    }
+  ],
+  "failing": [],
+  "discovery": {
+    "worker-write": {
+      "slot": "worker-write",
+      "predicate": "name=write && file_path=\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T18-24-16Z/workspace/lane/worker-ask.txt\"",
+      "matched": {
+        "id": "call-d4-worker-write",
+        "name": "write",
+        "turnIndex": 10,
+        "input": "{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T18-24-16Z/workspace/lane/worker-ask.txt\",\"content\":\"DBOOT_D4_WORKER_ASK_CALLED\\n\"}"
+      },
+      "at": "2026-11-25T18:27:36.917Z"
+    },
+    "officer-resolve-first": {
+      "slot": "officer-resolve-first",
+      "predicate": "name=team_resolve_control && requestId=\"ctrl-00qhdgc14xkuzz1h6ryta016\" && occurrence #1",
+      "matched": {
+        "id": "call-d4-officer-resolve-ctrl-00qhdgc14xkuzz1h6ryta016",
+        "name": "team_resolve_control",
+        "turnIndex": 12,
+        "input": "{\"rootSessionId\":\"session-real-model-root\",\"requestToken\":\"dboot-d4-resolve-ctrl-00qhdgc14xkuzz1h6ryta016\",\"requestId\":\"ctrl-00qhdgc14xkuzz1h6ryta016\",\"decision\":\"allow\"}"
+      },
+      "at": "2026-11-25T18:27:37.246Z"
+    }
+  }
+}

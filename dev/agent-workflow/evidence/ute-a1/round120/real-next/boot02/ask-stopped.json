@@ -1,0 +1,178 @@
+{
+  "kind": "stop",
+  "terminal": true,
+  "resolveOutcome": null,
+  "cancelStatus": 200,
+  "file": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-15-57Z-next/workspace/lane/ask-stopped.txt",
+    "exists": false,
+    "content": null,
+    "bytes": null,
+    "sha256": null
+  },
+  "settlement": {
+    "executionId": "exec-83d773f6f17cc1ab76858e16a76e3bab5e03e40c",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-15-57Z-next/centre/settlement/inst-1q9ehvo0zb4o/exec-83d773f6f17cc1ab76858e16a76e3bab5e03e40c.settlement.json",
+    "present": true,
+    "state": "REFUSED",
+    "bodyOutcome": "not-started",
+    "dispatch": "not-started",
+    "transitions": [
+      "ADMITTED",
+      "REFUSED"
+    ],
+    "terminalAt": "2026-11-25T20:16:04.494Z"
+  },
+  "facts": [
+    {
+      "callId": "call_00_s1K2i247LrHZBxv4WT9Y5182",
+      "agentId": "inst-1q9ehvo0zb4o",
+      "instanceId": "inst-1q9ehvo0zb4o",
+      "sessionId": "session-team-child-a3d2ddfd7c73a4e7714c635105202791",
+      "instanceGeneration": 0,
+      "toolName": "write",
+      "axis": "fs.write",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-15-57Z-next/workspace/lane/ask-stopped.txt",
+      "definitionSource": "",
+      "policyGeneration": "a5sf1:f111fa7f3a8be87beeeb8b69734d17ba",
+      "blueprintRevision": "",
+      "owner": "session-real-model-root",
+      "decision": "deny",
+      "laneDecision": "ask",
+      "refusalCode": "ADMISSION_STOPPED",
+      "reason": "the execution \"call_00_s1K2i247LrHZBxv4WT9Y5182\" was aborted before its body; a Stop is not a lane denial, an expiry or a fault, and nothing that arrives after it may authorize this call",
+      "kind": "invocation-authority",
+      "at": "2026-11-25T20:16:04.487Z"
+    },
+    {
+      "callId": "call_00_s1K2i247LrHZBxv4WT9Y5182",
+      "executionId": "exec-83d773f6f17cc1ab76858e16a76e3bab5e03e40c",
+      "toolName": "write",
+      "agentId": "session-team-child-a3d2ddfd7c73a4e7714c635105202791",
+      "outcome": "admission-refusal",
+      "isError": true,
+      "refusalCode": "ADMISSION_STOPPED",
+      "policyGeneration": "a5sf1:f111fa7f3a8be87beeeb8b69734d17ba",
+      "kind": "execution",
+      "at": "2026-11-25T20:16:04.500Z"
+    }
+  ],
+  "verdict": {
+    "proposition": "a live `write` ask that is STOPPED while pending is refused with the product Stop code: zero bytes on disk and a REFUSED / not-started settlement, never an execution",
+    "verdict": "PROVEN",
+    "clauses": [
+      {
+        "id": "control-request-raised",
+        "ok": true,
+        "detail": "requestRaised=true"
+      },
+      {
+        "id": "cancel-reached-the-host",
+        "ok": true,
+        "detail": "session/cancel status=200"
+      },
+      {
+        "id": "stop-fact-recorded",
+        "ok": true,
+        "detail": "deny facts=[{\"callId\":\"call_00_s1K2i247LrHZBxv4WT9Y5182\",\"refusalCode\":\"ADMISSION_STOPPED\",\"decision\":\"deny\"}]"
+      },
+      {
+        "id": "zero-bytes",
+        "ok": true,
+        "detail": "file exists=false bytes=null"
+      },
+      {
+        "id": "settlement-refused-not-started",
+        "ok": true,
+        "detail": "state=REFUSED bodyOutcome=not-started transitions=[\"ADMITTED\",\"REFUSED\"]"
+      }
+    ],
+    "failing": [],
+    "discovery": {
+      "ask-stopped-worker-write": {
+        "slot": "ask-stopped-worker-write",
+        "predicate": "name=write && file_path=\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-15-57Z-next/workspace/lane/ask-stopped.txt\"",
+        "matchedId": "call_00_s1K2i247LrHZBxv4WT9Y5182",
+        "turnIndex": 4,
+        "input": "{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-15-57Z-next/workspace/lane/ask-stopped.txt\",\"content\":\"DBOOT_D4_WORKER_ASK_CALLED\\n\"}"
+      }
+    }
+  },
+  "discovery": {
+    "ask-stopped-worker-write": {
+      "slot": "ask-stopped-worker-write",
+      "predicate": "name=write && file_path=\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-15-57Z-next/workspace/lane/ask-stopped.txt\"",
+      "matchedId": "call_00_s1K2i247LrHZBxv4WT9Y5182",
+      "turnIndex": 4,
+      "input": "{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-15-57Z-next/workspace/lane/ask-stopped.txt\",\"content\":\"DBOOT_D4_WORKER_ASK_CALLED\\n\"}"
+    }
+  },
+  "observed": [
+    {
+      "index": 0,
+      "at": "2026-11-25T20:16:00.827Z",
+      "text": "Create governed worker via team_delegate",
+      "toolUses": [],
+      "toolResults": []
+    },
+    {
+      "index": 1,
+      "at": "2026-11-25T20:16:00.828Z",
+      "text": "",
+      "toolUses": [
+        {
+          "id": "call_00_kf8Z3aSijIm3gAMdnc9t1973",
+          "name": "team_delegate",
+          "input": "{\"rootSessionId\":\"session-real-model-root\",\"requestToken\":\"dboot-d4-delegate-worker\",\"delegationTemplateId\":\"worker\",\"label\":\"dboot-d4-worker\",\"prompt\":\"dboot-d4-worker-work: You are the governed worker for this team. Do NOT answer with text. Your first action MUST be the Step 1 tool call; do not run bash, do not read files, do not explore the repository. Step 1: call the `write` tool with {\\\"file_path\\\":\\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-15-57Z-next/workspace/lane/ask-stopped.txt\\\",\\\"content\\\":\\\"DBOOT_D4_WORKER_ASK_CALLED\\\\n\\\"}. This call needs approval; wait for its result. Step 2: after Step 1 has returned, call the `write` tool with {\\\"file_path\\\":\\\"\\\",\\\"content\\\":\\\"DBOOT_D4_WORKER_ASK_CALLED_2\\\\n\\\"}. This call also needs approval; wait for its result. Step 3: after Step 2 has returned, reply with the single token DBOOT_D4_WORKER_TURN_DONE and nothing else.\",\"taskSummary\":\"dboot d4 probe: worker work unit\"}"
+        }
+      ],
+      "toolResults": []
+    },
+    {
+      "index": 2,
+      "at": "2026-11-25T20:16:03.218Z",
+      "text": "DBOOT_D4_WORKER_DELEGATED",
+      "toolUses": [],
+      "toolResults": [
+        {
+          "toolUseId": "call_00_kf8Z3aSijIm3gAMdnc9t1973",
+          "isError": false,
+          "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-real-model-root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1q9ehvo0zb4o\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-a3d2ddfd7c73a4e7714c635105202791\",\"operationId\":\"op-10cpjie0ugz2ut0egr20g12r\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":2,\"workSettled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"dboot-d4-delegate-worker\"}"
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "at": "2026-11-25T20:16:03.226Z",
+      "text": "Governed worker write-approval workflow test",
+      "toolUses": [],
+      "toolResults": []
+    },
+    {
+      "index": 4,
+      "at": "2026-11-25T20:16:03.226Z",
+      "text": "",
+      "toolUses": [
+        {
+          "id": "call_00_s1K2i247LrHZBxv4WT9Y5182",
+          "name": "write",
+          "input": "{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-15-57Z-next/workspace/lane/ask-stopped.txt\",\"content\":\"DBOOT_D4_WORKER_ASK_CALLED\\n\"}"
+        }
+      ],
+      "toolResults": []
+    },
+    {
+      "index": 5,
+      "at": "2026-11-25T20:16:04.256Z",
+      "text": "",
+      "toolUses": [],
+      "toolResults": [
+        {
+          "toolUseId": "call_00_kf8Z3aSijIm3gAMdnc9t1973",
+          "isError": false,
+          "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-real-model-root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1q9ehvo0zb4o\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-a3d2ddfd7c73a4e7714c635105202791\",\"operationId\":\"op-10cpjie0ugz2ut0egr20g12r\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":2,\"workSettled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"dboot-d4-delegate-worker\"}"
+        }
+      ]
+    }
+  ]
+}

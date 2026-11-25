@@ -1,0 +1,14 @@
+{
+  "proposition": "deny arm must run",
+  "verdict": "REFUTED",
+  "clauses": [
+    {
+      "id": "arm-ran",
+      "ok": false,
+      "detail": "DISCOVERY-MISS(ask-denied-leader-resolve): team_resolve_control(requestId=ctrl-0lyywdu1v4rnrr0km3io00vk) matched no observed tool_use block in 30 observed turn(s)"
+    }
+  ],
+  "failing": [
+    "arm-ran"
+  ]
+}

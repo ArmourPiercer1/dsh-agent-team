@@ -1,0 +1,59 @@
+{
+  "stoppedBefore": true,
+  "stoppedMarkersBefore": [
+    "stopped-be6cf2ae.json"
+  ],
+  "machineAttempted": true,
+  "machineAttempt": {
+    "holdLanded": true,
+    "holdStatus": 200,
+    "cancelStatus": 200,
+    "resumeStatus": 200,
+    "thirdRequestId": "ctrl-1ox0rrx105ozvc128g2rr064"
+  },
+  "stoppedAfter": true,
+  "stoppedMarkersAfter": [
+    "stopped-be6cf2ae.json"
+  ],
+  "wakeInputsWhileStopped": 0,
+  "humanResumeCleared": true,
+  "humanResume": {
+    "status": 200,
+    "markersAfterResume": 0
+  },
+  "resumedWakeDelivered": false,
+  "write3": {
+    "settled": true,
+    "file": {
+      "exists": false,
+      "bytes": null,
+      "sha256": null
+    },
+    "settlement": "REFUSED",
+    "result": true
+  },
+  "discovery": {
+    "worker-write-3": {
+      "slot": "worker-write-3",
+      "predicate": "name=write && file_path=\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T19-15-54Z/workspace/lane/worker-ask-3.txt\"",
+      "matched": {
+        "id": "call_00_ET_IFo8AVITNanwveUAVLjy2666",
+        "name": "write",
+        "turnIndex": 21,
+        "input": "{\"content\":\"DBOOT_D4_WORKER_ASK_CALLED_3\\n\",\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T19-15-54Z/workspace/lane/worker-ask-3.txt\"}"
+      },
+      "at": "2026-11-25T19:20:19.561Z"
+    },
+    "officer-resolve-third": {
+      "slot": "officer-resolve-third",
+      "predicate": "name=team_resolve_control && requestId=\"ctrl-1ox0rrx105ozvc128g2rr064\" && occurrence #1",
+      "matched": {
+        "id": "call_01_saxMePjNc4ZNt7KViLvZ1525",
+        "name": "team_resolve_control",
+        "turnIndex": 26,
+        "input": "{\"decision\":\"deny\",\"note\":\"Out of scope: worker work unit authorized writes to lane/worker-ask.txt and lane/worker-ask-2.txt only; worker-ask-3.txt is not part of the delegated instructions.\",\"requestId\":\"ctrl-1ox0rrx105ozvc128g2rr064\",\"requestToken\":\"dboot-d4-resolve-worker-write3-1\",\"rootSessionId\":\"session-real-model-root\"}"
+      },
+      "at": "2026-11-25T19:18:19.338Z"
+    }
+  }
+}

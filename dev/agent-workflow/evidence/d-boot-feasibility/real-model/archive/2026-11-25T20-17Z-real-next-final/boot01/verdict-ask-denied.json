@@ -1,0 +1,48 @@
+{
+  "proposition": "the SAME live `write` ask denied through the real control path mints nothing and writes nothing: zero bytes on disk, a recorded deny fact, and a REFUSED / not-started settlement",
+  "verdict": "PROVEN",
+  "clauses": [
+    {
+      "id": "control-request-raised",
+      "ok": true,
+      "detail": "requestRaised=true"
+    },
+    {
+      "id": "denied-through-real-control-path",
+      "ok": true,
+      "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1bv681g0i5ds3r0wwg2j60zm\\\",\\\"decision\\\":\\\"deny\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-real-model-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1q9ehvo0zb4o\\\"},\\\"targetInstanceId\\\":\\\"inst-1q9ehvo0zb4o\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call_00_ET_a5lNCXOL4YWbzI3sCfdD9087\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":4,\\\"decisionSequence\\\":5,\\\"createdAt\\\":\\\"2026-1\""
+    },
+    {
+      "id": "deny-fact-recorded",
+      "ok": true,
+      "detail": "deny facts=[{\"callId\":\"call_00_ET_a5lNCXOL4YWbzI3sCfdD9087\",\"refusalCode\":\"ADMISSION_APPROVAL_DENIED\",\"decision\":\"deny\"}]"
+    },
+    {
+      "id": "zero-bytes",
+      "ok": true,
+      "detail": "file exists=false bytes=null"
+    },
+    {
+      "id": "settlement-refused-not-started",
+      "ok": true,
+      "detail": "state=REFUSED bodyOutcome=not-started transitions=[\"ADMITTED\",\"REFUSED\"]"
+    }
+  ],
+  "failing": [],
+  "discovery": {
+    "ask-denied-leader-resolve": {
+      "slot": "ask-denied-leader-resolve",
+      "predicate": "name=team_resolve_control && requestId=\"ctrl-1bv681g0i5ds3r0wwg2j60zm\"",
+      "matchedId": "call_00_ET_I99ApuXRGhBxaOefdUFP0850",
+      "turnIndex": 6,
+      "input": "{\"rootSessionId\":\"session-real-model-root\",\"requestToken\":\"dboot-d4-resolve-ctrl-1bv681g0i5ds3r0wwg2j60zm\",\"requestId\":\"ctrl-1bv681g0i5ds3r0wwg2j60zm\",\"decision\":\"deny\"}"
+    },
+    "ask-denied-worker-write": {
+      "slot": "ask-denied-worker-write",
+      "predicate": "name=write && file_path=\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-14-23Z-next/workspace/lane/ask-denied.txt\"",
+      "matchedId": "call_00_ET_a5lNCXOL4YWbzI3sCfdD9087",
+      "turnIndex": 4,
+      "input": "{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-14-23Z-next/workspace/lane/ask-denied.txt\",\"content\":\"DBOOT_D4_WORKER_ASK_CALLED\\n\"}"
+    }
+  }
+}

@@ -1,26 +1,17 @@
 {
-  "seen": true,
-  "callId": "call-d4-officer-resolve-ctrl-0bhom6o0ki6cqj0zbqv1i0ce",
-  "call": {
-    "rootSessionId": "session-real-model-root",
-    "requestToken": "dboot-d4-resolve-ctrl-0bhom6o0ki6cqj0zbqv1i0ce",
-    "requestId": "ctrl-0bhom6o0ki6cqj0zbqv1i0ce",
-    "decision": "allow"
-  },
-  "result": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-0bhom6o0ki6cqj0zbqv1i0ce\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-0hvc2y01v51z\",\"role\":\"member\"},\"scope\":{\"rootSessionId\":\"session-real-model-root\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-1q9ehvo0zb4o\"},\"targetInstanceId\":\"inst-1q9ehvo0zb4o\",\"actionName\":\"admission-ask\",\"correlation\":\"admission:call-d4-worker-write-3\",\"toolName\":\"write\",\"operationFingerprint\":\"sha256:f9c6ae1873a2de8266b11c35bc90b760361c9077b6c16b2e066766f6ba29bd2a\",\"authorityScope\":{\"operationClass\":\"write\",\"matcher\":{\"kind\":\"exact\",\"resource\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T20-46-29Z/workspace/lane/worker-ask-3.txt\"}}},\"requestSequence\":19,\"decisionSequence\":2",
-  "isError": false,
+  "seen": false,
+  "callId": "call_00_YNIPESiYBBI9wesbWa8C3973",
+  "call": null,
+  "result": null,
+  "isError": null,
   "settlement": {
-    "executionId": "exec-fdfcda14d9b18a34de7b64e5bf7d7ecbc1e24528",
-    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T20-46-29Z/centre/settlement/inst-0hvc2y01v51z/exec-fdfcda14d9b18a34de7b64e5bf7d7ecbc1e24528.settlement.json",
-    "present": true,
-    "state": "COMPLETED",
-    "bodyOutcome": "completed",
-    "dispatch": "quiesced",
-    "transitions": [
-      "ADMITTED",
-      "RUNNING",
-      "COMPLETED"
-    ],
-    "terminalAt": "2026-11-24T20:49:20.050Z"
+    "executionId": "exec-ca877c70e409f5999f61de1a6152e8461d4ed0dc",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-17-37Z/centre/settlement/inst-0hvc2y01v51z/exec-ca877c70e409f5999f61de1a6152e8461d4ed0dc.settlement.json",
+    "present": false,
+    "state": null,
+    "bodyOutcome": null,
+    "dispatch": null,
+    "transitions": [],
+    "terminalAt": null
   }
 }

@@ -1,0 +1,374 @@
+{
+  "decisionFact": {
+    "createdAt": "2026-11-25T19:47:28.717Z",
+    "factType": "control-decision-recorded",
+    "payload": {
+      "decider": {
+        "instanceId": "inst-0hvc2y01v51z",
+        "kind": "instance",
+        "role": "member"
+      },
+      "decision": "allow",
+      "requestId": "ctrl-0r00tkx1icxid016uosxn15f",
+      "requestSequence": 9,
+      "reviewCapability": {
+        "approvalCaseId": "case-1uq7x201rxsp051n7qehe1gi",
+        "authorityGeneration": 0,
+        "blueprintContentHash": "sha256:e1c5d54f0a29bbd7051e0375252cbd51cfc62122fd247a1504e18967f5436180",
+        "blueprintRevision": "1",
+        "currentLegRequestId": "ctrl-0r00tkx1icxid016uosxn15f",
+        "effectiveReviewAuthority": "leader",
+        "entry": "allow",
+        "legOrdinal": 1,
+        "operationOwnerInstanceId": "inst-1q9ehvo0zb4o",
+        "operationOwnerTemplateId": "worker",
+        "operationToolDefinitionIdentity": "dsh.fs/write",
+        "scopeFingerprint": "session-real-model-root\u0000instance:inst-1q9ehvo0zb4o\u0000admission-ask\u0000write\u0000admission:call_00_ET_FDg6IZQ1gFdf9NozuEl67701\u0000sha256:64ae3f1d514a9f0ee2983d839dd093dce855507a61ceb4ff6792c7636e6cd3c4",
+        "source": "blueprint-officer"
+      },
+      "scope": {
+        "actionName": "admission-ask",
+        "authorityScope": {
+          "matcher": {
+            "kind": "exact",
+            "resource": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T19-45-49Z/workspace/lane/worker-ask.txt"
+          },
+          "operationClass": "write"
+        },
+        "correlation": "admission:call_00_ET_FDg6IZQ1gFdf9NozuEl67701",
+        "operationFingerprint": "sha256:64ae3f1d514a9f0ee2983d839dd093dce855507a61ceb4ff6792c7636e6cd3c4",
+        "rootSessionId": "session-real-model-root",
+        "subject": {
+          "instanceId": "inst-1q9ehvo0zb4o",
+          "kind": "instance"
+        },
+        "targetInstanceId": "inst-1q9ehvo0zb4o",
+        "toolName": "write"
+      }
+    },
+    "rootSessionId": "session-real-model-root",
+    "schemaVersion": 2,
+    "sequence": 12
+  },
+  "routedFact": {
+    "factType": "team-review-wake-routed",
+    "sequence": 10,
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T19-45-49Z/storages/team_domain.json",
+    "payload": {
+      "action": "review-wake",
+      "at": "2026-11-25T19:47:27.705Z",
+      "deliveredToSessionId": "session-team-child-7e63fa40dcc75f1f9cf85433b7357426",
+      "recipientInstanceId": "inst-0hvc2y01v51z",
+      "requestId": "ctrl-0r00tkx1icxid016uosxn15f",
+      "requestToken": "review-wake:session-real-model-root:inst-0hvc2y01v51z:1:a6wake%3Av1%3A1%3A4c11c639",
+      "routeRole": "officer"
+    }
+  },
+  "managementExecutions": [],
+  "judges": {
+    "caseCreated": {
+      "proposition": "a qualifying ordinary admission ask opened a REAL durable Alpha.6 approval CASE (server-derived case id + leg ordinal + frozen operation/tool/blueprint identity), read back from the TeamDomain ledger on disk",
+      "verdict": "PROVEN",
+      "clauses": [
+        {
+          "id": "read-back-from-the-ledger",
+          "ok": true,
+          "detail": "factFile=null sequence=9"
+        },
+        {
+          "id": "durable-row-is-an-approval-ask",
+          "ok": true,
+          "detail": "kind=\"leader-approval\" actionName=\"admission-ask\""
+        },
+        {
+          "id": "approval-case-id-present",
+          "ok": true,
+          "detail": "approvalCaseId=\"case-1uq7x201rxsp051n7qehe1gi\""
+        },
+        {
+          "id": "leg-ordinal-present",
+          "ok": true,
+          "detail": "legOrdinal=1"
+        },
+        {
+          "id": "case-rung-is-the-leader",
+          "ok": true,
+          "detail": "reviewAuthority=\"leader\" requiredAuthorityAtCreation=\"leader\""
+        },
+        {
+          "id": "frozen-operation-identity",
+          "ok": true,
+          "detail": "operationFingerprint=\"sha256:64ae3f1d514a9f0ee2983d839dd093dce855507a61ceb4ff6792c7636e6cd3c4\" requestedEffect=\"allow\" authorityScope={\"matcher\":{\"kind\":\"exact\",\"resource\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T19-45-49Z/workspace/lane/worker-ask.txt\"},\"operationClass\":\"write\"}"
+        },
+        {
+          "id": "frozen-tool-coordinate",
+          "ok": true,
+          "detail": "coordinate=[\"dsh.fs\",\"write\",\"dsh.fs/write\"]"
+        },
+        {
+          "id": "frozen-blueprint-and-generation",
+          "ok": true,
+          "detail": "blueprintContentHash=\"sha256:e1c5d54f0a29bbd7051e0375252cbd51cfc62122fd247a1504e18967f5436180\" revision=\"1\" authorityGeneration=0"
+        },
+        {
+          "id": "captured-case-precedes-any-decision",
+          "ok": true,
+          "detail": "creation sequence=9 createdAt=2026-11-25T19:47:27.686Z approvalCaseId=\"case-1uq7x201rxsp051n7qehe1gi\" decisions=[]"
+        }
+      ],
+      "failing": []
+    },
+    "routerOfficer": {
+      "proposition": "the product router selects the UNIQUE lawful Officer for the case leg, and a self-ask (the operation owner is the Officer) is never routed to that Officer",
+      "verdict": "PROVEN",
+      "clauses": [
+        {
+          "id": "route-is-the-officer-instance",
+          "ok": true,
+          "detail": "route={\"kind\":\"recipient\",\"target\":{\"kind\":\"instance\",\"instanceId\":\"inst-0hvc2y01v51z\",\"templateId\":\"officer\",\"routeRole\":\"officer\"},\"reason\":\"closed ordinary tool ask delegated to the dedicated Officer\",\"currentLegId\":\"ctrl-0r00tkx1icxid016uosxn15f\"} expectedOfficer=\"inst-0hvc2y01v51z\" memberListCalls=1"
+        },
+        {
+          "id": "exactly-one-lawful-officer",
+          "ok": true,
+          "detail": "active officer candidates=1"
+        },
+        {
+          "id": "requester-is-not-the-reviewer",
+          "ok": true,
+          "detail": "requester=\"inst-1q9ehvo0zb4o\" officer=\"inst-0hvc2y01v51z\""
+        },
+        {
+          "id": "self-ask-never-routed-to-the-officer",
+          "ok": true,
+          "detail": "self-ask route={\"kind\":\"recipient\",\"target\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"routeRole\":\"leader\"},\"reason\":\"actual OperationOwner is the Officer; self-ask routes to Leader\",\"currentLegId\":\"ctrl-0r00tkx1icxid016uosxn15f\"}"
+        }
+      ],
+      "failing": []
+    },
+    "wakeDelivered": {
+      "proposition": "the routed review wake is DELIVERED through the governed delivery: exactly one durable `team-review-wake-routed` intent, one correlated `team-review-wake-delivered` confirmation, the input is machine-attributed (never human), and the management plane executed ZERO tools",
+      "verdict": "PROVEN",
+      "clauses": [
+        {
+          "id": "one-routed-intent-for-the-leg",
+          "ok": true,
+          "detail": "routed facts for requestId=\"ctrl-0r00tkx1icxid016uosxn15f\": [\"ctrl-0r00tkx1icxid016uosxn15f\",\"ctrl-1qfeh4m0acg3311tu6fmw0w9\",\"ctrl-0i9ol7d12kmcas1f2ejvn1br\",\"ctrl-1r07t161u63ua70pjt5fo0bd\"]"
+        },
+        {
+          "id": "one-correlated-confirmation",
+          "ok": true,
+          "detail": "requestToken=\"review-wake:session-real-model-root:inst-0hvc2y01v51z:1:a6wake%3Av1%3A1%3A4c11c639\" confirmations=1 correlation=true"
+        },
+        {
+          "id": "intent-names-the-officer-session",
+          "ok": true,
+          "detail": "intent payload={\"action\":\"review-wake\",\"at\":\"2026-11-25T19:47:27.705Z\",\"deliveredToSessionId\":\"session-team-child-7e63fa40dcc75f1f9cf85433b7357426\",\"recipientInstanceId\":\"inst-0hvc2y01v51z\",\"requestId\":\"ctrl-0r00tkx1icxid016uosxn15f\",\"requestToken\":\"review-wake:session-real-model-root:inst-0hvc2y01v51z:1:a6wake%3Av1%3A1%3A4c11c639\",\"routeRole\":\"officer\"}"
+        },
+        {
+          "id": "intent-carries-the-review-action",
+          "ok": true,
+          "detail": "intent payload action=\"review-wake\" at=\"2026-11-25T19:47:27.705Z\" intentDirFiles=[]"
+        },
+        {
+          "id": "machine-attribution-not-human",
+          "ok": true,
+          "detail": "wake input sources=[\"plugin:dsh-agent-team\",\"plugin:dsh-agent-team\",\"plugin:dsh-agent-team\",\"plugin:dsh-agent-team\"] expected=\"plugin:dsh-agent-team\""
+        },
+        {
+          "id": "zero-management-plane-tool-executions",
+          "ok": true,
+          "detail": "settlements naming the wake token or the review-wake tool=0"
+        }
+      ],
+      "failing": []
+    },
+    "officerDecides": {
+      "proposition": "the Officer is woken in ITS OWN session and its OWN `team_resolve_control` is admitted under ITS binding (a durable invocation-authority allow for its call, in its centre ledger), settling the case",
+      "verdict": "PROVEN",
+      "clauses": [
+        {
+          "id": "officer-woken-in-its-own-session",
+          "ok": true,
+          "detail": "officer session=\"session-team-child-7e63fa40dcc75f1f9cf85433b7357426\" wake-for-this-leg=true"
+        },
+        {
+          "id": "officer-issued-its-own-resolve",
+          "ok": true,
+          "detail": "callId=\"call_00_ET_R4po8gYAiUTZ4cmL4qJu2000\" found=true result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-0r00tkx1icxid016uosxn15f\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0hvc2y01v51z\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-real-model-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1q9ehvo0zb4o\\\"},\\\"ta\""
+        },
+        {
+          "id": "resolve-admitted-under-its-own-binding",
+          "ok": true,
+          "detail": "invocation-authority allow facts for \"call_00_ET_R4po8gYAiUTZ4cmL4qJu2000\"=[{\"instanceId\":\"inst-0hvc2y01v51z\",\"axis\":\"team.control\",\"decision\":\"allow\"}]"
+        },
+        {
+          "id": "settlement-completed",
+          "ok": true,
+          "detail": "settlement={\"state\":\"COMPLETED\",\"bodyOutcome\":\"completed\"}"
+        },
+        {
+          "id": "leader-did-not-decide",
+          "ok": true,
+          "detail": "leader resolve calls for the leg=false"
+        }
+      ],
+      "failing": [],
+      "discovery": {
+        "officer-resolve-first": {
+          "slot": "officer-resolve-first",
+          "predicate": "name=team_resolve_control && requestId=\"ctrl-0r00tkx1icxid016uosxn15f\" && occurrence #1",
+          "matched": {
+            "id": "call_00_ET_R4po8gYAiUTZ4cmL4qJu2000",
+            "name": "team_resolve_control",
+            "turnIndex": 14,
+            "input": "{\"rootSessionId\":\"session-real-model-root\",\"requestToken\":\"dboot-d4-officer-resolve-ctrl-0r00tkx1icxid016uosxn15f\",\"requestId\":\"ctrl-0r00tkx1icxid016uosxn15f\",\"decision\":\"allow\"}"
+          },
+          "at": "2026-11-25T19:47:28.720Z"
+        }
+      }
+    },
+    "askExecutesAfterReview": {
+      "proposition": "the worker's granted call EXECUTES AFTER the review decision: the durable decision precedes the tool settlement, the receipt let REAL bytes through, and the admission allow is on the ask lane",
+      "verdict": "PROVEN",
+      "clauses": [
+        {
+          "id": "review-decision-is-durable",
+          "ok": true,
+          "detail": "decision fact={\"requestId\":\"ctrl-0r00tkx1icxid016uosxn15f\",\"decision\":\"allow\",\"at\":\"2026-11-25T19:47:28.717Z\"}"
+        },
+        {
+          "id": "decision-precedes-execution",
+          "ok": true,
+          "detail": "decisionAt=\"2026-11-25T19:47:28.717Z\" settlementTerminalAt=\"2026-11-25T19:47:28.980Z\""
+        },
+        {
+          "id": "real-bytes-on-disk",
+          "ok": true,
+          "detail": "file={\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T19-45-49Z/workspace/lane/worker-ask.txt\",\"exists\":true,\"bytes\":27,\"sha256\":\"ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3\"} expectedBytes=27"
+        },
+        {
+          "id": "worker-tool-result-not-an-error",
+          "ok": true,
+          "detail": "write result=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T19-45-49Z/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+        },
+        {
+          "id": "admission-allow-on-the-ask-lane",
+          "ok": true,
+          "detail": "allow fact={\"callId\":\"call_00_ET_FDg6IZQ1gFdf9NozuEl67701\",\"axis\":\"fs.write\",\"decision\":\"allow\"}"
+        },
+        {
+          "id": "settlement-completed",
+          "ok": true,
+          "detail": "settlement={\"state\":\"COMPLETED\",\"bodyOutcome\":\"completed\"}"
+        }
+      ],
+      "failing": []
+    },
+    "duplicateRoute": {
+      "proposition": "a duplicate route for the SAME leg produces exactly ONE wake: one delivery intent, one confirmation, one input accepted by the Officer session, and the duplicate attempt is reported as a convergent no-op (never a second model-visible wake)",
+      "verdict": "PROVEN",
+      "clauses": [
+        {
+          "id": "duplicate-attempt-was-made",
+          "ok": true,
+          "detail": "attempted=true via=\"request-creation notifier + reviewer turn/end re-collection (the product's own two route call sites)\""
+        },
+        {
+          "id": "one-delivery-intent",
+          "ok": true,
+          "detail": "routed intent facts for the token=1"
+        },
+        {
+          "id": "one-confirmation",
+          "ok": true,
+          "detail": "delivered confirmation facts for the token=1"
+        },
+        {
+          "id": "one-model-visible-wake",
+          "ok": true,
+          "detail": "wake inputs in the Officer session=1"
+        },
+        {
+          "id": "duplicate-is-a-no-op",
+          "ok": true,
+          "detail": "converged=true detail={\"requestId\":\"ctrl-1qfeh4m0acg3311tu6fmw0w9\",\"requestToken\":\"review-wake:session-real-model-root:inst-0hvc2y01v51z:1:a6wake%3Av1%3A1%3Af98e6a2c\",\"intentAt\":\"2026-11-25T19:47:30.190Z\",\"decisionAt\":\"2026-11-25T19:47:31.780Z\"}"
+        }
+      ],
+      "failing": []
+    },
+    "stickyStop": {
+      "proposition": "a machine-delivered review wake does NOT clear a HUMAN Sticky Stop: the stop marker survives a machine wake attempt, the stopped Officer receives NO wake input from it, and only an explicit human interaction resumes the latch",
+      "verdict": "PROVEN",
+      "clauses": [
+        {
+          "id": "human-sticky-stop-marked",
+          "ok": true,
+          "detail": "stop markers before the machine attempt=[\"stopped-be6cf2ae.json\"]"
+        },
+        {
+          "id": "machine-wake-attempted",
+          "ok": true,
+          "detail": "machine attempt={\"holdLanded\":true,\"holdStatus\":200,\"cancelStatus\":200,\"resumeStatus\":200,\"thirdRequestId\":\"ctrl-0i9ol7d12kmcas1f2ejvn1br\"}"
+        },
+        {
+          "id": "stop-survives-the-machine-wake",
+          "ok": true,
+          "detail": "stop markers after the machine attempt=[\"stopped-be6cf2ae.json\"]"
+        },
+        {
+          "id": "no-wake-input-while-stopped",
+          "ok": true,
+          "detail": "wake inputs between the stop and the human resume=0"
+        },
+        {
+          "id": "human-resume-is-the-only-clear",
+          "ok": true,
+          "detail": "human resume cleared the marker={\"status\":200,\"markersAfterResume\":0}"
+        }
+      ],
+      "failing": []
+    }
+  },
+  "routedWake": {
+    "proposition": "the Alpha.6 ROUTED review wake reaches a real Host end to end: a qualifying worker ask opens a durable case, the product router selects the unique Officer, the governed wake reaches the Officer's own session, the Officer settles it under its own binding, and the worker's granted call executes — with the duplicate and Sticky-Stop laws intact",
+    "verdict": "PROVEN",
+    "clauses": [
+      {
+        "id": "d4:case-created-proven",
+        "ok": true,
+        "detail": "PROVEN"
+      },
+      {
+        "id": "d4:router-officer-proven",
+        "ok": true,
+        "detail": "PROVEN"
+      },
+      {
+        "id": "d4:wake-delivered-proven",
+        "ok": true,
+        "detail": "PROVEN"
+      },
+      {
+        "id": "d4:officer-decides-proven",
+        "ok": true,
+        "detail": "PROVEN"
+      },
+      {
+        "id": "d4:ask-executes-after-review-proven",
+        "ok": true,
+        "detail": "PROVEN"
+      },
+      {
+        "id": "d4:duplicate-route-proven",
+        "ok": true,
+        "detail": "PROVEN"
+      },
+      {
+        "id": "d4:sticky-stop-proven",
+        "ok": true,
+        "detail": "PROVEN"
+      }
+    ],
+    "failing": []
+  }
+}

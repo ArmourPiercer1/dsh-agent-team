@@ -1,0 +1,14 @@
+{
+  "attempted": true,
+  "via": "request-creation notifier + reviewer turn/end re-collection (the product's own two route call sites)",
+  "intentFacts": 1,
+  "deliveredFacts": 1,
+  "wakeInputs": 1,
+  "converged": true,
+  "detail": {
+    "requestId": "ctrl-02wk9k51stj97418oluz30ju",
+    "requestToken": "review-wake:session-real-model-root:inst-0hvc2y01v51z:1:a6wake%3Av1%3A1%3Abe9d6068",
+    "intentAt": "2026-11-25T20:27:40.966Z",
+    "decisionAt": "2026-11-25T20:27:41.709Z"
+  }
+}

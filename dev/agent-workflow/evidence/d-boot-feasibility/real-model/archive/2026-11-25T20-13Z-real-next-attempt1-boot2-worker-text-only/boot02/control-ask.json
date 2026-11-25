@@ -1,0 +1,49 @@
+{
+  "askAppeared": true,
+  "ids": {
+    "officer": "inst-0hvc2y01v51z",
+    "worker": "inst-1q9ehvo0zb4o",
+    "pendingRequestId": "ctrl-12utspr15t6g061h3y5410kb",
+    "pendingRequestId2": null,
+    "pendingRequestId3": null,
+    "pendingProcessRequestId": null
+  },
+  "askRow": {
+    "requestId": "ctrl-12utspr15t6g061h3y5410kb",
+    "kind": "leader-approval",
+    "targetInstanceId": "inst-1q9ehvo0zb4o",
+    "actionName": "admission-ask",
+    "toolName": "write",
+    "correlation": "admission:call_00_ET_OiFFAEi9kgoWSGUeFjv80363",
+    "status": "pending",
+    "createdAt": "2026-11-25T20:05:06.910Z",
+    "subject": {
+      "kind": "instance",
+      "instanceId": "inst-1q9ehvo0zb4o"
+    },
+    "executionCoupling": "inline",
+    "requestSequence": 9,
+    "operationFingerprint": "sha256:f92e0e772079cf3755eb51bdf96d2dcb84731825a356c3f09cc45bcc61c8d1ae",
+    "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-04-50Z-next/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:bde98566c9ba4cd453c5544c82f81979)"
+  },
+  "requests": [
+    {
+      "requestId": "ctrl-12utspr15t6g061h3y5410kb",
+      "kind": "leader-approval",
+      "targetInstanceId": "inst-1q9ehvo0zb4o",
+      "actionName": "admission-ask",
+      "toolName": "write",
+      "correlation": "admission:call_00_ET_OiFFAEi9kgoWSGUeFjv80363",
+      "status": "pending",
+      "createdAt": "2026-11-25T20:05:06.910Z",
+      "subject": {
+        "kind": "instance",
+        "instanceId": "inst-1q9ehvo0zb4o"
+      },
+      "executionCoupling": "inline",
+      "requestSequence": 9,
+      "operationFingerprint": "sha256:f92e0e772079cf3755eb51bdf96d2dcb84731825a356c3f09cc45bcc61c8d1ae",
+      "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-04-50Z-next/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:bde98566c9ba4cd453c5544c82f81979)"
+    }
+  ]
+}

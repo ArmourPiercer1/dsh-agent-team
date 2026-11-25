@@ -1,0 +1,53 @@
+{
+  "schema": "d4-discovery-self-test/1",
+  "at": "2026-11-25T18:24:15.956Z",
+  "modelMode": "scripted",
+  "pass": true,
+  "cases": [
+    {
+      "id": "zero-turns",
+      "slot": "worker-write",
+      "expected": "DISCOVERY-MISS",
+      "observed": "DISCOVERY-MISS",
+      "message": "DISCOVERY-MISS(worker-write): name=write && file_path=\"/lane/worker-ask.txt\" matched no observed tool_use block in 0 observed turn(s)",
+      "pass": true
+    },
+    {
+      "id": "right-tool-wrong-argument",
+      "slot": "worker-write",
+      "expected": "DISCOVERY-MISS",
+      "observed": "DISCOVERY-MISS",
+      "message": "DISCOVERY-MISS(worker-write): name=write && file_path=\"/lane/worker-ask.txt\" matched no observed tool_use block in 1 observed turn(s)",
+      "pass": true
+    },
+    {
+      "id": "right-tool-wrong-occurrence",
+      "slot": "duplicate-resolve",
+      "expected": "DISCOVERY-MISS",
+      "observed": "DISCOVERY-MISS",
+      "message": "DISCOVERY-MISS(duplicate-resolve): name=team_resolve_control && requestId=\"ctrl-abc\" && occurrence #2 matched no observed tool_use block in 1 observed turn(s)",
+      "pass": true
+    },
+    {
+      "id": "right-tool-right-argument",
+      "slot": "worker-write",
+      "expected": "MATCH",
+      "observed": "MATCH",
+      "matchedId": "call-right",
+      "wantId": "call-right",
+      "pass": true
+    },
+    {
+      "id": "turn-gate-zero-tool-use",
+      "expected": 0,
+      "observed": 0,
+      "pass": true
+    },
+    {
+      "id": "turn-gate-one-tool-use",
+      "expected": 1,
+      "observed": 1,
+      "pass": true
+    }
+  ]
+}

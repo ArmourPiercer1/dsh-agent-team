@@ -2,38 +2,36 @@
   "teardown": {
     "host": {
       "wasRunning": true,
-      "pid": 862,
+      "pid": 1113,
       "killed": true,
       "portFree": true
     },
-    "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T20-46-29Z",
+    "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-17-37Z",
     "releasedPorts": [
-      3196,
-      3196,
-      13058,
-      3196
+      3198,
+      3198,
+      3198
     ],
     "killedPids": [
-      79,
-      862
+      101,
+      1113
     ],
     "notes": []
   },
   "refusalTeardown": {
     "host": {
       "wasRunning": true,
-      "pid": 875,
+      "pid": 1126,
       "killed": true,
       "portFree": true
     },
-    "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T20-49-28Z",
+    "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-21-56Z",
     "releasedPorts": [
-      3197,
-      13059,
-      3197
+      3199,
+      3199
     ],
     "killedPids": [
-      875
+      1126
     ],
     "notes": []
   }

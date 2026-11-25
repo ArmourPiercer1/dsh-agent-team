@@ -1,0 +1,363 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-real-model-scripted-2026-11-25T18-08-29-521Z-b1",
+  "suite": "a5sf-real-model-acceptance",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-25T18:08:29.521Z",
+  "selectedCases": [
+    "rm:enablement",
+    "rm:officer-up",
+    "rm:officer-binding",
+    "rm:routed-wake",
+    "rm:case-created",
+    "rm:router-officer",
+    "rm:wake-delivered",
+    "rm:officer-decides",
+    "rm:ask-executes-after-review",
+    "rm:duplicate-route",
+    "rm:sticky-stop",
+    "rm:refusal",
+    "rm:ask-execute",
+    "rm:ask-execute-2",
+    "rm:ask-denied",
+    "rm:ask-stopped",
+    "rm:leader-creates-worker",
+    "rm:collect",
+    "rm:duplicate-approval",
+    "rm:restart-no-replay"
+  ],
+  "allCases": [
+    "rm:enablement",
+    "rm:officer-up",
+    "rm:officer-binding",
+    "rm:routed-wake",
+    "rm:case-created",
+    "rm:router-officer",
+    "rm:wake-delivered",
+    "rm:officer-decides",
+    "rm:ask-executes-after-review",
+    "rm:duplicate-route",
+    "rm:sticky-stop",
+    "rm:refusal",
+    "rm:ask-execute",
+    "rm:ask-execute-2",
+    "rm:ask-denied",
+    "rm:ask-stopped",
+    "rm:leader-creates-worker",
+    "rm:collect",
+    "rm:duplicate-approval",
+    "rm:restart-no-replay"
+  ],
+  "subset": false,
+  "selected": 20,
+  "totalCases": 20,
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3",
+        "snapshot_version": "as20261109r1"
+      },
+      "pointerSha256": "814b31f798a25fa963c5810d7733e73c127083bebd74641778ac33ad8c9a5351",
+      "snapshotDigest": "9e2a211ff34196c68fd8db5a0d0d19af124df8fd949190c9c6b990cf3600ede8"
+    },
+    "candidate": {
+      "head": "1a3a79c4c16943ebb61ad8e4621551bf8c1a99f2",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "grant": {
+      "grantId": "devlive-fs-search-1",
+      "scope": "DEV-LIVE",
+      "face": "FS Provider",
+      "world": "u5a5sfdev1"
+    },
+    "recordClass": "DEV-LIVE",
+    "compositionDrops": [],
+    "layout": "centre",
+    "teamSha": "1a3a79c4c16943ebb61ad8e4621551bf8c1a99f2",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "model": {
+      "mode": "scripted",
+      "label": "SCRIPTED-ONLY",
+      "baseUrl": null,
+      "apiKeyEnv": "DEEPSEEK_API_KEY",
+      "keyConfigured": false,
+      "mockProvider": "packages/tools/harness/mock-deepseek.mjs"
+    },
+    "note": "SCRIPTED-ONLY harness validation: the scenario and judges are real, the MODEL IS THE SCRIPTED MOCK and no real-model claim is made",
+    "driver": "run-real-model"
+  },
+  "cases": [
+    {
+      "id": "rm:enablement",
+      "verdict": "FAIL",
+      "at": "2026-11-25T18:21:23.241Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rm:officer-up",
+      "verdict": "FAIL",
+      "at": "2026-11-25T18:21:23.241Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rm:officer-binding",
+      "verdict": "FAIL",
+      "at": "2026-11-25T18:21:23.241Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rm:routed-wake",
+      "verdict": "FAIL",
+      "at": "2026-11-25T18:21:23.241Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rm:case-created",
+      "verdict": "FAIL",
+      "at": "2026-11-25T18:21:23.241Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rm:router-officer",
+      "verdict": "FAIL",
+      "at": "2026-11-25T18:21:23.241Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rm:wake-delivered",
+      "verdict": "FAIL",
+      "at": "2026-11-25T18:21:23.241Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rm:officer-decides",
+      "verdict": "FAIL",
+      "at": "2026-11-25T18:21:23.241Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rm:ask-executes-after-review",
+      "verdict": "FAIL",
+      "at": "2026-11-25T18:21:23.241Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rm:duplicate-route",
+      "verdict": "FAIL",
+      "at": "2026-11-25T18:21:23.241Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rm:sticky-stop",
+      "verdict": "FAIL",
+      "at": "2026-11-25T18:21:23.241Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rm:refusal",
+      "verdict": "FAIL",
+      "at": "2026-11-25T18:21:23.241Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rm:ask-execute",
+      "verdict": "FAIL",
+      "at": "2026-11-25T18:21:23.241Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rm:ask-execute-2",
+      "verdict": "FAIL",
+      "at": "2026-11-25T18:21:23.241Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rm:ask-denied",
+      "verdict": "FAIL",
+      "at": "2026-11-25T18:21:23.241Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rm:ask-stopped",
+      "verdict": "FAIL",
+      "at": "2026-11-25T18:21:23.241Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rm:leader-creates-worker",
+      "verdict": "FAIL",
+      "at": "2026-11-25T18:21:23.241Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rm:collect",
+      "verdict": "FAIL",
+      "at": "2026-11-25T18:21:23.241Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rm:duplicate-approval",
+      "verdict": "FAIL",
+      "at": "2026-11-25T18:21:23.241Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rm:restart-no-replay",
+      "verdict": "FAIL",
+      "at": "2026-11-25T18:21:23.241Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/real-model/run-ledger.jsonl",
+    "thisRunCount": 8,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-25T18:08:29.552Z",
+        "runId": "a5sf-real-model-scripted-2026-11-25T18-08-29-521Z-b1",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-fs-search-1",
+        "grantId": "devlive-fs-search-1",
+        "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the FS Provider face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+        "face": "FS Provider",
+        "worldLine": "u5a5sfdev1",
+        "headCommit": "1a3a79c4c16943ebb61ad8e4621551bf8c1a99f2",
+        "plannedStarts": 2
+      },
+      {
+        "at": "2026-11-25T18:10:10.070Z",
+        "runId": "a5sf-real-model-scripted-2026-11-25T18-08-29-521Z-b1",
+        "suite": "a5sf-real-model-acceptance",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfdev1-20261125T18-08-29Z",
+        "phase": "a5sf-real-model-boot1"
+      },
+      {
+        "at": "2026-11-25T18:11:48.250Z",
+        "runId": "a5sf-real-model-scripted-2026-11-25T18-08-29-521Z-b1",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-fs-search-1",
+        "grantId": "devlive-fs-search-1",
+        "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the FS Provider face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+        "face": "FS Provider",
+        "worldLine": "u5a5sfdev1",
+        "headCommit": "1a3a79c4c16943ebb61ad8e4621551bf8c1a99f2",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-25T18:11:48.252Z",
+        "runId": "a5sf-real-model-scripted-2026-11-25T18-08-29-521Z-b1",
+        "suite": "a5sf-real-model-acceptance",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfdev1-20261125T18-08-29Z",
+        "phase": "a5sf-real-model-boot1-restart"
+      },
+      {
+        "at": "2026-11-25T18:13:33.240Z",
+        "runId": "a5sf-real-model-scripted-2026-11-25T18-08-29-521Z-b1",
+        "suite": "a5sf-real-model-acceptance",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfdev1-20261125T18-11-51Z",
+        "phase": "a5sf-real-model-boot1-refusal"
+      },
+      {
+        "at": "2026-11-25T18:15:00.545Z",
+        "runId": "a5sf-real-model-scripted-2026-11-25T18-08-29-521Z-b1",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-fs-search-1",
+        "grantId": "devlive-fs-search-1",
+        "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the FS Provider face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+        "face": "FS Provider",
+        "worldLine": "u5a5sfdev1",
+        "headCommit": "1a3a79c4c16943ebb61ad8e4621551bf8c1a99f2",
+        "plannedStarts": 2
+      },
+      {
+        "at": "2026-11-25T18:16:42.951Z",
+        "runId": "a5sf-real-model-scripted-2026-11-25T18-08-29-521Z-b1",
+        "suite": "a5sf-real-model-acceptance",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfdev1-20261125T18-15-00Z",
+        "phase": "a5sf-real-model-boot1-ask-denied"
+      },
+      {
+        "at": "2026-11-25T18:19:53.811Z",
+        "runId": "a5sf-real-model-scripted-2026-11-25T18-08-29-521Z-b1",
+        "suite": "a5sf-real-model-acceptance",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfdev1-20261125T18-18-12Z",
+        "phase": "a5sf-real-model-boot1-ask-stopped"
+      }
+    ]
+  },
+  "partial": true,
+  "abortedAt": "worker-delegation",
+  "abort": {
+    "stage": "worker-delegation",
+    "detail": "NOT-REACHED(worker-delegation): Cannot read properties of null (reading 'mock')",
+    "error": null
+  },
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-real-model-scripted-2026-11-25T18-08-29-521Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "FAIL",
+  "judgedCases": [],
+  "neverObserved": [],
+  "finishedAt": "2026-11-25T18:21:23.241Z"
+}

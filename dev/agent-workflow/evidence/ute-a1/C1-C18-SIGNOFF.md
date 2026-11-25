@@ -61,6 +61,24 @@ C13 (base), C14b and the `d3`/`d4` live rows — therefore still rest on the scr
 driver's real branch, not the environment. Evidence:
 `dev/agent-workflow/evidence/d-boot-feasibility/real-model/REAL-MODEL-ACCEPTANCE.md` §0.
 
+**ROUND 120 (2026-11-26) — the real-model run COMPLETED: 20/20 PROVEN on both hosts (`DEV-LIVE-real-model`, still not `CANDIDATE-ACCEPTED`).** The round-119 blocker was the driver's real
+branch and it was rebuilt this round: request capture at the public `DEEPSEEK_BASE_URL` seam, non-vacuous
+turn gates, discovery by predicate over the observed transcript. `--model real --boots 2` now exits
+**0** on both pinned hosts — legacy (`deepseek-v4-flash`) **892 s**, next (`deepseek-flash`) **180 s** —
+with **20/20 judges PROVEN on 2/2 boots per host**, `agreeing=true differing=[]`, and RUN records
+`recordClass: DEV-LIVE` / `overall: PASS`. The four negative controls are OBSERVED with the model's own
+replies: deny (`ADMISSION_APPROVAL_DENIED`, zero bytes, `REFUSED`/`not-started`), Stop (`session/cancel`
+200 → `ADMISSION_STOPPED`, zero bytes), duplicate approval (`CONTROL_REQUEST_DECIDED`, one execution),
+restart-no-replay (`before === after`, 1 decision, 1 execution). The scripted control is still 20/20 and
+the anti-vacuity self-test pins three `DISCOVERY-MISS` cases. **The model-behaviour rows — C1, C3, C12,
+C13 (base), C14b and the `d3`/`d4` live rows — now rest on a real-model DEV-LIVE run instead of the
+scripted mock; they are still NOT `CANDIDATE-ACCEPTED`** because that status requires the row's
+deterministic acceptance evidence on both hosts in a candidate round with the host-version guard, and the
+version gate has not run with a real model at a frozen version. No row is PRODUCT-PROVEN, and
+`d4:ask-execute-process` remains the single enumerated `knownRefuted` (unchanged). Evidence:
+`dev/agent-workflow/evidence/ute-a1/round120/README.md` and
+`dev/agent-workflow/evidence/d-boot-feasibility/real-model/REAL-MODEL-ACCEPTANCE.md` §ROUND 120.
+
 ## 3. Gate coverage key
 
 The merge gate is the synthetic `ci-required` context over the five `ci-*` layers

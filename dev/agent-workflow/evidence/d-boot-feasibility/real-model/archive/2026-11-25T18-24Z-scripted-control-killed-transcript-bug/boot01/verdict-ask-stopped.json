@@ -1,0 +1,41 @@
+{
+  "proposition": "a live `write` ask that is STOPPED while pending is refused with the product Stop code: zero bytes on disk and a REFUSED / not-started settlement, never an execution",
+  "verdict": "PROVEN",
+  "clauses": [
+    {
+      "id": "control-request-raised",
+      "ok": true,
+      "detail": "requestRaised=true"
+    },
+    {
+      "id": "cancel-reached-the-host",
+      "ok": true,
+      "detail": "session/cancel status=200"
+    },
+    {
+      "id": "stop-fact-recorded",
+      "ok": true,
+      "detail": "deny facts=[{\"callId\":\"call-d4-worker-write\",\"refusalCode\":\"ADMISSION_STOPPED\",\"decision\":\"deny\"}]"
+    },
+    {
+      "id": "zero-bytes",
+      "ok": true,
+      "detail": "file exists=false bytes=null"
+    },
+    {
+      "id": "settlement-refused-not-started",
+      "ok": true,
+      "detail": "state=REFUSED bodyOutcome=not-started transitions=[\"ADMITTED\",\"REFUSED\"]"
+    }
+  ],
+  "failing": [],
+  "discovery": {
+    "ask-stopped-worker-write": {
+      "slot": "ask-stopped-worker-write",
+      "predicate": "name=write && file_path=\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T18-18-12Z/workspace/lane/ask-stopped.txt\"",
+      "matchedId": "call-d4-worker-write",
+      "turnIndex": 3,
+      "input": "{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T18-18-12Z/workspace/lane/ask-stopped.txt\",\"content\":\"DBOOT_D4_WORKER_ASK_CALLED\\n\"}"
+    }
+  }
+}

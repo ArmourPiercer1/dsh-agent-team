@@ -1,0 +1,4 @@
+{
+  "isError": false,
+  "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-real-model-root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1q9ehvo0zb4o\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-a3d2ddfd7c73a4e7714c635105202791\",\"operationId\":\"op-10cpjie0ugz2ut0egr20g12r\",\"replayed\":false,\"ledgerSequence\":6,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":7,\"workSettled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"dboot-d4-delegate-worker\"}"
+}

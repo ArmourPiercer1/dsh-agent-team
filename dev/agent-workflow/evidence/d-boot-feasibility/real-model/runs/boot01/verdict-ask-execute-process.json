@@ -10,12 +10,12 @@
     {
       "id": "approved-through-real-control-path",
       "ok": true,
-      "detail": "durable control-decision-recorded decision=allow decider={\"instanceId\":\"inst-0hvc2y01v51z\",\"kind\":\"instance\",\"role\":\"member\"} requestId=ctrl-1yu29f01fh708z1p2c18m13o"
+      "detail": "durable control-decision-recorded decision=allow decider={\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"} requestId=ctrl-0wwklsa1tng71310bypn001h"
     },
     {
       "id": "process-admission-fact-allow",
       "ok": true,
-      "detail": "process.exec allow facts=[{\"callId\":\"call-d4-worker-bash\",\"decision\":\"allow\",\"laneDecision\":\"ask\",\"axis\":\"process.exec\"}]"
+      "detail": "process.exec allow facts=[{\"callId\":\"call_00_ET_xrKUxEO6yioiTW28QZH18341\",\"decision\":\"allow\",\"laneDecision\":\"ask\",\"axis\":\"process.exec\"}]"
     },
     {
       "id": "bash-tool-result-not-an-error",

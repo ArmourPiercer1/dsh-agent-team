@@ -1,0 +1,156 @@
+{
+  "stage": "worker-delegation",
+  "reason": "NOT-REACHED(worker-delegation): Cannot read properties of null (reading 'mock')",
+  "discoveryMiss": null,
+  "discovery": {
+    "leader-surface": {
+      "slot": "leader-surface",
+      "predicate": "first observed model call carrying a non-empty tool surface",
+      "matched": {
+        "turnIndex": 1,
+        "toolCount": 43,
+        "model": "deepseek-v4-flash"
+      },
+      "at": "2026-11-25T18:11:37.686Z"
+    },
+    "delegate-officer": {
+      "slot": "delegate-officer",
+      "predicate": "name=team_delegate && delegationTemplateId=\"officer\"",
+      "matched": {
+        "id": "call-d4-delegate-officer",
+        "name": "team_delegate",
+        "turnIndex": 2,
+        "input": "{\"rootSessionId\":\"session-real-model-root\",\"requestToken\":\"dboot-d4-delegate-officer\",\"delegationTemplateId\":\"officer\",\"label\":\"dboot-d4-officer\",\"prompt\":\"dboot-d4-officer-work DBOOT_D4_OFFICER_DELEGATED: perform the ONE tool call your instructions name, then report DBOOT_D4_OFFICER_DELEGATED.\",\"taskSummary\":\"dboot d4 probe: officer work unit\"}"
+      },
+      "at": "2026-11-25T18:11:38.097Z"
+    },
+    "officer-read": {
+      "slot": "officer-read",
+      "predicate": "name=read && file_path=\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T18-08-29Z/workspace/lane/officer-read.txt\"",
+      "matched": {
+        "id": "call-d4-officer-read",
+        "name": "read",
+        "turnIndex": 4,
+        "input": "{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T18-08-29Z/workspace/lane/officer-read.txt\"}"
+      },
+      "at": "2026-11-25T18:11:38.611Z"
+    },
+    "delegate-worker": {
+      "slot": "delegate-worker",
+      "predicate": "name=team_delegate && delegationTemplateId=\"worker\"",
+      "matched": {
+        "id": "call-d4-delegate-worker",
+        "name": "team_delegate",
+        "turnIndex": 8,
+        "input": "{\"rootSessionId\":\"session-real-model-root\",\"requestToken\":\"dboot-d4-delegate-worker\",\"delegationTemplateId\":\"worker\",\"label\":\"dboot-d4-worker\",\"prompt\":\"dboot-d4-worker-work DBOOT_D4_WORKER_DELEGATED: perform the ONE tool call your instructions name, then report DBOOT_D4_WORKER_DELEGATED.\",\"taskSummary\":\"dboot d4 probe: worker work unit\"}"
+      },
+      "at": "2026-11-25T18:11:39.034Z"
+    },
+    "worker-write": {
+      "slot": "worker-write",
+      "predicate": "name=write && file_path=\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T18-08-29Z/workspace/lane/worker-ask.txt\"",
+      "matched": {
+        "id": "call-d4-worker-write",
+        "name": "write",
+        "turnIndex": 10,
+        "input": "{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T18-08-29Z/workspace/lane/worker-ask.txt\",\"content\":\"DBOOT_D4_WORKER_ASK_CALLED\\n\"}"
+      },
+      "at": "2026-11-25T18:11:39.086Z"
+    },
+    "officer-resolve-first": {
+      "slot": "officer-resolve-first",
+      "predicate": "name=team_resolve_control && requestId=\"ctrl-1yjnqn31wzucqg0exl5md0vj\" && occurrence #1",
+      "matched": {
+        "id": "call-d4-officer-resolve-ctrl-1yjnqn31wzucqg0exl5md0vj",
+        "name": "team_resolve_control",
+        "turnIndex": 12,
+        "input": "{\"rootSessionId\":\"session-real-model-root\",\"requestToken\":\"dboot-d4-resolve-ctrl-1yjnqn31wzucqg0exl5md0vj\",\"requestId\":\"ctrl-1yjnqn31wzucqg0exl5md0vj\",\"decision\":\"allow\"}"
+      },
+      "at": "2026-11-25T18:11:39.394Z"
+    },
+    "officer-resolve-second": {
+      "slot": "officer-resolve-second",
+      "predicate": "name=team_resolve_control && requestId=\"ctrl-0i9smqt10gar9m1ku29nr191\" && occurrence #1",
+      "matched": {
+        "id": "call-d4-officer-resolve-ctrl-0i9smqt10gar9m1ku29nr191",
+        "name": "team_resolve_control",
+        "turnIndex": 15,
+        "input": "{\"rootSessionId\":\"session-real-model-root\",\"requestToken\":\"dboot-d4-resolve-ctrl-0i9smqt10gar9m1ku29nr191\",\"requestId\":\"ctrl-0i9smqt10gar9m1ku29nr191\",\"decision\":\"allow\"}"
+      },
+      "at": "2026-11-25T18:11:39.900Z"
+    },
+    "worker-write-2": {
+      "slot": "worker-write-2",
+      "predicate": "name=write && file_path=\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T18-08-29Z/workspace/lane/worker-ask-2.txt\"",
+      "matched": {
+        "id": "call-d4-worker-write-2",
+        "name": "write",
+        "turnIndex": 14,
+        "input": "{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T18-08-29Z/workspace/lane/worker-ask-2.txt\",\"content\":\"DBOOT_D4_WORKER_ASK_CALLED_2\\n\"}"
+      },
+      "at": "2026-11-25T18:11:39.903Z"
+    },
+    "officer-resolve-third": {
+      "slot": "officer-resolve-third",
+      "predicate": "name=team_resolve_control && requestId=\"ctrl-09xq4gm00pjhdt0br1s3012p\" && occurrence #1",
+      "matched": {
+        "id": "call-d4-officer-resolve-ctrl-09xq4gm00pjhdt0br1s3012p",
+        "name": "team_resolve_control",
+        "turnIndex": 23,
+        "input": "{\"rootSessionId\":\"session-real-model-root\",\"requestToken\":\"dboot-d4-resolve-ctrl-09xq4gm00pjhdt0br1s3012p\",\"requestId\":\"ctrl-09xq4gm00pjhdt0br1s3012p\",\"decision\":\"allow\"}"
+      },
+      "at": "2026-11-25T18:11:43.257Z"
+    },
+    "worker-write-3": {
+      "slot": "worker-write-3",
+      "predicate": "name=write && file_path=\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T18-08-29Z/workspace/lane/worker-ask-3.txt\"",
+      "matched": {
+        "id": "call-d4-worker-write-3",
+        "name": "write",
+        "turnIndex": 21,
+        "input": "{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T18-08-29Z/workspace/lane/worker-ask-3.txt\",\"content\":\"DBOOT_D4_WORKER_ASK_CALLED_3\\n\"}"
+      },
+      "at": "2026-11-25T18:11:43.663Z"
+    },
+    "worker-bash": {
+      "slot": "worker-bash",
+      "predicate": "name=bash && command=null && command contains \"DBOOT_D4_BASH_INLANE\"",
+      "matched": {
+        "id": "call-d4-worker-bash",
+        "name": "bash",
+        "turnIndex": 26,
+        "input": "{\"command\":\"printf 'DBOOT_D4_BASH_INLANE' > /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T18-08-29Z/workspace/lane/worker-bash-inlane.txt; printf 'DBOOT_D4_BASH_LEAK' > /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T18-08-29Z/worker-bash-outside.txt || true\"}"
+      },
+      "at": "2026-11-25T18:11:44.389Z"
+    },
+    "leader-collect": {
+      "slot": "leader-collect",
+      "predicate": "name=team_collect && requestToken=\"rm-collect-1\"",
+      "matched": {
+        "id": "call-rm-leader-collect",
+        "name": "team_collect",
+        "turnIndex": 31,
+        "input": "{\"rootSessionId\":\"session-real-model-root\",\"requestToken\":\"rm-collect-1\",\"requestTokens\":[\"dboot-d4-delegate-worker\"]}"
+      },
+      "at": "2026-11-25T18:11:46.733Z"
+    },
+    "duplicate-resolve": {
+      "slot": "duplicate-resolve",
+      "predicate": "name=team_resolve_control && requestId=\"ctrl-1yjnqn31wzucqg0exl5md0vj\" && occurrence #2",
+      "matched": {
+        "id": "call-rm-officer-resolve-duplicate-ctrl-1yjnqn31wzucqg0exl5md0vj",
+        "name": "team_resolve_control",
+        "turnIndex": 33,
+        "input": "{\"rootSessionId\":\"session-real-model-root\",\"requestToken\":\"rm-dup-resolve-ctrl-1yjnqn31wzucqg0exl5md0vj\",\"requestId\":\"ctrl-1yjnqn31wzucqg0exl5md0vj\",\"decision\":\"allow\"}"
+      },
+      "at": "2026-11-25T18:11:47.046Z"
+    }
+  },
+  "observed": {
+    "source": "mock",
+    "turns": 0,
+    "assistantTurnsWithToolUse": 0,
+    "toolNames": [],
+    "excerpt": []
+  }
+}

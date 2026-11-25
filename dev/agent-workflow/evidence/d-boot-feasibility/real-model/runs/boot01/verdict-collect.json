@@ -5,7 +5,7 @@
     {
       "id": "collect-call-issued",
       "ok": true,
-      "detail": "call={\"rootSessionId\":\"session-real-model-root\",\"requestToken\":\"rm-collect-1\",\"requestTokens\":[\"dboot-d4-delegate-worker\"]}"
+      "detail": "call={\"requestToken\":\"rm-collect-1\",\"requestTokens\":[\"dboot-d4-delegate-worker\"],\"rootSessionId\":\"session-real-model-root\"}"
     },
     {
       "id": "collect-result-not-an-error",

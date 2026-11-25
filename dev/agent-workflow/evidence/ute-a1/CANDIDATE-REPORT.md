@@ -496,19 +496,23 @@ log line (`host:"legacy"`/`source:tests/paths.mjs#TEST_USE_BASELINE_SHA`, `host:
 
 ## 8. Limits and unproven claims (the candid list)
 
-1. **The model is a scripted mock in every live boot** (`packages/tools/harness/mock-deepseek.mjs`). No
-   model-driven choice, retry or adversarial tool selection is measured. **REAL MODEL — attempted 2026-11-26,
-   NOT ACHIEVED.** The credential the round-111 probe named was supplied: `probe.json` now reads
-   `REAL-ROUTE-AVAILABLE` and both pinned hosts booted on the real endpoint and answered a real model turn
-   (`deepseek-v4-flash`, HTTP 200). But `--model real --boots 2` exits **1** on **both** hosts (legacy 200 s,
-   next 31 s, 2/2 boots each) because the driver's real branch reads the Leader's model-visible surface from
-   `world.mock.requests` (`run-real-model.mjs:2156-2160`), which is empty without a mock: all 20 judges are
-   `FAIL`/not-run and the four negative controls (deny / Stop / duplicate-approval / restart-no-replay) are
-   never reached. **The remaining work is the driver, not the environment** — real request capture,
-   non-vacuous turn gates, discovered call ids and real prompts. The product route itself was measured sound
-   with a pass-through recorder: the real request carried 43 tools including all six required `team_*` tools,
-   and the model answered with `bash`/`grep` tool calls, so no product defect is implicated.
-   `REAL-MODEL-ACCEPTANCE.md` §0 is the evidence; no row moves.
+1. **The model was a scripted mock in every live boot; ROUND 120 adds a REAL-MODEL DEV-LIVE run
+   (`DEV-LIVE-real-model`) — not candidate acceptance.** Round 120 rebuilt the driver's real branch
+   (request capture at the public `DEEPSEEK_BASE_URL` seam, non-vacuous turn gates, discovery by
+   predicate over the observed transcript) and ran the two required commands at `1a3a79c4c`:
+   `--model real --boots 2` exits **0** on both pinned hosts — legacy (`deepseek-v4-flash`) **892 s**,
+   next (`deepseek-flash`) **180 s** — with **20/20 judges PROVEN on 2/2 boots per host**,
+   `agreeing=true differing=[]`, and RUN records `recordClass: DEV-LIVE` / `overall: PASS`. The four
+   negative controls are observed with the model's own replies (deny → `ADMISSION_APPROVAL_DENIED`,
+   zero bytes, `REFUSED`/`not-started`; Stop → `session/cancel` 200 + `ADMISSION_STOPPED`, zero bytes;
+   duplicate approval → `CONTROL_REQUEST_DECIDED`, one execution; restart-no-replay → `before === after`,
+   1 decision, 1 execution). The scripted control is still 20/20 and an anti-vacuity self-test pins three
+   `DISCOVERY-MISS` cases. Full trail (including six preserved red attempts and the dated prompt
+   amendment): `dev/agent-workflow/evidence/ute-a1/round120/README.md`, `REAL-MODEL-ACCEPTANCE.md`
+   §ROUND 120. **This is development evidence, not candidate acceptance:** the version gate has not run
+   with a real model at a frozen version, the real model is non-deterministic (one flaky negative-arm
+   boot preserved, not retried away), and agreement is over two boots per host rather than independent
+   sessions across time. `d4:ask-execute-process` remains the single enumerated `knownRefuted`.
 2. **No row is PRODUCT-PROVEN.** The candidate acceptance gate is a **VERSION gate** by owner ruling
    (2026-11-25): required at a frozen candidate SHA, never a per-PR required context (§1.1). No version has
    been frozen, so a green run is still `DEV-LIVE` evidence and upgrades nothing. **The current dual-host

@@ -1,0 +1,59 @@
+{
+  "stoppedBefore": true,
+  "stoppedMarkersBefore": [
+    "stopped-be6cf2ae.json"
+  ],
+  "machineAttempted": true,
+  "machineAttempt": {
+    "holdLanded": true,
+    "holdStatus": 200,
+    "cancelStatus": 200,
+    "resumeStatus": 200,
+    "thirdRequestId": "ctrl-1lljmox083bo9k1phscef1ta"
+  },
+  "stoppedAfter": true,
+  "stoppedMarkersAfter": [
+    "stopped-be6cf2ae.json"
+  ],
+  "wakeInputsWhileStopped": 0,
+  "humanResumeCleared": true,
+  "humanResume": {
+    "status": 200,
+    "markersAfterResume": 0
+  },
+  "resumedWakeDelivered": true,
+  "write3": {
+    "settled": true,
+    "file": {
+      "exists": true,
+      "bytes": 29,
+      "sha256": "2b28991b1453c91d156a15f550556549cbdbcb5856aa833b3fcfa7d5b3d1ea0e"
+    },
+    "settlement": "COMPLETED",
+    "result": false
+  },
+  "discovery": {
+    "worker-write-3": {
+      "slot": "worker-write-3",
+      "predicate": "name=write && file_path=\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-13-07Z-next/workspace/lane/worker-ask-3.txt\"",
+      "matched": {
+        "id": "call_00_ET_uZ7GqjgNbA8VBC75YOhP5795",
+        "name": "write",
+        "turnIndex": 22,
+        "input": "{\"content\":\"DBOOT_D4_WORKER_ASK_CALLED_3\\n\",\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-13-07Z-next/workspace/lane/worker-ask-3.txt\"}"
+      },
+      "at": "2026-11-25T20:13:50.350Z"
+    },
+    "officer-resolve-third": {
+      "slot": "officer-resolve-third",
+      "predicate": "name=team_resolve_control && requestId=\"ctrl-1lljmox083bo9k1phscef1ta\" && occurrence #1",
+      "matched": {
+        "id": "call_00_ET_GZ0i0Esy7PRJW4ycL4Vl2476",
+        "name": "team_resolve_control",
+        "turnIndex": 29,
+        "input": "{\"decision\":\"allow\",\"requestId\":\"ctrl-1lljmox083bo9k1phscef1ta\",\"requestToken\":\"dboot-d4-officer-resolve-ctrl-1lljmox083bo9k1phscef1ta\",\"rootSessionId\":\"session-real-model-root\"}"
+      },
+      "at": "2026-11-25T20:13:50.347Z"
+    }
+  }
+}

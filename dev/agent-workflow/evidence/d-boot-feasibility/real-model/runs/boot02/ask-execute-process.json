@@ -1,87 +1,73 @@
 {
   "bashSettled": true,
-  "requestId": "ctrl-14gdxdy0rhnvnd18hc71801s",
+  "requestId": "ctrl-10jllou1cy2c7113r6pxo1bh",
   "processDecisionSeen": true,
   "controlDecision": {
-    "createdAt": "2026-11-24T21:00:41.616Z",
+    "createdAt": "2026-11-25T20:27:58.566Z",
     "factType": "control-decision-recorded",
     "payload": {
       "decider": {
-        "instanceId": "inst-0hvc2y01v51z",
+        "instanceId": "inst-leader",
         "kind": "instance",
-        "role": "member"
+        "role": "leader"
       },
-      "decision": "allow",
-      "requestId": "ctrl-14gdxdy0rhnvnd18hc71801s",
-      "requestSequence": 23,
-      "reviewCapability": {
-        "approvalCaseId": "case-1b85vir0g75jow0w7v3gl0vp",
-        "authorityGeneration": 0,
-        "blueprintContentHash": "sha256:31772aa69eec2f20dc07d6760ea8cc33c4a840f3a268763e16c7bb864beda743",
-        "blueprintRevision": "1",
-        "currentLegRequestId": "ctrl-14gdxdy0rhnvnd18hc71801s",
-        "effectiveReviewAuthority": "leader",
-        "entry": "allow",
-        "legOrdinal": 1,
-        "operationOwnerInstanceId": "inst-1q9ehvo0zb4o",
-        "operationOwnerTemplateId": "worker",
-        "operationToolDefinitionIdentity": "dsh.subprocess/bash",
-        "scopeFingerprint": "session-real-model-root\u0000instance:inst-1q9ehvo0zb4o\u0000admission-ask\u0000bash\u0000admission:call-d4-worker-bash\u0000sha256:4dc99e1cf5ece26348e0eab56fe7d42867d7a8f383dbc2dd2b689368b552fcf1",
-        "source": "blueprint-officer"
-      },
+      "decision": "deny",
+      "note": "Denied: Officer role has no shell need (read one lane file + resolve review wakes). Opaque fingerprint-only exec intent is unscoped; re-ask with the exact command if truly required.",
+      "requestId": "ctrl-10jllou1cy2c7113r6pxo1bh",
+      "requestSequence": 22,
       "scope": {
         "actionName": "admission-ask",
         "authorityScope": {
           "matcher": {
             "kind": "fingerprint",
-            "resource": "sha256:4dc99e1cf5ece26348e0eab56fe7d42867d7a8f383dbc2dd2b689368b552fcf1"
+            "resource": "sha256:ef3f47e57c2285104b77a8be4f9f1b37499989c483deeed7ee22b4ad18c2ab40"
           },
           "operationClass": "bash"
         },
-        "correlation": "admission:call-d4-worker-bash",
-        "operationFingerprint": "sha256:4dc99e1cf5ece26348e0eab56fe7d42867d7a8f383dbc2dd2b689368b552fcf1",
+        "correlation": "admission:call_00_ET_U4xf42RyHre6e8ZhRmlj8752",
+        "operationFingerprint": "sha256:ef3f47e57c2285104b77a8be4f9f1b37499989c483deeed7ee22b4ad18c2ab40",
         "rootSessionId": "session-real-model-root",
         "subject": {
-          "instanceId": "inst-1q9ehvo0zb4o",
+          "instanceId": "inst-0hvc2y01v51z",
           "kind": "instance"
         },
-        "targetInstanceId": "inst-1q9ehvo0zb4o",
+        "targetInstanceId": "inst-0hvc2y01v51z",
         "toolName": "bash"
       }
     },
     "rootSessionId": "session-real-model-root",
     "schemaVersion": 2,
-    "sequence": 26
+    "sequence": 23
   },
   "workerBashCall": {
-    "callId": "call-d4-worker-bash",
+    "callId": "call_00_ET_ggIRlULZ3zfcgYMMdCpy0455",
     "name": "bash",
     "arguments": {
-      "command": "printf 'DBOOT_D4_BASH_INLANE' > /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T20-57-49Z/workspace/lane/worker-bash-inlane.txt; printf 'DBOOT_D4_BASH_LEAK' > /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T20-57-49Z/worker-bash-outside.txt || true"
+      "command": "printf 'DBOOT_D4_BASH_INLANE' > /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-26-07Z/workspace/lane/worker-bash-inlane.txt; printf 'DBOOT_D4_BASH_LEAK' > /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-26-07Z/worker-bash-outside.txt || true"
     },
     "result": {
-      "callId": "call-d4-worker-bash",
+      "callId": "call_00_ET_ggIRlULZ3zfcgYMMdCpy0455",
       "isError": true,
       "text": "Error: no PTY backend registered for \"a5sf-governed-shell\""
     }
   },
   "inLane": {
-    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T20-57-49Z/workspace/lane/worker-bash-inlane.txt",
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-26-07Z/workspace/lane/worker-bash-inlane.txt",
     "exists": false,
     "content": null,
     "bytes": null,
     "sha256": null
   },
   "outLane": {
-    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T20-57-49Z/worker-bash-outside.txt",
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-26-07Z/worker-bash-outside.txt",
     "exists": false,
     "content": null,
     "bytes": null,
     "sha256": null
   },
   "settlement": {
-    "executionId": "exec-92c493d7867883bd30fcf09b74ca30cc5464c74b",
-    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T20-57-49Z/centre/settlement/inst-1q9ehvo0zb4o/exec-92c493d7867883bd30fcf09b74ca30cc5464c74b.settlement.json",
+    "executionId": "exec-bcb9a2dae9ab3fa90571771d5291f8b16b875af5",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-26-07Z/centre/settlement/inst-1q9ehvo0zb4o/exec-bcb9a2dae9ab3fa90571771d5291f8b16b875af5.settlement.json",
     "present": true,
     "state": "FAILED",
     "bodyOutcome": "failed",
@@ -91,38 +77,38 @@
       "RUNNING",
       "FAILED"
     ],
-    "terminalAt": "2026-11-24T21:00:41.727Z"
+    "terminalAt": "2026-11-25T20:28:05.423Z"
   },
   "facts": [
     {
-      "callId": "call-d4-worker-bash",
+      "callId": "call_00_ET_ggIRlULZ3zfcgYMMdCpy0455",
       "agentId": "inst-1q9ehvo0zb4o",
       "instanceId": "inst-1q9ehvo0zb4o",
       "sessionId": "session-team-child-a3d2ddfd7c73a4e7714c635105202791",
       "instanceGeneration": 0,
       "toolName": "bash",
       "axis": "process.exec",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T20-57-49Z/workspace",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-26-07Z/workspace",
       "definitionSource": "",
-      "policyGeneration": "a5sf1:0a1ffac4e875e30b7968ec85fe54d965",
+      "policyGeneration": "a5sf1:6222f190a73de02099ac16d446a6f67d",
       "blueprintRevision": "",
       "owner": "session-real-model-root",
       "decision": "allow",
       "laneDecision": "ask",
       "kind": "invocation-authority",
-      "at": "2026-11-24T21:00:41.716Z"
+      "at": "2026-11-25T20:28:05.406Z"
     },
     {
-      "callId": "call-d4-worker-bash",
-      "executionId": "exec-92c493d7867883bd30fcf09b74ca30cc5464c74b",
+      "callId": "call_00_ET_ggIRlULZ3zfcgYMMdCpy0455",
+      "executionId": "exec-bcb9a2dae9ab3fa90571771d5291f8b16b875af5",
       "toolName": "bash",
       "agentId": "session-team-child-a3d2ddfd7c73a4e7714c635105202791",
       "outcome": "failed",
       "isError": true,
       "errorMessage": "no PTY backend registered for \"a5sf-governed-shell\"",
-      "policyGeneration": "a5sf1:0a1ffac4e875e30b7968ec85fe54d965",
+      "policyGeneration": "a5sf1:6222f190a73de02099ac16d446a6f67d",
       "kind": "execution",
-      "at": "2026-11-24T21:00:41.727Z"
+      "at": "2026-11-25T20:28:05.421Z"
     }
   ],
   "verdict": {
@@ -136,13 +122,13 @@
       },
       {
         "id": "approved-through-real-control-path",
-        "ok": true,
-        "detail": "durable control-decision-recorded decision=allow decider={\"instanceId\":\"inst-0hvc2y01v51z\",\"kind\":\"instance\",\"role\":\"member\"} requestId=ctrl-14gdxdy0rhnvnd18hc71801s"
+        "ok": false,
+        "detail": "durable control-decision-recorded decision=deny decider={\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"} requestId=ctrl-10jllou1cy2c7113r6pxo1bh"
       },
       {
         "id": "process-admission-fact-allow",
         "ok": true,
-        "detail": "process.exec allow facts=[{\"callId\":\"call-d4-worker-bash\",\"decision\":\"allow\",\"laneDecision\":\"ask\",\"axis\":\"process.exec\"}]"
+        "detail": "process.exec allow facts=[{\"callId\":\"call_00_ET_ggIRlULZ3zfcgYMMdCpy0455\",\"decision\":\"allow\",\"laneDecision\":\"ask\",\"axis\":\"process.exec\"}]"
       },
       {
         "id": "bash-tool-result-not-an-error",
@@ -166,6 +152,7 @@
       }
     ],
     "failing": [
+      "approved-through-real-control-path",
       "bash-tool-result-not-an-error",
       "in-lane-write-lands",
       "settlement-completed"

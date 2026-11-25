@@ -100,6 +100,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { zstdDecompressSync } from 'node:zlib'
 
 import { apiPrompt, apiSessionCancel, authenticate, emitPatchLayer, fetchJson } from '../../lib/world-factory.mjs'
+import { startModelCallRecorder } from '../../lib/model-call-recorder.mjs'
+import { DiscoveryMissError, ModelTranscript, matchToolUse } from '../../lib/model-transcript.mjs'
 import { createRunRecord, formatSummary, readAuthorityBinding } from '../../lib/run-record.mjs'
 import { selectedHostPin, selectedHostTree } from '../../../next-host/host-select.mjs'
 import { createA5sfHarness } from '../../lib/a5sf-harness.mjs'
@@ -285,6 +287,196 @@ const MODEL_BASE_URL = (() => {
 const MODEL_KEY_ENV = 'DEEPSEEK_API_KEY'
 /** What a RUN from this process may be called. */
 const RUN_LABEL = MODEL_MODE === 'real' ? 'REAL-MODEL' : 'SCRIPTED-ONLY'
+/**
+ * The real provider the RECORDER forwards to. `--base-url` / `DEEPSEEK_BASE_URL`
+ * names the endpoint the host would otherwise talk to directly; with no
+ * override the provider's own public default is used (never invented here).
+ */
+const REAL_UPSTREAM = MODEL_BASE_URL === null || MODEL_BASE_URL === '' ? 'https://api.deepseek.com/anthropic' : MODEL_BASE_URL
+
+/**
+ * REAL-MODEL OBSERVATION (round 120).
+ *
+ * In `--model real` there is no mock request log, so the driver starts the
+ * PROVEN provider-boundary recorder of round 119 in-process and points the host
+ * at it (`world.startRealProvider({ baseUrl })`, the host's own public
+ * `DEEPSEEK_BASE_URL` seam). Every model call is then observed: the request's
+ * tool surface and messages, the assistant's text and tool_use blocks (name +
+ * input), and the tool results the next call carries back.
+ *
+ * In `--model scripted` the mock's request log IS the observation source. Both
+ * modes feed the SAME `ModelTranscript`, so a judge's discovery predicate is
+ * the same object in both — only the model differs.
+ *
+ * Returns `null` in scripted mode: there is nothing to start.
+ */
+async function startBootRecorder({ index, bootDir, tag = 'positive' }) {
+  if (MODEL_MODE !== 'real') return null
+  const recorder = await startModelCallRecorder({
+    upstream: REAL_UPSTREAM,
+    sinkPath: join(bootDir, `model-calls-${tag}.jsonl`),
+    log: (line) => log(`[boot${String(index)}] ${line}`),
+  })
+  log(`[boot${String(index)}] model recorder: ${recorder.baseUrl} -> ${recorder.upstream} (sink=model-calls-${tag}.jsonl)`)
+  return recorder
+}
+/** The provider base URL the host must be pointed at (recorder) or null (provider default). */
+const recorderBaseUrl = (recorder) => (recorder === null ? (MODEL_BASE_URL === '' ? null : MODEL_BASE_URL) : recorder.baseUrl)
+
+/**
+ * SCENARIO PROMPTS — SCRIPTED vs REAL (dated amendment, round 120).
+ *
+ * The scripted arm must keep EXACTLY the prompts it has always sent: the mock's `decide` matches
+ * those bare markers, and `--model scripted` is the positive control that the refactor did not
+ * weaken anything. They are returned verbatim below.
+ *
+ * The REAL arm's prompts are DIFFERENT, and the difference is disclosed as an amendment rather
+ * than hidden: a real model was measured (round 119) to answer the bare markers with unrelated
+ * `bash`/`grep` calls, because a marker string names no tool, no argument and no success token.
+ * That is "the model never got far enough to trigger the situation", the ONE case the round's
+ * rules allow a scenario-prompt improvement for. NOT ONE judge assertion changed: the prompts now
+ * name the tool and the exact arguments the SAME scenario already required.
+ *
+ * The old (scripted) prompts are retained above and in the evidence appendix
+ * (`dev/agent-workflow/evidence/d-boot-feasibility/real-model/PROMPT-AMENDMENT.md`).
+ */
+function scenarioPrompt(key, { paths = null, ids = null } = {}) {
+  const real = MODEL_MODE === 'real'
+  const target = (value) => String(value ?? '')
+  const requestId = target(ids?.pendingRequestId)
+  if (!real) {
+    // ── SCRIPTED: byte-identical to the prompts this driver has always sent ──
+    switch (key) {
+      case 'disc': return MK_DISC
+      case 'off': return MK_OFF
+      case 'wrk': return MK_WRK
+      case 'resolve': return MK_RESOLVE
+      case 'resolve3': return MK_RESOLVE3
+      case 'hold': return `${MK_HOLD} hold the turn open for a real human cancel`
+      case 'resume': return `${MK_RESUME} resume`
+      case 'work3': return `${MK_WORK3} issue the third write`
+      case 'bash': return `${MK_BASH} run the process probe command`
+      case 'collect': return `${MK_COLLECT} Use the team_collect tool with requestToken "rm-collect-1" and requestTokens ["${WORKER_DELEGATE_TOKEN}"]; then report the collected body verbatim.`
+      case 'dup': return `${MK_DUP_RESOLVE} Repeated review attempt: call team_resolve_control a SECOND time for requestId "${requestId}" with decision "allow".`
+      default: throw new Error(`unknown scenario prompt key ${JSON.stringify(key)}`)
+    }
+  }
+  // ── REAL: the SAME scenario, with the tool and the exact arguments named ──
+  const officerTask = [
+    'You are the review Officer for this team.',
+    `Your own task prompt: call the \`read\` tool exactly once with {"file_path":"${target(paths?.officerFile)}"},`,
+    `then reply with the single token ${DONE_OFFICER_TURN} and nothing else.`,
+    // NEVER write the literal wake marker in a USER prompt: the wake-delivered judge scans the
+    // officer's user messages for that marker and requires every one to be machine-attributed.
+    // Round 120 measured this: the driver's own officer prompt carried the marker, so the judge
+    // saw a human-authored "wake" and refused it. The prompt now names the event, not its bytes.
+    'Later, whenever a machine review-wake message arrives (it names a requestId), call `team_resolve_control` exactly once',
+    `with {"rootSessionId":"${ROOT}","requestToken":"dboot-d4-officer-resolve-<the requestId named in that message>","requestId":"<the same requestId>","decision":"allow"} and then reply briefly.`,
+  ].join(' ')
+  const workerTask = [
+    'You are the governed worker for this team.',
+    // ROUND 120 AMENDMENT (2026-11-26): the next host's second boot answered this task with TEXT
+    // and never called `write`, so the deny arm raised no ask (model never got far enough). The
+    // scenario is unchanged; the prompt now forbids a text-only first action.
+    'Do NOT answer with text. Your first action MUST be the Step 1 tool call; do not run bash, do not read files, do not explore the repository.',
+    `Step 1: call the \`write\` tool with {"file_path":"${target(paths?.workerFile)}","content":"${WORKER_TEXT}\\n"}.`,
+    'This call needs approval; wait for its result.',
+    `Step 2: after Step 1 has returned, call the \`write\` tool with {"file_path":"${target(paths?.workerFile2)}","content":"${WORKER_TEXT2}\\n"}.`,
+    'This call also needs approval; wait for its result.',
+    `Step 3: after Step 2 has returned, reply with the single token ${DONE_WORKER_TURN} and nothing else.`,
+  ].join(' ')
+  switch (key) {
+    case 'disc':
+      return [
+        'You are the Leader of the dboot d4 probe team.',
+        'Call the `bash` tool exactly once with {"command":"pwd"}.',
+        `After it returns, reply with the single token ${DONE_DISC} and nothing else.`,
+      ].join(' ')
+    case 'off':
+      return [
+        'Create the review Officer now.',
+        'Call the `team_delegate` tool exactly once with these exact arguments:',
+        JSON.stringify({
+          rootSessionId: ROOT,
+          requestToken: 'dboot-d4-delegate-officer',
+          delegationTemplateId: 'officer',
+          label: 'dboot-d4-officer',
+          prompt: `${TOK_OFF}: ${officerTask}`,
+          taskSummary: 'dboot d4 probe: officer work unit',
+        }),
+        `After the tool returns, reply with the single token ${DONE_OFF} and nothing else.`,
+        'Do not call any other tool in this turn.',
+      ].join(' ')
+    case 'wrk':
+      return [
+        'Create the worker now.',
+        'Call the `team_delegate` tool exactly once with these exact arguments:',
+        JSON.stringify({
+          rootSessionId: ROOT,
+          requestToken: 'dboot-d4-delegate-worker',
+          delegationTemplateId: 'worker',
+          label: 'dboot-d4-worker',
+          prompt: `${TOK_WRK}: ${workerTask}`,
+          taskSummary: 'dboot d4 probe: worker work unit',
+        }),
+        `After the tool returns, reply with the single token ${DONE_WRK} and nothing else.`,
+        'Do not call any other tool in this turn.',
+      ].join(' ')
+    case 'resolve':
+      return [
+        'Call the `team_resolve_control` tool exactly once with these exact arguments:',
+        JSON.stringify({ rootSessionId: ROOT, requestToken: `dboot-d4-resolve-${requestId}`, requestId, decision: 'deny' }),
+        `After it returns, reply with the single token ${DONE_RESOLVE} and nothing else.`,
+      ].join(' ')
+    case 'resolve3':
+      return [
+        'Call the `team_resolve_control` tool exactly once with these exact arguments:',
+        JSON.stringify({ rootSessionId: ROOT, requestToken: `dboot-d4-resolve-${target(ids?.pendingProcessRequestId)}`, requestId: target(ids?.pendingProcessRequestId), decision: 'allow' }),
+        `After it returns, reply with the single token ${DONE_RESOLVE3} and nothing else.`,
+      ].join(' ')
+    case 'hold':
+      return [
+        'Call the `bash` tool exactly once with {"command":"sleep 45"} so this turn stays open.',
+        `Then reply with the single token ${MK_HOLD}_DONE and nothing else.`,
+        `The token ${MK_HOLD} marks this human turn.`,
+      ].join(' ')
+    case 'resume':
+      return [
+        'The human resumes this session.',
+        'If a machine review-wake message arrives naming a requestId, call `team_resolve_control` exactly once with that requestId and decision "allow".',
+        'Then reply with a short confirmation.',
+      ].join(' ')
+    case 'work3':
+      return [
+        'Call the `write` tool exactly once with',
+        JSON.stringify({ file_path: target(paths?.workerFile3), content: `${WORKER_TEXT3}\n` }),
+        `and, after it returns, reply with the single token ${MK_WORK3}_DONE and nothing else.`,
+        'This call needs approval; wait for its result.',
+      ].join(' ')
+    case 'bash':
+      return [
+        'Call the `bash` tool exactly once with',
+        JSON.stringify({ command: `printf '${BASH_INLANE_TEXT}' > ${target(paths?.workerBashInLane)}; printf 'DBOOT_D4_BASH_LEAK' > ${target(paths?.workerBashOutside)} || true` }),
+        `and, after it returns, reply with the single token ${MK_BASH}_DONE and nothing else.`,
+        'This call needs approval; wait for its result.',
+      ].join(' ')
+    case 'collect':
+      return [
+        'Call the `team_collect` tool exactly once with',
+        JSON.stringify({ rootSessionId: ROOT, requestToken: 'rm-collect-1', requestTokens: [WORKER_DELEGATE_TOKEN] }),
+        'and then report the collected body verbatim.',
+      ].join(' ')
+    case 'dup':
+      return [
+        'Call the `team_resolve_control` tool exactly once with these exact arguments:',
+        JSON.stringify({ rootSessionId: ROOT, requestToken: `rm-dup-resolve-${requestId}`, requestId, decision: 'allow' }),
+        `After it returns, reply with the single token ${DONE_DUP_RESOLVE} and nothing else.`,
+      ].join(' ')
+    default:
+      throw new Error(`unknown scenario prompt key ${JSON.stringify(key)}`)
+  }
+}
+
 
 /**
  * PROBE, DO NOT ASSUME (review 20261125-0058 Stage B).
@@ -534,18 +726,30 @@ function lane(allow, ask = []) {
 }
 
 /** The v5 world: leader + officer + worker, an authored ordinary-ask default. */
-function v5Doc({ blueprintId, dirs }) {
+function v5Doc({ blueprintId, dirs, realModel = MODEL_MODE === 'real' }) {
+  // REAL-MODEL ROUND (disclosed prompt amendment): the personas are model-facing instructions. In
+  // the scripted arm they are unchanged; in the real arm they state the SAME scenario in words a
+  // real model can follow, because a bare marker names no tool and no success token.
+  const leaderPersona = realModel
+    ? `You lead the dboot d4 probe team. Follow each user instruction exactly: when it names a tool and its arguments, call that tool with exactly those arguments and nothing else, then report the exact success token it names. ${MK_DISC} is the discovery marker.`
+    : `You lead the dboot d4 probe team. ${MK_DISC} is the discovery marker; ${MK_OFF} delegates the officer; ${MK_WRK} delegates the worker; ${MK_RESOLVE} resolves one pending review ask.`
+  const officerPersona = realModel
+    ? `You are the team's Officer. When a machine review-wake message arrives naming a requestId, call team_resolve_control for that requestId with decision allow. Follow your own task prompt exactly. ${TOK_OFF} is your own work marker.`
+    : `You are the team's Officer. When woken with a review request, decide it with team_resolve_control. ${TOK_OFF} is your own work marker.`
+  const workerPersona = realModel
+    ? `You are the governed worker. Perform exactly the tool calls your prompt names, one at a time, waiting for each result, then report the exact token your prompt names. ${TOK_WRK} is your work marker.`
+    : `You are governed worker. ${TOK_WRK} is your work marker; perform exactly the tool call your prompt names.`
   return {
     schemaVersion: 5,
     blueprintId,
     revision: '1',
     leader: {
       templateId: 'leader',
-      persona: `You lead the dboot d4 probe team. ${MK_DISC} is the discovery marker; ${MK_OFF} delegates the officer; ${MK_WRK} delegates the worker; ${MK_RESOLVE} resolves one pending review ask.`,
+      persona: leaderPersona,
     },
     members: [
-      { templateId: 'officer', displayName: 'Review Officer', persona: `You are the team's Officer. When woken with a review request, decide it with team_resolve_control. ${TOK_OFF} is your own work marker.` },
-      { templateId: 'worker', displayName: 'Governed Worker', persona: `You are governed worker. ${TOK_WRK} is your work marker; perform exactly the tool call your prompt names.` },
+      { templateId: 'officer', displayName: 'Review Officer', persona: officerPersona },
+      { templateId: 'worker', displayName: 'Governed Worker', persona: workerPersona },
     ],
     requirements: [],
     // `resolve-control` is in the closed mutation vocabulary
@@ -1289,9 +1493,11 @@ function judgeOfficerUp({ members, officerRow, transcript }) {
     ],
   )
 }
-function judgeOfficerBinding({ member, facts, settlement }) {
+function judgeOfficerBinding({ member, facts, settlement, officerCallId = CALL_OFF_READ }) {
   const allow = facts.filter((f) => f?.kind === 'invocation-authority' && f?.decision === 'allow')
-  const rightInstance = allow.every((f) => String(f?.callId) === CALL_OFF_READ)
+  // The call the judge names is the one DISCOVERED from the observed transcript (scripted mode
+  // discovers the mock's own id, so the assertion's object is unchanged; a real model's id works too).
+  const rightInstance = allow.every((f) => String(f?.callId) === String(officerCallId))
   return verdictOf(
     'the Officer\'s OWN tool call is admitted by the ONE centre under the OFFICER\'s binding: an allow invocation-authority fact for ITS callId in the OFFICER\'s own ledger, settled COMPLETED',
     [
@@ -1427,8 +1633,9 @@ function judgeWakeDelivered({ requestId, wakeFacts, officerTranscript, intentFil
   )
 }
 
-function judgeOfficerDecides({ requestId, officerTranscript, officerFacts, settlement, leaderTranscript, officerInstanceId }) {
-  const callId = CALL_OFF_RESOLVE(requestId)
+function judgeOfficerDecides({ requestId, officerTranscript, officerFacts, settlement, leaderTranscript, officerInstanceId, resolveCallId = null }) {
+  // The discovered call id (scripted: the mock's own; real: the model's) — never a fabricated one.
+  const callId = resolveCallId === null ? CALL_OFF_RESOLVE(requestId) : String(resolveCallId)
   const call = (officerTranscript?.calls ?? []).find((entry) => String(entry?.callId) === callId) ?? null
   const allowed = (officerFacts ?? []).filter((fact) => fact?.kind === 'invocation-authority' && fact?.decision === 'allow')
   const boundToItself = allowed.some((fact) => String(fact?.instanceId ?? fact?.agentId ?? '') === String(officerInstanceId ?? ''))
@@ -1883,6 +2090,7 @@ async function runAskNegativeArm({ kind, harness, record, index, bootDir, phase,
   let target = null
   let cancelStatus = null
   let settleAttempts = 0
+  let recorder = null
   try {
     // The target lives INSIDE the Member's own workspace (the host sandbox root), so the ONLY
     // reason no byte exists in this arm is the deny/Stop the judge measures.
@@ -1904,7 +2112,11 @@ async function runAskNegativeArm({ kind, harness, record, index, bootDir, phase,
     if (MODEL_MODE === 'scripted') {
       await world.startMock({ decide: makeDecide({ paths, ids, resolveDecision: kind === 'deny' ? 'deny' : 'allow' }) })
     } else {
-      await world.startRealProvider({ baseUrl: MODEL_BASE_URL === '' ? null : MODEL_BASE_URL, apiKey: process.env[MODEL_KEY_ENV] })
+      // REAL: the SAME provider-boundary recorder the positive boot uses, so this
+      // arm's model calls are observed too (the deny/Stop question needs the
+      // worker's real `write` attempt to exist in the transcript).
+      recorder = await startBootRecorder({ index, bootDir, tag: `negative-${label}` })
+      await world.startRealProvider({ baseUrl: recorderBaseUrl(recorder), apiKey: process.env[MODEL_KEY_ENV] })
     }
     const boot = await lease.boot(async () => {
       return harness.boot({ world, phase: `${phase}-${label}`, bootTimeoutMs: 300_000 })
@@ -1913,14 +2125,21 @@ async function runAskNegativeArm({ kind, harness, record, index, bootDir, phase,
     const cookie = await authenticate(origin, world.token)
     const health = await waitHealthy(origin, cookie, 120_000)
     if (health?.ok !== true) throw new Error(`the ${label} host never became ready: ${JSON.stringify(health?.body ?? null).slice(0, 500)}`)
-    const requests = () => world.mock?.requests ?? []
+    // `world` can be null after teardown; every reader must get an empty transcript, not a TypeError.
+    const requests = () => world?.mock?.requests ?? []
     const replyOf = (r) => String(r?.reply?.content ?? '')
-    // SCRIPTED: wait for the script's own done marker. REAL: `promptTurn` has
-    // already awaited the turn's durable assistant message, so the marker test is
-    // not applicable and must not be invented as a pass either.
+    // THE OBSERVED TRANSCRIPT (round 120). Scripted mode indexes the mock's own request log;
+    // real mode indexes the provider-boundary recorder. A judge locates its call by a predicate
+    // over THIS, never by a mock-only id.
+    const observed = () => (MODEL_MODE === 'scripted'
+      ? ModelTranscript.fromMockRequests(requests())
+      : ModelTranscript.fromRecorderRecords(() => recorder?.records() ?? []))
+    let promptMark = 0
+    // NON-VACUOUS TURN GATE: in real mode "answered" means a real assistant turn carrying at
+    // least one tool_use block was observed AFTER this prompt — never the old unconditional `true`.
     const sawReply = (marker) => (MODEL_MODE === 'scripted'
       ? requests().some((r) => replyOf(r).trim().startsWith(marker))
-      : true)
+      : observed().assistantTurnsWithToolUse({ afterTurn: promptMark - 1 }) > 0)
     const waitFor = async (predicate, timeoutMs, everyMs = 200) => {
       const deadline = Date.now() + timeoutMs
       for (;;) {
@@ -1933,13 +2152,24 @@ async function runAskNegativeArm({ kind, harness, record, index, bootDir, phase,
     }
     const promptTurn = async (marker, tag) => {
       const before = MODEL_MODE === 'real' ? assistantCount(world.home, ROOT) : 0
+      promptMark = observed().turnCount()
       const res = await apiPrompt(origin, cookie, ROOT, marker, tag)
-      try { writeFileSync(join(bootDir, `prompt-${tag}.json`), `${JSON.stringify({ status: res?.status ?? null, body: redact(JSON.stringify(res?.body ?? null)) }, null, 2)}\n`) } catch { /* diagnostic */ }
+      try { writeFileSync(join(bootDir, `prompt-${tag}.json`), `${JSON.stringify({ status: res?.status ?? null, text: redact(marker), body: redact(JSON.stringify(res?.body ?? null)) }, null, 2)}\n`) } catch { /* diagnostic */ }
       if (res?.status !== 200) throw new Error(`session/prompt(${tag}) failed: status=${String(res?.status)}`)
-      if (MODEL_MODE === 'real') await waitTurnSettled({ home: world.home, sessionId: ROOT, before })
+      if (MODEL_MODE === 'real') {
+        const settled = await waitTurnSettled({ home: world.home, sessionId: ROOT, before })
+        if (!settled) throw new Error(`REAL-TURN-MISS: prompt(${tag}) produced no new durable assistant message within 180s`)
+        await waitFor(() => observed().assistantTurnsWithToolUse({ afterTurn: promptMark - 1 }) > 0, 60_000, 250)
+        if (observed().assistantTurnsWithToolUse({ afterTurn: promptMark - 1 }) === 0) {
+          throw new Error(`REAL-TURN-MISS: prompt(${tag}) produced no observed assistant turn with a tool-use block (observed turns=${String(observed().turnCount())})`)
+        }
+      }
     }
 
-    await promptTurn(MK_WRK, `d4wrk-${label}`)
+    // The SAME real-mode scenario prompt the positive flow uses (the scripted marker is the
+    // scripted arm's exact text). Round 120 attempt 3 measured the raw marker here: a real model
+    // spent the whole arm grepping the repo for `DBOOT_D4_*` instead of delegating.
+    await promptTurn(scenarioPrompt('wrk', { paths }), `d4wrk-${label}`)
     if (!(await waitFor(() => sawReply(DONE_WRK), 120_000))) throw new Error(`the ${label} worker delegation never answered`)
     const workerUp = await waitFor(async () => {
       const st = await readState(origin, cookie)
@@ -1958,13 +2188,53 @@ async function runAskNegativeArm({ kind, harness, record, index, bootDir, phase,
     if (!askAppeared) throw new Error(`the ${label} arm never raised a pending Control request`)
     writeFileSync(join(bootDir, `${label}-ask.json`), `${JSON.stringify({ requestId: ids.pendingRequestId, worker: ids.worker }, null, 2)}\n`)
 
+    // ── DISCOVERY BY PREDICATE (round 120) ─────────────────────────────────────────────────────
+    // The worker's `write` and the Leader's `team_resolve_control` are located by tool name +
+    // argument shape over the observed transcript, NEVER by a mock-only id. In scripted mode this
+    // resolves to the same call the script emitted; in real mode it resolves to whatever id the
+    // model produced. A miss is a named DISCOVERY-MISS, not a silent absence.
+    const discovery = {}
+    const matchObserved = (slot, predicate, timeoutMs = 120_000) => {
+      let hit = null
+      const seen = (async () => {
+        const deadline = Date.now() + timeoutMs
+        for (;;) {
+          try { hit = discoverToolUse(observed(), slot, predicate); return true } catch (error) {
+            if (!(error instanceof DiscoveryMissError)) throw error
+            if (Date.now() >= deadline) return false
+          }
+          await sleep(300)
+        }
+      })()
+      return seen.then((ok) => {
+        discovery[slot] = ok
+          ? { slot, predicate: predicate.describe?.(), matchedId: hit.id, turnIndex: hit.turnIndex, input: redact(JSON.stringify(hit.input ?? null)).slice(0, 800) }
+          : { slot, predicate: predicate.describe?.(), matchedId: null, reason: `DISCOVERY-MISS(${slot})` }
+        return hit
+      })
+    }
+
     let resolveOutcome = null
     if (kind === 'deny') {
-      // Deny through the SAME real control path the positive arm uses.
-      await promptTurn(MK_RESOLVE, `d4res-${label}`)
+      // Deny through the SAME real control path the positive arm uses. Round 120 attempt 4: a real
+      // Leader kept exploring the repository after its delegation turn and never answered the
+      // queued resolve prompt (30 observed turns, zero `team_resolve_control`). A real user's next
+      // prompt interrupts the previous turn, so the driver now does the same — cancel the Leader's
+      // in-flight turn, then prompt. Scripted mode never needs this (the mock answers the queued
+      // request directly) and is untouched.
+      if (MODEL_MODE === 'real') {
+        const clear = await apiSessionCancel(origin, cookie, ROOT, `d4-deny-clear-${label}`)
+        writeFileSync(join(bootDir, `${label}-leader-cancel.json`), `${JSON.stringify({ status: clear?.status ?? null }, null, 2)}\n`)
+      }
+      await promptTurn(scenarioPrompt('resolve', { ids }), `d4res-${label}`)
       await waitFor(() => sawReply(DONE_RESOLVE), 120_000)
+      const resolveHit = await matchObserved(`${label}-leader-resolve`,
+        matchToolUse({ name: 'team_resolve_control', argPath: 'requestId', argValue: ids.pendingRequestId }))
+      if (resolveHit === null) {
+        throw new DiscoveryMissError(`${label}-leader-resolve`, `team_resolve_control(requestId=${String(ids.pendingRequestId)})`, observed().turnCount())
+      }
       const leaderTx = readMemberTranscript(world.home, ROOT)
-      const resolveCall = (leaderTx?.calls ?? []).find((c) => String(c.callId) === CALL_RESOLVE) ?? null
+      const resolveCall = (leaderTx?.calls ?? []).find((c) => String(c.callId) === String(resolveHit.id)) ?? null
       resolveOutcome = { call: resolveCall?.arguments ?? null, result: resolveCall?.result?.text?.slice(0, 800) ?? null, isError: resolveCall?.result?.isError ?? null }
     } else {
       // STOP WHILE PENDING: cancel the WORKER's own session (the host's turn abort). The admission
@@ -1973,21 +2243,30 @@ async function runAskNegativeArm({ kind, harness, record, index, bootDir, phase,
       cancelStatus = cancel?.status ?? null
     }
 
+    const writeHit = await matchObserved(`${label}-worker-write`, matchToolUse({ name: 'write', argPath: 'file_path', argValue: target }))
+    if (writeHit === null) {
+      throw new DiscoveryMissError(`${label}-worker-write`, `write(file_path=${target})`, observed().turnCount())
+    }
+    const writeCallId = String(writeHit.id)
     // Wait for the product to settle the call; never a fixed sleep as the evidence.
     const terminal = await waitFor(() => {
-      const settled = settlementOf(world.home, ids.worker, CALL_WRK_WRITE)
+      const settled = settlementOf(world.home, ids.worker, writeCallId)
       settleAttempts += 1
       return settled.present === true && (settled.state === 'REFUSED' || settled.state === 'CANCELLED' || settled.state === 'COMPLETED' || settled.state === 'FAILED')
     }, 120_000, 400)
     await sleep(700)
     const file = fileEvidence(target)
-    const settlement = settlementOf(world.home, ids.worker, CALL_WRK_WRITE)
-    const facts = factsFor(readLedger(world.home, ids.worker), CALL_WRK_WRITE)
+    const settlement = settlementOf(world.home, ids.worker, writeCallId)
+    const facts = factsFor(readLedger(world.home, ids.worker), writeCallId)
     const verdict = kind === 'deny'
       ? judgeAskDenied({ requestRaised: ids.pendingRequestId !== null, resolveOutcome, file, facts, settlement })
       : judgeAskStopped({ requestRaised: ids.pendingRequestId !== null, cancelStatus, file, facts, settlement })
+    verdict.discovery = discovery
     writeFileSync(join(bootDir, `${label}.json`), `${JSON.stringify({
-      kind, terminal, resolveOutcome, cancelStatus, file, settlement, facts, verdict,
+      kind, terminal, resolveOutcome, cancelStatus, file, settlement, facts, verdict, discovery,
+      // THE OBSERVED REPLY for this control: the real (or scripted) turns and tool results, so the
+      // negative control is reported from what the model actually did, not from a driver flag.
+      observed: observed().excerpt(24, 1200),
     }, null, 2)}\n`)
     fnWriteVerdict(bootDir, label, verdict)
     log(`[boot${String(index)}] d4:${label}=${verdict.verdict} failing=${JSON.stringify(verdict.failing)}`)
@@ -2001,6 +2280,10 @@ async function runAskNegativeArm({ kind, harness, record, index, bootDir, phase,
   } finally {
     if (world !== null) {
       try { await world.teardown({ keepHome: false }) } catch (error) { log(`[boot${String(index)}] ${label} teardown note: ${String(error?.message ?? error)}`) }
+    }
+    if (recorder !== null) {
+      try { writeFileSync(join(bootDir, `model-calls-${label}.snapshot.json`), `${JSON.stringify(recorder.snapshot(), null, 2)}\n`) } catch { /* diagnostic */ }
+      try { await recorder.stop() } catch (error) { log(`[boot${String(index)}] ${label} recorder stop note: ${String(error?.message ?? error)}`) }
     }
   }
 }
@@ -2058,6 +2341,13 @@ async function probeOnce({ index, head, grant }) {
   let refusalTeardown = null
   let result = null
   let failure = null
+  let recorder = null
+  /** Which stage the straight-line probe is at; a thrown stage names itself in every unrun judge. */
+  let currentStage = 'setup'
+  /** Every predicate-discovered call, for the judge's own `discovery` evidence. */
+  const DISCOVERY = {}
+  /** Verdicts already computed when a later stage throws (the catch names the rest). */
+  let partialVerdicts = {}
   const startedBoot = Date.now()
 
   try {
@@ -2106,9 +2396,14 @@ async function probeOnce({ index, head, grant }) {
     } else {
       // REAL route. The credential is read HERE, by name, and handed to the ONE
       // launcher; the value is never logged, hashed into evidence or compared.
-      await world.startRealProvider({ baseUrl: MODEL_BASE_URL === '' ? null : MODEL_BASE_URL, apiKey: process.env[MODEL_KEY_ENV] })
-      log(`[boot${String(index)}] model route: REAL (baseUrl=${MODEL_BASE_URL === null || MODEL_BASE_URL === '' ? '<provider default>' : MODEL_BASE_URL})`)
+      // The host is pointed at the IN-PROCESS RECORDER (the same public
+      // `DEEPSEEK_BASE_URL` seam round 119 proved), which forwards to the real
+      // provider and records what the model actually emitted.
+      recorder = await startBootRecorder({ index, bootDir, tag: 'positive' })
+      await world.startRealProvider({ baseUrl: recorderBaseUrl(recorder), apiKey: process.env[MODEL_KEY_ENV] })
+      log(`[boot${String(index)}] model route: REAL (recorder=${recorder.baseUrl} upstream=${recorder.upstream})`)
     }
+    currentStage = 'boot'
     const boot = await lease.boot(async () => {
       return harness.boot({ world, phase, bootTimeoutMs: 300_000 })
     })
@@ -2118,11 +2413,21 @@ async function probeOnce({ index, head, grant }) {
     if (health?.ok !== true) throw new Error(`the booted host never became ready: ${JSON.stringify(health?.body ?? null).slice(0, 800)}`)
     log(`[boot${String(index)}] host ready on ${origin}`)
 
-    const requests = () => world.mock?.requests ?? []
+    // `world` can be null after teardown; every reader must get an empty transcript, not a TypeError.
+    const requests = () => world?.mock?.requests ?? []
     const replyOf = (r) => String(r?.reply?.content ?? '')
+    // THE OBSERVED TRANSCRIPT (round 120): mock log in scripted mode, the provider-boundary
+    // recorder in real mode. Every judge below locates its call by predicate over THIS.
+    const observed = () => (MODEL_MODE === 'scripted'
+      ? ModelTranscript.fromMockRequests(requests())
+      : ModelTranscript.fromRecorderRecords(() => recorder?.records() ?? []))
+    let promptMark = 0
+    // NON-VACUOUS TURN GATE. Scripted keeps the exact marker test it always had. Real mode means
+    // "a real assistant turn carrying at least one tool_use block was observed after this prompt";
+    // the old unconditional `true` is gone, so zero observed turns can no longer satisfy a gate.
     const sawReply = (marker) => (MODEL_MODE === 'scripted'
       ? requests().some((r) => replyOf(r).trim().startsWith(marker))
-      : true)
+      : observed().assistantTurnsWithToolUse({ afterTurn: promptMark - 1 }) > 0)
     const waitFor = async (predicate, timeoutMs, everyMs = 200) => {
       const deadline = Date.now() + timeoutMs
       for (;;) {
@@ -2133,9 +2438,35 @@ async function probeOnce({ index, head, grant }) {
         await sleep(everyMs)
       }
     }
-    const promptTurn = async (marker, tag, sessionId = ROOT) => {
+    /**
+     * Locate a call by PREDICATE and record what matched (or the named miss). This is the only
+     * source of call ids in this function; no `call-d4-*` constant is read as evidence.
+     */
+    const findCall = (slot, predicate) => {
+      const hit = discoverToolUse(observed(), slot, predicate)
+      DISCOVERY[slot] = {
+        slot,
+        predicate: predicate.describe?.(),
+        matched: { id: hit.id, name: hit.name, turnIndex: hit.turnIndex, input: redact(JSON.stringify(hit.input ?? null)).slice(0, 800) },
+        at: new Date().toISOString(),
+      }
+      return hit
+    }
+    /** Wait until a predicate-discovered call exists, then return it (throws the named miss at timeout). */
+    const waitForCall = async (slot, predicate, timeoutMs = 180_000) => {
+      const ok = await waitFor(() => {
+        try { return observed().findToolUse(predicate) !== null } catch { return false }
+      }, timeoutMs, 300)
+      if (!ok) {
+        // A named miss carries the EXACT predicate and the observed turn count.
+        return findCall(slot, predicate)
+      }
+      return findCall(slot, predicate)
+    }
+    const promptTurn = async (text, tag, sessionId = ROOT) => {
       const before = MODEL_MODE === 'real' ? assistantCount(world.home, sessionId) : 0
-      const res = await apiPrompt(origin, cookie, sessionId, marker, tag)
+      promptMark = observed().turnCount()
+      const res = await apiPrompt(origin, cookie, sessionId, text, tag)
       // DIAGNOSTIC (kept): the turn's own answer text, redacted, so a delegation that the Leader could
       // not complete is visible in the boot artefacts instead of only as a timeout.
       try {
@@ -2146,24 +2477,43 @@ async function probeOnce({ index, head, grant }) {
       if (MODEL_MODE === 'real') {
         const settled = await waitTurnSettled({ home: world.home, sessionId, before })
         log(`[boot${String(index)}] prompt(${tag}) turn settled=${String(settled)}`)
+        if (!settled) throw new Error(`REAL-TURN-MISS: prompt(${tag}) produced no new durable assistant message within 180s`)
+        // THE TURN GATE: a gate cannot be satisfied by a text-only turn or by silence.
+        await waitFor(() => observed().assistantTurnsWithToolUse({ afterTurn: promptMark - 1 }) > 0, 60_000, 250)
+        if (observed().assistantTurnsWithToolUse({ afterTurn: promptMark - 1 }) === 0) {
+          throw new Error(`REAL-TURN-MISS: prompt(${tag}) produced no observed assistant turn with a tool-use block (observed turns=${String(observed().turnCount())})`)
+        }
       }
     }
 
     // ── discovery ──
-    await promptTurn(MK_DISC, 'd4disc')
-    if (!(await waitFor(() => sawReply(DONE_DISC), 120_000))) throw new Error('the Leader discovery turn never answered')
-    log(`[boot${String(index)}] discovery answered (mock requests=${String(requests().length)})`)
-    const discovery = requests().filter((r) => surfaceNamesOf(r).length > 0 && !isMemberRequest(r)).at(-1) ?? null
-    const leaderSurface = discovery === null ? [] : surfaceNamesOf(discovery)
+    currentStage = 'discovery'
+    await promptTurn(scenarioPrompt('disc'), 'd4disc')
+    if (!(await waitFor(() => sawReply(DONE_DISC), 120_000))) throw new Error('REAL-TURN-MISS: the Leader discovery turn produced no observed assistant turn with a tool-use block')
+    // THE LEADER SURFACE, by predicate: the FIRST observed call that carried a non-empty tool
+    // surface. In scripted mode this is the mock's discovery request; in real mode it is the real
+    // provider call — the same predicate, the same assertion (all six required team_* tools).
+    const discoveryTurn = observed().turns().find((turn) => turn.toolNames.length > 0) ?? null
+    const leaderSurface = discoveryTurn === null ? [] : discoveryTurn.toolNames
+    DISCOVERY['leader-surface'] = {
+      slot: 'leader-surface',
+      predicate: 'first observed model call carrying a non-empty tool surface',
+      matched: discoveryTurn === null ? null : { turnIndex: discoveryTurn.index, toolCount: leaderSurface.length, model: discoveryTurn.model },
+      at: new Date().toISOString(),
+    }
     writeFileSync(join(bootDir, 'leader-surface.json'), `${JSON.stringify(leaderSurface, null, 2)}\n`)
+    if (discoveryTurn === null) throw new Error('DISCOVERY-MISS(leader-surface): no observed model call carried a tool surface')
+    log(`[boot${String(index)}] discovery answered (observed turns=${String(observed().turnCount())}, surface=${String(leaderSurface.length)})`)
     for (const required of TEAM_TOOL_NAMES) {
-      if (!leaderSurface.includes(required)) throw new Error(`the Leader surface lost '${required}'`)
+      if (!leaderSurface.includes(required)) throw new Error(`the Leader surface lost '${required}' (observed ${String(leaderSurface.length)} tools on turn ${String(discoveryTurn.index)})`)
     }
 
     // ── the Officer: delegated, up, and its own call admitted ──
-    await promptTurn(MK_OFF, 'd4off')
-    if (!(await waitFor(() => sawReply(DONE_OFF), 120_000))) throw new Error('the officer delegation turn never answered the delegate call')
-    log(`[boot${String(index)}] officer delegated`)
+    currentStage = 'officer-delegation'
+    await promptTurn(scenarioPrompt('off', { paths }), 'd4off')
+    if (!(await waitFor(() => sawReply(DONE_OFF), 120_000))) throw new Error('REAL-TURN-MISS: the officer delegation turn produced no observed assistant turn with a tool-use block')
+    const delegateOfficer = await waitForCall('delegate-officer', matchToolUse({ name: 'team_delegate', argPath: 'delegationTemplateId', argValue: 'officer' }), 60_000)
+    log(`[boot${String(index)}] officer delegated (call ${String(delegateOfficer.id)} at turn ${String(delegateOfficer.turnIndex)})`)
     const officerRowFound = await waitFor(async () => {
       const st = await readState(origin, cookie)
       return membersOf(st).some((m) => String(m?.templateId ?? '') === 'officer')
@@ -2174,33 +2524,59 @@ async function probeOnce({ index, head, grant }) {
     ids.officer = String(officerRow.instanceId)
     writeFileSync(join(bootDir, 'members-officer.json'), `${JSON.stringify(membersOf(state), null, 2)}\n`)
     log(`[boot${String(index)}] officer instance=${ids.officer} childSession=${String(officerRow.childSessionId)}`)
-    const officerReady = await waitFor(() => {
+    const officerTurnRan = await waitFor(() => {
       const tx = readMemberTranscript(world.home, String(officerRow.childSessionId))
-      return String(tx?.finalAssistant ?? '').includes(DONE_OFFICER_TURN)
+      if (MODEL_MODE === 'scripted') return String(tx?.finalAssistant ?? '').includes(DONE_OFFICER_TURN)
+      // REAL: the Officer's OWN turn must have RETURNED a tool result (a text-only turn is not the
+      // tool turn the binding judge measures). The evidence itself is discovered by predicate below.
+      return (tx?.calls ?? []).some((call) => call.result !== null && call.result !== undefined)
     }, 180_000, 500)
-    if (!officerReady) throw new Error('the Officer session never finished its own tool turn')
+    if (!officerTurnRan) throw new Error(`REAL-TURN-MISS: the Officer session produced no completed tool call within 180s (observed turns=${String(observed().turnCount())})`)
+    const officerRead = await waitForCall('officer-read', matchToolUse({ name: 'read', argPath: 'file_path', argValue: paths.officerFile }), 60_000)
+    // The observed tool result lands BEFORE the model's final text is durably written. Round 120's
+    // first real boot read the transcript here and saw `finalAssistant=""` while the recorder already
+    // held the officer's exact `DBOOT_D4_OFFICER_TURN_DONE` (seq 8). Wait for the text; the judge's
+    // exact-token clause is unchanged (a model that never says it still fails, just 30 s later).
+    if (MODEL_MODE === 'real') {
+      await waitFor(() => String(readMemberTranscript(world.home, String(officerRow.childSessionId))?.finalAssistant ?? '').includes(DONE_OFFICER_TURN), 30_000, 200)
+    }
     const officerTranscript = readMemberTranscript(world.home, String(officerRow.childSessionId))
     writeFileSync(join(bootDir, 'officer-transcript.json'), `${JSON.stringify(officerTranscript, null, 2)}\n`)
     const officerLedger = readLedger(world.home, ids.officer)
     writeFileSync(join(bootDir, 'officer-ledger.json'), `${JSON.stringify(officerLedger, null, 2)}\n`)
-    const officerSettlement = settlementOf(world.home, ids.officer, CALL_OFF_READ)
+    const officerSettlement = settlementOf(world.home, ids.officer, officerRead.id)
     writeFileSync(join(bootDir, 'officer-settlement.json'), `${JSON.stringify(officerSettlement, null, 2)}\n`)
     const officerVerdict = judgeOfficerBinding({
-      member: officerRow, facts: factsFor(officerLedger, CALL_OFF_READ), settlement: officerSettlement,
+      member: officerRow, facts: factsFor(officerLedger, officerRead.id), settlement: officerSettlement, officerCallId: officerRead.id,
     })
+    officerVerdict.discovery = { 'officer-read': DISCOVERY['officer-read'] }
     const officerUpVerdict = judgeOfficerUp({ members: membersOf(state), officerRow, transcript: officerTranscript })
     writeFileSync(join(bootDir, 'verdicts-officer.json'), `${JSON.stringify({ officerUp: officerUpVerdict, officerBinding: officerVerdict }, null, 2)}\n`)
     log(`[boot${String(index)}] d4:officer-up=${officerUpVerdict.verdict} d4:officer-binding=${officerVerdict.verdict}`)
 
     // ── the worker ask: the ordinary tool ask the router would have to route ──
-    await promptTurn(MK_WRK, 'd4wrk')
-    if (!(await waitFor(() => sawReply(DONE_WRK), 120_000))) throw new Error('the worker delegation turn never answered the delegate call')
-    log(`[boot${String(index)}] worker delegated`)
+    currentStage = 'worker-delegation'
+    await promptTurn(scenarioPrompt('wrk', { paths }), 'd4wrk')
+    if (!(await waitFor(() => sawReply(DONE_WRK), 120_000))) throw new Error('REAL-TURN-MISS: the worker delegation turn produced no observed assistant turn with a tool-use block')
+    const delegateWorker = await waitForCall('delegate-worker', matchToolUse({ name: 'team_delegate', argPath: 'delegationTemplateId', argValue: 'worker' }), 60_000)
+    log(`[boot${String(index)}] worker delegated (call ${String(delegateWorker.id)} at turn ${String(delegateWorker.turnIndex)})`)
     // THE DELEGATION'S OWN RESULT (round 99). A delegation can be REFUSED by the product and still
     // let the Leader's turn finish, which looks exactly like "the member is slow". The refusal text
-    // is a tool result in the mock's NEXT request, so it is read back here and surfaced instead of
-    // being inferred from a 120s silence.
-    const workerDelegateResult = (() => {
+    // is a tool result returned to the model, so it is read from the OBSERVED transcript by the
+    // discovered call id instead of being inferred from a 120s silence.
+    // The tool_use block is observed in the request that PRODUCED it; the tool RESULT only lands in
+    // the FOLLOW-UP request. Round 120 attempt 5 read it one instant too early (result empty → the
+    // `worker-created-through-the-product` clause REFUTED while the durable ledger held the whole
+    // delegation). Wait for the follow-up turn; scripted mode's mock already has it.
+    if (MODEL_MODE === 'real') {
+      await waitFor(() => observed().toolResultsFor(delegateWorker.id).length > 0, 60_000, 200)
+    }
+    const delegateWorkerResults = observed().toolResultsFor(delegateWorker.id)
+    const workerDelegateResult = delegateWorkerResults.length === 0
+      ? null
+      : { isError: delegateWorkerResults.at(-1).isError, text: String(delegateWorkerResults.at(-1).text ?? '') }
+    // Scripted mode has always read this from the mock's next request; keep that exact source there.
+    const workerDelegateResultScripted = (() => {
       for (const r of requests()) {
         for (const message of messagesOf(r)) {
           if (!Array.isArray(message?.content)) continue
@@ -2213,9 +2589,10 @@ async function probeOnce({ index, head, grant }) {
       }
       return null
     })()
-    writeFileSync(join(bootDir, 'worker-delegate-result.json'), `${JSON.stringify(workerDelegateResult, null, 2)}\n`)
-    if (workerDelegateResult?.isError === true) {
-      throw new Error(`the product REFUSED the worker delegation: ${workerDelegateResult.text.slice(0, 1500)}`)
+    const delegateResult = MODEL_MODE === 'scripted' ? workerDelegateResultScripted : workerDelegateResult
+    writeFileSync(join(bootDir, 'worker-delegate-result.json'), `${JSON.stringify(delegateResult, null, 2)}\n`)
+    if (delegateResult?.isError === true) {
+      throw new Error(`the product REFUSED the worker delegation: ${String(delegateResult.text).slice(0, 1500)}`)
     }
     const workerUp = await waitFor(async () => {
       const st = await readState(origin, cookie)
@@ -2239,6 +2616,13 @@ async function probeOnce({ index, head, grant }) {
     // decision yet") failed on a real run while the product was correct. The snapshot is the same
     // durable row, taken earlier; no assertion changes.
     let caseSnapshot = null
+    // THE WORKER'S WRITE IS LOCATED BY PREDICATE (tool name + the exact target path), not by the
+    // mock's `call-d4-worker-write`. Its discovered id is what the durable ask correlation, the
+    // settlement, the facts and the judge all read — in BOTH modes (scripted resolves to the same
+    // id the script emitted, which keeps the scripted control byte-for-byte behaviourally identical).
+    const workerWriteHit = await waitForCall('worker-write', matchToolUse({ name: 'write', argPath: 'file_path', argValue: paths.workerFile }), 180_000)
+    const writeCallId = String(workerWriteHit.id)
+    log(`[boot${String(index)}] worker write discovered id=${writeCallId} turn=${String(workerWriteHit.turnIndex)}`)
     const askAppeared = await waitFor(async () => {
       const st = await readState(origin, cookie)
       if (ids.pendingRequestId === null) {
@@ -2248,7 +2632,7 @@ async function probeOnce({ index, head, grant }) {
       if (ids.pendingRequestId === null) {
         const durableRow = readTeamDomainLedger(world.home)
           .filter((fact) => fact?.factType === 'control-request-recorded'
-            && String(fact?.payload?.correlation ?? '') === `admission:${CALL_WRK_WRITE}`)
+            && String(fact?.payload?.correlation ?? '') === `admission:${writeCallId}`)
           .at(-1)
         const rowId = durableRow?.payload?.requestId
         if (rowId !== undefined && rowId !== null) ids.pendingRequestId = String(rowId)
@@ -2282,22 +2666,27 @@ async function probeOnce({ index, head, grant }) {
     // plain C1 ask (the judge asserts that absence). `resolveOutcome` below therefore carries the
     // OFFICER's call — the existing R3 judge's clause ("approved through the real control path") is
     // unchanged and is now satisfied by the lawful reviewer.
-    const officerResolveOf = async (requestId, label) => {
-      const callId = CALL_OFF_RESOLVE(requestId)
+    const officerResolveOf = async (requestId, label, nth = 0) => {
+      // Predicate: a `team_resolve_control` naming THIS requestId, at occurrence `nth` in call order.
+      // The mock's `call-d4-officer-resolve-<requestId>` is one instance of that predicate, never the
+      // predicate itself; a real model's own id is another.
+      const hit = await waitForCall(`officer-resolve-${label}`,
+        matchToolUse({ name: 'team_resolve_control', argPath: 'requestId', argValue: String(requestId), nth }), 180_000)
       const seen = await waitFor(() => {
         const tx = readMemberTranscript(world.home, String(officerRow.childSessionId))
-        return (tx?.calls ?? []).some((c) => String(c.callId) === callId && c.result !== null && c.result !== undefined)
-      }, 180_000, 400)
+        return (tx?.calls ?? []).some((c) => String(c.callId) === String(hit.id) && c.result !== null && c.result !== undefined)
+      }, 120_000, 400)
       const tx = readMemberTranscript(world.home, String(officerRow.childSessionId))
-      const call = (tx?.calls ?? []).find((c) => String(c.callId) === callId) ?? null
-      const settlement = settlementOf(world.home, ids.officer, callId)
-      const outcome = { seen, callId, call: call?.arguments ?? null, result: call?.result?.text?.slice(0, 800) ?? null, isError: call?.result?.isError ?? null, settlement }
+      const call = (tx?.calls ?? []).find((c) => String(c.callId) === String(hit.id)) ?? null
+      const settlement = settlementOf(world.home, ids.officer, hit.id)
+      const outcome = { seen, callId: String(hit.id), call: call?.arguments ?? null, result: call?.result?.text?.slice(0, 800) ?? null, isError: call?.result?.isError ?? null, settlement }
       writeFileSync(join(bootDir, `officer-resolve-${label}.json`), `${JSON.stringify(outcome, null, 2)}\n`)
-      log(`[boot${String(index)}] officer resolve(${label}) seen=${String(seen)} settlement=${String(settlement?.state)} result=${String(outcome.result).slice(0, 160)}`)
+      log(`[boot${String(index)}] officer resolve(${label}) seen=${String(seen)} id=${String(hit.id)} settlement=${String(settlement?.state)} result=${String(outcome.result).slice(0, 160)}`)
       return outcome
     }
     let resolveOutcome = null
     if (ids.pendingRequestId !== null) {
+      currentStage = 'first-resolve'
       const officerResolve = await officerResolveOf(ids.pendingRequestId, 'first')
       resolveOutcome = officerResolve.seen ? { call: officerResolve.call, result: officerResolve.result, isError: officerResolve.isError } : null
     }
@@ -2310,17 +2699,17 @@ async function probeOnce({ index, head, grant }) {
     // the settlement — never for a fixed sleep — then read the bytes from the HOST filesystem.
     const writeSettled = await waitFor(() => {
       const tx = readMemberTranscript(world.home, String(workerRow.childSessionId))
-      const call = (tx?.calls ?? []).find((c) => String(c.callId) === CALL_WRK_WRITE) ?? null
-      const settled = settlementOf(world.home, ids.worker, CALL_WRK_WRITE)
+      const call = (tx?.calls ?? []).find((c) => String(c.callId) === writeCallId) ?? null
+      const settled = settlementOf(world.home, ids.worker, writeCallId)
       return call?.result !== null && call?.result !== undefined && settled.present === true
     }, 120_000, 400)
     await sleep(500)
     const workerTxFinal = readMemberTranscript(world.home, String(workerRow.childSessionId))
-    const workerWriteCall = (workerTxFinal?.calls ?? []).find((c) => String(c.callId) === CALL_WRK_WRITE) ?? null
+    const workerWriteCall = (workerTxFinal?.calls ?? []).find((c) => String(c.callId) === writeCallId) ?? null
     const askFile = fileEvidence(paths.workerFile)
-    const askSettlement = settlementOf(world.home, ids.worker, CALL_WRK_WRITE)
+    const askSettlement = settlementOf(world.home, ids.worker, writeCallId)
     const workerLedgerFinal = readLedger(world.home, ids.worker)
-    const askFacts = factsFor(workerLedgerFinal, CALL_WRK_WRITE)
+    const askFacts = factsFor(workerLedgerFinal, writeCallId)
     const askExecuteVerdict = judgeAskExecute({
       requestRaised: ids.pendingRequestId !== null,
       resolveOutcome,
@@ -2330,6 +2719,10 @@ async function probeOnce({ index, head, grant }) {
       settlement: askSettlement,
       writeCall: workerWriteCall,
     })
+    askExecuteVerdict.discovery = {
+      'worker-write': DISCOVERY['worker-write'],
+      'officer-resolve-first': DISCOVERY['officer-resolve-first'] ?? null,
+    }
     writeFileSync(join(bootDir, 'ask-execute.json'), `${JSON.stringify({
       writeSettled,
       requestId: ids.pendingRequestId,
@@ -2352,6 +2745,7 @@ async function probeOnce({ index, head, grant }) {
     // settle a leg in well under one poll interval, and a projection that only lists PENDING rows then
     // misses the ask entirely (round 97 measured exactly that miss — the ask and its decision existed
     // on disk while the poll saw nothing). The durable fact cannot be missed.
+    currentStage = 'second-ask'
     const ask2Appeared = await waitFor(() => {
       const asks = readTeamDomainLedger(world.home)
         .filter((fact) => fact?.factType === 'control-request-recorded')
@@ -2364,21 +2758,25 @@ async function probeOnce({ index, head, grant }) {
     log(`[boot${String(index)}] second worker ask appeared=${String(ask2Appeared)} requestId=${String(ids.pendingRequestId2)}`)
     let resolveOutcome2 = null
     if (ids.pendingRequestId2 !== null && ids.pendingRequestId2 !== undefined) {
+      currentStage = 'second-resolve'
       const officerResolve2 = await officerResolveOf(ids.pendingRequestId2, 'second')
       resolveOutcome2 = officerResolve2.seen ? { call: officerResolve2.call, result: officerResolve2.result, isError: officerResolve2.isError } : null
     }
+    // The SECOND write, by predicate: same tool, the DIFFERENT declared target.
+    const workerWrite2Hit = await waitForCall('worker-write-2', matchToolUse({ name: 'write', argPath: 'file_path', argValue: paths.workerFile2 }), 180_000)
+    const write2CallId = String(workerWrite2Hit.id)
     const write2Settled = await waitFor(() => {
       const tx = readMemberTranscript(world.home, String(workerRow.childSessionId))
-      const call = (tx?.calls ?? []).find((c) => String(c.callId) === CALL_WRK_WRITE2) ?? null
-      const settled = settlementOf(world.home, ids.worker, CALL_WRK_WRITE2)
+      const call = (tx?.calls ?? []).find((c) => String(c.callId) === write2CallId) ?? null
+      const settled = settlementOf(world.home, ids.worker, write2CallId)
       return call?.result !== null && call?.result !== undefined && settled.present === true
     }, 180_000, 400)
     await sleep(500)
     const workerTxFinal2 = readMemberTranscript(world.home, String(workerRow.childSessionId))
-    const workerWriteCall2 = (workerTxFinal2?.calls ?? []).find((c) => String(c.callId) === CALL_WRK_WRITE2) ?? null
+    const workerWriteCall2 = (workerTxFinal2?.calls ?? []).find((c) => String(c.callId) === write2CallId) ?? null
     const askFile2 = fileEvidence(paths.workerFile2)
-    const askSettlement2 = settlementOf(world.home, ids.worker, CALL_WRK_WRITE2)
-    const askFacts2 = factsFor(readLedger(world.home, ids.worker), CALL_WRK_WRITE2)
+    const askSettlement2 = settlementOf(world.home, ids.worker, write2CallId)
+    const askFacts2 = factsFor(readLedger(world.home, ids.worker), write2CallId)
     const askExecute2Verdict = judgeAskExecute2({
       requestRaised: ask2Appeared === true,
       requestIsNew: ids.pendingRequestId2 !== null && ids.pendingRequestId2 !== undefined && ids.pendingRequestId2 !== ids.pendingRequestId,
@@ -2391,6 +2789,10 @@ async function probeOnce({ index, head, grant }) {
       settlement: askSettlement2,
       writeCall: workerWriteCall2,
     })
+    askExecute2Verdict.discovery = {
+      'worker-write-2': DISCOVERY['worker-write-2'],
+      'officer-resolve-second': DISCOVERY['officer-resolve-second'] ?? null,
+    }
     writeFileSync(join(bootDir, 'ask-execute-2.json'), `${JSON.stringify({
       writeSettled: write2Settled,
       requestId: ids.pendingRequestId2,
@@ -2421,21 +2823,26 @@ async function probeOnce({ index, head, grant }) {
     const officerWakeInputs = () => (readMemberTranscript(world.home, String(officerRow.childSessionId))?.user ?? [])
       .filter((text) => String(text).includes('[team-review-wake')).length
     const wakeInputsBeforeStop = officerWakeInputs()
-    const holdPrompt = await apiPrompt(origin, cookie, String(officerRow.childSessionId), `${MK_HOLD} hold the turn open for a real human cancel`, 'd4hold')
+    currentStage = 'sticky'
+    const holdPrompt = await apiPrompt(origin, cookie, String(officerRow.childSessionId), scenarioPrompt('hold'), 'd4hold')
     // Two independent witnesses: the prompt LANDED as a user message of the Officer session, and the
-    // turn is RUNNING (it has issued hold reads). A prompt that never lands is a different defect from
-    // a turn that never starts.
+    // turn is RUNNING (it has issued a hold tool call). A prompt that never lands is a different
+    // defect from a turn that never starts. BOTH texts carry the same hold tag.
     const holdLanded = await waitFor(() => (readMemberTranscript(world.home, String(officerRow.childSessionId))?.user ?? [])
       .some((text) => String(text).includes(MK_HOLD)), 20_000, 100)
-    const holdRunning = await waitFor(() => (readMemberTranscript(world.home, String(officerRow.childSessionId))?.calls ?? [])
-      .filter((call) => String(call.callId).startsWith('call-d4-officer-hold-')).length >= 2, 30_000, 100)
+    const holdRunning = MODEL_MODE === 'scripted'
+      ? await waitFor(() => (readMemberTranscript(world.home, String(officerRow.childSessionId))?.calls ?? [])
+        .filter((call) => String(call.callId).startsWith('call-d4-officer-hold-')).length >= 2, 30_000, 100)
+      // REAL: a hold is "the Officer's own turn is running and has issued a tool call". The mock's
+      // forty-read cadence is a SCRIPT detail, not the proposition the judge asserts.
+      : await waitFor(() => observed().turns().some((turn) => turn.toolUses.some((block) => block.name === 'bash' || block.name === 'read')), 60_000, 250)
     const stopCancel = await apiSessionCancel(origin, cookie, String(officerRow.childSessionId), 'd4sticky')
     const stopSeen = await waitFor(() => stopMarkers().length > 0, 30_000, 100)
     const stopMarkersBefore = stopMarkers()
     log(`[boot${String(index)}] sticky: holdLanded=${String(holdLanded)} hold=${String(holdRunning)} cancelStatus=${String(stopCancel?.status ?? null)} stopSeen=${String(stopSeen)} markers=${JSON.stringify(stopMarkersBefore)}`)
 
     // (3) THE MACHINE ATTEMPT: a THIRD admission ask from the worker while the Officer is stopped.
-    const thirdAskPrompt = await apiPrompt(origin, cookie, String(workerRow.childSessionId), `${MK_WORK3} issue the third write`, 'd4work3')
+    const thirdAskPrompt = await apiPrompt(origin, cookie, String(workerRow.childSessionId), scenarioPrompt('work3', { paths }), 'd4work3')
     const thirdAskAppeared = await waitFor(() => {
       const asks = readTeamDomainLedger(world.home)
         .filter((fact) => fact?.factType === 'control-request-recorded')
@@ -2454,23 +2861,26 @@ async function probeOnce({ index, head, grant }) {
     log(`[boot${String(index)}] sticky: thirdAsk=${String(thirdAskAppeared)} requestId=${String(ids.pendingRequestId3)} markersAfter=${JSON.stringify(stopMarkersAfter)} wakeInputsWhileStopped=${String(wakeInputsWhileStopped)}`)
 
     // (5) THE ONLY RESUME: an explicit HUMAN prompt to the stopped Officer.
-    const resumePrompt = await apiPrompt(origin, cookie, String(officerRow.childSessionId), `${MK_RESUME} resume`, 'd4resume')
+    const resumePrompt = await apiPrompt(origin, cookie, String(officerRow.childSessionId), scenarioPrompt('resume'), 'd4resume')
     const resumeCleared = await waitFor(() => stopMarkers().length === 0, 30_000, 100)
     let resolveOutcome3 = null
     if (ids.pendingRequestId3 !== null && ids.pendingRequestId3 !== undefined) {
+      currentStage = 'third-resolve'
       const officerResolve3 = await officerResolveOf(ids.pendingRequestId3, 'third')
       resolveOutcome3 = officerResolve3.seen ? { call: officerResolve3.call, result: officerResolve3.result, isError: officerResolve3.isError } : null
     }
+    const write3Hit = await waitForCall('worker-write-3', matchToolUse({ name: 'write', argPath: 'file_path', argValue: paths.workerFile3 }), 180_000)
+    const write3CallId = String(write3Hit.id)
     const write3Settled = await waitFor(() => {
       const tx = readMemberTranscript(world.home, String(workerRow.childSessionId))
-      const call = (tx?.calls ?? []).find((c) => String(c.callId) === CALL_WRK_WRITE3) ?? null
-      const settled = settlementOf(world.home, ids.worker, CALL_WRK_WRITE3)
+      const call = (tx?.calls ?? []).find((c) => String(c.callId) === write3CallId) ?? null
+      const settled = settlementOf(world.home, ids.worker, write3CallId)
       return call?.result !== null && call?.result !== undefined && settled.present === true
     }, 180_000, 400)
     const workerTxFinal3 = readMemberTranscript(world.home, String(workerRow.childSessionId))
-    const workerWriteCall3 = (workerTxFinal3?.calls ?? []).find((c) => String(c.callId) === CALL_WRK_WRITE3) ?? null
+    const workerWriteCall3 = (workerTxFinal3?.calls ?? []).find((c) => String(c.callId) === write3CallId) ?? null
     const askFile3 = fileEvidence(paths.workerFile3)
-    const askSettlement3 = settlementOf(world.home, ids.worker, CALL_WRK_WRITE3)
+    const askSettlement3 = settlementOf(world.home, ids.worker, write3CallId)
     stickyMeasurement = {
       stoppedBefore: stopSeen === true,
       stoppedMarkersBefore: stopMarkersBefore,
@@ -2483,6 +2893,7 @@ async function probeOnce({ index, head, grant }) {
       humanResume: { status: resumePrompt?.status ?? null, markersAfterResume: stopMarkers().length },
       resumedWakeDelivered: resolveOutcome3 !== null,
       write3: { settled: write3Settled === true, file: { exists: askFile3.exists, bytes: askFile3.bytes, sha256: askFile3.sha256 }, settlement: askSettlement3.state, result: workerWriteCall3?.result?.isError ?? null },
+      discovery: { 'worker-write-3': DISCOVERY['worker-write-3'], 'officer-resolve-third': DISCOVERY['officer-resolve-third'] ?? null },
     }
     writeFileSync(join(bootDir, 'sticky-stop.json'), `${JSON.stringify(stickyMeasurement, null, 2)}\n`)
     log(`[boot${String(index)}] sticky: resumeCleared=${String(resumeCleared)} resolve3=${String(resolveOutcome3 !== null)} write3Settled=${String(write3Settled)}`)
@@ -2495,7 +2906,8 @@ async function probeOnce({ index, head, grant }) {
     // case vocabulary is the outstanding-operation canonicalizer, which cannot express a shell
     // body), so it takes the plain leader path — the Leader resolves it through the REAL
     // `team_resolve_control`, exactly as it did for the very first write ask.
-    const bashPrompt = await apiPrompt(origin, cookie, String(workerRow.childSessionId), `${MK_BASH} run the process probe command`, 'd4bash')
+    currentStage = 'process'
+    const bashPrompt = await apiPrompt(origin, cookie, String(workerRow.childSessionId), scenarioPrompt('bash', { paths }), 'd4bash')
     if (bashPrompt?.status !== 200) throw new Error(`the process arm's worker prompt failed: status=${String(bashPrompt?.status)}`)
     const processAskAppeared = await waitFor(() => {
       const asks = readTeamDomainLedger(world.home)
@@ -2508,7 +2920,7 @@ async function probeOnce({ index, head, grant }) {
     }, 180_000, 300)
     log(`[boot${String(index)}] process ask appeared=${String(processAskAppeared)} requestId=${String(ids.pendingProcessRequestId)}`)
     if (!processAskAppeared) throw new Error('the process arm raised no Control request')
-    await promptTurn(MK_RESOLVE3, 'd4res3')
+    await promptTurn(scenarioPrompt('resolve3', { ids }), 'd4res3')
     // The Leader resolves the ask through the REAL `team_resolve_control`; its own tool result lives in
     // the ROOT session, which the product does not persist (only child sessions are), so the approval
     // is observed where it is authoritative: the durable `control-decision-recorded` row.
@@ -2516,19 +2928,22 @@ async function probeOnce({ index, head, grant }) {
       && String(fact?.payload?.requestId ?? '') === String(ids.pendingProcessRequestId ?? '\u0000')), 120_000, 400)
     const processDecision = readTeamDomainLedger(world.home).find((fact) => fact?.factType === 'control-decision-recorded'
       && String(fact?.payload?.requestId ?? '') === String(ids.pendingProcessRequestId ?? '\u0000')) ?? null
+    // The process `bash` call, by predicate: tool name + the probe's own in-lane command text.
+    const bashHit = await waitForCall('worker-bash', matchToolUse({ name: 'bash', argPath: 'command', argIncludes: BASH_INLANE_TEXT }), 180_000)
+    const bashCallId = String(bashHit.id)
     const bashSettled = await waitFor(() => {
       const tx = readMemberTranscript(world.home, String(workerRow.childSessionId))
-      const call = (tx?.calls ?? []).find((c) => String(c.callId) === CALL_WRK_BASH) ?? null
-      const settled = settlementOf(world.home, ids.worker, CALL_WRK_BASH)
+      const call = (tx?.calls ?? []).find((c) => String(c.callId) === bashCallId) ?? null
+      const settled = settlementOf(world.home, ids.worker, bashCallId)
       return call?.result !== null && call?.result !== undefined && settled.present === true
     }, 180_000, 400)
     await sleep(500)
     const workerTxProcess = readMemberTranscript(world.home, String(workerRow.childSessionId))
-    const workerBashCall = (workerTxProcess?.calls ?? []).find((c) => String(c.callId) === CALL_WRK_BASH) ?? null
+    const workerBashCall = (workerTxProcess?.calls ?? []).find((c) => String(c.callId) === bashCallId) ?? null
     const bashInLane = fileEvidence(paths.workerBashInLane)
     const bashOutside = fileEvidence(paths.workerBashOutside)
-    const bashSettlement = settlementOf(world.home, ids.worker, CALL_WRK_BASH)
-    const bashFacts = factsFor(readLedger(world.home, ids.worker), CALL_WRK_BASH)
+    const bashSettlement = settlementOf(world.home, ids.worker, bashCallId)
+    const bashFacts = factsFor(readLedger(world.home, ids.worker), bashCallId)
     const processAskVerdict = judgeAskProcess({
       requestRaised: ids.pendingProcessRequestId !== null && ids.pendingProcessRequestId !== undefined,
       controlDecision: processDecision?.payload ?? null,
@@ -2711,7 +3126,7 @@ async function probeOnce({ index, head, grant }) {
 
     // Was the ask resolvable at all through the plain C1 path?
     const workerTxAfter = readMemberTranscript(world.home, String(workerRow.childSessionId))
-    const workerWrite = (workerTxAfter?.calls ?? []).find((c) => String(c.callId) === CALL_WRK_WRITE) ?? null
+    const workerWrite = (workerTxAfter?.calls ?? []).find((c) => String(c.callId) === writeCallId) ?? null
     writeFileSync(join(bootDir, 'wake-measurement.json'), `${JSON.stringify({
       ids, resolveOutcome,
       durableRowShape: durable?.row ?? null,
@@ -2737,19 +3152,54 @@ async function probeOnce({ index, head, grant }) {
     // variable-counting control reported a broken reader while the ledger was complete. The ledger is
     // still the thing under test: every durable request must belong to this world, and every durable
     // decision must answer one of those requests.
-    const worldCorrelations = [CALL_WRK_WRITE, CALL_WRK_WRITE2, CALL_WRK_WRITE3, CALL_WRK_BASH].map((id) => `admission:${id}`)
+    const worldCorrelations = [writeCallId, write2CallId, write3CallId, bashCallId].map((id) => `admission:${id}`)
     const censusLedger = readTeamDomainLedger(world.home)
-    const worldRequestIds = new Set(censusLedger
-      .filter((fact) => fact?.factType === 'control-request-recorded' && worldCorrelations.includes(String(fact?.payload?.correlation ?? '')))
-      .map((fact) => String(fact.payload.requestId)))
-    const worldDecisionIds = new Set(censusLedger
-      .filter((fact) => fact?.factType === 'control-decision-recorded' && worldRequestIds.has(String(fact?.payload?.requestId ?? '')))
-      .map((fact) => String(fact.payload.requestId)))
-    const observedRequests = worldRequestIds.size
-    const observedDecisions = worldDecisionIds.size
-    if (factTypeCensus['control-request-recorded'] !== observedRequests || factTypeCensus['control-decision-recorded'] !== observedDecisions) {
-      throw new Error(`the durable reader is not reading the TeamDomain ledger: control-request-recorded count=${String(factTypeCensus['control-request-recorded'])} (observed ${String(observedRequests)}), control-decision-recorded count=${String(factTypeCensus['control-decision-recorded'])} (observed ${String(observedDecisions)}) census=${JSON.stringify(factTypeCensus)}`)
+    // ROUND 120 — A REAL MODEL MAY RAISE MORE THAN THE FOUR JUDGED ASKS, and that is not a reader
+    // defect. Round 120's first real boot drove the whole chain and then failed this control because
+    // the model had called `bash {command:"sleep 45"}` a SECOND time during the Sticky Stop arm: a
+    // legitimate, observed ask (correlation `admission:<that observed tool_use id>`) that is not one
+    // of the four the judges name. The control therefore classifies each extra request:
+    //   - correlation is one of the four judged calls  → REQUIRED, exactly one request + one decision;
+    //   - correlation names an OBSERVED tool_use id   → allowed (an extra governed call the model made),
+    //     and it is counted separately in the evidence;
+    //   - anything else                                → FAIL (the reader lost/attributed an ask).
+    // It is not relaxed: a reader that misses one of the four still fails, and a duplicate row for the
+    // same requestId still fails the distinct-id count equality below.
+    const observedCallIds = new Set(observed().toolUses().map((use) => String(use.id)))
+    const requestFacts = censusLedger.filter((fact) => fact?.factType === 'control-request-recorded')
+    const decisionFacts = censusLedger.filter((fact) => fact?.factType === 'control-decision-recorded')
+    const judgedRequests = requestFacts.filter((fact) => worldCorrelations.includes(String(fact?.payload?.correlation ?? '')))
+    const extraRequests = requestFacts.filter((fact) => !worldCorrelations.includes(String(fact?.payload?.correlation ?? '')))
+    const unexplainedExtras = extraRequests.filter((fact) => {
+      const match = /^admission:(.+)$/u.exec(String(fact?.payload?.correlation ?? ''))
+      return match === null || !observedCallIds.has(match[1])
+    })
+    if (unexplainedExtras.length > 0) {
+      throw new Error(`the durable ledger holds ${String(unexplainedExtras.length)} control request(s) whose correlation is neither one of the four judged calls nor an OBSERVED model tool_use id — the reader/product attributed an ask to an unknown call: ${JSON.stringify(unexplainedExtras.map((fact) => fact?.payload?.correlation))}`)
     }
+    for (const correlation of worldCorrelations) {
+      const fact = judgedRequests.find((entry) => String(entry?.payload?.correlation ?? '') === correlation) ?? null
+      if (fact === null) throw new Error(`the durable reader lost the control request for ${correlation} (census=${JSON.stringify(factTypeCensus)})`)
+      if (!decisionFacts.some((entry) => String(entry?.payload?.requestId ?? '') === String(fact?.payload?.requestId ?? ''))) {
+        throw new Error(`the durable reader lost the decision for ${correlation} (requestId=${String(fact?.payload?.requestId)})`)
+      }
+    }
+    const distinctRequestIds = new Set(requestFacts.map((fact) => String(fact?.payload?.requestId ?? '')))
+    const distinctDecisionIds = new Set(decisionFacts.map((fact) => String(fact?.payload?.requestId ?? '')))
+    if (factTypeCensus['control-request-recorded'] !== distinctRequestIds.size
+      || factTypeCensus['control-decision-recorded'] !== distinctDecisionIds.size) {
+      throw new Error(`the durable reader is not reading the TeamDomain ledger completely: control-request-recorded count=${String(factTypeCensus['control-request-recorded'])} (distinct ids ${String(distinctRequestIds.size)}), control-decision-recorded count=${String(factTypeCensus['control-decision-recorded'])} (distinct ids ${String(distinctDecisionIds.size)}) census=${JSON.stringify(factTypeCensus)}`)
+    }
+    const extraAsks = extraRequests.map((fact) => ({
+      requestId: String(fact?.payload?.requestId ?? ''),
+      correlation: String(fact?.payload?.correlation ?? ''),
+      token: String(fact?.payload?.requestToken ?? ''),
+    }))
+    writeFileSync(join(bootDir, 'extra-model-asks.json'), `${JSON.stringify({
+      judgedCorrelations: worldCorrelations,
+      extraAsks,
+      note: 'extra governed calls the model made that are not one of the four judged asks; each correlation names an observed tool_use id',
+    }, null, 2)}\n`)
     // ── ROUND 97 — the seven routed-wake judges, each over durable bytes ──
     const ledgerFinal = readTeamDomainLedger(world.home)
     const decisionFact = ledgerFinal.find((fact) => fact?.factType === 'control-decision-recorded'
@@ -2758,7 +3208,11 @@ async function probeOnce({ index, head, grant }) {
       && String(entry?.payload?.requestId ?? '') === String(ids.pendingRequestId ?? '')) ?? null
     const managementExecutions = settlementsMentioning(world.home, String(routedFact?.payload?.requestToken ?? ''))
     // Captured while the world is alive: the counters block is assembled AFTER teardown.
-    const officerResolveSettlementState = settlementOf(world.home, ids.officer, CALL_OFF_RESOLVE(ids.pendingRequestId)).state
+    const officerResolveFirstId = DISCOVERY['officer-resolve-first']?.matched?.id ?? null
+    if (officerResolveFirstId === null) {
+      throw new DiscoveryMissError('officer-resolve-first', `team_resolve_control(requestId=${String(ids.pendingRequestId)})`, observed().turnCount())
+    }
+    const officerResolveSettlementState = settlementOf(world.home, ids.officer, officerResolveFirstId).state
     const caseCreatedVerdict = judgeCaseCreated({ durableRow: durable, ledgerRows })
     const routerOfficerVerdict = judgeRouterOfficer({
       routeProbe,
@@ -2776,11 +3230,13 @@ async function probeOnce({ index, head, grant }) {
     const officerDecidesVerdict = judgeOfficerDecides({
       requestId: ids.pendingRequestId,
       officerTranscript: officerTxAfter,
-      officerFacts: factsFor(readLedger(world.home, ids.officer), CALL_OFF_RESOLVE(ids.pendingRequestId)),
-      settlement: settlementOf(world.home, ids.officer, CALL_OFF_RESOLVE(ids.pendingRequestId)),
+      officerFacts: factsFor(readLedger(world.home, ids.officer), officerResolveFirstId),
+      settlement: settlementOf(world.home, ids.officer, officerResolveFirstId),
       leaderTranscript: leaderTx,
       officerInstanceId: ids.officer,
+      resolveCallId: officerResolveFirstId,
     })
+    officerDecidesVerdict.discovery = { 'officer-resolve-first': DISCOVERY['officer-resolve-first'] }
     const askAfterReviewVerdict = judgeAskExecutesAfterReview({
       requestId: ids.pendingRequestId,
       decisionFact,
@@ -2835,14 +3291,18 @@ async function probeOnce({ index, head, grant }) {
     let collectVerdict = null
     let collectError = null
     try {
-      await promptTurn(`${MK_COLLECT} Use the team_collect tool with requestToken "rm-collect-1" and requestTokens ["${WORKER_DELEGATE_TOKEN}"]; then report the collected body verbatim.`, 'rm-collect')
+      currentStage = 'collect'
+      await promptTurn(scenarioPrompt('collect'), 'rm-collect')
+      // Predicate: `team_collect` naming the driver's own request token (never a mock-only id).
+      const collectHit = await waitForCall('leader-collect',
+        matchToolUse({ name: 'team_collect', argPath: 'requestToken', argValue: 'rm-collect-1' }), 180_000)
       await waitFor(() => {
         const tx = readMemberTranscript(world.home, ROOT)
-        return (tx?.calls ?? []).some((c) => String(c.callId) === CALL_COLLECT && c.result !== null && c.result !== undefined)
+        return (tx?.calls ?? []).some((c) => String(c.callId) === String(collectHit.id) && c.result !== null && c.result !== undefined)
       }, 180_000, 400)
       const tx = readMemberTranscript(world.home, ROOT)
-      const call = (tx?.calls ?? []).find((c) => String(c.callId) === CALL_COLLECT) ?? null
-      collectMeasurement = { callId: CALL_COLLECT, found: call !== null, call: call === null ? null : { name: call.name, arguments: call.arguments, result: call.result } }
+      const call = (tx?.calls ?? []).find((c) => String(c.callId) === String(collectHit.id)) ?? null
+      collectMeasurement = { callId: String(collectHit.id), found: call !== null, call: call === null ? null : { name: call.name, arguments: call.arguments, result: call.result }, discovery: DISCOVERY['leader-collect'] }
     } catch (error) {
       collectError = String(error?.message ?? error)
     }
@@ -2857,9 +3317,15 @@ async function probeOnce({ index, head, grant }) {
       const requestId = ids.pendingRequestId
       const fileBefore = fileEvidence(paths.workerFile)
       const decisionsBefore = decisionCountFor(requestId)
-      const executionsBefore = executionAdmissions(world.home, ids.worker, CALL_WRK_WRITE).admitted
-      const dupCallId = CALL_OFF_RESOLVE_DUP(requestId)
-      await promptTurn(`${MK_DUP_RESOLVE} Repeated review attempt: call team_resolve_control a SECOND time for requestId "${String(requestId)}" with decision "allow".`, 'rm-duplicate', String(officerRow.childSessionId))
+      const executionsBefore = executionAdmissions(world.home, ids.worker, writeCallId).admitted
+      currentStage = 'duplicate-approval'
+      await promptTurn(scenarioPrompt('dup', { ids }), 'rm-duplicate', String(officerRow.childSessionId))
+      // Predicate: the SECOND `team_resolve_control` for the ALREADY-SETTLED requestId (occurrence #2
+      // in call order). In scripted mode this is the mock's duplicate call; a real model's duplicate
+      // is the same predicate.
+      const dupHit = await waitForCall('duplicate-resolve',
+        matchToolUse({ name: 'team_resolve_control', argPath: 'requestId', argValue: String(requestId), nth: 1 }), 180_000)
+      const dupCallId = String(dupHit.id)
       await waitFor(() => {
         const tx = readMemberTranscript(world.home, String(officerRow.childSessionId))
         return (tx?.calls ?? []).some((c) => String(c.callId) === dupCallId && c.result !== null && c.result !== undefined)
@@ -2874,7 +3340,7 @@ async function probeOnce({ index, head, grant }) {
         decisionsBefore,
         executionsBefore,
         decisions: decisionCountFor(requestId),
-        executions: executionAdmissions(world.home, ids.worker, CALL_WRK_WRITE).admitted,
+        executions: executionAdmissions(world.home, ids.worker, writeCallId).admitted,
         fileBefore: { sha256: fileBefore.sha256, bytes: fileBefore.bytes },
         fileAfter: { sha256: fileAfter.sha256, bytes: fileAfter.bytes },
       }
@@ -2889,7 +3355,11 @@ async function probeOnce({ index, head, grant }) {
       fileAfter: duplicateApprovalMeasurement?.fileAfter ?? null,
       error: duplicateApprovalMeasurement?.error ?? null,
     })
-    writeFileSync(join(bootDir, 'duplicate-approval.json'), `${JSON.stringify({ measurement: duplicateApprovalMeasurement, verdict: duplicateApprovalVerdict }, null, 2)}\n`)
+    writeFileSync(join(bootDir, 'duplicate-approval.json'), `${JSON.stringify({
+      measurement: duplicateApprovalMeasurement,
+      verdict: duplicateApprovalVerdict,
+      observed: observed().excerpt(24, 1600),
+    }, null, 2)}\n`)
     fnWriteVerdict(bootDir, 'duplicate-approval', duplicateApprovalVerdict)
     log(`[boot${String(index)}] rm:duplicate-approval=${duplicateApprovalVerdict.verdict} failing=${JSON.stringify(duplicateApprovalVerdict.failing)}`)
 
@@ -2900,12 +3370,13 @@ async function probeOnce({ index, head, grant }) {
         fileSha256: fileEvidence(paths.workerFile).sha256,
         fileBytes: fileEvidence(paths.workerFile).bytes,
         decisions: decisionCountFor(ids.pendingRequestId),
-        executions: executionAdmissions(world.home, ids.worker, CALL_WRK_WRITE).admitted,
+        executions: executionAdmissions(world.home, ids.worker, writeCallId).admitted,
         wakeRouted: factsOfType(world.home, 'team-review-wake-routed')
           .filter((entry) => String(entry?.row?.payload?.requestId ?? '') === String(ids.pendingRequestId ?? '\u0000')).length,
         wakeDelivered: factsOfType(world.home, 'team-review-wake-delivered')
           .filter((entry) => String(entry?.row?.payload?.requestId ?? '') === String(ids.pendingRequestId ?? '\u0000')).length,
       })
+      currentStage = 'restart'
       const before = capture()
       const stopped = await world.stopHost({ graceMs: 20_000 })
       // The SAME home, the SAME durable rows: only the boot phase changes, exactly as a resume does.
@@ -2928,11 +3399,16 @@ async function probeOnce({ index, head, grant }) {
       restartMeasurement = { restarted: false, error: String(error?.message ?? error), before: {}, after: {} }
     }
     restartVerdict = judgeRestartNoReplay({ measurement: restartMeasurement })
-    writeFileSync(join(bootDir, 'restart-no-replay.json'), `${JSON.stringify({ measurement: restartMeasurement, verdict: restartVerdict }, null, 2)}\n`)
+    writeFileSync(join(bootDir, 'restart-no-replay.json'), `${JSON.stringify({
+      measurement: restartMeasurement,
+      verdict: restartVerdict,
+      observed: observed().excerpt(24, 1600),
+    }, null, 2)}\n`)
     fnWriteVerdict(bootDir, 'restart-no-replay', restartVerdict)
     log(`[boot${String(index)}] rm:restart-no-replay=${restartVerdict.verdict} failing=${JSON.stringify(restartVerdict.failing)}`)
 
     // ── the NEGATIVE world: the same v5 doc without the absolute wake path ──
+    currentStage = 'refusal'
     const refusalDepart = await lease.boot(async () => {
       const incoherent = incoherentBlueprintYaml({ dirs })
       assertBlueprintText(incoherent, BP_ID, 'incoherent.yaml', false)
@@ -2953,7 +3429,8 @@ async function probeOnce({ index, head, grant }) {
       } else {
         // The row is refused BEFORE any model call; a real route is still bound so
         // the boot is the same lifecycle, not a different one.
-        await refusalWorld.startRealProvider({ baseUrl: MODEL_BASE_URL === '' ? null : MODEL_BASE_URL, apiKey: process.env[MODEL_KEY_ENV] })
+        // The refusal world talks to the SAME recorder: its (refused) calls are observed too.
+        await refusalWorld.startRealProvider({ baseUrl: recorderBaseUrl(recorder), apiKey: process.env[MODEL_KEY_ENV] })
       }
       let threw = false
       let errorText = ''
@@ -3030,6 +3507,9 @@ async function probeOnce({ index, head, grant }) {
     // The positive and refusal worlds still hold the two dev-live slots, so they are torn down
     // BEFORE the negative arms boot. Everything measured from them is captured first; nothing is
     // re-booted and no positive judge is shortened.
+    // THE OBSERVED TRANSCRIPT SNAPSHOT: taken while the positive world still exists, because the
+    // evidence write happens after its teardown (round-120 smoke read `world.mock` post-null).
+    const observedTranscript = observed()
     const positiveWorldId = world.id
     const positiveHome = world.home
     const refusalWorldId = refusalWorld.id
@@ -3041,6 +3521,7 @@ async function probeOnce({ index, head, grant }) {
       try { teardown = await world.teardown({ keepHome: false }) } catch (error) { log(`teardown note: ${String(error?.message ?? error)}`) }
       world = null
     }
+    currentStage = 'negative-arms'
     const negativeLease = await preRegisterDevLiveBudget({
       grantPath: GRANT_PATH, headCommit: head, runRecord: record,
       face: 'FS Provider', world: LINE, leaseRoot: factory.leaseRoot,
@@ -3059,6 +3540,7 @@ async function probeOnce({ index, head, grant }) {
       log(`negative lease settle note: ${String(error?.message ?? error)}`)
     }
 
+    currentStage = 'verdicts'
     const verdicts = {
       enablement: enablementVerdict,
       officerUp: officerUpVerdict,
@@ -3082,6 +3564,7 @@ async function probeOnce({ index, head, grant }) {
       duplicateApproval: duplicateApprovalVerdict,
       restartNoReplay: restartVerdict,
     }
+    partialVerdicts = verdicts
     const overall = Object.values(verdicts).every((v) => v.verdict === 'PROVEN') ? 'PASS' : 'BLOCKED'
     result = {
       boot: index,
@@ -3092,7 +3575,7 @@ async function probeOnce({ index, head, grant }) {
         wakeFacts: wakeFacts.length,
         wakeIntentFiles: wakeIntentFiles.length,
         reviewWakeHits: reviewWakeHits.length,
-        officerAllowFacts: factsFor(officerLedger, CALL_OFF_READ).filter((f) => f?.kind === 'invocation-authority' && f?.decision === 'allow').length,
+        officerAllowFacts: factsFor(officerLedger, officerRead.id).filter((f) => f?.kind === 'invocation-authority' && f?.decision === 'allow').length,
         askExecuteBytes: askFile.bytes,
         askExecuteSha256: askFile.sha256,
         askExecuteSettlement: askSettlement.state,
@@ -3138,6 +3621,18 @@ async function probeOnce({ index, head, grant }) {
       elapsedMs: Date.now() - startedBoot,
     }
     writeFileSync(join(bootDir, 'verdicts.json'), `${JSON.stringify(verdicts, null, 2)}\n`)
+    // THE OBSERVED TRANSCRIPT, as evidence: the calls this boot really made and the tool results it
+    // really received. Scripted mode writes the same shape from the mock's log.
+    const transcriptEvidence = observedTranscript
+    writeFileSync(join(bootDir, 'model-transcript.json'), `${JSON.stringify({
+      source: transcriptEvidence.source,
+      turns: transcriptEvidence.turnCount(),
+      assistantTurnsWithToolUse: transcriptEvidence.assistantTurnsWithToolUse(),
+      calledToolNames: transcriptEvidence.calledToolNames(),
+      advertisedToolNames: transcriptEvidence.toolNames(),
+      excerpt: transcriptEvidence.excerpt(200, 4000),
+      discovery: DISCOVERY,
+    }, null, 2)}\n`)
     writeFileSync(join(bootDir, 'summary.txt'), `${renderSummary(result)}\n`)
     // The RUN record carries the shipped verdict vocabulary; the probe's own
     // PROVEN/REFUTED proposition stays in `verdicts.json` and each case's detail.
@@ -3165,13 +3660,69 @@ async function probeOnce({ index, head, grant }) {
   } catch (error) {
     failure = error
     log(`[boot${String(index)}] PROBE FAILED: ${String(error?.stack ?? error)}`)
-    record.markAborted({ stage: 'probe', detail: String(error?.message ?? error).slice(0, 800) })
+    // ── PER-JUDGE NAMED FAILURE (round 120) ───────────────────────────────────────────────────
+    // Round 119 recorded all 20 judges as "selected case produced no verdict (fail-closed)" when
+    // the real branch aborted. A judge that was never reached is still REFUTED, but its reason must
+    // NAME what was missing: the DISCOVERY-MISS (predicate + observed turn count) when a predicate
+    // matched nothing, otherwise the stage that threw. Observed transcript excerpts go beside it.
+    const failureReason = error instanceof DiscoveryMissError
+      ? String(error.message)
+      : `NOT-REACHED(${currentStage}): ${String(error?.message ?? error)}`
+    const transcriptNow = MODEL_MODE === 'scripted'
+      ? ModelTranscript.fromMockRequests(world?.mock?.requests ?? [])
+      : ModelTranscript.fromRecorderRecords(() => recorder?.records() ?? [])
+    const unreached = {}
+    for (const id of D4_JUDGES) {
+      if (partialVerdicts[id] !== undefined) continue
+      const verdict = verdictOf(`judge ${id} must be measured over the observed evidence`, [
+        { id: 'stage-reached', ok: false, detail: failureReason },
+        { id: 'evidence-located', ok: false, detail: error instanceof DiscoveryMissError ? error.message : `no evidence: ${currentStage} did not complete` },
+      ])
+      verdict.discovery = error instanceof DiscoveryMissError && error.slot !== undefined && DISCOVERY[error.slot] !== undefined
+        ? { [error.slot]: DISCOVERY[error.slot] }
+        : {}
+      verdict.detail = { reason: failureReason, stage: currentStage }
+      unreached[id] = verdict
+      record.addCase(CASE_ID[id], 'FAIL', {
+        proposition: verdict.proposition,
+        probeVerdict: 'REFUTED',
+        failing: verdict.failing,
+        clauses: verdict.clauses,
+        reason: failureReason,
+        stage: currentStage,
+      })
+    }
+    writeFileSync(join(bootDir, 'verdicts-unreached.json'), `${JSON.stringify(unreached, null, 2)}\n`)
+    writeFileSync(join(bootDir, 'failure.json'), `${JSON.stringify({
+      stage: currentStage,
+      reason: failureReason,
+      discoveryMiss: error instanceof DiscoveryMissError ? { slot: error.slot, predicate: error.predicateText, observedTurns: error.observedTurns } : null,
+      discovery: DISCOVERY,
+      observed: {
+        source: transcriptNow.source,
+        turns: transcriptNow.turnCount(),
+        assistantTurnsWithToolUse: transcriptNow.assistantTurnsWithToolUse(),
+        calledToolNames: transcriptNow.calledToolNames(),
+        advertisedToolNames: transcriptNow.toolNames(),
+        excerpt: transcriptNow.excerpt(40, 2000),
+      },
+    }, null, 2)}\n`)
+    log(`[boot${String(index)}] per-judge named failure written: ${String(Object.keys(unreached).length)} judge(s) REFUTED with reason=${failureReason.slice(0, 300)}`)
+    record.markAborted({ stage: currentStage, detail: failureReason.slice(0, 800) })
   } finally {
     if (refusalWorld !== null) {
       try { refusalTeardown = await refusalWorld.teardown({ keepHome: failure !== null }) } catch { refusalTeardown = null }
     }
     if (world !== null) {
       try { teardown = await world.teardown({ keepHome: failure !== null }) } catch (error) { log(`teardown note: ${String(error?.message ?? error)}`) }
+    }
+    if (recorder !== null) {
+      try {
+        writeFileSync(join(bootDir, 'model-calls.snapshot.json'), `${JSON.stringify(recorder.snapshot(), null, 2)}\n`)
+      } catch (error) {
+        log(`[boot${String(index)}] recorder snapshot note: ${String(error?.message ?? error)}`)
+      }
+      try { await recorder.stop() } catch (error) { log(`[boot${String(index)}] recorder stop note: ${String(error?.message ?? error)}`) }
     }
     try {
       const settled = settleDevLiveLease(lease)
@@ -3325,6 +3876,101 @@ function retireSupersededRunRecords() {
   return retired
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// DISCOVERY BY PREDICATE — and the NEGATIVE CONTROL that proves it cannot pass
+// vacuously. Round 119's failure was not only "no capture"; it was that a judge
+// keyed to a fixed call id had no way to say "I looked and found nothing" other
+// than aborting. Every judge below now locates its evidence through
+// `discoverToolUse`, and this self-test drives that SAME function over synthetic
+// transcripts where the evidence is absent, mis-shaped, or mis-ordered. If a
+// negative case ever MATCHES, the run refuses to start: a vacuous pass is a
+// broken instrument, not a green judge.
+// ─────────────────────────────────────────────────────────────────────────────
+function discoverToolUse(transcript, slot, predicate) {
+  return transcript.requireToolUse(slot, predicate, predicate.describe?.())
+}
+
+/** A transcript over synthetic turns (self-test only; never a run's evidence). */
+function syntheticTranscript(turns) {
+  return new ModelTranscript({
+    source: 'self-test',
+    turns: () => turns.map((turn, index) => ({
+      index,
+      source: 'self-test',
+      seq: index,
+      at: null,
+      model: 'self-test',
+      toolNames: turn.toolNames ?? [],
+      messageRoles: [],
+      text: turn.text ?? '',
+      toolUses: turn.toolUses ?? [],
+      toolResults: turn.toolResults ?? [],
+    })),
+  })
+}
+
+/**
+ * The negative control for the new discovery. Returns the measured table; throws
+ * when a case that MUST fail does not (or when the positive control misses).
+ */
+function runDiscoverySelfTest() {
+  const workerWrite = () => matchToolUse({ name: 'write', argPath: 'file_path', argValue: '/lane/worker-ask.txt' })
+  const resolveSecond = () => matchToolUse({ name: 'team_resolve_control', argPath: 'requestId', argValue: 'ctrl-abc', nth: 1 })
+  const cases = []
+  const negative = (id, transcript, slot, predicate) => {
+    const before = { id, slot, expected: 'DISCOVERY-MISS' }
+    try {
+      const hit = discoverToolUse(transcript, slot, predicate)
+      cases.push({ ...before, observed: 'MATCHED', matchedId: hit?.id ?? null, pass: false })
+      return false
+    } catch (error) {
+      const pass = error instanceof DiscoveryMissError && String(error.code) === 'DISCOVERY-MISS'
+        && String(error.message).includes(`DISCOVERY-MISS(${slot})`)
+      cases.push({ ...before, observed: pass ? 'DISCOVERY-MISS' : 'OTHER-ERROR', message: String(error?.message ?? error), pass })
+      return pass
+    }
+  }
+  const positive = (id, transcript, slot, predicate, wantId) => {
+    try {
+      const hit = discoverToolUse(transcript, slot, predicate)
+      const pass = String(hit?.id ?? '') === wantId
+      cases.push({ id, slot, expected: 'MATCH', observed: 'MATCH', matchedId: hit?.id ?? null, wantId, pass })
+      return pass
+    } catch (error) {
+      cases.push({ id, slot, expected: 'MATCH', observed: 'DISCOVERY-MISS', message: String(error?.message ?? error), pass: false })
+      return false
+    }
+  }
+
+  const allPass = [
+    // 1. ZERO TURNS — a run with no observed turn must never satisfy discovery.
+    negative('zero-turns', syntheticTranscript([]), 'worker-write', workerWrite()),
+    // 2. RIGHT TOOL, WRONG ARGUMENT — the exact vacuous pass a name-only predicate would allow.
+    negative('right-tool-wrong-argument', syntheticTranscript([{
+      toolUses: [{ id: 'call-wrong', name: 'write', input: { file_path: '/lane/other.txt', content: 'x' } }],
+    }]), 'worker-write', workerWrite()),
+    // 3. RIGHT TOOL + ARG, WRONG OCCURRENCE — "a second resolve" must not match the first one.
+    negative('right-tool-wrong-occurrence', syntheticTranscript([{
+      toolUses: [{ id: 'call-resolve-1', name: 'team_resolve_control', input: { requestId: 'ctrl-abc', decision: 'allow' } }],
+    }]), 'duplicate-resolve', resolveSecond()),
+    // 4. POSITIVE CONTROL — the SAME predicate over the right block DOES match, so the negatives
+    //    above are not passing because the predicate is impossible everywhere.
+    positive('right-tool-right-argument', syntheticTranscript([{
+      toolUses: [{ id: 'call-right', name: 'write', input: { file_path: '/lane/worker-ask.txt', content: 'x' } }],
+    }]), 'worker-write', workerWrite(), 'call-right'),
+  ].every(Boolean)
+
+  // 5. THE REAL-MODE TURN GATE, measured on the same transcript type: zero tool-use turns must
+  //    yield zero, and one tool-use turn must yield one. `sawReply()` in real mode reads THIS.
+  const zeroGate = syntheticTranscript([{ toolUses: [], text: 'a text-only turn' }]).assistantTurnsWithToolUse() === 0
+  const oneGate = syntheticTranscript([{ toolUses: [{ id: 'call-1', name: 'bash', input: { command: 'pwd' } }] }]).assistantTurnsWithToolUse() === 1
+  cases.push({ id: 'turn-gate-zero-tool-use', expected: 0, observed: zeroGate ? 0 : 1, pass: zeroGate })
+  cases.push({ id: 'turn-gate-one-tool-use', expected: 1, observed: oneGate ? 1 : 0, pass: oneGate })
+
+  const pass = allPass && zeroGate && oneGate
+  return { schema: 'd4-discovery-self-test/1', at: new Date().toISOString(), modelMode: MODEL_MODE, pass, cases }
+}
+
 async function main() {
   // ── THE PROBE RUNS FIRST, IN BOTH MODES ────────────────────────────────────────────────────────
   //
@@ -3351,6 +3997,19 @@ async function main() {
     return
   }
   archivePriorRuns()
+  // THE INSTRUMENT'S OWN CONTROL, before any boot: the predicate discovery used by every judge must
+  // MISS on zero turns, on the right tool with the wrong argument, and on the wrong occurrence — and
+  // MATCH on the right block. A failure here stops the run instead of producing judges that could pass
+  // without evidence.
+  const discoverySelfTest = runDiscoverySelfTest()
+  writeFileSync(join(EVIDENCE, 'discovery-self-test.json'), `${JSON.stringify(discoverySelfTest, null, 2)}\n`)
+  for (const entry of discoverySelfTest.cases) {
+    log(`discovery self-test: ${entry.id} expected=${String(entry.expected)} observed=${String(entry.observed)} pass=${String(entry.pass)}${entry.message === undefined ? '' : ` (${entry.message})`}`)
+  }
+  log(`discovery self-test: pass=${String(discoverySelfTest.pass)} mode=${MODEL_MODE}`)
+  if (discoverySelfTest.pass !== true) {
+    throw new Error(`DISCOVERY SELF-TEST FAILED — the new predicate discovery can pass vacuously; refusing to run (see discovery-self-test.json)`)
+  }
   const head = resolveHeadCommit(REPO_ROOT)
   const grant = JSON.parse(readFileSync(GRANT_PATH, 'utf8'))
   const porcelainBefore = hostPorcelain()

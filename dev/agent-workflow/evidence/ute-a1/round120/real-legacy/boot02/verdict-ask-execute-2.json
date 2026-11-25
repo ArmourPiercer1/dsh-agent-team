@@ -1,0 +1,71 @@
+{
+  "proposition": "a SECOND Member `write` (different path, different bytes) raises its OWN Control request, is approved, and executes: the receipt is bound to THAT operation, both files hold the bytes of their own approval, settled COMPLETED",
+  "verdict": "PROVEN",
+  "clauses": [
+    {
+      "id": "second-control-request-raised",
+      "ok": true,
+      "detail": "requestRaised=true requestIsNew=true"
+    },
+    {
+      "id": "second-approved-through-real-control-path",
+      "ok": true,
+      "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-02wk9k51stj97418oluz30ju\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0hvc2y01v51z\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-real-model-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1q9ehvo0zb4o\\\"},\\\"targetInstanceId\\\":\\\"inst-1q9ehvo0zb4o\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call_00_ET_Oso1bLXlo4hRx0wTXbmk6504\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:a75a9300a7f15d6ad0b5a84\""
+    },
+    {
+      "id": "second-admission-fact-allow-lane-ask",
+      "ok": true,
+      "detail": "allow facts=[{\"callId\":\"call_00_ET_Oso1bLXlo4hRx0wTXbmk6504\",\"decision\":\"allow\",\"laneDecision\":\"ask\",\"axis\":\"fs.write\"}]"
+    },
+    {
+      "id": "second-write-tool-result-not-an-error",
+      "ok": true,
+      "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-26-07Z/workspace/lane/worker-ask-2.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+    },
+    {
+      "id": "second-real-bytes-on-disk",
+      "ok": true,
+      "detail": "file exists=true bytes=29 sha256=2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f expectedSha256=2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f"
+    },
+    {
+      "id": "first-file-unchanged-by-second-approval",
+      "ok": true,
+      "detail": "first sha256=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3 expectedSha256=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3"
+    },
+    {
+      "id": "content-binding-distinguishes-the-two-approvals",
+      "ok": true,
+      "detail": "second=2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f first=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3"
+    },
+    {
+      "id": "second-settlement-completed",
+      "ok": true,
+      "detail": "state=COMPLETED bodyOutcome=completed transitions=[\"ADMITTED\",\"RUNNING\",\"COMPLETED\"]"
+    }
+  ],
+  "failing": [],
+  "discovery": {
+    "worker-write-2": {
+      "slot": "worker-write-2",
+      "predicate": "name=write && file_path=\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-26-07Z/workspace/lane/worker-ask-2.txt\"",
+      "matched": {
+        "id": "call_00_ET_Oso1bLXlo4hRx0wTXbmk6504",
+        "name": "write",
+        "turnIndex": 16,
+        "input": "{\"content\":\"DBOOT_D4_WORKER_ASK_CALLED_2\\n\",\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-26-07Z/workspace/lane/worker-ask-2.txt\"}"
+      },
+      "at": "2026-11-25T20:27:41.966Z"
+    },
+    "officer-resolve-second": {
+      "slot": "officer-resolve-second",
+      "predicate": "name=team_resolve_control && requestId=\"ctrl-02wk9k51stj97418oluz30ju\" && occurrence #1",
+      "matched": {
+        "id": "call_00_ET_7iBCitqvUUBnBMOjDmEx4875",
+        "name": "team_resolve_control",
+        "turnIndex": 17,
+        "input": "{\"decision\":\"allow\",\"requestId\":\"ctrl-02wk9k51stj97418oluz30ju\",\"requestToken\":\"dboot-d4-officer-resolve-ctrl-02wk9k51stj97418oluz30ju\",\"rootSessionId\":\"session-real-model-root\"}"
+      },
+      "at": "2026-11-25T20:27:41.963Z"
+    }
+  }
+}

@@ -15,7 +15,7 @@
     {
       "id": "stop-fact-recorded",
       "ok": true,
-      "detail": "deny facts=[{\"callId\":\"call-d4-worker-write\",\"refusalCode\":\"ADMISSION_STOPPED\",\"decision\":\"deny\"}]"
+      "detail": "deny facts=[{\"callId\":\"call_00_7O5TpOS3eLJ2P3LMsBzA7502\",\"refusalCode\":\"ADMISSION_STOPPED\",\"decision\":\"deny\"}]"
     },
     {
       "id": "zero-bytes",
@@ -28,5 +28,14 @@
       "detail": "state=REFUSED bodyOutcome=not-started transitions=[\"ADMITTED\",\"REFUSED\"]"
     }
   ],
-  "failing": []
+  "failing": [],
+  "discovery": {
+    "ask-stopped-worker-write": {
+      "slot": "ask-stopped-worker-write",
+      "predicate": "name=write && file_path=\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-24-41Z/workspace/lane/ask-stopped.txt\"",
+      "matchedId": "call_00_7O5TpOS3eLJ2P3LMsBzA7502",
+      "turnIndex": 3,
+      "input": "{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-24-41Z/workspace/lane/ask-stopped.txt\",\"content\":\"DBOOT_D4_WORKER_ASK_CALLED\\n\"}"
+    }
+  }
 }

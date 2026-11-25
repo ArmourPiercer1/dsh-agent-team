@@ -1,0 +1,161 @@
+{
+  "bashSettled": true,
+  "requestId": "ctrl-1ez4vzh1ab4yf20n8ax3f1en",
+  "processDecisionSeen": true,
+  "controlDecision": {
+    "createdAt": "2026-11-25T20:13:47.286Z",
+    "factType": "control-decision-recorded",
+    "payload": {
+      "decider": {
+        "instanceId": "inst-leader",
+        "kind": "instance",
+        "role": "leader"
+      },
+      "decision": "deny",
+      "note": "Officer scope is read-only review; bash exec not assigned and command not disclosed",
+      "requestId": "ctrl-1ez4vzh1ab4yf20n8ax3f1en",
+      "requestSequence": 22,
+      "scope": {
+        "actionName": "admission-ask",
+        "authorityScope": {
+          "matcher": {
+            "kind": "fingerprint",
+            "resource": "sha256:c639941d9f3b8393d3b7413c035d1008fe01c29a28e56f18a8f55eea5e8eb7e1"
+          },
+          "operationClass": "bash"
+        },
+        "correlation": "admission:call_00_ET_nCjOgJaLYw7tlgfhNTxH5869",
+        "operationFingerprint": "sha256:c639941d9f3b8393d3b7413c035d1008fe01c29a28e56f18a8f55eea5e8eb7e1",
+        "rootSessionId": "session-real-model-root",
+        "subject": {
+          "instanceId": "inst-0hvc2y01v51z",
+          "kind": "instance"
+        },
+        "targetInstanceId": "inst-0hvc2y01v51z",
+        "toolName": "bash"
+      }
+    },
+    "rootSessionId": "session-real-model-root",
+    "schemaVersion": 2,
+    "sequence": 23
+  },
+  "workerBashCall": {
+    "callId": "call_00_ET_sKswgekZPFhk079QFkdt4828",
+    "name": "bash",
+    "arguments": {
+      "command": "printf 'DBOOT_D4_BASH_INLANE' > /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-13-07Z-next/workspace/lane/worker-bash-inlane.txt; printf 'DBOOT_D4_BASH_LEAK' > /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-13-07Z-next/worker-bash-outside.txt || true"
+    },
+    "result": {
+      "callId": "call_00_ET_sKswgekZPFhk079QFkdt4828",
+      "isError": true,
+      "text": "Error: no PTY backend registered for \"a5sf-governed-shell\""
+    }
+  },
+  "inLane": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-13-07Z-next/workspace/lane/worker-bash-inlane.txt",
+    "exists": false,
+    "content": null,
+    "bytes": null,
+    "sha256": null
+  },
+  "outLane": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-13-07Z-next/worker-bash-outside.txt",
+    "exists": false,
+    "content": null,
+    "bytes": null,
+    "sha256": null
+  },
+  "settlement": {
+    "executionId": "exec-9e38eac0dc9e599cfe5c2f10812244ffe3a0c9bc",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-13-07Z-next/centre/settlement/inst-1q9ehvo0zb4o/exec-9e38eac0dc9e599cfe5c2f10812244ffe3a0c9bc.settlement.json",
+    "present": true,
+    "state": "FAILED",
+    "bodyOutcome": "failed",
+    "dispatch": "quiesced",
+    "transitions": [
+      "ADMITTED",
+      "RUNNING",
+      "FAILED"
+    ],
+    "terminalAt": "2026-11-25T20:13:53.915Z"
+  },
+  "facts": [
+    {
+      "callId": "call_00_ET_sKswgekZPFhk079QFkdt4828",
+      "agentId": "inst-1q9ehvo0zb4o",
+      "instanceId": "inst-1q9ehvo0zb4o",
+      "sessionId": "session-team-child-a3d2ddfd7c73a4e7714c635105202791",
+      "instanceGeneration": 0,
+      "toolName": "bash",
+      "axis": "process.exec",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-13-07Z-next/workspace",
+      "definitionSource": "",
+      "policyGeneration": "a5sf1:ed85eb6e2c9f7a9983048f8e16ebeaab",
+      "blueprintRevision": "",
+      "owner": "session-real-model-root",
+      "decision": "allow",
+      "laneDecision": "ask",
+      "kind": "invocation-authority",
+      "at": "2026-11-25T20:13:53.897Z"
+    },
+    {
+      "callId": "call_00_ET_sKswgekZPFhk079QFkdt4828",
+      "executionId": "exec-9e38eac0dc9e599cfe5c2f10812244ffe3a0c9bc",
+      "toolName": "bash",
+      "agentId": "session-team-child-a3d2ddfd7c73a4e7714c635105202791",
+      "outcome": "failed",
+      "isError": true,
+      "errorMessage": "no PTY backend registered for \"a5sf-governed-shell\"",
+      "policyGeneration": "a5sf1:ed85eb6e2c9f7a9983048f8e16ebeaab",
+      "kind": "execution",
+      "at": "2026-11-25T20:13:53.912Z"
+    }
+  ],
+  "verdict": {
+    "proposition": "a Member `bash` whose disposition is `ask` raises a REAL Control request, is approved through the REAL control path, and then executes under the confined profile: the in-lane write lands with the exact bytes, the out-of-lane write produces NOTHING, and the execution settles COMPLETED",
+    "verdict": "REFUTED",
+    "clauses": [
+      {
+        "id": "control-request-raised",
+        "ok": true,
+        "detail": "requestRaised=true"
+      },
+      {
+        "id": "approved-through-real-control-path",
+        "ok": false,
+        "detail": "durable control-decision-recorded decision=deny decider={\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"} requestId=ctrl-1ez4vzh1ab4yf20n8ax3f1en"
+      },
+      {
+        "id": "process-admission-fact-allow",
+        "ok": true,
+        "detail": "process.exec allow facts=[{\"callId\":\"call_00_ET_sKswgekZPFhk079QFkdt4828\",\"decision\":\"allow\",\"laneDecision\":\"ask\",\"axis\":\"process.exec\"}]"
+      },
+      {
+        "id": "bash-tool-result-not-an-error",
+        "ok": false,
+        "detail": "bash result isError=true text=\"Error: no PTY backend registered for \\\"a5sf-governed-shell\\\"\""
+      },
+      {
+        "id": "in-lane-write-lands",
+        "ok": false,
+        "detail": "file exists=false bytes=null sha256=null expectedSha256=861a17a712b274c843416fe7f9bab16e3399bbe6137e3b36bb832252a13420c2"
+      },
+      {
+        "id": "out-of-lane-write-produces-nothing",
+        "ok": true,
+        "detail": "out-of-lane file exists=false bytes=null (the OS profile refused it; the receipt added no writable bit)"
+      },
+      {
+        "id": "settlement-completed",
+        "ok": false,
+        "detail": "state=FAILED bodyOutcome=failed transitions=[\"ADMITTED\",\"RUNNING\",\"FAILED\"]"
+      }
+    ],
+    "failing": [
+      "approved-through-real-control-path",
+      "bash-tool-result-not-an-error",
+      "in-lane-write-lands",
+      "settlement-completed"
+    ]
+  }
+}

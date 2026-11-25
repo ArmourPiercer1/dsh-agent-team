@@ -1,0 +1,14 @@
+{
+  "proposition": "deny arm must run",
+  "verdict": "REFUTED",
+  "clauses": [
+    {
+      "id": "arm-ran",
+      "ok": false,
+      "detail": "the ask-denied worker instance never came up"
+    }
+  ],
+  "failing": [
+    "arm-ran"
+  ]
+}

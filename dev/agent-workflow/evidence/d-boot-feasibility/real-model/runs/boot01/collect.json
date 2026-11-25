@@ -1,21 +1,32 @@
 {
   "measurement": {
-    "callId": "call-rm-leader-collect",
+    "callId": "call_00_ET_723tb8Y5AzqfzrWMJeLC2963",
     "found": true,
     "call": {
       "name": "team_collect",
       "arguments": {
-        "rootSessionId": "session-real-model-root",
         "requestToken": "rm-collect-1",
         "requestTokens": [
           "dboot-d4-delegate-worker"
-        ]
+        ],
+        "rootSessionId": "session-real-model-root"
       },
       "result": {
-        "callId": "call-rm-leader-collect",
+        "callId": "call_00_ET_723tb8Y5AzqfzrWMJeLC2963",
         "isError": false,
         "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-real-model-root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"dboot-d4-delegate-worker\",\"status\":\"succeeded\",\"instanceId\":\"inst-1q9ehvo0zb4o\",\"admittedSequence\":7,\"settledSequence\":18,\"memberResult\":{\"body\":\"DBOOT_D4_WORKER_TURN_DONE\",\"requestToken\":\"dboot-d4-delegate-worker\",\"status\":\"succeeded\"}}]},\"requestToken\":\"rm-collect-1\"}"
       }
+    },
+    "discovery": {
+      "slot": "leader-collect",
+      "predicate": "name=team_collect && requestToken=\"rm-collect-1\"",
+      "matched": {
+        "id": "call_00_ET_723tb8Y5AzqfzrWMJeLC2963",
+        "name": "team_collect",
+        "turnIndex": 43,
+        "input": "{\"requestToken\":\"rm-collect-1\",\"requestTokens\":[\"dboot-d4-delegate-worker\"],\"rootSessionId\":\"session-real-model-root\"}"
+      },
+      "at": "2026-11-25T20:21:49.975Z"
     }
   },
   "error": null,
@@ -26,7 +37,7 @@
       {
         "id": "collect-call-issued",
         "ok": true,
-        "detail": "call={\"rootSessionId\":\"session-real-model-root\",\"requestToken\":\"rm-collect-1\",\"requestTokens\":[\"dboot-d4-delegate-worker\"]}"
+        "detail": "call={\"requestToken\":\"rm-collect-1\",\"requestTokens\":[\"dboot-d4-delegate-worker\"],\"rootSessionId\":\"session-real-model-root\"}"
       },
       {
         "id": "collect-result-not-an-error",

@@ -11516,3 +11516,56 @@ published baseline); D4 5/5.
 
 **Not done.** The 11 rc.5 product-gap tests are not fixed (product migration: load the rc.5 executor provider /
 re-bind the managed attach); no real-model run; PR stays DRAFT; no settlement merge.
+
+## ROUND 120 (2026-11-26) — REAL-MODEL acceptance achieved at `DEV-LIVE`: 20/20 PROVEN on both pinned hosts
+
+**The driver's real branch was rebuilt, not the judges.** Round 119 proved the route answered but the
+driver could not see it. This round (worktree `.worktrees/vnext-a1-cut`, branch `vnext/a1-cut` @
+`1a3a79c4c`, sole writer, PR #822 DRAFT, `:3080` untouched, CORE PATCH BUDGET = 0): real request capture
+through the public `DEEPSEEK_BASE_URL` seam with an in-process pass-through recorder
+(`tests/world-factory/lib/model-call-recorder.mjs` — forwards `req.url` verbatim, forces
+`accept-encoding: identity`, records each `tool_use` name+input and every tool result, never headers);
+non-vacuous turn gates (`sawReply` real = an observed assistant turn with ≥1 tool-use block after the
+prompt; zero turns throws `REAL-TURN-MISS`); discovery of every judged call by predicate over the
+observed transcript (`tests/world-factory/lib/model-transcript.mjs`, `matchToolUse({name,argPath,
+argValue,nth,…})`, `DISCOVERY-MISS(<slot>)` on a miss) instead of mock-only ids. **No judge assertion,
+timeout or retry changed**; the only literal ids left are `requestToken`s the scenario itself names.
+
+**Two required runs, both exit 0.** legacy (rc.2 `639ed01539`, `deepseek-v4-flash`) **892 s**; next (rc.5
+`9c2670d3bc`, `deepseek-flash`) **180 s**; each 2/2 boots, `RESULT evidence-complete=true allBooted=true
+blocked=false runRecordsValid=true (2/2 boots; agreeing pair=true)`, **20/20 judges PROVEN on every boot**,
+RUN records `recordClass: DEV-LIVE` / `overall: PASS`, `agreeing=true differing=[]` (identical measured rows
+including approved-file sha256, `routedWakes=4`, `managementExecutions=0`, `stickyStopMarkerCount=1`).
+The four negative controls are OBSERVED with the model's own replies: deny (`team_resolve_control
+decision:"deny"` → `ADMISSION_APPROVAL_DENIED`, zero bytes, `REFUSED`/`not-started`); Stop (`session/cancel`
+200 → `ADMISSION_STOPPED`, zero bytes); duplicate approval (second decision rejected
+`CONTROL_REQUEST_DECIDED`, one execution); restart-no-replay (`before === after`: same sha, 1 decision,
+1 execution). Scripted control still 20/20 on 2/2 boots; discovery self-test 6/6 with three
+`DISCOVERY-MISS` negatives.
+
+**Six red attempts preserved** under `d-boot-feasibility/real-model/archive/`, each named by the defect it
+exposed (over-strict ledger census vs a legitimate fifth real ask; wake-marker self-taint from the driver's
+own prompt; raw scripted marker in a negative arm; queued deny prompt starved by the model's exploration —
+fixed by cancelling the in-flight Leader turn as a human's next prompt would; delegation tool result read
+one turn early; one next-boot worker answering with text instead of calling `write`). The last was fixed by
+a dated **prompt** amendment (`PROMPT-AMENDMENT.md` §Amendment 2, old text retained); no judge was weakened.
+
+**Level.** `D-ACCEPTANCE-REPORT.md` row 34 moves to **`DEV-LIVE-real-model`** (level vocabulary extended);
+`C1-C18-SIGNOFF.md` ROUND 120 and `CANDIDATE-REPORT.md` §8.1 updated. **Still not `CANDIDATE-ACCEPTED`**
+(the version gate has not run with a real model at a frozen version) and **no row is PRODUCT-PROVEN**;
+`d4:ask-execute-process` remains the single enumerated `knownRefuted` (REFUTED on both hosts, not one of the 20).
+
+**Gates at this round (`dev/agent-workflow/evidence/ute-a1/round120/gates/`).** `ute-vnext-a1` dispatch
+8 suites / 264 pass / 0 fail / 3 skipped (exit 0, same set digest `sha256:0b087a6a…`); catalog **788/736/14/38**
+digest `sha256:15451525…` unchanged (no new collected suite; the two new libs are not test suites); `ute-cut-closure
+cut(0/148)`; `ute-p0-assets modules=37 files=180 lines=69512 cut(148/148)`; `docs-sync docs=193 findings=0
+blocking=0`; place-dist-glue 35 byte-identical; `eb3-ci-required pass workflows=11`; bound vitest
+`ci-integration PASS 15 suites / 238 passed / 0 failed`; UTE G1 argv **89/89** (default host; the same argv
+under `TEAM_TEST_HOST=next` fails the retired-shadow control — recorded, not the bound lane); `eb3-run-manifest
+records=640 strict=0 findings=0`; `ci-pr-gate --full --census-captures 2` **10/10 legs PASS** (588.9 s; census
+599f/7424l twice, identical identity sets to the published baseline). Leakage self-check clean.
+
+**Not done.** No candidate/version-gate run with a real model at a frozen SHA; agreement is two boots per
+host, not independent sessions across time; the real model stays non-deterministic (one flaky negative-arm
+boot preserved, not retried away); `d4:ask-execute-process` (no PTY backend in the governed-shell world).
+PR stays DRAFT; no merge.

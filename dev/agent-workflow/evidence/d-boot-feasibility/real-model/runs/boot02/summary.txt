@@ -1,5 +1,5 @@
-# REAL-MODEL acceptance — boot 2 [SCRIPTED-ONLY]
-world=u5u5a5sfdev1-20261124T20-57-49Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T20-57-49Z port=3196 elapsedMs=680795
+# REAL-MODEL acceptance — boot 2 [REAL-MODEL]
+world=u5u5a5sfdev1-20261125T20-26-07Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-26-07Z port=3198 elapsedMs=381698
 
 judge                verdict    failing
 enablement           PROVEN     []

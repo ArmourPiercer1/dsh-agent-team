@@ -1,0 +1,49 @@
+{
+  "askAppeared": true,
+  "ids": {
+    "officer": "inst-0hvc2y01v51z",
+    "worker": "inst-1q9ehvo0zb4o",
+    "pendingRequestId": "ctrl-1in1zj10x7jhdm0nfx2ej0jn",
+    "pendingRequestId2": null,
+    "pendingRequestId3": null,
+    "pendingProcessRequestId": null
+  },
+  "askRow": {
+    "requestId": "ctrl-1in1zj10x7jhdm0nfx2ej0jn",
+    "kind": "leader-approval",
+    "targetInstanceId": "inst-1q9ehvo0zb4o",
+    "actionName": "admission-ask",
+    "toolName": "write",
+    "correlation": "admission:call-d4-worker-write",
+    "status": "pending",
+    "createdAt": "2026-11-24T20:49:15.687Z",
+    "subject": {
+      "kind": "instance",
+      "instanceId": "inst-1q9ehvo0zb4o"
+    },
+    "executionCoupling": "inline",
+    "requestSequence": 9,
+    "operationFingerprint": "sha256:08b58ec43ead20b165db6f89939de4607a47db4d47d2b7b0f5d7825fd2485f9c",
+    "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T20-46-29Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:1264c3a945976bc8144e22b805650348)"
+  },
+  "requests": [
+    {
+      "requestId": "ctrl-1in1zj10x7jhdm0nfx2ej0jn",
+      "kind": "leader-approval",
+      "targetInstanceId": "inst-1q9ehvo0zb4o",
+      "actionName": "admission-ask",
+      "toolName": "write",
+      "correlation": "admission:call-d4-worker-write",
+      "status": "pending",
+      "createdAt": "2026-11-24T20:49:15.687Z",
+      "subject": {
+        "kind": "instance",
+        "instanceId": "inst-1q9ehvo0zb4o"
+      },
+      "executionCoupling": "inline",
+      "requestSequence": 9,
+      "operationFingerprint": "sha256:08b58ec43ead20b165db6f89939de4607a47db4d47d2b7b0f5d7825fd2485f9c",
+      "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T20-46-29Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:1264c3a945976bc8144e22b805650348)"
+    }
+  ]
+}

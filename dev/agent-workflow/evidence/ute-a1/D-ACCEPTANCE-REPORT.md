@@ -98,6 +98,56 @@ six manifest-classification controls.
 **No capability level moves.** The table below keeps the levels it had; only the definition of the top level
 changed.
 
+## ROUND 120 (2026-11-26) — REAL-MODEL acceptance: 20/20 PROVEN on both hosts (`DEV-LIVE-real-model`; row 34 moves, no capability row does)
+
+**Row 34 moves.** The round-119 blocker was the driver's real branch, not the environment; this round
+fixed that branch and re-ran the two required commands at `1a3a79c4c`:
+
+| host | pin | host-chosen model | exit | boots | per-boot | agreement | duration |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| legacy (rc.2) | `639ed01539` | `deepseek-v4-flash` | **0** | 2/2 | `PASS` / `PASS` | `agreeing=true differing=[]` | **892 s** (14 min 52 s) |
+| next (rc.5) | `9c2670d3bc` | `deepseek-flash` | **0** | 2/2 | `PASS` / `PASS` | `agreeing=true differing=[]` | 180 s |
+
+Both boots on both hosts record **20/20 judges PROVEN** in `recordClass: DEV-LIVE` RUN records
+(`overall: PASS`); the two-run agreement table matches every measured row, including the approved
+files' sha256, `routedWakes=4`, `managementExecutions=0` and `stickyStopMarkerCount=1`.
+
+**What changed in the driver (no judge assertion changed):** real request capture through the public
+`DEEPSEEK_BASE_URL` seam with an in-process pass-through recorder (`tests/world-factory/lib/model-call-recorder.mjs`,
+records each tool_use name+input and every tool result; never headers); non-vacuous turn gates
+(`sawReply` = an observed assistant turn with ≥1 tool-use block after the prompt; zero turns throws
+`REAL-TURN-MISS`); discovery of every judged call by predicate over the observed transcript
+(`tests/world-factory/lib/model-transcript.mjs`, `DISCOVERY-MISS(<slot>)` on a miss) instead of
+mock-only ids. The scripted arm is unchanged and still 20/20 on 2/2 boots.
+
+**The four negative controls are now OBSERVED with the model's own replies:** deny (Leader
+`team_resolve_control decision:"deny"` → `ADMISSION_APPROVAL_DENIED`, zero bytes, `REFUSED`/`not-started`);
+Stop (`session/cancel` 200 → `ADMISSION_STOPPED`, zero bytes); duplicate approval (second decision
+rejected `CONTROL_REQUEST_DECIDED`, one execution); restart-no-replay (`before === after`: same sha,
+1 decision, 1 execution, 0 replays).
+
+**Level:** row 34 is now `DEV-LIVE-real-model` — development evidence over the real provider on both
+pinned hosts; **never PRODUCT-PROVEN** (the version gate has not run with a real model at a frozen
+version). `d4:ask-execute-process` stays the single enumerated `knownRefuted`, REFUTED as in the
+scripted baseline; `knownRefuted` is unchanged (2 rows across two hosts in the candidate gate, exactly
+as before).
+
+**Attempt honesty:** six red attempts are preserved under
+`d-boot-feasibility/real-model/archive/`, each named by the defect it exposed (over-strict ledger
+census; wake-marker self-taint in the driver's own prompt; raw marker in a negative arm; queued deny
+prompt starved by the model's exploration; delegation result read one turn early; one next-boot worker
+answering with text). The last was fixed by a dated **prompt** amendment (old text retained in
+`PROMPT-AMENDMENT.md`); no judge was weakened, no timeout widened, no retry added.
+
+**Leakage self-check:** `git grep` for the key value over the tracked tree, `dev/agent-workflow/evidence/`
+and `.artifacts/` prints nothing; `git status`/`git ls-files` show no `.env`.
+
+**What is still unproven:** candidate acceptance with a real model at a frozen version SHA; agreement
+across independent sessions over time (this is two boots per host); the real model stays
+non-deterministic (one flaky negative-arm boot preserved, not retried away);
+`d4:ask-execute-process` (no PTY backend in the governed-shell world). Full trail:
+`dev/agent-workflow/evidence/ute-a1/round120/README.md`.
+
 ## ROUND 119 (2026-11-26) — the real route is AVAILABLE; the real-model driver's real branch aborts (no row moves)
 
 The owner supplied the credential the round-111 probe named. The environment precondition is now
@@ -343,6 +393,7 @@ Hosts, exactly as the drivers printed them (`candidate:` row, first log line of 
 | **DEV-LIVE** | Proven on a BOOTED, pinned host by a driver with two agreeing boots. Development evidence; never candidate evidence, never a gate. |
 | **ENV-LIMITED** | The host/platform genuinely lacks the capability (e.g. a kernel/OS feature absent); recorded as a limit, not as a pass. |
 | **REFUSED BY RULING** | The cut's ruling IS that the surface refuses; the judge asserts the refusal shape, not a working capability. |
+| **DEV-LIVE-real-model** | DEV-LIVE whose model route is the REAL provider (no mock), with every judge PROVEN on 2/2 boots on BOTH pinned hosts. Still development evidence: never candidate evidence, never PRODUCT-PROVEN (the version gate has not run with a real model at a frozen version). |
 | **NOT-PRODUCT-PROVEN** | No live proof at the pin (refuted, unrecorded, or observation exists but is not production-wired). Carries the open item that would prove it. |
 
 ### The table
@@ -413,7 +464,7 @@ Hosts, exactly as the drivers printed them (`candidate:` row, first log line of 
 | 31 | P0-2 pre-dispatch abort observation (`pre-dispatch-abort.mjs`) | **MECHANISM** | **MECHANISM** (`SLICE-21/30/37/38`, assertions unchanged) | **MECHANISM** (same arms, both hosts; round 106 adds the ruled-law controls `SLICE-40/41/42` on both hosts) | **CLOSED BY OWNER RULING (round 106, review `20261124-2120` ruling 2)** — the lawful no-settlement boundary is ruled and tested; `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` remains a diagnostic report, never a settlement. The observer is still not wired into a booted host's own agent loop: a coverage limit, not an acceptance blocker |
 | 32 | OS confinement negative controls (§3.1) | ENV-LIMITED where the OS capability is absent | measured | measured (round 78 shape) | the host/OS limit is the limit; no product switch exists |
 | 33 | search face, Shape B (in-lane `grep`, out-of-lane refused) | DEV-LIVE | **PROVEN** (round 64/98) | **PROVEN** (round 78) | Shape B is the declared support level; not full dynamic permission governance |
-| 34 | REAL-MODEL acceptance harness (`run-real-model.mjs`, 20 judges) | **ENV-LIMITED** (harness `SCRIPTED-ONLY`) | **20/20 PROVEN, 2/2 agreeing boots — SCRIPTED-ONLY** (round 111) | not run | **Round 119 update:** the credential exists and the real route now answers (`REAL-ROUTE-AVAILABLE`, `deepseek-v4-flash` 200 on both hosts), but `--model real --boots 2` exits 1 on both hosts because the driver reads the Leader surface from `world.mock.requests` (`run-real-model.mjs:2156-2160`) — all 20 judges FAIL/not-run and the four negative controls are never reached. The remaining blocker is the DRIVER's real branch, not the environment: it needs real request capture, non-vacuous turn gates and discovered call ids. Only when every judge is PROVEN on both boots may the level become `DEV-LIVE-real-model` |
+| 34 | REAL-MODEL acceptance harness (`run-real-model.mjs`, 20 judges) | **DEV-LIVE-real-model** (harness real + scripted) | **20/20 PROVEN on a REAL model, 2/2 agreeing boots on BOTH pinned hosts** (round 120); scripted 20/20 (round 111) | not run (the VERSION gate has not run with a real model) | **Round 120:** the driver's real branch was rebuilt — request capture through the public `DEEPSEEK_BASE_URL` seam, non-vacuous turn gates, and discovery by predicate over the observed transcript (no mock-only ids). `--model real --boots 2` now exits **0** on both hosts (`legacy 892 s`, `next 180 s`), 20/20 judges PROVEN on 2/2 boots per host, `agreeing=true differing=[]`; the four negative controls are observed with the model's own replies. Row level `DEV-LIVE-real-model`; **no capability row moves** and no row is PRODUCT-PROVEN. |
 | 35 | **host-capability tools** (`subagent`, `send_message`, `interrupt_agent`, `skill`, the 15 `team_*`) | **DECLARED UNCOVERED BOUNDARY (SEC-03)** | **n/a — not a confinement claim** (admitted on `team.control`/host authority; probe A15 measures the only `allow` with no lane) | **n/a** | **The declared boundary: these tools have NO managed fs/net lane.** Their effects are performed by host services, so the centre's lane algebra does not bound them; they are closed and admitted (`ADM-31`/`ADM-32`) but a hostile-code model must treat them as capabilities outside the sandbox (`SECURITY-REVIEW-20261125.md` §6 item 4). Named here so the boundary cannot be read as a control; **never counted as PROVEN for confinement.** |
 
 **The dual-host candidate gate — ROUND 109 result (NON-REQUIRED; this fact does not upgrade any row).**

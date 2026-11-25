@@ -1,0 +1,49 @@
+{
+  "askAppeared": true,
+  "ids": {
+    "officer": "inst-0hvc2y01v51z",
+    "worker": "inst-1q9ehvo0zb4o",
+    "pendingRequestId": "ctrl-1pbb6010glp6kq0naojdz1pz",
+    "pendingRequestId2": null,
+    "pendingRequestId3": null,
+    "pendingProcessRequestId": null
+  },
+  "askRow": {
+    "requestId": "ctrl-1pbb6010glp6kq0naojdz1pz",
+    "kind": "leader-approval",
+    "targetInstanceId": "inst-1q9ehvo0zb4o",
+    "actionName": "admission-ask",
+    "toolName": "write",
+    "correlation": "admission:call_00_SmH3tQlvBZqnOhrsHMMw7382",
+    "status": "pending",
+    "createdAt": "2026-11-25T19:54:14.557Z",
+    "subject": {
+      "kind": "instance",
+      "instanceId": "inst-1q9ehvo0zb4o"
+    },
+    "executionCoupling": "inline",
+    "requestSequence": 9,
+    "operationFingerprint": "sha256:930f389cc62d6ef1bab709f97ded1459c5a01e08b8dcf692f365c7314697f5d7",
+    "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T19-52-38Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:23549569a4cb66875210686899fa0771)"
+  },
+  "requests": [
+    {
+      "requestId": "ctrl-1pbb6010glp6kq0naojdz1pz",
+      "kind": "leader-approval",
+      "targetInstanceId": "inst-1q9ehvo0zb4o",
+      "actionName": "admission-ask",
+      "toolName": "write",
+      "correlation": "admission:call_00_SmH3tQlvBZqnOhrsHMMw7382",
+      "status": "pending",
+      "createdAt": "2026-11-25T19:54:14.557Z",
+      "subject": {
+        "kind": "instance",
+        "instanceId": "inst-1q9ehvo0zb4o"
+      },
+      "executionCoupling": "inline",
+      "requestSequence": 9,
+      "operationFingerprint": "sha256:930f389cc62d6ef1bab709f97ded1459c5a01e08b8dcf692f365c7314697f5d7",
+      "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T19-52-38Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:23549569a4cb66875210686899fa0771)"
+    }
+  ]
+}

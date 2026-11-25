@@ -33,12 +33,12 @@
       {
         "id": "officer-ledger-fact",
         "ok": true,
-        "detail": "allow facts=[{\"axis\":\"fs.read\",\"callId\":\"call-d4-officer-read\",\"decision\":\"allow\"}]"
+        "detail": "allow facts=[{\"axis\":\"fs.read\",\"callId\":\"call_00_ET_Q91HaazvBXprDibCkCJC5120\",\"decision\":\"allow\"}]"
       },
       {
         "id": "fact-names-officer-call",
         "ok": true,
-        "detail": "callIds=[\"call-d4-officer-read\"]"
+        "detail": "callIds=[\"call_00_ET_Q91HaazvBXprDibCkCJC5120\"]"
       },
       {
         "id": "officer-settlement-completed",
@@ -51,6 +51,19 @@
         "detail": "instanceId=inst-0hvc2y01v51z template=officer"
       }
     ],
-    "failing": []
+    "failing": [],
+    "discovery": {
+      "officer-read": {
+        "slot": "officer-read",
+        "predicate": "name=read && file_path=\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-17-37Z/workspace/lane/officer-read.txt\"",
+        "matched": {
+          "id": "call_00_ET_Q91HaazvBXprDibCkCJC5120",
+          "name": "read",
+          "turnIndex": 5,
+          "input": "{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-17-37Z/workspace/lane/officer-read.txt\"}"
+        },
+        "at": "2026-11-25T20:19:00.529Z"
+      }
+    }
   }
 }

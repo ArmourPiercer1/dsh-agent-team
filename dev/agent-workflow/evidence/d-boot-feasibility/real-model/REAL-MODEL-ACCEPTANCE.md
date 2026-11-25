@@ -2,19 +2,151 @@
 
 **Driver:** `tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs`
 **Evidence:** this directory (`probe.json`, `runs/`, `run-ledger.jsonl`, `diagnostic/`, `archive/`).
-**Latest round:** 2026-11-26, branch `vnext/a1-cut` @ `b2f4b1a08` (sole-writer worktree).
-**Previous round (kept verbatim below):** 2026-11-25, `82da9ca9f` — `ENV-LIMITED`.
+**Latest round:** **ROUND 120** — 2026-11-26, branch `vnext/a1-cut` @ `1a3a79c4c` (sole-writer worktree).
+**Previous round (kept verbatim in §HISTORY below):** 2026-11-26, `b2f4b1a08` — real route available,
+driver instrument broken, 20/20 `FAIL`/not-run.
 
-> ## THE LEVEL: the real route is AVAILABLE; REAL-MODEL ACCEPTANCE IS **NOT ACHIEVED**.
-> The owner-supplied key was present, **both** hosts booted on a **real endpoint** and answered a real
-> model turn, and the driver exited **1** on both hosts because its real-mode instrument aborts before
-> the first judge: `world.mock.requests` is `null` when no mock exists. All 20 judges are recorded
-> `FAIL` / not-run. This is **not** acceptance, **not** `DEV-LIVE-real-model`, and **not** `ENV-LIMITED`
-> either — the environment precondition is satisfied and the blocker is in the driver.
+> ## THE LEVEL: **`DEV-LIVE-real-model`** — 20/20 judges PROVEN on a REAL model, 2/2 agreeing boots, on
+> BOTH pinned hosts. Development evidence only: **never** PRODUCT-PROVEN, never candidate acceptance,
+> and no `knownRefuted` entry was added or removed.
+> The model route was captured at the provider seam (`DEEPSEEK_BASE_URL` → in-process pass-through
+> recorder), every judge located its call by PREDICATE over the observed transcript (never by a
+> mock-only id), and the four negative controls were observed with the model's own replies (deny /
+> Stop / duplicate approval / restart-no-replay). The scripted control is still 20/20. Full trail:
+> `../../../ute-a1/round120/README.md`.
+
 
 ---
 
-## 0. Dated result — 2026-11-26 (review `20261125-0058` Stage B follow-up)
+## ROUND 120 — 2026-11-26: real model, real capture, 20/20 PROVEN on both hosts
+
+### 120.1 The two required runs
+
+```
+set -a; . /home/armourpiercer/projects/dsh-agent-team/.env; set +a
+TEAM_TEST_HOST=legacy node tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs --model real --boots 2
+TEAM_TEST_HOST=next   node tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs --model real --boots 2
+```
+
+The key is read by NAME inside the driver (`DEEPSEEK_API_KEY`); it is never printed, echoed or hashed.
+
+| host | pin | host-chosen model | exit | boots | per-boot overall | agreement | duration |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| legacy (rc.2) | `639ed01539` | `deepseek-v4-flash` | **0** | 2/2 | `PASS`, `PASS` | `agreeing=true differing=[]` | **892 s** (14 min 52 s) |
+| next (rc.5) | `9c2670d3bc` | `deepseek-flash` | **0** | 2/2 | `PASS`, `PASS` | `agreeing=true differing=[]` | **180 s** |
+
+Both runs printed `RESULT evidence-complete=true allBooted=true blocked=false runRecordsValid=true
+(2/2 boots; agreeing pair=true)`. Each boot's RUN record: `recordClass: DEV-LIVE`, `overall: PASS`,
+**20/20 cases PASS**; the advertised surface is 43 tools on legacy / 49 on next (34 in member
+sessions) and the host-chosen model id differs — the judged facts do not.
+
+### 120.2 The capture seam
+
+The host is pointed at an **in-process pass-through recorder** through the public `DEEPSEEK_BASE_URL`
+override: `host → http://127.0.0.1:<ephemeral>/anthropic → https://api.deepseek.com/anthropic`. The
+recorder forwards `req.url` verbatim (the round-119 diagnostic had measured that re-basing drops the
+`/anthropic` prefix), forces `accept-encoding: identity` (gzip bodies lost reply text in round 119),
+and records per call: the advertised tool names, a per-message summary (`text`, `toolUses`,
+`toolResults` with ids/errors), and the assistant reply with **each tool_use's name + full input**.
+It never records headers. Scripted mode does not start it and still reads the mock's request log.
+
+### 120.3 Turn gates and discovery (the two round-119 defects)
+
+- `sawReply()` in real mode is no longer `true`: it requires
+  `observed().assistantTurnsWithToolUse({afterTurn: promptMark-1}) > 0`. A prompt that produces zero
+  tool-use turns throws `REAL-TURN-MISS: prompt(<tag>) produced no observed assistant turn with a
+  tool-use block` — a named failure, never a pass.
+- No judge reads a mock-only call id. Each judge discovers its call by **tool name + argument shape +
+  ordering** (`matchToolUse({name, argPath, argValue, nth, afterTurn})`) over the recorded transcript;
+  a miss raises `DISCOVERY-MISS(<slot>)` and the judge records that named REFUTED. The discovered id,
+  turn and input excerpt are written to `model-transcript.json`'s `discovery` table.
+- **No judge assertion changed**; the only literal ids left are the `requestToken` values the scenario
+  itself tells the model to send (`dboot-d4-delegate-officer`, `dboot-d4-delegate-worker`,
+  `rm-collect-1`).
+
+### 120.4 Per-judge result — both hosts, both boots
+
+All 20 rows are `PROVEN` on legacy boots 1–2 and next boots 1–2:
+
+| judge | L1 | L2 | N1 | N2 |
+| --- | --- | --- | --- | --- |
+| `rm:enablement` | P | P | P | P |
+| `rm:officer-up` | P | P | P | P |
+| `rm:officer-binding` | P | P | P | P |
+| `rm:routed-wake` | P | P | P | P |
+| `rm:case-created` | P | P | P | P |
+| `rm:router-officer` | P | P | P | P |
+| `rm:wake-delivered` | P | P | P | P |
+| `rm:officer-decides` | P | P | P | P |
+| `rm:ask-executes-after-review` | P | P | P | P |
+| `rm:duplicate-route` | P | P | P | P |
+| `rm:sticky-stop` | P | P | P | P |
+| `rm:refusal` | P | P | P | P |
+| `rm:ask-execute` | P | P | P | P |
+| `rm:ask-execute-2` | P | P | P | P |
+| `rm:ask-denied` | P | P | P | P |
+| `rm:ask-stopped` | P | P | P | P |
+| `rm:leader-creates-worker` | P | P | P | P |
+| `rm:collect` | P | P | P | P |
+| `rm:duplicate-approval` | P | P | P | P |
+| `rm:restart-no-replay` | P | P | P | P |
+
+Agreement is not merely "both PASS": the two-run table matches every measured row, including
+`askExecuteSha256 = ced10112e5b8…` (27 bytes), `askExecute2Sha256 = 2d71ffdd49…` (29 bytes),
+`routedWakes=4`, `deliveredWakes=4`, `managementExecutions=0`, `stickyStopMarkerCount=1`,
+`duplicateWakeInputs=1` and `askExecuteProcessSettlement="FAILED"` (the measured non-judge row).
+
+### 120.5 The four negative controls — the model's observed replies
+
+- **Deny:** the Leader called `team_resolve_control` with
+  `{"requestToken":"dboot-d4-resolve-<id>","requestId":"<id>","decision":"deny"}`; the product answered
+  `{"status":"control-resolved","decision":{…,"decision":"deny","decider":{"kind":"instance",
+  "instanceId":"inst-leader","role":"leader"}…}}`; the worker's write then returned
+  `Error: ADMISSION_APPROVAL_DENIED: the durable control decision for "<id>" is deny; the call is
+  refused`; zero bytes; settlement `REFUSED` / `not-started`.
+- **Stop:** `session/cancel` → **200**; the durable deny fact carries
+  `{"refusalCode":"ADMISSION_STOPPED","decision":"deny"}`; zero bytes; settlement `REFUSED` /
+  `not-started` (`["ADMITTED","REFUSED"]`).
+- **Duplicate approval:** a second `team_resolve_control` for the settled request was rejected
+  `{"status":"rejected","code":"CONTROL_REQUEST_DECIDED","message":"ControlService: request '<id>'
+  already carries a durable decision (the first decision is authoritative)"}`; one decision, one
+  execution.
+- **Restart-no-replay:** after stop + re-boot, `before === after`: same `fileSha256`, `decisions=1`,
+  `executions=1`, `wakeRouted=1`, `wakeDelivered=0` — nothing replayed.
+
+### 120.6 The scripted control and the anti-vacuity self-test
+
+Scripted `--model scripted --boots 2` re-ran green with byte-identical prompts and mock reads: both
+boots `overall: PASS`, 20/20, `agreeing=true differing=[]`, exit 0 (`../../ute-a1/round120/scripted-control/`).
+The discovery self-test (`discovery-self-test.json`, 6/6) pins three negative cases — zero turns,
+right tool/wrong argument, right tool/wrong occurrence — each producing `DISCOVERY-MISS`, plus
+`right-tool-right-argument → MATCH` and the two turn-gate counts (0 and 1).
+
+### 120.7 Attempt trail and the dated prompt amendment
+
+Every red is preserved under `archive/`, named by the defect it exposed: over-strict ledger census
+(a legitimate fifth real ask), wake-marker self-taint from the driver's own prompt, raw scripted
+marker still sent in a negative arm, a queued deny prompt starved by the model's own exploration
+(fixed by interrupting the in-flight Leader turn, as a real user's next prompt would), the delegation
+tool result read one turn too early, and one next-boot worker that answered a task with text instead
+of calling `write` (fixed by a dated **prompt** amendment — "Your first action MUST be the Step 1 tool
+call; do not run bash, do not read files"; old text retained in `PROMPT-AMENDMENT.md`). **No judge
+assertion, timeout or retry was touched to flip a red.**
+
+### 120.8 What is still NOT proven
+
+- This is `DEV-LIVE-real-model`, **not** candidate acceptance: the version gate was not run with a real
+  model at a frozen version SHA, and agreement is over two boots per host, not two independent sessions
+  across time.
+- The real model is non-deterministic; the single flaky negative-arm boot is preserved, not retried
+  away.
+- `d4:ask-execute-process` remains the one enumerated `knownRefuted` measurement (no PTY backend in the
+  governed-shell world), REFUTED on both hosts as in the scripted baseline; `knownRefuted` is
+  unchanged.
+
+---
+
+## HISTORY — 2026-11-26 attempt (superseded by ROUND 120): all 20 FAIL / not-run
 
 ### 0.1 The two required runs
 

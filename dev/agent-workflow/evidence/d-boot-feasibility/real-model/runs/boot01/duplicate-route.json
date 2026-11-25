@@ -6,9 +6,9 @@
   "wakeInputs": 1,
   "converged": true,
   "detail": {
-    "requestId": "ctrl-0r3iv77018bxo8000oj9x1ch",
-    "requestToken": "review-wake:session-real-model-root:inst-0hvc2y01v51z:1:a6wake%3Av1%3A1%3Ad8d8d6a2",
-    "intentAt": "2026-11-24T20:49:16.058Z",
-    "decisionAt": "2026-11-24T20:49:16.196Z"
+    "requestId": "ctrl-18kejfu1l7xao102mfoi81ng",
+    "requestToken": "review-wake:session-real-model-root:inst-0hvc2y01v51z:1:a6wake%3Av1%3A1%3A200495e8",
+    "intentAt": "2026-11-25T20:19:07.826Z",
+    "decisionAt": "2026-11-25T20:19:08.758Z"
   }
 }
