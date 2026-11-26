@@ -111,7 +111,79 @@ deliberately after boot 1 because the `/proc` writer probe matched the **driver'
 was fixed (skip own pid; require an `O_WRONLY` fd via `fdinfo.flags`) and all six runs above were measured
 with the SAME driver bytes. The archive is the repair trail, not a measured run.
 
-## 5. Gate + dispatch
+## 5. Gate + dispatch — the machine verdict is PASS; the workflow job is RED on a BINDING-STEP defect
 
-The local gate block, the frozen SHA, the ONE dispatch and its verdict are recorded in `README` §5 below
-once measured; the raw logs are `gates/gate-*.log` and `gates/commands.txt`.
+**Frozen SHA:** `e07f431e9c599eaa73ede15996ae36808b8a3750` (pushed to `vnext/a1-cut`; the PR stays DRAFT).
+
+**Local gate block at that SHA** — every command exit 0, logs in `gates/`:
+
+| gate | result |
+| --- | --- |
+| `dispatch-tests --run --leg ute-vnext-a1` | `suites=8 files=8 exit=0`, 268 / 265 pass / 0 fail / 3 skipped, set `sha256:0b087a6a…` |
+| `test-catalog --max-uncollected 41 --max-excluded 7` | `tests=790 collected=738 excluded=14 uncollected=38 findings=0` |
+| `ute-cut-closure --check` | `cut(0/148) prodRefs=0 distResiduals=0 findings=0` |
+| `ute-p0-assets --check` | `modules=37 files=180 lines=69512 cut(148/148) findings=0` |
+| `docs-sync --check` | `docs=193 findings=0 blocking=0 contracts=20` |
+| `place-dist-glue` | 36 placements, byte-identical |
+| `eb3-ci-required` | `pass workflows=11 findings=0` |
+| bound vitest | `PASS suites=15 files=15 passed=238 failed=0` |
+| `eb3-run-manifest` | `pass records=662 strict=0 incomplete=11 findings=0` |
+| UTE G1 argv (9 files) | `tests 89 / pass 89 / fail 0 / skipped 0` |
+| verifier unit | `tests 22 / pass 22 / fail 0` |
+| `ci-pr-gate --full --census-captures 2` | **`DSH-CI-VERDICT pass pass=10 fail=0 skip=0 refused=0 legs=10`** (305.9 s) |
+
+**The ONE dispatch.** `gh workflow run candidate-acceptance.yml --ref vnext/a1-cut -f
+head=e07f431e9c599eaa73ede15996ae36808b8a3750` → run **`45746665143`** (`workflow_dispatch`, created
+2026-11-26T03:05:33Z). It was dispatched exactly once and was **not** retried.
+
+**Measured result — the gate PASSED, the binding step failed, the receipt does not exist:**
+
+```
+CANDIDATE-GATE pass host=legacy judges=31 proven=30 known-refuted=1 env-limited=0 drivers=4 records=8 agreement=true
+CANDIDATE-GATE pass host=next   judges=31 proven=30 known-refuted=1 env-limited=0 drivers=4 records=8 agreement=true
+CANDIDATE-GATE pass hosts=legacy,next judges=62 proven=60 known-refuted=2 env-limited=0
+```
+
+per host: `d`, `d2`, `d3`, `d4` all `pass`; `d3 RESULT evidence-complete=true allProven=true (2/2 boots;
+agreeing pair=true)` with the hosted in-flight lines
+
+```
+legacy boot1 RUNNING, bytesObserved=19768  blocked=true wchan=anon_pipe_write
+legacy boot2 RUNNING, bytesObserved=65408  blocked=true wchan=anon_pipe_write
+next   boot1 RUNNING, bytesObserved=38948  blocked=true wchan=anon_pipe_write
+next   boot2 RUNNING, bytesObserved=39704  blocked=true wchan=anon_pipe_write
+```
+
+(`hosted/<host>-d3-inflight-lines.txt`, `hosted/<host>-d3-agreement.txt`: `inflightBefore RUNNING RUNNING`,
+`inflightAfter UNKNOWN UNKNOWN`, `agreeing=true differing=[]`).
+
+**The job is nevertheless RED, and the root cause is in the workflow, not the gate.** Step 16 (`Candidate
+acceptance gate — both pinned hosts, one machine verdict`) is `success`; step 17 (`Bind the graded head to
+the requested SHA`) is `failure`:
+
+```
+VERDICT=$(find dev/agent-workflow/evidence/candidate-acceptance-gate -name verdict.json … )   # RELATIVE path
+GRADED=$(node -e "const j=require(process.argv[1]); …" "$VERDICT")
+Error: Cannot find module 'dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T03-15-42-275Z/verdict.json'
+```
+
+`require()` treats a specifier that does not begin with `./` or `/` as a package name, so the freshly
+written verdict could not be loaded. The artifact's own `verdict.json` proves the head binding would have
+succeeded: `"head": "e07f431e9c599eaa73ede15996ae36808b8a3750"`, `"verdict": "pass"`. Because step 17 died,
+step 18 (`Publish version-gate-receipt.json`) was **skipped**, no receipt exists, and the separate
+`version-gate (Required at frozen candidate SHA)` job concluded **failure** with the fail-closed line
+
+```
+REFUSED VERSION_GATE_RECEIPT_MISSING …/version-gate-receipt.json does not exist
+```
+
+(exit 1, `hosted/version-gate-refusal.log`; the workflow conclusion is `failure`.)
+
+**Honest reading.** The dual-host gate's 62 judges are measured **pass at this frozen SHA** (60 PROVEN, the
+same 2 enumerated `known-refuted`), and the `d3` crash arm — the round's subject — passed 4/4 on **both**
+hosts with the kernel-blocked window. The Required `version-gate` context is **not** green, because the
+receipt was never published: the next round must fix the binding step (`path.resolve` / absolute `find`
+root / `fs.readFileSync` + `JSON.parse`) and dispatch again. **No green is claimed for the Required context,
+no capability row moves, and nothing is PRODUCT-PROVEN.** Evidence: `hosted/` (`verdict.json`,
+`summary.txt`, `grading-summary.log`, `head-binding-failure.log`, `version-gate-refusal.log`, per-host
+`d3` logs and agreements).

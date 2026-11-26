@@ -351,3 +351,36 @@ The local gate block is green at this commit (`round125/gates/`, incl. `ci-pr-ga
 `pass=10 fail=0`). The gate is dispatched **once** at the frozen SHA; the verdict line, the receipt (or its
 refusal) and the bundle evidence are recorded in `round125/README.md` §5 and the PR body. Nothing here is
 declared green before it is measured.
+
+### 10.1 Measured result of the round-125 dispatch — machine verdict PASS, job RED on the binding step
+
+Dispatched exactly once at `e07f431e9c599eaa73ede15996ae36808b8a3750` (`gh workflow run candidate-acceptance.yml
+--ref vnext/a1-cut -f head=e07f431e9…`) → run **`45746665143`**, created 2026-11-26T03:05:33Z. The grading
+step passed:
+
+```
+CANDIDATE-GATE pass host=legacy judges=31 proven=30 known-refuted=1 env-limited=0 drivers=4 records=8 agreement=true
+CANDIDATE-GATE pass host=next   judges=31 proven=30 known-refuted=1 env-limited=0 drivers=4 records=8 agreement=true
+CANDIDATE-GATE pass hosts=legacy,next judges=62 proven=60 known-refuted=2 env-limited=0
+```
+
+`d3` was 4/4 PROVEN on both hosts, and all four hosted boots held the new window:
+`inflightBefore=RUNNING`, `blocked=true`, `wchan=anon_pipe_write` (bytes 19,768 / 65,408 legacy,
+38,948 / 39,704 next; `round125/hosted/`).
+
+The **job** concluded `failure` at the next step, `Bind the graded head to the requested SHA`:
+
+```
+VERDICT=$(find dev/agent-workflow/evidence/candidate-acceptance-gate -name verdict.json … )   # relative
+GRADED=$(node -e "const j=require(process.argv[1]); …" "$VERDICT")
+Error: Cannot find module 'dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T03-15-42-275Z/verdict.json'
+```
+
+`require()` treats a non-`./` specifier as a package name. The artifact's `verdict.json` carries
+`"head":"e07f431e9…"` / `"verdict":"pass"`, so the binding would have succeeded on a correct path. Because
+the step died, `Publish version-gate-receipt.json` was **skipped**, and the `version-gate (Required at frozen
+candidate SHA)` job concluded **failure** with its fail-closed line
+`REFUSED VERSION_GATE_RECEIPT_MISSING …/version-gate-receipt.json does not exist` (exit 1). **No receipt
+exists at this SHA and the Required context is not green; no green is claimed.** Per the round's
+dispatch-once rule the gate was **not** re-dispatched. Fix: `require(path.resolve(process.argv[1]))`, or an
+absolute `find` root, or `fs.readFileSync` + `JSON.parse`; then a fresh freeze + one dispatch.

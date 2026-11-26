@@ -167,9 +167,16 @@ not hidden).
 `cut(0/148)`, P0 assets `cut(148/148)`, docs-sync `docs=193 findings=0 blocking=0`, 36 byte-identical dist
 placements, `eb3-ci-required workflows=11 findings=0`, bound vitest `238 passed / 0 failed`, UTE G1 argv
 89/89, manifest `records=662 findings=0`, verifier unit 22/22, and `ci-pr-gate --full --census-captures 2`
-**10/10 legs PASS** (306.3 s). **No capability row moves and nothing is PRODUCT-PROVEN.** The version gate is
-dispatched once at the frozen SHA of this commit; its verdict is recorded in `round125/README.md` §5 and the
-PR body when measured (a red is recorded as a red, not retried to green).
+**10/10 legs PASS** (305.9 s). **No capability row moves and nothing is PRODUCT-PROVEN.** The version gate was dispatched **once** at the
+frozen SHA `e07f431e9c599eaa73ede15996ae36808b8a3750` (run `45746665143`): the gate itself **passed** on both
+hosts — `CANDIDATE-GATE pass hosts=legacy,next judges=62 proven=60 known-refuted=2 env-limited=0`, `d3` 4/4
+PROVEN per host with `inflightBefore=RUNNING` on all four hosted boots — but the workflow's head-binding
+step died on a **path defect** (`require()` given the relative path that `find dev/…` emitted →
+`Cannot find module 'dev/…/verdict.json'`), so the receipt step was skipped and the separate
+`version-gate` job concluded **failure** with `REFUSED VERSION_GATE_RECEIPT_MISSING`. The artifact's
+`verdict.json` carries the requested head and `"verdict":"pass"`, so the failure is the binding step, not a
+stale head and not a judge. Recorded as a RED, **not** re-dispatched; the fix and the re-dispatch belong to
+the next round (`round125/README.md` §5, `round125/hosted/`).
 
 ## ROUND 124 (2026-11-26) — the version gate's legacy host gets its pinned assets; the Required red at the frozen SHA is diagnosed as four MECHANICAL failures, not the ready-flip/merge-ref (no capability row moves)
 

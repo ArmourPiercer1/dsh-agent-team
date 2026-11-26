@@ -11615,3 +11615,53 @@ disagreed, the host row failed (27 judges), and overall was
 `fail hosts=legacy,next judges=58 proven=56 known-refuted=2`. No receipt was written; `version-gate`
 concluded failure with `REFUSED VERSION_GATE_RECEIPT_MISSING`. Not re-dispatched to chase green. No row is
 PRODUCT-PROVEN; PR restored to DRAFT; no merge.
+
+## ROUND 125 (2026-11-26) — the `d3` crash arm's in-flight window is a KERNEL-BLOCKED FIFO write; six runs per host green, fast-provider control refuses to kill; the frozen-SHA gate PASSES but the workflow dies on a binding-step path bug (no row moves)
+
+**The defect.** Round 124's frozen-SHA red was a window defect: the in-flight record was an ADMITTED `edit`
+of a 256 MiB file, and on boot 2 it settled `FAILED` before the SIGKILL, so the boots disagreed on
+`inflightBefore` and the crash judge refused with `no genuine in-flight call at crash time` — correct
+behaviour; the window was a timing hope.
+
+**The change (driver only, `tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs`).** Member B's
+in-flight call is a governed `bash` writing a FINITE **58,720,256**-byte stream into a FIFO whose ONLY read
+end the driver holds (`O_RDONLY|O_NONBLOCK`). The 65,536 B kernel pipe fills, the writer parks in
+`pipe_write`, the driver reads exactly one buffer (proof bytes flowed), stops reading, waits 400 ms and
+re-reads the settlement — it must still be `RUNNING` — and only then SIGKILLs the host pid; it then closes
+the read end (`pipeClosedAfterKill`), so a survivor would get `EPIPE`/`SIGPIPE`. The command is finite on
+purpose (an infinite loop would prove nothing). `bash` carries the block because `edit`/`write` accept only
+regular files (`post-consume-edit.ts` `O_RDWR|O_NOFOLLOW`; `post-consume-write.ts` pre-open `isFile`), so a
+FIFO is refused there. Fail-closed: `waitInFlight` returns only on `RUNNING`; the kill gate is
+`state !== 'RUNNING'` (ADMITTED no longer counts); a refusal writes `inflight-refusal.json`
+(`sigkillIssued:false`, host alive) and throws the SAME named reason with no `crash.json`; `mkfifo` failure
+refuses with `A5SF_D3_INFLIGHT_BLOCK_UNAVAILABLE`. The judge got STRICTER: `inflight-was-open-at-crash`
+requires `RUNNING` (the old `'open'` normalization is gone) plus a new clause
+`inflight-window-blocked-in-kernel` (measured bytes, `stateAfterSettle==='RUNNING'`, drained < intended). No
+judge relaxed, no timeout widened.
+
+**Measured before freezing** (`ute-a1/round125/runs/`): six runs, three per host, two boots each — all 12
+boots `inflightBefore=RUNNING`, `blocked=true`, writer `wchan=anon_pipe_write`, SIGKILL, `UNKNOWN` after
+restart, `agreeing=true`; no run omitted, and the deliberately aborted first attempt is kept in
+`d3/archive/`. Negative control (`A5SF_D3_INFLIGHT_MODE=fast --expect-inflight-refusal`) PASSES on both hosts
+with the same named reason, settlement `COMPLETED`, no SIGKILL, host alive, no `crash.json`.
+
+**Gates at this round** (`ute-a1/round125/gates/`): dispatch leg 8 suites / 268 tests / 265 pass / 3 skipped
+(`sha256:0b087a6a…`); catalog tests=790 collected=738 excluded=14 uncollected=38 findings=0; cut closure
+`cut(0/148)`; P0 assets modules=37 files=180 lines=69512; docs-sync docs=193 findings=0 blocking=0; dist glue
+36 byte-identical; `EB3-CI-REQUIRED pass workflows=11 findings=0`; bound vitest 15 suites / 238 passed;
+UTE G1 argv 89/89; manifest records=662 strict=0 incomplete=11 findings=0; verifier unit 22/22;
+`ci-pr-gate --full --census-captures 2` **10/10 legs PASS** (305.9 s).
+
+**The ONE frozen-SHA dispatch (`e07f431e9c599eaa73ede15996ae36808b8a3750`, run `45746665143`) — machine
+verdict PASS, job RED on a binding-step defect.** `CANDIDATE-GATE pass hosts=legacy,next judges=62 proven=60
+known-refuted=2 env-limited=0`, `d3` 4/4 PROVEN on both hosts with `inflightBefore=RUNNING` on all four
+hosted boots. The next step, `Bind the graded head to the requested SHA`, died with
+`Cannot find module 'dev/…/2026-11-26T03-15-42-275Z/verdict.json'` because `require()` was given the
+RELATIVE path that `find dev/…` emitted; the receipt step was skipped and the `version-gate` job concluded
+failure with `REFUSED VERSION_GATE_RECEIPT_MISSING`. The artifact's `verdict.json` carries
+`"head":"e07f431e9…"`/`"verdict":"pass"`, so this is a workflow path bug, not a stale head and not a judge.
+Not re-dispatched; the fix (`path.resolve` / absolute `find` root / `fs.readFileSync`+`JSON.parse`) and the
+next dispatch belong to the next round. Evidence `ute-a1/round125/hosted/`.
+
+**Not done / not claimed.** No capability row moves; nothing PRODUCT-PROVEN; the Required `version-gate`
+context is NOT green (no receipt); PR #822 stays DRAFT; no merge; `:3080` untouched; `CORE PATCH BUDGET = 0`.

@@ -1,0 +1,4 @@
+[boot1] in-flight settlement state=RUNNING executionId=exec-30e352c6e4d866e04655d65f24896fa0d06eb814 closedTooEarly=false
+[boot1] blocking window: bytesObserved=38948 stateAfterSettle=RUNNING blocked=true writer={"pid":21765,"state":"S","wchan":"anon_pipe_write","matchedBy":"write-fd","cmdline":"/bin/bash --noprofile --norc -i"}
+[boot2] in-flight settlement state=RUNNING executionId=exec-30e352c6e4d866e04655d65f24896fa0d06eb814 closedTooEarly=false
+[boot2] blocking window: bytesObserved=39704 stateAfterSettle=RUNNING blocked=true writer={"pid":23533,"state":"S","wchan":"anon_pipe_write","matchedBy":"write-fd","cmdline":"/bin/bash --noprofile --norc -i"}

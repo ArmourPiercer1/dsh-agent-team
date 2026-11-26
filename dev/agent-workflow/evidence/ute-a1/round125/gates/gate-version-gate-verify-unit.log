@@ -1,31 +1,31 @@
 ▶ version-gate verifier — positive control
-  ✔ accepts a receipt the real writer published from a green verdict (2.619509ms)
-  ✔ binds the verdict file by path + sha256 digest, not by a copy (0.573996ms)
-  ✔ the writer refuses to publish a receipt for a failed verdict (0.962051ms)
-✔ version-gate verifier — positive control (4.768315ms)
+  ✔ accepts a receipt the real writer published from a green verdict (2.503649ms)
+  ✔ binds the verdict file by path + sha256 digest, not by a copy (0.604504ms)
+  ✔ the writer refuses to publish a receipt for a failed verdict (0.858295ms)
+✔ version-gate verifier — positive control (4.586191ms)
 ▶ version-gate verifier — negative controls (each names its own code)
-  ✔ NC-1 missing receipt (0.415135ms)
-  ✔ NC-2 wrong head (the receipt speaks only for its own frozen SHA) (0.539331ms)
-  ✔ NC-3 receipt says verdict != pass (tampered after publication) (0.841243ms)
-  ✔ NC-4 an unexpected known-refuted id may not travel with the receipt (0.784495ms)
-  ✔ NC-4b a verdict that refutes a judge outside the enumeration is refused (0.71839ms)
-  ✔ NC-5 schema drift: an unknown key (0.706307ms)
-  ✔ NC-5b schema drift: a missing key (0.489517ms)
-  ✔ NC-5c schema drift: a wrong type and a non-ISO time (0.83469ms)
-  ✔ NC-5d an unsupported schemaVersion is not silently accepted (0.407271ms)
-  ✔ NC-6 tampered verdict bytes (digest mismatch) (0.3538ms)
-  ✔ NC-7 the referenced verdict file is gone (0.294868ms)
-  ✔ NC-8 envLimited > 0 is never a version-gate pass (0.525305ms)
-  ✔ NC-9 an enumerated known-refuted id may not be dropped from the set (0.99362ms)
-  ✔ NC-10 a receipt whose head is not a SHA is refused before any comparison (0.34374ms)
-  ✔ NC-11 the receipt judges must partition (judges = proven + knownRefuted + envLimited) (0.47562ms)
-✔ version-gate verifier — negative controls (each names its own code) (9.559703ms)
+  ✔ NC-1 missing receipt (0.429042ms)
+  ✔ NC-2 wrong head (the receipt speaks only for its own frozen SHA) (0.547266ms)
+  ✔ NC-3 receipt says verdict != pass (tampered after publication) (0.666591ms)
+  ✔ NC-4 an unexpected known-refuted id may not travel with the receipt (0.836363ms)
+  ✔ NC-4b a verdict that refutes a judge outside the enumeration is refused (0.666191ms)
+  ✔ NC-5 schema drift: an unknown key (0.699013ms)
+  ✔ NC-5b schema drift: a missing key (0.492202ms)
+  ✔ NC-5c schema drift: a wrong type and a non-ISO time (0.812238ms)
+  ✔ NC-5d an unsupported schemaVersion is not silently accepted (0.43881ms)
+  ✔ NC-6 tampered verdict bytes (digest mismatch) (0.407511ms)
+  ✔ NC-7 the referenced verdict file is gone (0.308294ms)
+  ✔ NC-8 envLimited > 0 is never a version-gate pass (0.527869ms)
+  ✔ NC-9 an enumerated known-refuted id may not be dropped from the set (0.339643ms)
+  ✔ NC-10 a receipt whose head is not a SHA is refused before any comparison (0.902799ms)
+  ✔ NC-11 the receipt judges must partition (judges = proven + knownRefuted + envLimited) (0.299467ms)
+✔ version-gate verifier — negative controls (each names its own code) (9.134741ms)
 ▶ version-gate verifier — pure surface
-  ✔ the schema validator rejects a non-object and a null (0.091803ms)
-  ✔ the receipt schema constant is the one the writer emits (0.235746ms)
-  ✔ verifyValues is total: no receipt/verdict pair throws (0.278347ms)
-  ✔ a receipt built by the pure builder is schema-valid (0.206191ms)
-✔ version-gate verifier — pure surface (1.000755ms)
+  ✔ the schema validator rejects a non-object and a null (0.129886ms)
+  ✔ the receipt schema constant is the one the writer emits (0.246577ms)
+  ✔ verifyValues is total: no receipt/verdict pair throws (0.282444ms)
+  ✔ a receipt built by the pure builder is schema-valid (0.320327ms)
+✔ version-gate verifier — pure surface (1.210551ms)
 ℹ tests 22
 ℹ suites 3
 ℹ pass 22
@@ -33,4 +33,4 @@
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 88.535821
+ℹ duration_ms 86.542483

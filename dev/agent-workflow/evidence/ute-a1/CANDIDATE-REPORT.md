@@ -502,13 +502,26 @@ falsifies the "just kill anyway" shortcut). It does **not** move any capability 
 product long-running-tool-safe in general, and does **not** claim PRODUCT-PROVEN: `d3` is still DEV-LIVE and
 the version gate verdict is recorded separately (`round125/README.md` §5, PR body).
 
+**The one frozen-SHA dispatch — machine verdict PASS, Required context RED on a binding-step defect.** At
+`e07f431e9` (run `45746665143`, dispatched once, not retried) the gate passed on both hosts:
+`CANDIDATE-GATE pass hosts=legacy,next judges=62 proven=60 known-refuted=2 env-limited=0`, with `d3` 4/4
+PROVEN per host and `inflightBefore=RUNNING` on all four hosted boots (`hosted/<host>-d3-inflight-lines.txt`).
+The workflow job is still `failure`: the step after the gate, `Bind the graded head to the requested SHA`,
+ran `node -e "require(process.argv[1])"` on the **relative** path that `find dev/…` emitted, so it died with
+`Cannot find module 'dev/…/verdict.json'`; the receipt step was skipped and `version-gate` concluded
+`REFUSED VERSION_GATE_RECEIPT_MISSING`. The artifact's `verdict.json` names the requested head and
+`"verdict":"pass"`, so the refusal is the binding step's path handling — not a stale head, not a judge, not
+a weakened gate. **No receipt exists and the Required `version-gate` context is not green.** Fix
+(`path.resolve` / absolute `find` root / `fs.readFileSync` + `JSON.parse`) and re-dispatch are the next
+round's work; this round records the red (`round125/hosted/head-binding-failure.log`).
+
 **Local gates at this commit** (logs `round125/gates/`): dispatch leg 268 tests / 265 pass / 3 skipped
 (`sha256:0b087a6a…`); catalog `tests=790 collected=738 excluded=14 uncollected=38 findings=0`; cut closure
 `cut(0/148)`; P0 assets `modules=37 files=180 lines=69512 cut(148/148)`; docs-sync `docs=193 findings=0
 blocking=0 contracts=20`; 36 byte-identical dist placements; `EB3-CI-REQUIRED pass workflows=11 findings=0`;
 bound vitest `PASS suites=15 files=15 passed=238 failed=0`; UTE G1 argv 89/89; `EB3-RUN-MANIFEST pass
 records=662 strict=0 incomplete=11 findings=0`; verifier unit 22/22; `ci-pr-gate --full --census-captures 2`
-**`DSH-CI-VERDICT pass pass=10 fail=0 skip=0 refused=0 legs=10`** (306.3 s, two census captures).
+**`DSH-CI-VERDICT pass pass=10 fail=0 skip=0 refused=0 legs=10`** (305.9 s, two census captures).
 
 
 ## 6. C1–C18 sign-off
