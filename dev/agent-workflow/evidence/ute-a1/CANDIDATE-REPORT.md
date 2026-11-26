@@ -429,8 +429,20 @@ canonical census command after the rc.2 build and before the gate —
 `node scripts/provision-host-assets.mjs --from-package @deepseek-ai/node-addon-system-linux-x64@0.1.2` —
 which verifies the registry `dist.integrity`, the committed tarball sha256 and every file's
 sha256/length/mode, replacing only mismatched build bytes. The sha256 pin did not move; no local tree is
-copied. Local proof: `round124/asset-provision.log`. The re-dispatched result at the new HEAD is stated in
-§1/§5.1 once it settles; **this subsection records the diagnosis and fixes, not a green.**
+copied. Local proof: `round124/asset-provision.log`.
+
+**The one re-dispatch, and its measured red.** At `cd08f90c2` (run `45733175085`, `workflow_dispatch`,
+2026-11-26T01:04:10Z) the head binding, both host builds, both asset-provisioning steps and the `next` host
+(31/31) worked. The gate concluded **failure** on the **legacy `d3`** driver: boot 2's in-flight `edit`
+call settled `FAILED` before the SIGKILL —
+`[boot2] FAILED at sigkill-restart: Error: no genuine in-flight call at crash time:
+call-d3-b-inflight-edit settlement state="FAILED" … (the crash judge cannot fake an in-flight call)` — so
+the boots disagreed on `inflightBefore`, and the host row failed (27 judges, `agreement=false`); overall
+`fail hosts=legacy,next judges=58 proven=56 known-refuted=2 env-limited=0`. No receipt was written and the
+`version-gate` job concluded **failure** with `REFUSED VERSION_GATE_RECEIPT_MISSING`. `d`, `d2`, `d4`
+passed on both hosts and `next` `d3` passed 4/4. The run was not re-dispatched to chase green; bundle
+evidence is in `round124/hosted/`. **This subsection records the diagnosis, the fixes and the one
+re-dispatch, not a green.**
 
 
 ## 6. C1–C18 sign-off
@@ -693,6 +705,17 @@ log line (`host:"legacy"`/`source:tests/paths.mjs#TEST_USE_BASELINE_SHA`, `host:
     **compilation** is not exercised. `DEV-LIVE` boots are real host processes but not gates.
 15. **No Windows deployment** (the persistent shell row is disabled on win32); no hosted third-party
     deployment; no MCP server booted live (the `ADM-96` mount is in-process over a real server object).
+16. **The version gate's FIRST end-to-end frozen-SHA dispatch is RED, and it is not green by any reading.**
+    Run `45733175085` (`2026-11-26T01:04:10Z`, `-f head=cd08f90c2…`) worked through the head binding, both
+    host builds, both native-asset provisioning steps and the `next` host (31/31), then failed on the
+    **legacy `d3`** crash judge: boot 2's in-flight `edit` settled `FAILED` before the SIGKILL
+    (`no genuine in-flight call at crash time … settlement state="FAILED"`), so the two boots disagreed on
+    `inflightBefore` and the host row failed (27 judges, `agreement=false`); overall
+    `fail hosts=legacy,next judges=58 proven=56 known-refuted=2 env-limited=0`. No receipt was written, and
+    the `version-gate` job concluded **failure** with `REFUSED VERSION_GATE_RECEIPT_MISSING`. `d`, `d2`,
+    `d4` passed on both hosts and `next` `d3` passed 4/4. This is a legacy-`d3` in-flight-window defect
+    (measured once, preserved, **not** retried to green); bundle evidence is in `round124/hosted/`. It does
+    not close gap 1 (real-model gate) or item 2 (no row PRODUCT-PROVEN).
 
 ---
 

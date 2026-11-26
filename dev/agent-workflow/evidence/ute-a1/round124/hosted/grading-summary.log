@@ -1,0 +1,8 @@
+6808:2026-11-26T01:13:44.0522155Z CANDIDATE-GATE start host=legacy drivers=d,d2,d3,d4 boots=2 timeout=2700000ms
+6809:2026-11-26T01:17:40.4179025Z CANDIDATE-GATE start host=next drivers=d,d2,d3,d4 boots=2 timeout=2700000ms
+6810:2026-11-26T01:22:37.6869770Z CANDIDATE-GATE FAIL at 2026-11-26T01:13:44.043Z
+6813:2026-11-26T01:22:37.6872509Z CANDIDATE-GATE fail host=legacy judges=27 proven=26 known-refuted=1 env-limited=0 drivers=4 records=6 agreement=false reasons=d3: agreement.json agreeing=false (must be true) differing=[] | d3: RUN record is partial/subset: boot2 | d3: driver exit=1 signal=null (accepted: 0)
+6822:2026-11-26T01:22:37.6882096Z CANDIDATE-GATE pass host=next judges=31 proven=30 known-refuted=1 env-limited=0 drivers=4 records=8 agreement=true
+6828:2026-11-26T01:22:37.6888430Z CANDIDATE-GATE fail hosts=legacy,next judges=58 proven=56 known-refuted=2 env-limited=0
+6829:2026-11-26T01:22:37.6889888Z CANDIDATE-GATE verdict=fail machine=dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/verdict.json summary=dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/summary.txt
+6830:2026-11-26T01:22:37.6945239Z ##[error]Process completed with exit code 1.

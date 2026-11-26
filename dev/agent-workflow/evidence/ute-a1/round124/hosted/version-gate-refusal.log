@@ -1,0 +1,2 @@
+## local re-run of the frozen verifier against the bundle receipt path (no receipt exists: the grading job failed before the freeze step)
+REFUSED VERSION_GATE_RECEIPT_MISSING /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/tmp/gate-45733175085/2026-11-26T01-13-44-043Z/version-gate-receipt.json does not exist

@@ -136,9 +136,24 @@ tier), not because of a product failure. The **frozen SHA itself** is graded onl
 `candidate-acceptance` dispatch (`head=<S>`) and its separate `version-gate` context. Operational text is
 in `VERSION-GATE.md` §9; `ci-required.yml`'s header records the same truth.
 
-**Level.** No capability row moves; no row is PRODUCT-PROVEN. The version gate was re-dispatched at the
-new HEAD and its result is recorded in `VERSION-GATE.md` §8 / `CANDIDATE-REPORT.md` §5 when it settles
-(this section records the two fixes and the diagnosis, not a green).
+**The re-dispatched run (measured).** After these fixes were committed as `cd08f90c2`, the gate was
+dispatched once at that frozen SHA: run `45733175085`, `workflow_dispatch`, `head=cd08f90c2…`,
+2026-11-26T01:04:10Z. The head binding, both host builds, **both native-asset provisioning steps** and the
+`next` host (31/31 judges) worked; the gate nevertheless concluded **failure**, because the **legacy `d3`**
+driver's boot 2 lost its in-flight `edit` call before the SIGKILL:
+`[boot2] FAILED at sigkill-restart: Error: no genuine in-flight call at crash time: call-d3-b-inflight-edit
+settlement state="FAILED" … (the crash judge cannot fake an in-flight call)`. The two boots therefore
+disagreed on `inflightBefore` (`open` vs not), and the host row failed
+(`judges=27 proven=26 known-refuted=1 drivers=4 records=6 agreement=false`); overall
+`fail hosts=legacy,next judges=58 proven=56 known-refuted=2 env-limited=0`. No receipt was published, and
+the `version-gate` job refused with `REFUSED VERSION_GATE_RECEIPT_MISSING` (conclusion **failure**).
+`d`, `d2`, `d4` passed on both hosts and `next` `d3` passed 4/4. This is a legacy-`d3` in-flight-window
+defect, not the asset fix, not an event/merge guard. Per the round's rule it was **not** re-dispatched to
+chase a green; bundle evidence is in `round124/hosted/`.
+
+**Level.** No capability row moves; no row is PRODUCT-PROVEN. The version gate remains **red** at the
+frozen SHA for the measured `d3` reason above; this section records the two fixes, the diagnosis and the
+one re-dispatch, not a green.
 
 ## ROUND 123 (2026-11-26) — the two round-122 residues close: no version-keyed dispatch shape is left in test infrastructure, and the `/__p6t6/tool` error mapping has route-level arms (no capability row moves)
 

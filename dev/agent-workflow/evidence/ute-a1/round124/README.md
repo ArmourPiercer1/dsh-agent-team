@@ -84,12 +84,40 @@ Recorded verbatim in `gates/`. Commands and results:
 | verifier unit | `node --test --test-force-exit scripts/version-gate-verify.test.mjs` | 22/22 pass |
 | PR gate | `node scripts/ci-pr-gate.mjs --full --census-captures 2` | **`DSH-CI-VERDICT pass pass=10 fail=0 skip=0 refused=0 legs=10`** (289.4 s; census 601f/7446l twice, identical identity sets) |
 
-## 3. What is still unproven
+## 3. The one re-dispatch at `cd08f90c2` — measured RED, not retried
 
-- The re-dispatched version gate at the new HEAD is recorded separately once it settles
-  (`VERSION-GATE.md` §8 / `CANDIDATE-REPORT.md` §5.1); a green there is still not PRODUCT-PROVEN without
-  the owner's branch/tag protection rule.
-- The round-124 Required-set fixes are local-and-log-proven; the four hosted layers were **not** re-run in
-  this round (the task's hosted run is the version gate only). A future ready/synchronize `ci-required` run
-  is the measurement that would make the supported procedure green, and it has not been run here.
+`gh workflow run candidate-acceptance.yml --ref vnext/a1-cut -f head=cd08f90c2b87d875d65f427c9f2753b6710638e9`
+created run **`45733175085`** (`workflow_dispatch`, 2026-11-26T01:04:10Z). Both host builds, both
+native-asset provisioning steps (`HOST-ASSETS-PROVISIONED … host=639ed01539…`, `NEXT-HOST-ASSETS …
+host=9c2670d3bc…`) and the `next` host (31/31) worked. The gate concluded **failure** on the **legacy `d3`**
+driver:
+
+```
+[2026-11-26T01:16:02.690Z] [boot2] FAILED at sigkill-restart: Error: no genuine in-flight call at crash
+  time: call-d3-b-inflight-edit settlement state="FAILED" fact=[{"decision":"allow","axis":"fs.write",…}]
+  (the crash judge cannot fake an in-flight call)
+CANDIDATE-GATE fail host=legacy judges=27 proven=26 known-refuted=1 env-limited=0 drivers=4 records=6
+  agreement=false reasons=d3: agreement.json agreeing=false (must be true) differing=[] | d3: RUN record
+  is partial/subset: boot2 | d3: driver exit=1 signal=null (accepted: 0)
+CANDIDATE-GATE fail hosts=legacy,next judges=58 proven=56 known-refuted=2 env-limited=0
+```
+
+Boot 2's `edit` call settled `FAILED` in the window between `waitInFlight` accepting it (`ADMITTED`) and the
+SIGKILL; boot 1 measured `RUNNING`, so the two boots disagreed on `inflightBefore` (`open` vs not). The
+next-host `d3` passed 4/4, and `d`/`d2`/`d4` passed on both hosts. Because grading failed before the freeze
+step, **no receipt exists**; the `version-gate` job concluded **failure** and its verifier printed
+`REFUSED VERSION_GATE_RECEIPT_MISSING … does not exist` (`hosted/version-gate-refusal.log` is the same
+refusal re-run locally against the bundle path). This is a legacy-`d3` in-flight-window defect, not the
+asset provisioning and not an event/merge guard. **Per the round's rule the gate was not re-dispatched to
+chase a green.** Bundle evidence: `hosted/verdict.json`, `hosted/summary.txt`,
+`hosted/legacy-d3-driver-tail.log`, `hosted/legacy-d3-agreement.txt`, `hosted/grading-summary.log`.
+
+## 4. What is still unproven
+
+- The version gate is **red** at the frozen SHA for the measured legacy-`d3` reason above; no receipt and no
+  green `version-gate` context exist.
+- The four hosted Required layers were **not** re-run after the round-124 mechanical fixes; a future
+  ready/synchronize `ci-required` run is the measurement that would make the supported procedure green, and
+  it has not been run here.
 - No capability row moves; `d4:ask-execute-process` remains the single enumerated `knownRefuted`.
+- No row is PRODUCT-PROVEN; the owner's branch/tag protection rule has not been applied.

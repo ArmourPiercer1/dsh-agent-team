@@ -217,10 +217,18 @@ unfrozen head would be mistakable for a freeze.
 
 ## 8. What remains unexercised (do not round this up)
 
-- **The version gate has NOT run end-to-end as a version gate.** No `push` to `release/**`/`candidate/**`
-  and no `v*` tag has been created, and no `workflow_dispatch` with a `head` input has been fired. The
-  workflow logic is reviewed, and the receipt writer/verifier are exercised locally and by their
-  controls; the hosted two-job path (artifact upload → download → verify) is **not** measured.
+- **The version gate HAS now been dispatched end-to-end once, and it FAILED at the frozen SHA**
+  (`workflow_dispatch`, run `45733175085`, `head=cd08f90c2b87d875d65f427c9f2753b6710638e9`, event
+  `workflow_dispatch`, 2026-11-26T01:04:10Z). The job `candidate-acceptance …` concluded **failure**: the
+  legacy host's `d3` driver lost its in-flight call in boot 2 (`settlement state="FAILED"`) and the gate
+  judged `CANDIDATE-GATE fail hosts=legacy,next judges=58 proven=56 known-refuted=2 env-limited=0`; the next
+  host passed 31/31. Because the grading job failed before the freeze step, **no
+  `version-gate-receipt.json` was written**, and the `version-gate (Required at frozen candidate SHA)` job
+  concluded **failure** with `REFUSED VERSION_GATE_RECEIPT_MISSING`. The dispatch path, the head binding,
+  both host builds and the legacy native-asset provisioning (the round-124 fix) all worked; the failure is
+  in the `d3` crash judge's in-flight window, not in the receipt/verifier plumbing. Root-cause line and
+  bundle evidence: `round124/hosted/` (`legacy-d3-driver-tail.log`,
+  `CANDIDATE-GATE fail … settlement state="FAILED" … no genuine in-flight call at crash time`).
 - **No branch/tag protection rule has been applied.** The instructions in §5 are for the owner; until the
   owner applies them, `version-gate` is a job with the right shape and no requirement behind it.
 - **No row is PRODUCT-PROVEN** and none can be until §5 + §6 have actually been performed at a frozen
@@ -287,4 +295,33 @@ candidate red. The **frozen candidate SHA itself** is graded only by this workfl
 context. `ci-required` intentionally has no `workflow_dispatch` trigger: its synthesize job requires the
 two-parent merge checkout only GitHub's PR merge ref provides, and no layer guard was weakened to change
 that.
+
+**The re-dispatched frozen-SHA run, and its measured result.** After the fixes were committed as
+`cd08f90c2` (run `45733175085`, `workflow_dispatch -f head=cd08f90c2…`, created 2026-11-26T01:04:10Z),
+the head binding, both host builds, **both native-asset provisioning steps** and the `next` host all
+worked: `HOST-ASSETS-PROVISIONED … host=639ed01539…` and `NEXT-HOST-ASSETS … host=9c2670d3bc…`, next
+`31/31` judges pass. The gate still concluded **failure**, on the **legacy `d3`** driver:
+
+```
+CANDIDATE-GATE fail host=legacy judges=27 proven=26 known-refuted=1 env-limited=0 drivers=4 records=6
+  agreement=false reasons=d3: agreement.json agreeing=false (must be true) differing=[] | d3: RUN record
+  is partial/subset: boot2 | d3: driver exit=1 signal=null (accepted: 0)
+[2026-11-26T01:16:02.690Z] [boot2] FAILED at sigkill-restart: Error: no genuine in-flight call at crash
+  time: call-d3-b-inflight-edit settlement state="FAILED" fact=[{"decision":"allow","axis":"fs.write",…}]
+  (the crash judge cannot fake an in-flight call)
+CANDIDATE-GATE fail hosts=legacy,next judges=58 proven=56 known-refuted=2 env-limited=0
+```
+
+`d3` boot 2's `edit` call settled `FAILED` in the window between `waitInFlight` accepting it and the
+SIGKILL; boot 1 measured `RUNNING` and the pair therefore disagreed on `inflightBefore` (`open` vs not).
+The next-host `d3` passed, and `d`, `d2`, `d4` passed on both hosts. Because the grading job failed before
+the freeze step, **no receipt was published** (`##[error]Process completed with exit code 1`), and the
+`version-gate` job concluded **failure** with the exact refusal
+`REFUSED VERSION_GATE_RECEIPT_MISSING …/version-gate-receipt.json does not exist`; the local re-run of
+`scripts/version-gate-verify.mjs --receipt <bundle>/version-gate-receipt.json --head cd08f90c2…` prints the
+same line (`round124/hosted/version-gate-refusal.log`). This is a legacy-`d3` in-flight-window defect, not
+an event/merge guard and not the asset provisioning (both of which are now measured working). Per the
+round's rule, the gate was not re-dispatched to chase a green; the run and its bundle are preserved in
+`round124/hosted/` (`verdict.json`, `summary.txt`, `legacy-d3-driver-tail.log`,
+`legacy-d3-agreement.txt`, `grading-summary.log`).
 

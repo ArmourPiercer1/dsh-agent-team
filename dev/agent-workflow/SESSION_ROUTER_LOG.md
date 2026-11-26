@@ -11607,5 +11607,11 @@ bound vitest PASS 15 suites / 238 passed / 0 failed; UTE G1 argv 89/89; run mani
 incomplete=11 findings=0; version-gate verifier 22/22; `ci-pr-gate --full --census-captures 2` **10/10 legs
 PASS** (289.4 s; census 601f/7446l twice, identical identity sets).
 
-**Not done.** The four hosted Required layers were not re-run this round; the re-dispatched version gate's
-result is recorded separately once it settles; no row is PRODUCT-PROVEN; PR restored to DRAFT; no merge.
+**Not done.** The four hosted Required layers were not re-run this round. The one re-dispatch at the new
+frozen SHA `cd08f90c2` (run `45733175085`) reached both host builds, both asset-provisioning steps and the
+`next` host 31/31, then went **RED** on the legacy `d3` crash judge: boot 2's in-flight `edit` settled
+`FAILED` before SIGKILL (`no genuine in-flight call at crash time … settlement state="FAILED"`), the boots
+disagreed, the host row failed (27 judges), and overall was
+`fail hosts=legacy,next judges=58 proven=56 known-refuted=2`. No receipt was written; `version-gate`
+concluded failure with `REFUSED VERSION_GATE_RECEIPT_MISSING`. Not re-dispatched to chase green. No row is
+PRODUCT-PROVEN; PR restored to DRAFT; no merge.
