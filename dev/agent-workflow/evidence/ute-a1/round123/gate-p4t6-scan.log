@@ -1,0 +1,14 @@
+## p4t6 frozen Team SessionEvent denylist scan (booked ledger)
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut
+
+stdout | packages/testkit/test/p4t6-session-event-scan.test.ts
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (20 tests) 8ms
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  08:04:23
+   Duration  458ms (transform 94ms, setup 67ms, import 298ms, tests 8ms, environment 0ms)
+

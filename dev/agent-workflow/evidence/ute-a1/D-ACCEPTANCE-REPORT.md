@@ -95,6 +95,81 @@ this repository's own latest verdict (head `92be91dfb`, `62/60/2/0`, exit 0) wit
 missing-receipt refusals, the verifier's 22 negative-control tests (leg `version-gate-verify-unit`), and the
 six manifest-classification controls.
 
+## ROUND 123 (2026-11-26) — the two round-122 residues close: no version-keyed dispatch shape is left in test infrastructure, and the `/__p6t6/tool` error mapping has route-level arms (no capability row moves)
+
+**Scope.** Exactly the two gaps round 122 disclosed in its own §G. No product behaviour, no refactor, no
+widened timeout, no retry, no skipped arm. Feature commit `cd613e6ea` on `af2b03f20`; branch `vnext/a1-cut`;
+PR #822 stays **DRAFT**; `:3080` untouched; `CORE PATCH BUDGET = 0`.
+
+**Gap 1 — the test world chose its call shape from a version flag.** `executeToolDispatch`
+(`tests/world-factory/lib/a5sf-fs-contract-world.mjs:284`) took `{ hostMode }` and emitted
+`hostMode === 'next' ? batch : single`. That is the exact decision the PRODUCT closed in rounds 121/122, so
+the World now decides the same way — by **public capability of the LIVE tools service** — and the
+`hostMode` input is **deleted** from the helper and from all four call sites
+(`vnext-fs-slice`, `vnext-b-probe-ladder`, `a5sf-bl16-grep-realm`, `a5sf-native-route-c`, plus the World's
+own dispatch); no assertion changed. New exports: `worldToolDispatchShape(tools)` (a **second, independent**
+reading of the same public contract — importing the product's probe would make the drift control a
+tautology) and `WorldToolDispatchRefusal`, carrying the product's own
+`A5SF_TOOL_EXECUTOR_CAPABILITY_MISSING`. Contract: `setExecutor` ⇒ rc.5 BATCH
+(`{calls:[{type:'tool-call', id, name, arguments: <JSON string>}], signal, agent}`, settlement
+`batch.results[0].result`); `modeFor`/`defaultMode` ⇒ rc.2 SINGLE CALL; neither ⇒ typed refusal, never a
+guess.
+
+**Arm F–I** (added to the round-122 host-free suite `packages/runtime/test/vnext-tool-dispatch-shape.test.ts`,
+so Gap 1's catalog/scannable delta is ZERO): F the World emits the BATCH on `setExecutor` (JSON-string
+arguments, unwrapped result); G the SINGLE CALL on `modeFor`, never a `calls` key; H a typed refusal with
+zero dispatches on neither, code asserted equal to the product's exported constant; **I the drift control** —
+on ONE fake service object both probes must answer the same shape, and on the SAME input both engines must
+emit the same dispatched call and settle on the same outcome, across six selector combinations
+(`setExecutor`, `modeFor`, `defaultMode`, both registry selectors, both contracts at once — rc.5 wins —
+and neither) plus three non-service values. Suite: **9/9**. Mutation W1 (never emit the batch): F, I red.
+Mutation W2 (fall back to the single call instead of refusing): H, I red.
+
+**Gap 2 — the `A5SF_*` → HTTP mapping had no route-level arm.** New host-free suite
+`packages/tools/test/p6t6-tool-route-errors.test.ts` drives ONE real `plugin.apply()` over a scratch
+`DSH_HOME` with the hostile-seam doubles (`h3-hostile-seam.test.ts` pattern) and a
+`teamRoot.live.executeTool` answering per `body.name`; every arm goes through the same registered
+`POST /__p6t6/tool` handler. **Status codes observed:** `A5SF_TOOL_DISPATCH_SHAPE_UNSUPPORTED` ⇒ **400**
+with the typed code and the message verbatim; `A5SF_TOOL_EXECUTOR_UNAVAILABLE` and
+`A5SF_TOOL_EXECUTOR_RESULT_MISSING` ⇒ **500** with their typed codes (and not 400); a successful governed
+call ⇒ **200** `{ok:true, value}` with the settlement value carried through unchanged; an `isError`
+settlement ⇒ **200** `{ok:false, error:{message, info}}` (a governed refusal is not an HTTP failure). The
+negatives are the point: an UNTYPED error ⇒ **500 with no `code`** (it cannot be presented as a 400); a
+non-`A5SF_*` code ⇒ 500 echoing no `A5SF_*`; an `A5SF_`-PREFIXED lookalike ⇒ **500**, proving the 400 is
+selected by EXACT code equality and not by a widened prefix. Suite: **9/9**. Route mutations: every
+`A5SF_*` → 400 reds R2a/R2b/R4c; deleting the explicit branch reds R1/R2a/R2b/R4c. No product change was
+needed — the route already mapped correctly; the arms now hold it there.
+
+**Measured, both hosts** (`round123/vitest-{runtime,client}-{legacy,next}.log`, each carrying its
+`HOST-VERSION-GUARD` line): population runtime+testkit **18/18 files, 190/190** on rc.2 and rc.5; client
+24/26 files, **343/346** on both (the same 3 pre-existing reds, §8 item 4); **total 42/44 files, 533/536 on
+both hosts — identical to round 122**. Dispatch leg `ute-vnext-a1` **exit 0, 267 tests / 264 pass / 0 fail /
+3 skipped** on rc.2; `a5sf native route C` leg **8/8** on rc.2 and on rc.5. No suite skipped, no timeout
+widened, no assertion weakened, no retry added.
+
+**Disclosed, not hidden: on the rc.5 pinned tree the `ute-vnext-a1` leg has 4 pre-existing reds.**
+`TEAM_TEST_HOST=next` reds `ADM-63/69/79/80` in `vnext-b-probe-ladder.test.mjs` — the ladder's PTC /
+`run_code`-transport identity arms, where this pinned rc.5 tree never mounts `PtcExecutor` on the member
+scope, so `requirePtcTransport()` answers `undefined`. They are **not on the dispatch path** (they read
+definitions; nothing is dispatched) and they are **not caused by this round**: with the six round-123-touched
+files checked out at the parent head `af2b03f20`, the SAME leg produced the SAME verdict (267 tests / 261
+pass / 4 fail / 2 skipped, same four arms); the files were then restored from HEAD and the tree is clean.
+Every dispatch-driving arm in that leg passes on rc.5 (`ADM-64/65/66/67/70/71/72/73/74/75/76/77/78`,
+`SLICE-1/2/3/5/6`), which is the round's claim.
+
+**Ledger delta, booked with its measurement.** One new scannable file
+(`packages/tools/test/p6t6-tool-route-errors.test.ts`) moved the p4t6 scannable-file ledger: with the file on
+disk and no booking the scanner measured **1325** against a derived **1324** (`expected 1324 to be 1325`,
+RED-first). `packages/testkit/test/p4t6-bookings/round123toolrouteerrors.json` books 1324 → 1325 with the
+measurement (same exact law, no tolerance); the suite then reads 20/20. No other ledger, mirror or
+placement moved: `place-dist-glue` **36 placements, every one byte-identical**; `ute-p0-assets` modules=37 /
+files=180 / lines=69512 unchanged; `ute-cut-closure` `cut(0/148)` unchanged; catalog `tests 789 → 790`
+(the one new suite), collected 737 → 738, uncollected 38, excluded 14. All gate lines: `round123/README.md`.
+
+**Level:** development evidence on two pinned hosts — **no row moves, nothing becomes PRODUCT-PROVEN** (the
+candidate gate is a VERSION gate and no version is frozen). Trail: `round123/README.md`,
+`RC5-TEST-MATRIX.md` §11.8, `CANDIDATE-REPORT.md` §8 item 3 (round-123 amendment).
+
 ## ROUND 122 (2026-11-26) — the `executeTool` DISPATCH-SHAPE residue closes: the ONE product dispatch entry is capability-detected on BOTH hosts, and refuses a caller's wrong shape by name (no capability row moves)
 
 **What was still open after round 121, and why it mattered.** Round 121 fixed the realm/dispatch seam the

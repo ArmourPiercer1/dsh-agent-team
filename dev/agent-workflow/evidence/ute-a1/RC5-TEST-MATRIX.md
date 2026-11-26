@@ -626,3 +626,60 @@ frozen), and the 3 client reds stay collected and red (they are disclosed in `CA
 4). What DID move: `agent-bindings.mjs#executeTool` no longer emits a fixed rc.2 shape — §11.6's last
 paragraph is closed; the entry dispatches in the host's own capability-detected shape and refuses a
 caller's wrong shape by name.
+
+## 11.8 Round 123 — the World stops version-sniffing its dispatch shape, and the harness route gets its status-code arms
+
+**Why this section exists.** §11.6/§11.7 closed the PRODUCT seam. Round 122's own §G then disclosed that
+the TEST infrastructure had not followed: `tests/world-factory/lib/a5sf-fs-contract-world.mjs#executeToolDispatch`
+still chose `hostMode === 'next' ? batch : single`, so the worlds that "prove both hosts" were themselves
+keyed on the version flag — and the new `A5SF_*` → HTTP mapping on `POST /__p6t6/tool` had no route-level
+arm. Round 123 closes both (commit `cd613e6ea`; full trail `round123/README.md`).
+
+**The World's rule is now the product's rule, by public capability.**
+
+| the LIVE tools service exposes | the World emits |
+| --- | --- |
+| `typeof tools.setExecutor === 'function'` | rc.5 BATCH `{calls:[{type:'tool-call', id, name, arguments: <JSON string>}], signal, agent}`; settlement `batch.results[0].result` |
+| `typeof tools.modeFor === 'function'` \|\| `'defaultMode' in tools` | rc.2 SINGLE CALL `{signal, callId, name, arguments, agent}` |
+| neither | typed `WorldToolDispatchRefusal` / `A5SF_TOOL_EXECUTOR_CAPABILITY_MISSING` — never a guessed shape |
+
+`hostMode` is deleted from the helper and from all four call sites (`vnext-fs-slice`, `vnext-b-probe-ladder`,
+`a5sf-bl16-grep-realm`, `a5sf-native-route-c`) plus the World's internal dispatch; no assertion changed.
+`worldToolDispatchShape` is a SECOND, independent probe on purpose: had it imported the product's
+`hostToolDispatchShape`, the drift control below would be a tautology.
+
+**Arms F–I** (`packages/runtime/test/vnext-tool-dispatch-shape.test.ts`, host-free, 9/9): F batch on
+`setExecutor`; G single call on `modeFor` (and never a `calls` key); H typed refusal with zero dispatches on
+neither (code asserted EQUAL to the product's exported constant); **I the drift control** — ONE fake service
+object, both probes, and on the SAME input both engines must emit the same dispatched call and settle on the
+same outcome, across six selector combinations and three non-service values. Mutations: never emit the batch
+⇒ F, I red; fall back to the single call instead of refusing ⇒ H, I red.
+
+**The route's status codes, observed** (`packages/tools/test/p6t6-tool-route-errors.test.ts`, host-free,
+9/9, one real `plugin.apply()` over a scratch `DSH_HOME` with the hostile-seam doubles):
+`A5SF_TOOL_DISPATCH_SHAPE_UNSUPPORTED` ⇒ **400** + typed code; `A5SF_TOOL_EXECUTOR_UNAVAILABLE` and
+`A5SF_TOOL_EXECUTOR_RESULT_MISSING` ⇒ **500** + typed code (not 400); a governed call ⇒ **200** with the
+`{isError,value,error,content}` settlement unchanged; an `isError` settlement ⇒ **200**. Negatives held:
+untyped error ⇒ 500 with NO `code`; non-`A5SF_*` code ⇒ 500; `A5SF_`-prefixed lookalike ⇒ **500** (the 400
+is exact-code, not prefix). Mutations: every `A5SF_*` → 400 reds R2a/R2b/R4c; deleting the branch reds
+R1/R2a/R2b/R4c. No product change was required.
+
+**Measured, both hosts** (`round123/*.log`, each with its `HOST-VERSION-GUARD` line): population
+runtime+testkit **18/18, 190/190** on rc.2 and rc.5; client 24/26, **343/346** on both (the same 3
+pre-existing reds as §11.7); **total 42/44, 533/536 on both hosts, identical to round 122**. Dispatch leg
+`ute-vnext-a1`: **exit 0, 267 / 264 pass / 0 fail / 3 skipped** on rc.2. `a5sf native route C`: **8/8** on
+both hosts. Ledger: the one new scannable file is booked 1324 → 1325 (`round123toolrouteerrors.json`, with
+the RED-first measurement); `place-dist-glue` stays at 36 byte-identical placements; catalog
+`tests 789 → 790`, uncollected 38 unchanged.
+
+**Newly disclosed (pre-existing, not this round's).** On the pinned rc.5 tree the `ute-vnext-a1` leg reds
+`ADM-63/69/79/80` — the ladder's PTC/`run_code`-transport identity arms, where `PtcExecutor` never reaches
+the member scope and `requirePtcTransport()` answers `undefined`. Off the dispatch path (definition reads,
+no dispatch); the SAME verdict is reproduced with the round-123 files checked out at the parent head
+`af2b03f20` (267 / 261 pass / 4 fail / 2 skipped, same arms). Every dispatch-driving arm in the leg passes
+on rc.5.
+
+**What does NOT move:** no row becomes PRODUCT-PROVEN (VERSION gate, no frozen version); the 3 client reds
+stay collected and red; the 40 rc.2-only Vite suites of §11.7 are untouched. What DID move: no version
+sniff is left in the test infrastructure that decides a dispatch shape, and the harness route's 400/500
+mapping is observed rather than inferred.

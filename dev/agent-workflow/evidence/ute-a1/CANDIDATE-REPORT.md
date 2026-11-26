@@ -570,6 +570,41 @@ log line (`host:"legacy"`/`source:tests/paths.mjs#TEST_USE_BASELINE_SHA`, `host:
    **42/44, 533 of 536** (round 121: 532/535). The 3 remaining reds are the same pre-existing client
    failures on both hosts — see §8 item 4 (the known-red disclosure). **This is coverage, not a freeze:** no row
    becomes PRODUCT-PROVEN.
+   **AMENDED round 123 (2026-11-26): BOTH round-122 residues are CLOSED, and what replaced them is named
+   here so no reader inherits an empty disclosure.** Round 122 left two gaps of its own (its §G): (a) the
+   test world still picked its dispatch shape from a VERSION flag — `executeToolDispatch` took `{hostMode}`
+   and emitted `hostMode === 'next' ? batch : single` — the same decision the product had just learned to
+   make by public capability; (b) the new `A5SF_*` → HTTP mapping on `POST /__p6t6/tool` (400 only for
+   `A5SF_TOOL_DISPATCH_SHAPE_UNSUPPORTED`, 500 for every other `A5SF_*`) had no ROUTE-LEVEL arm, so the
+   mapping was asserted from the source, not observed. Round 123 closes both, and **neither is on the
+   limits list any more**; the replacement entries are:
+   (a′) *the World's dispatch shape is capability-detected, with a drift control* — `hostMode` is deleted
+   from `executeToolDispatch` (and from all four call sites plus the World's own dispatch), the World reads
+   `setExecutor` / `modeFor` / `defaultMode` from the LIVE service exactly as the product does, refuses
+   typed (`A5SF_TOOL_EXECUTOR_CAPABILITY_MISSING`) when the service offers neither, and arms **F–I** in
+   `vnext-tool-dispatch-shape.test.ts` (9/9) prove batch / single / typed refusal and the **drift control**:
+   on ONE fake service both probes answer the same shape and, on the SAME input, both engines dispatch the
+   SAME call and settle identically across six selector combinations. Mutation-checked (never emit the
+   batch ⇒ F, I red; fall back to the single call instead of refusing ⇒ H, I red). This is a *stronger*
+   disclosure than the gap: any future divergence between the World and the product now fails a test
+   instead of being invisible.
+   (b′) *the route mapping is held by a route-level suite* — `packages/tools/test/p6t6-tool-route-errors.test.ts`
+   (host-free, 9/9) drives ONE real `plugin.apply()` over a scratch `DSH_HOME` with the hostile-seam doubles
+   and observes the status codes: shape refusal ⇒ **400** + typed code; `A5SF_TOOL_EXECUTOR_UNAVAILABLE` /
+   `…_RESULT_MISSING` ⇒ **500** + typed code; a governed call ⇒ **200** with the `{isError,value,error,content}`
+   settlement carried through unchanged; an `isError` settlement ⇒ **200** (not an HTTP failure). The
+   negatives are the point and are now the standing obligation: an UNTYPED error ⇒ 500 with NO `code`, a
+   non-`A5SF_*` code ⇒ 500 echoing no `A5SF_*`, and an `A5SF_`-PREFIXED lookalike ⇒ 500 — so a widened
+   prefix can no longer pass as "the shape refusal". Mutation-checked (all `A5SF_*` → 400 ⇒ R2a/R2b/R4c red;
+   branch deleted ⇒ R1/R2a/R2b/R4c red).
+   What this does NOT change: nothing becomes PRODUCT-PROVEN, no version is frozen, and the remaining
+   limits of this item are unchanged — the 40 rc.2-only Vite suites (round 116 measurement) and the 3
+   pre-existing client reds (§8 item 4) stay exactly as disclosed. Two measurements from the round, both
+   in `round123/README.md`: population 42/44 files, **533/536** on rc.2 and on rc.5 (identical to round
+   122; the round's new arms are host-free), and — published rather than skipped — the rc.5 `ute-vnext-a1`
+   leg carries **4 pre-existing reds** (`ADM-63/69/79/80`, the ladder's PTC/`run_code`-transport identity
+   arms on this pinned rc.5 tree), reproduced identically with the round-123 files checked out at the
+   parent head `af2b03f20`, off the dispatch path, and not caused by this round.
 4. **KNOWN-RED disclosure (round 122) — three client arms are red on `master` BEFORE this branch and are
    deliberately NOT skipped, NOT deleted and NOT retried.** Identity and attribution are measured, not
    asserted (full method and logs: `round122/POPULATION.md` §4):
