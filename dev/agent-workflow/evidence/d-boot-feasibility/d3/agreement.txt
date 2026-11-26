@@ -7,7 +7,7 @@ work                                PROVEN                              PROVEN
 alpha6                              PROVEN                              PROVEN
 aAdmissions                         4                                   4
 bAdmissions                         3                                   3
-inflightBefore                      open                                open
+inflightBefore                      RUNNING                             RUNNING
 inflightAfter                       UNKNOWN                             UNKNOWN
 collectStatus                       succeeded                           succeeded
 bash1State                          COMPLETED                           COMPLETED

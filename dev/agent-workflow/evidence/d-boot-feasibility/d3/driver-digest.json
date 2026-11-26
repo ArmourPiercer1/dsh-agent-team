@@ -1,10 +1,10 @@
 {
-  "at": "2026-11-25T00:37:25.089Z",
-  "head": "5cb5c606203eaf07dd78a2a5c67b442899db2377",
+  "at": "2026-11-26T02:35:18.438Z",
+  "head": "b1b6a047811a41422481cea2558f618406ec2ad6",
   "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next",
   "hostSha": "9c2670d3bce5275e0d1610272958121af87787bb",
   "pin": "9c2670d3bce5275e0d1610272958121af87787bb",
-  "driverSha256": "2f839b3ee28c061306a0345814c6b557110fc1265332d2537f20dfb07ab6b5f2",
+  "driverSha256": "08651504f81623fd99e02d6fab99e9f894dacc14551cd8994002c7f5b699d842",
   "jsSubstitutions": [
     {
       "expression": "(process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split(',').map((entry) => entry.trim()).filter((entry) => entry !== '')",
@@ -27,5 +27,5 @@
       "value": false
     }
   ],
-  "command": "node tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs"
+  "command": "node tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs --boots 1"
 }

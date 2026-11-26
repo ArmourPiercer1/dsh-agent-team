@@ -1,0 +1,57 @@
+{
+  "at": "2026-11-26T02:36:05.910Z",
+  "callId": "call-d3-b-inflight",
+  "mode": "fast",
+  "state": "COMPLETED",
+  "settlement": {
+    "executionId": "exec-30e352c6e4d866e04655d65f24896fa0d06eb814",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-35-36Z-next/centre/settlement/inst-1v36r931jr7r/exec-30e352c6e4d866e04655d65f24896fa0d06eb814.settlement.json",
+    "present": true,
+    "state": "COMPLETED",
+    "dispatch": "quiesced",
+    "bodyOutcome": "completed",
+    "stops": [],
+    "transitions": [
+      "ADMITTED",
+      "RUNNING",
+      "COMPLETED"
+    ]
+  },
+  "admissions": [
+    {
+      "callId": "call-d3-b-inflight",
+      "agentId": "inst-1v36r931jr7r",
+      "instanceId": "inst-1v36r931jr7r",
+      "sessionId": "session-team-child-6788a23a6d1be9784107fcb7631d08f9",
+      "instanceGeneration": 0,
+      "toolName": "bash",
+      "axis": "process.exec",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-35-36Z-next/workspace",
+      "definitionSource": "",
+      "policyGeneration": "a5sf1:132443e98b20d624c7bf951acdc7abb5",
+      "blueprintRevision": "",
+      "owner": "session-dboot-d3-root",
+      "decision": "allow",
+      "overlayOutcome": "no-opinion",
+      "kind": "invocation-authority",
+      "at": "2026-11-26T02:36:05.570Z"
+    },
+    {
+      "callId": "call-d3-b-inflight",
+      "executionId": "exec-30e352c6e4d866e04655d65f24896fa0d06eb814",
+      "toolName": "bash",
+      "agentId": "session-team-child-6788a23a6d1be9784107fcb7631d08f9",
+      "outcome": "completed",
+      "isError": false,
+      "policyGeneration": "a5sf1:132443e98b20d624c7bf951acdc7abb5",
+      "kind": "execution",
+      "at": "2026-11-26T02:36:05.900Z"
+    }
+  ],
+  "reason": "no genuine in-flight call at crash time: call-d3-b-inflight settlement state=\"COMPLETED\" fact=[{\"decision\":\"allow\",\"axis\":\"process.exec\",\"code\":null,\"reason\":\"\"},{\"code\":null,\"reason\":\"\"}] (the crash judge cannot fake an in-flight call)",
+  "sigkillIssued": false,
+  "killRefused": true,
+  "hostPid": 14205,
+  "hostPidAliveAtRefusal": true,
+  "note": "the judge refused BEFORE process.kill; the host kept running and was torn down by the ordinary teardown path"
+}

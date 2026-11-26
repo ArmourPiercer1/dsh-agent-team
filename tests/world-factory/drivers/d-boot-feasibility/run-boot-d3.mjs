@@ -23,10 +23,21 @@
  *      NOT mounted). The verdict is the PRODUCT proposition ("the session
  *      survives across turns"); a refusal is the measured verdict, never a pass.
  *   2. `d3:crash-cold-recovery` — a Member turn is SIGKILLed (the real host
- *      process) while one of its calls is genuinely in flight (an `edit` over a
- *      256 MiB in-lane file, whose body is slow enough to observe; the turn
- *      first runs an IN-LANE `grep` probe over a large corpus, which shape B now
- *      ADMITS and runs — its fact/result are recorded). The host is restarted
+ *      process) while one of its calls is genuinely in flight. THE WINDOW IS A
+ *      REAL BLOCKING WINDOW, NOT A TIMING RACE: the driver creates a FIFO in
+ *      the Member's compiled write lane and holds its ONLY read end open; the
+ *      Member's governed `bash` call runs an endless `printf` loop redirected
+ *      into that FIFO. Once the 64 KiB pipe buffer is full the writer is
+ *      blocked in `pipe_write(2)` — it cannot make progress until the reader
+ *      drains or closes, and the reader (this driver) stops reading before the
+ *      SIGKILL. The settlement therefore cannot leave RUNNING; the driver still
+ *      refuses to kill unless it has OBSERVED RUNNING, and the restart arms
+ *      observe UNKNOWN. A negative control
+ *      (`A5SF_D3_INFLIGHT_MODE=fast`) runs the same arm with a fast-completing
+ *      provider: the settlement closes, the judge refuses with the SAME named
+ *      reason and NO SIGKILL is issued. The turn first runs an IN-LANE `grep`
+ *      probe over a large corpus, which shape B now ADMITS and runs — its
+ *      fact/result are recorded. The host is restarted
  *      against the SAME `DSH_HOME`/state with
  *      `bootPhase: 'create-or-open'` (the product's own restart semantic), and
  *      every durable record is re-read with FRESH readers: completed ledger
@@ -75,7 +86,7 @@
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import {
-  appendFileSync, closeSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, realpathSync, renameSync, writeFileSync, writeSync,
+  appendFileSync, closeSync, constants as fsConstants, existsSync, mkdirSync, openSync, readdirSync, readFileSync, readSync, readlinkSync, realpathSync, renameSync, unlinkSync, writeFileSync,
 } from 'node:fs'
 import { createConnection } from 'node:net'
 import { createRequire } from 'node:module'
@@ -99,6 +110,9 @@ const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(HERE, '..', '..', '..', '..')
 const EVIDENCE = join(REPO_ROOT, 'dev', 'agent-workflow', 'evidence', 'd-boot-feasibility', 'd3')
 const RUNS = join(EVIDENCE, 'runs')
+// The negative control is a SEPARATE run root: it must never overwrite the
+// measured two-boot runs (which are the positive evidence).
+const CONTROL_RUNS = join(EVIDENCE, 'control-runs')
 const ARCHIVE = join(EVIDENCE, 'archive')
 const LEDGER_PATH = join(EVIDENCE, 'run-ledger.jsonl')
 // The FS face's dev-live grant (scope DEV-LIVE, face 'FS Provider', world
@@ -152,9 +166,30 @@ const CALL_A_BASH2 = 'call-d3-a-bash-read-state'
 const CALL_A_AFTER = 'call-d3-a-after-recovery'
 const CALL_B_READ = 'call-d3-b-inlane'
 const CALL_B_GREP = 'call-d3-b-grep-probe'
-const CALL_B_EDIT = 'call-d3-b-inflight-edit'
-const EDIT_NEEDLE = 'DBOOT_D3_EDIT_UNIQUE_NEEDLE_7f3c'
-const BIG_EDIT_BYTES = 256 * 1024 * 1024
+const CALL_B_INFLIGHT = 'call-d3-b-inflight'
+// THE BLOCKING PROVIDER (round 125). The in-flight call writes into a FIFO the
+// driver owns; the pipe buffer is the kernel object the writer blocks in.
+const INFLIGHT_FIFO_FILE = 'inflight-write.fifo'
+const INFLIGHT_FAST_FILE = 'inflight-fast.txt'
+const INFLIGHT_PIPE_BYTES = 64 * 1024
+const INFLIGHT_WRITE_MARKER = 'DBOOT_D3_INFLIGHT_FIFO_WRITE'
+// The command is FINITE: it writes exactly INFLIGHT_COMMAND_BYTES, so it can
+// complete IF AND ONLY IF the reader drains that many bytes. The driver reads
+// exactly one pipe buffer and stops, so completion is gated on the kernel pipe
+// — not on an infinite loop that could never finish either way.
+const INFLIGHT_WRITE_ITERATIONS = 2_097_152
+const INFLIGHT_COMMAND_BYTES = INFLIGHT_WRITE_MARKER.length * INFLIGHT_WRITE_ITERATIONS
+const INFLIGHT_MODES = Object.freeze(['blocked', 'fast'])
+// `blocked` (default) = the measured arm. `fast` = the NEGATIVE CONTROL: the
+// same arm with a provider that completes, which must make the judge refuse.
+const INFLIGHT_MODE = (() => {
+  const raw = process.env.A5SF_D3_INFLIGHT_MODE
+  const value = raw === undefined || raw === '' ? 'blocked' : raw
+  if (!INFLIGHT_MODES.includes(value)) {
+    throw new Error(`A5SF_D3_INFLIGHT_MODE=${JSON.stringify(value)} is not an in-flight provider mode; use ${JSON.stringify(INFLIGHT_MODES)}`)
+  }
+  return value
+})()
 
 const DONE_DISC = 'DBOOT_D3_DISC_DONE'
 const DONE_L1 = 'DBOOT_D3_L1_DONE'
@@ -178,7 +213,6 @@ const STATE_FILE = 'd3-persistent-state.txt'
 // shell. A's compiled write root is team-a, so the OS profile must refuse it.
 const ESCAPE_FILE = 'd3-escape.txt'
 const CORPUS_DIR = 'corpus'
-const BIG_EDIT_FILE = 'big-edit.bin'
 const CORPUS_NEEDLE = 'DBOOT_D3_NEVER_MATCH_7f3c1a9e2b5d8046'
 
 const TEAM_TOOL_NAMES = Object.freeze([
@@ -191,7 +225,12 @@ const LEADER_TOOL_ALLOW = Object.freeze(['bash', 'read', 'write', 'edit', 'read_
 
 const argv = process.argv.slice(2)
 const PLAN_ONLY = argv.includes('--plan')
+/** Run ONE boot with the fast provider and REQUIRE the named refusal (no kill).
+ *  This is the negative control: it makes "the arm is not vacuous" measurable
+ *  on the SAME driver, without a second code path. */
+const EXPECT_INFLIGHT_REFUSAL = argv.includes('--expect-inflight-refusal')
 const BOOTS_WANTED = (() => {
+  if (EXPECT_INFLIGHT_REFUSAL) return 1
   const at = argv.indexOf('--boots')
   if (at === -1) return 2
   const n = Number(argv[at + 1])
@@ -569,7 +608,6 @@ function makeDecide({ paths, ids }) {
   // measuring a surface that no longer exists.
   const bashCall = (id, command) => ({ kind: 'tool-call', toolCalls: [{ id, name: 'bash', arguments: { command } }] })
   const grepCall = (id, pattern, searchPath) => ({ kind: 'tool-call', toolCalls: [{ id, name: 'grep', arguments: { pattern, path: searchPath } }] })
-  const editCall = (id, filePath, oldString, newString) => ({ kind: 'tool-call', toolCalls: [{ id, name: 'edit', arguments: { file_path: filePath, old_string: oldString, new_string: newString } }] })
 
   return function decide({ req }) {
     const allText = messagesOf(req).map(textOf).join('\n')
@@ -608,10 +646,24 @@ function makeDecide({ paths, ids }) {
         // this `grep` and it is ADMITTED and RUNS. Its fact and tool result are
         // recorded; the flow continues to the in-flight call below either way.
         //
-        // THE IN-FLIGHT CALL: a small-argument `edit` over a 256 MiB in-lane
-        // file. `grep` is not used as the in-flight record (its corpus scan is
-        // the search probe), and `bash` has no process axis at all.
-        if (!seen.has(CALL_B_EDIT)) return editCall(CALL_B_EDIT, paths.bigFile, EDIT_NEEDLE, `${EDIT_NEEDLE}_edited`)
+        // THE IN-FLIGHT CALL (round 125): a governed `bash` whose redirect
+        // writes into the FIFO the driver owns. The driver holds the ONLY read
+        // end and stops reading once it has observed bytes, so the writer is
+        // blocked in `pipe_write(2)` with the pipe full — the call CANNOT
+        // complete until the process dies (the command is finite, but finishing
+        // it would require the driver to drain every byte, which it never does).
+        // `grep` is not used as the in-flight record (its corpus scan is the
+        // search probe).
+        //
+        // NEGATIVE CONTROL: under A5SF_D3_INFLIGHT_MODE=fast the same call
+        // writes one short line to a plain file and completes, so the judge
+        // must refuse to kill. The command shape is the only difference.
+        if (!seen.has(CALL_B_INFLIGHT)) {
+          const command = INFLIGHT_MODE === 'fast'
+            ? `printf '%s\\n' 'DBOOT_D3_INFLIGHT_FAST' > '${paths.fastFile}'`
+            : `i=0; while [ "$i" -lt ${String(INFLIGHT_WRITE_ITERATIONS)} ]; do printf '%s' '${INFLIGHT_WRITE_MARKER}'; i=$((i+1)); done > '${paths.fifo}'`
+          return bashCall(CALL_B_INFLIGHT, command)
+        }
         return text(`${DONE_MEMBER_B1} ${lastToolResultText(req).slice(0, 200)}`)
       }
       if (token === TOK_A_AFTER) {
@@ -987,7 +1039,7 @@ function judgePersistent({ bash1, bash2, ledger, settle1, settle2, paths, preset
   )
 }
 
-function judgeCrash({ before, after, restart, home }) {
+function judgeCrash({ before, after, inflightWindow = null, restart, home }) {
   const bKill = before?.bOpen ?? null
   const bAfter = after?.bOpen ?? null
   const aBefore = before?.aRead ?? null
@@ -1004,7 +1056,20 @@ function judgeCrash({ before, after, restart, home }) {
       { id: 'restart-same-home', ok: restart?.firstHome === home && restart?.booted === true && restart?.bootPhase === 'create-or-open', detail: `firstHome=${String(restart?.firstHome)} restartHome=${String(home)} booted=${String(restart?.booted)} bootPhase=${String(restart?.bootPhase)}` },
       { id: 'completed-ledger-survives', ok: aFactsBefore.length > 0 && aFactsAfter.length >= aFactsBefore.length && aFactsAfter.every((f, i) => JSON.stringify(f) === JSON.stringify(aFactsBefore[i])), detail: `factsBefore=${aFactsBefore.length} factsAfter=${aFactsAfter.length}` },
       { id: 'completed-settlement-survives', ok: aBefore?.state === 'COMPLETED' && aAfter?.state === 'COMPLETED', detail: `before=${String(aBefore?.state)} after=${String(aAfter?.state)} transitions=${JSON.stringify(aAfter?.transitions ?? [])}` },
-      { id: 'inflight-was-open-at-crash', ok: bKill?.state === 'ADMITTED' || bKill?.state === 'RUNNING', detail: `in-flight settlement state at SIGKILL=${String(bKill?.state)} transitions=${JSON.stringify(bKill?.transitions ?? [])}` },
+      { id: 'inflight-was-open-at-crash', ok: bKill?.state === 'RUNNING', detail: `in-flight settlement state at SIGKILL=${String(bKill?.state)} transitions=${JSON.stringify(bKill?.transitions ?? [])}` },
+      // ROUND 125 — THE WINDOW ITSELF IS MEASURED. The driver observed bytes in
+      // the kernel pipe (the write began) and the settlement was STILL RUNNING
+      // after a settle delay while the driver held the only read end and had
+      // stopped draining. That is a blocked body, not a slow one: the command
+      // cannot finish without a reader that no longer reads.
+      {
+        id: 'inflight-window-blocked-in-kernel',
+        ok: inflightWindow?.blocked === true
+          && (inflightWindow?.bytesObservedInPipe ?? 0) > 0
+          && inflightWindow?.stateAfterSettle === 'RUNNING'
+          && (inflightWindow?.bytesDrainedOfCommand ?? 0) < (inflightWindow?.commandIntendedBytes ?? 0),
+        detail: `mode=${String(inflightWindow?.mode)} bytesObservedInPipe=${String(inflightWindow?.bytesObservedInPipe)} stateOnObserve=${String(inflightWindow?.stateOnObserve)} stateAfterSettle=${String(inflightWindow?.stateAfterSettle)} pipeCapacityBytes=${String(inflightWindow?.pipeCapacityBytes)} commandIntendedBytes=${String(inflightWindow?.commandIntendedBytes)} blockedWriter=${JSON.stringify(inflightWindow?.blockedWriter ?? null)}`,
+      },
       { id: 'inflight-unknown-after-recovery', ok: bAfter?.state === 'UNKNOWN', detail: `after restart=${String(bAfter?.state)} transitions=${JSON.stringify(bAfter?.transitions ?? [])}` },
       { id: 'never-completed', ok: bAfter?.state !== 'COMPLETED' && !bExecutionsAfter.some((f) => f?.outcome === 'completed'), detail: `state=${String(bAfter?.state)} execution facts=${JSON.stringify(bExecutionsAfter.map((f) => f?.outcome))}` },
       { id: 'never-replayed', ok: bOpenAdmissionsAfter.length === 1 && (before?.bOpenAdmissions ?? []).length === 1 && bAfter?.state !== 'RUNNING', detail: `admission facts before=${(before?.bOpenAdmissions ?? []).length} after=${bOpenAdmissionsAfter.length}` },
@@ -1214,7 +1279,7 @@ function hostDigest() {
 // one boot
 // ─────────────────────────────────────────────────────────────────────────────
 async function bootOnce({ index, head, grant }) {
-  const bootDir = join(RUNS, `boot${String(index).padStart(2, '0')}`)
+  const bootDir = join(EXPECT_INFLIGHT_REFUSAL ? CONTROL_RUNS : RUNS, `boot${String(index).padStart(2, '0')}`)
   mkdirSync(bootDir, { recursive: true })
   const phase = `a5sf-live-d3-boot${String(index)}`
   const runId = `a5sf-live-d3-${utcStamp()}-b${String(index)}`
@@ -1257,6 +1322,9 @@ async function bootOnce({ index, head, grant }) {
   let memberSurface = []
   // ROUND 76 — the OS-confinement observation (recorded, never a judge clause).
   let confinementProbe = null
+  // ROUND 125 — the blocking provider: the FIFO and the driver-held read end.
+  let inflightBlock = null
+  let inflightWindow = null
   const ids = { a: null, b: null, pendingRequestId: null }
   const counters = {}
   let result = null
@@ -1412,7 +1480,8 @@ async function bootOnce({ index, head, grant }) {
         bInLane: join(bDir, B_IN_LANE_FILE),
         stateFile: join(aDir, STATE_FILE),
         escape: join(bDir, ESCAPE_FILE),
-        bigFile: join(bDir, BIG_EDIT_FILE),
+        fifo: join(bDir, INFLIGHT_FIFO_FILE),
+        fastFile: join(bDir, INFLIGHT_FAST_FILE),
       }
       writeFileSync(paths.aInLane, `${A_IN_LANE_TEXT}\n`, 'utf8')
       writeFileSync(paths.bInLane, `${B_IN_LANE_TEXT}\n`, 'utf8')
@@ -1429,18 +1498,14 @@ async function bootOnce({ index, head, grant }) {
       // enough to be the in-flight-at-crash record (and its result is a real
       // match, never an empty-scan artefact).
       appendFileSync(join(corpus, 'huge-7.txt'), `${CORPUS_NEEDLE}\n`)
-      // The in-flight `edit` target: one 256 MiB in-lane file whose unique
-      // needle is the LAST line, so the tool must read every byte and rewrite
-      // the whole file — the body stays RUNNING for a measurable window with
-      // only a 60-byte tool call.
-      const bigChunk = Buffer.alloc(1024 * 1024, 0x41)
-      const bigFd = openSync(paths.bigFile, 'w')
-      try {
-        for (let i = 0; i < BIG_EDIT_BYTES / bigChunk.length; i += 1) writeSync(bigFd, bigChunk)
-        writeSync(bigFd, Buffer.from(`\n${EDIT_NEEDLE}\n`, 'utf8'))
-      } finally {
-        closeSync(bigFd)
-      }
+      // THE BLOCKING PROVIDER (round 125). The FIFO is created OUTSIDE the
+      // Member's sandbox by this driver, inside B's compiled write lane; the
+      // driver opens the ONLY read end O_NONBLOCK so the shell's open(O_WRONLY)
+      // succeeds and its writes fill the kernel pipe buffer. Fail-closed: with
+      // no FIFO there is no deterministic window, so the boot must refuse here
+      // rather than fall back to a timing race.
+      inflightBlock = openInflightProvider(paths)
+      log(`[boot${String(index)}] in-flight provider mode=${INFLIGHT_MODE} fifo=${String(paths.fifo)} pipeCapacityBytes=${String(INFLIGHT_PIPE_BYTES)} commandBytes=${String(INFLIGHT_COMMAND_BYTES)}`)
       log(`[boot${String(index)}] grep corpus built in ${String(Date.now() - startedCorpus)}ms (50000 small + 64 big + 8 huge files)`)
       writeFileSync(join(world.home, 'p6t6-directive.json'), `${JSON.stringify(p6t6Directive({ worldId: world.id, logDir: world.logDir }), null, 2)}\n`)
       mkdirSync(join(world.home, 'blueprints'), { recursive: true })
@@ -1594,24 +1659,51 @@ async function bootOnce({ index, head, grant }) {
     log(`[boot${String(index)}] member B instance=${ids.b} childSession=${String(rowB.childSessionId)}`)
     writeFileSync(join(bootDir, 'members.json'), `${JSON.stringify({ a: rowA, b: rowB }, null, 2)}\n`)
 
-    // The in-flight window: the grep settlement must be ADMITTED/RUNNING (the
-    // centre opened it, the body has not settled) when the SIGKILL lands.
+    // The in-flight window: the call's settlement must reach RUNNING (the body
+    // is executing) and the driver must then PROVE the body is blocked on the
+    // kernel pipe before any signal is sent.
     abortStage = 'in-flight-window'
-    const opened = await waitInFlight({ home: world.home, instanceId: ids.b, callId: CALL_B_EDIT, stateRoute: () => readState(origin, cookie), ids })
+    const opened = await waitInFlight({ home: world.home, instanceId: ids.b, callId: CALL_B_INFLIGHT, stateRoute: () => readState(origin, cookie), ids })
     if (opened.ask !== null) {
       ids.pendingRequestId = String(opened.ask.requestId ?? opened.ask.id ?? '')
       log(`[boot${String(index)}] in-flight call parked at an ask (${ids.pendingRequestId}); driving the Leader resolve_control`)
       await promptTurn(MK_APPROVE, DONE_APPROVE, 'd3approve')
-      const opened2 = await waitInFlight({ home: world.home, instanceId: ids.b, callId: CALL_B_EDIT, stateRoute: () => readState(origin, cookie), ids })
+      const opened2 = await waitInFlight({ home: world.home, instanceId: ids.b, callId: CALL_B_INFLIGHT, stateRoute: () => readState(origin, cookie), ids })
       if (opened2.ask !== null) throw new Error('the approved in-flight call re-parked at a second ask')
       if (opened2.state === null) throw new Error('the approved in-flight call never opened a settlement')
     }
     if (opened.state === null && opened.ask === null) throw new Error(`the in-flight call never opened a settlement: ${JSON.stringify(opened).slice(0, 600)}`)
-    log(`[boot${String(index)}] in-flight settlement state=${String(opened.state)} executionId=${String(opened.executionId)}`)
+    log(`[boot${String(index)}] in-flight settlement state=${String(opened.state)} executionId=${String(opened.executionId)} closedTooEarly=${String(opened.closedTooEarly ?? false)}`)
+
+    // ── THE POSITIVE CONTROL OF THE WINDOW ITSELF ─────────────────────────
+    // In `blocked` mode the window is not "we saw RUNNING once": the driver
+    // proves the body is parked on the kernel by observing bytes in the pipe
+    // (the write began) and re-reading the settlement after a settle delay
+    // (still RUNNING, and the writer cannot finish because the driver stopped
+    // draining). Under `fast` the call has closed, and the judge below refuses.
+    if (opened.state === 'RUNNING' && INFLIGHT_MODE === 'blocked') {
+      inflightWindow = await observeBlockedWindow({
+        block: inflightBlock,
+        settlement: () => settlementOf(world.home, ids.b, CALL_B_INFLIGHT),
+      })
+      writeFileSync(join(bootDir, 'inflight-block.json'), `${JSON.stringify({ at: new Date().toISOString(), callId: CALL_B_INFLIGHT, ...inflightWindow }, null, 2)}\n`)
+      log(`[boot${String(index)}] blocking window: bytesObserved=${String(inflightWindow.bytesObservedInPipe)} stateAfterSettle=${String(inflightWindow.stateAfterSettle)} blocked=${String(inflightWindow.blocked)} writer=${JSON.stringify(inflightWindow.blockedWriter)}`)
+      if (inflightWindow.blocked !== true) {
+        throw new Error(`the blocking in-flight window was not established: bytesObservedInPipe=${String(inflightWindow.bytesObservedInPipe)} stateOnObserve=${String(inflightWindow.stateOnObserve)} stateAfterSettle=${String(inflightWindow.stateAfterSettle)} (the driver refuses to kill without a provably blocked body)`)
+      }
+    } else if (INFLIGHT_MODE === 'fast') {
+      // The negative control REQUIRES a closed call before the judge is asked to
+      // refuse: a still-open observation would be the positive window, not the
+      // control, so it fails here rather than being killed.
+      if (opened.state === 'RUNNING' || opened.state === 'ADMITTED' || opened.state === null) {
+        throw new Error(`negative control invalid: the fast provider never closed (state=${String(opened.state)}); refusing to issue the kill and refusing to report a control`)
+      }
+      writeFileSync(join(bootDir, 'inflight-block.json'), `${JSON.stringify({ at: new Date().toISOString(), callId: CALL_B_INFLIGHT, mode: INFLIGHT_MODE, blocked: false, state: opened.state, note: 'negative control: the fast provider completed; no kill may be issued' }, null, 2)}\n`)
+    }
 
     // ── THE REAL KILL + cold restart on the SAME DSH_HOME ──
     abortStage = 'sigkill-restart'
-    crash = await killAndRestart({ world, harness, phase, bootDir, ids, bootInfo })
+    crash = await killAndRestart({ world, harness, phase, bootDir, ids, bootInfo, inflightBlock })
     restartInfo = crash.bootInfo
     before = crash.before
     record.record.boots.push({ phase: `${phase}-resume`, world: world.id, port: restartInfo.port, logPath: restartInfo.logPath, role: 'resume-after-sigkill' })
@@ -1624,7 +1716,7 @@ async function bootOnce({ index, head, grant }) {
     // ── post-restart durable reads: B's recovery is expected to have run at
     //    member re-bind during boot. Wait (bounded) for the UNKNOWN transition.
     abortStage = 'post-restart-records'
-    const recovered = await waitFor(() => settlementOf(world.home, ids.b, CALL_B_EDIT).state === 'UNKNOWN', 60_000, 250)
+    const recovered = await waitFor(() => settlementOf(world.home, ids.b, CALL_B_INFLIGHT).state === 'UNKNOWN', 60_000, 250)
     if (!recovered) log(`[boot${String(index)}] WARNING: the in-flight settlement did not read UNKNOWN within 60s`)
     const stateAfter = await readState(origin2, cookie2)
     writeFileSync(join(bootDir, 'state-after-restart.json'), `${JSON.stringify({
@@ -1668,7 +1760,7 @@ async function bootOnce({ index, head, grant }) {
       bash2: settleA2,
       aReadAfterRestart: settlementOf(world.home, ids.a, CALL_A_READ),
       bOpenAtKill: before.bOpen,
-      bOpenAfterRestart: settlementOf(world.home, ids.b, CALL_B_EDIT),
+      bOpenAfterRestart: settlementOf(world.home, ids.b, CALL_B_INFLIGHT),
       // The in-lane search probe's DURABLE FACT (shape B: decision=allow, overlayOutcome=no-opinion)
       // and its tool result, recorded on both sides of the cold restart. Not a judge — an observation.
       bGrepFactsBefore: factsFor(ledgerB, CALL_B_GREP, 'invocation-authority'),
@@ -1680,10 +1772,10 @@ async function bootOnce({ index, head, grant }) {
     if (txB !== null) {
       writeFileSync(join(bootDir, 'crash-call.json'), `${JSON.stringify({
         at: new Date().toISOString(),
-        bOpenCall: callOf(txB, CALL_B_EDIT),
+        bOpenCall: callOf(txB, CALL_B_INFLIGHT),
         bGrepCall: callOf(txB, CALL_B_GREP),
         bReadCall: callOf(txB, CALL_B_READ),
-        note: 'the crashed call (the edit) is present with NO tool result (its body never returned); the same callId never reappears as a second admission. The grep probe before it is a COMPLETED admitted call, not the in-flight record',
+        note: 'the crashed call (the FIFO-blocked bash write) is present with NO tool result (its body never returned); the same callId never reappears as a second admission. The grep probe before it is a COMPLETED admitted call, not the in-flight record',
       }, null, 2)}\n`)
     }
 
@@ -1692,9 +1784,9 @@ async function bootOnce({ index, head, grant }) {
       stateFile: paths.stateFile,
       aRead: settlementOf(world.home, ids.a, CALL_A_READ),
       aReadFacts: factsFor(ledgerA, CALL_A_READ, 'invocation-authority'),
-      bOpen: settlementOf(world.home, ids.b, CALL_B_EDIT),
-      bOpenAdmissions: factsFor(ledgerB, CALL_B_EDIT, 'invocation-authority'),
-      bOpenExecutions: factsFor(ledgerB, CALL_B_EDIT, 'execution'),
+      bOpen: settlementOf(world.home, ids.b, CALL_B_INFLIGHT),
+      bOpenAdmissions: factsFor(ledgerB, CALL_B_INFLIGHT, 'invocation-authority'),
+      bOpenExecutions: factsFor(ledgerB, CALL_B_INFLIGHT, 'execution'),
       bGrepFacts: factsFor(ledgerB, CALL_B_GREP, 'invocation-authority'),
       aNewFacts: factsFor(ledgerA, CALL_A_AFTER, 'invocation-authority'),
       aNewSettle: settlementOf(world.home, ids.a, CALL_A_AFTER),
@@ -1707,11 +1799,15 @@ async function bootOnce({ index, head, grant }) {
     counters.bExecutions = ledgerB.filter((r) => r?.kind === 'execution').length
     counters.mockRequests = allRequests.length
     counters.memberModelRequests = allRequests.filter((r) => isMemberRequest(r) && surfaceNamesOf(r).length > 0).length
-    // Normalize the ONE timing-dependent counter: the kill may land while the
-    // settlement is still ADMITTED or already RUNNING — both mean "open at the
-    // crash", and the two-boot agreement compares the MEANING, not the race.
-    counters.inflightBefore = ['ADMITTED', 'RUNNING'].includes(before.bOpen?.state) ? 'open' : (before.bOpen?.state ?? null)
+    // ROUND 125: the counter is the RAW measured state, not a normalized
+    // "open". With the blocking provider the pair must agree on RUNNING; if it
+    // ever disagrees again the agreement table says so by name instead of
+    // hiding the race behind a synonym.
+    counters.inflightBefore = before.bOpen?.state ?? null
     counters.inflightAfter = after.bOpen?.state ?? null
+    counters.inflightMode = INFLIGHT_MODE
+    counters.inflightBytesObserved = inflightWindow?.bytesObservedInPipe ?? null
+    counters.inflightBlockedInKernel = inflightWindow?.blocked ?? null
     counters.collectStatus = collect1?.entry?.status ?? null
     counters.bash1State = settleA1.state
     counters.bash2State = settleA2.state
@@ -1728,7 +1824,7 @@ async function bootOnce({ index, head, grant }) {
         bash1: callOf(txAAll, CALL_A_BASH1), bash2: callOf(txAAll, CALL_A_BASH2),
         ledger: ledgerA, settle1: settleA1, settle2: settleA2, paths, presetPlugins, memberSurface,
       }),
-      crash: judgeCrash({ before, after, restart: { ...crash, bootPhase: 'create-or-open', home: world.home }, home: world.home }),
+      crash: judgeCrash({ before, after, inflightWindow, restart: { ...crash, bootPhase: 'create-or-open', home: world.home }, home: world.home }),
       work: judgeWork({
         a: {
           instance: ids.a, childSessionId: rowA.childSessionId, ledger: ledgerA,
@@ -1790,6 +1886,11 @@ async function bootOnce({ index, head, grant }) {
     } catch { /* record write is best-effort on abort */ }
     log(`[boot${String(index)}] FAILED at ${abortStage}: ${String(error?.stack ?? error)}`)
   } finally {
+    // THE WINDOW ENDS HERE ON EVERY PATH: if the boot failed before the SIGKILL
+    // the confined writer is still parked in pipe_write, and closing the only
+    // read end is what releases it (EPIPE/SIGPIPE). Idempotent after a kill.
+    const pipeClosedOnTeardown = closeInflightProvider(inflightBlock)
+    if (pipeClosedOnTeardown) log(`[boot${String(index)}] blocking provider read end closed at teardown`)
     if (alpha6World !== null) {
       try { await alpha6World.teardown() } catch { /* best effort */ }
     }
@@ -1821,13 +1922,25 @@ async function bootOnce({ index, head, grant }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // driving helpers
 // ─────────────────────────────────────────────────────────────────────────────
+/**
+ * Wait until the in-flight call's settlement is RUNNING — the ONLY state the
+ * crash judge accepts as "provably in flight". ADMITTED is NOT enough (the body
+ * has not started, so nothing is provably blocked); a terminal state is
+ * returned as `closedTooEarly` and the judge refuses.
+ *
+ * Under the NEGATIVE CONTROL (`fast`) the driver must NOT kill after merely
+ * seeing RUNNING: it waits for the call to close, so the refusal is
+ * deterministic rather than a race against a fast provider.
+ */
 async function waitInFlight({ home, instanceId, callId, stateRoute, ids }) {
   const deadline = Date.now() + 120_000
   let ticks = 0
   for (;;) {
     const s = settlementOf(home, instanceId, callId)
-    if (s.state === 'ADMITTED' || s.state === 'RUNNING') return { ...s, ask: null }
-    if (s.state === 'COMPLETED' || s.state === 'FAILED' || s.state === 'REFUSED' || s.state === 'UNKNOWN') return { ...s, ask: null, closedTooEarly: true }
+    if (s.state === 'COMPLETED' || s.state === 'FAILED' || s.state === 'REFUSED' || s.state === 'UNKNOWN') {
+      return { ...s, ask: null, closedTooEarly: true }
+    }
+    if (s.state === 'RUNNING' && INFLIGHT_MODE !== 'fast') return { ...s, ask: null }
     ticks += 1
     if (ids !== undefined && ticks % 20 === 0) {
       const state = await stateRoute().catch(() => null)
@@ -1836,6 +1949,149 @@ async function waitInFlight({ home, instanceId, callId, stateRoute, ids }) {
     }
     if (Date.now() >= deadline) return { ...s, ask: null, timeout: true }
     await sleep(10)
+  }
+}
+
+/**
+ * THE BLOCKING PROVIDER (round 125): create a FIFO in the Member's write lane
+ * and hold its ONLY read end open, non-blocking, in the driver process.
+ *
+ * Why this is a real window and not a delay: once the writer has filled the
+ * kernel pipe buffer (64 KiB on Linux) its `write(2)` blocks in `pipe_write`
+ * until a reader drains or the fd is closed. The driver observes bytes ONCE
+ * (proof the write began) and then stops reading, so all but one pipe buffer of
+ * the FINITE command CANNOT be written and the tool body cannot return. The
+ * window therefore ends exactly when the process dies (SIGKILL) or the driver
+ * closes the read end — never on a timer and never on a slow file write.
+ *
+ * FAIL-CLOSED: if mkfifo or the read-end open fails there is no deterministic
+ * window, so the boot refuses with the named code rather than racing.
+ */
+function openInflightProvider(paths) {
+  if (INFLIGHT_MODE !== 'blocked') return { mode: INFLIGHT_MODE, fifo: paths.fifo, fd: null, created: false }
+  try {
+    try { unlinkSync(paths.fifo) } catch { /* absent is the normal case */ }
+    execFileSync('mkfifo', ['-m', '600', paths.fifo], { stdio: 'ignore' })
+  } catch (error) {
+    throw new Error(`A5SF_D3_INFLIGHT_BLOCK_UNAVAILABLE: the driver could not create the blocking FIFO ${paths.fifo} (${String(error?.message ?? error)}); the crash judge refuses to substitute a timing race for a genuine in-flight call`)
+  }
+  let fd
+  try {
+    fd = openSync(paths.fifo, fsConstants.O_RDONLY | fsConstants.O_NONBLOCK)
+  } catch (error) {
+    throw new Error(`A5SF_D3_INFLIGHT_BLOCK_UNAVAILABLE: the driver could not open the read end of ${paths.fifo} (${String(error?.message ?? error)}); with no reader-held pipe there is no blocking window and the crash judge refuses to proceed`)
+  }
+  return { mode: INFLIGHT_MODE, fifo: paths.fifo, fd, created: true, readEndOpenedAt: new Date().toISOString() }
+}
+
+/** Close the driver's read end. A blocked writer then gets EPIPE/SIGPIPE and
+ *  the confined shell exits — this is also the post-kill cleanup of the orphan
+ *  the SIGKILL left behind. Idempotent. */
+function closeInflightProvider(block) {
+  if (block === null || block?.fd === null || block?.fd === undefined) return false
+  try { closeSync(block.fd) } catch { /* already closed */ }
+  block.fd = null
+  block.closedAt = new Date().toISOString()
+  return true
+}
+
+/** One non-blocking read from the pipe. Returns the byte count (0 = EAGAIN). */
+function drainPipeOnce(fd) {
+  const buffer = Buffer.alloc(INFLIGHT_PIPE_BYTES)
+  try {
+    const n = readSync(fd, buffer, 0, buffer.length, null)
+    return n > 0 ? n : 0
+  } catch (error) {
+    if (error?.code === 'EAGAIN' || error?.code === 'EWOULDBLOCK') return 0
+    if (error?.code === 'EIO') return 0 // no writer left; the pipe is gone
+    throw error
+  }
+}
+
+/** Best-effort /proc observation of the blocked writer (evidence only; a PID
+ *  namespace in the product's sandbox may hide it — the drained-bytes proof
+ *  does not depend on this). Matches an fd OPENED FOR WRITING on the FIFO
+ *  (`fdinfo.flags` low bits == O_WRONLY); the driver's own read end is excluded
+ *  by pid, and a `-c` command line is accepted only when it is not ours. */
+function findBlockedWriter(fifo) {
+  const own = String(process.pid)
+  const isWriteFdOnFifo = (pid, fd) => {
+    try {
+      if (readlinkSync(`/proc/${pid}/fd/${fd}`) !== fifo) return false
+    } catch { return false }
+    let flags = null
+    try {
+      const info = readFileSync(`/proc/${pid}/fdinfo/${fd}`, 'utf8')
+      const match = /^flags:\s+([0-7]+)/mu.exec(info)
+      if (match !== null) flags = Number.parseInt(match[1], 8)
+    } catch { /* raced */ }
+    // O_WRONLY = 1, O_RDWR = 2, O_RDONLY = 0. Our reader is O_RDONLY; a blocked
+    // pipe writer holds O_WRONLY.
+    return flags === null ? false : (flags & 0o3) === 1
+  }
+  const stateOf = (name) => {
+    let state = null
+    let wchan = null
+    try {
+      const stat = readFileSync(`/proc/${name}/stat`, 'utf8')
+      state = stat.slice(stat.lastIndexOf(')') + 2).split(' ')[0] ?? null
+    } catch { /* raced */ }
+    try { wchan = readFileSync(`/proc/${name}/wchan`, 'utf8').trim() || null } catch { /* raced */ }
+    return { state, wchan }
+  }
+  try {
+    for (const name of readdirSync('/proc')) {
+      if (!/^\d+$/u.test(name) || name === own) continue
+      let cmdline = ''
+      try { cmdline = readFileSync(`/proc/${name}/cmdline`, 'utf8') } catch { continue }
+      let matchedBy = null
+      if (cmdline.includes(fifo)) matchedBy = 'cmdline'
+      if (matchedBy === null) {
+        let fds = []
+        try { fds = readdirSync(`/proc/${name}/fd`) } catch { fds = [] }
+        if (fds.some((fd) => isWriteFdOnFifo(name, fd))) matchedBy = 'write-fd'
+      }
+      if (matchedBy === null) continue
+      return { pid: Number(name), ...stateOf(name), matchedBy, cmdline: cmdline.replace(/\0/gu, ' ').trim().slice(0, 240) }
+    }
+  } catch { /* /proc unavailable */ }
+  return null
+}
+
+/**
+ * Measure the window: RUNNING + bytes observed in the pipe + still RUNNING after
+ * a settle delay. The drain is capped at ONE pipe-buffer read so the writer can
+ * never complete: at most 64 KiB of the finite (~58 MiB) command is consumed.
+ */
+async function observeBlockedWindow({ block, settlement, timeoutMs = 30_000, settleMs = 400 }) {
+  const deadline = Date.now() + timeoutMs
+  let bytesObserved = 0
+  let reads = 0
+  for (;;) {
+    reads += 1
+    bytesObserved = drainPipeOnce(block.fd)
+    if (bytesObserved > 0) break
+    if (Date.now() >= deadline) break
+    await sleep(25)
+  }
+  const beforeSettle = settlement()
+  await sleep(settleMs)
+  const afterSettle = settlement()
+  const writer = findBlockedWriter(block.fifo)
+  return {
+    mode: INFLIGHT_MODE,
+    fifo: block.fifo,
+    readEndHeldByDriver: block.fd !== null,
+    pipeCapacityBytes: INFLIGHT_PIPE_BYTES,
+    commandIntendedBytes: INFLIGHT_COMMAND_BYTES,
+    drainReads: reads,
+    bytesObservedInPipe: bytesObserved,
+    bytesDrainedOfCommand: bytesObserved,
+    stateOnObserve: beforeSettle.state,
+    stateAfterSettle: afterSettle.state,
+    blockedWriter: writer,
+    blocked: bytesObserved > 0 && beforeSettle.state === 'RUNNING' && afterSettle.state === 'RUNNING',
+    kernelReason: 'the writer is parked in write(2)/pipe_write because the pipe buffer is full; the only read end is held by this driver and stopped reading, so the command cannot complete until the process dies',
   }
 }
 
@@ -1856,7 +2112,7 @@ async function driveCollect({ origin, cookie, requests, mk, done, bootDir, callI
   }
 }
 
-async function killAndRestart({ world, harness, phase, bootDir, ids, bootInfo }) {
+async function killAndRestart({ world, harness, phase, bootDir, ids, bootInfo, inflightBlock = null }) {
   const child = world.instance?.child ?? null
   const pid = typeof child?.pid === 'number' ? child.pid : null
   if (pid === null) throw new Error('the crash judge needs the real host process pid; none was recorded')
@@ -1866,16 +2122,36 @@ async function killAndRestart({ world, harness, phase, bootDir, ids, bootInfo })
     home: firstHome,
     aRead: settlementOf(firstHome, ids.a, CALL_A_READ),
     aReadFacts: factsFor(readLedger(firstHome, ids.a), CALL_A_READ, 'invocation-authority'),
-    bOpen: settlementOf(firstHome, ids.b, CALL_B_EDIT),
-    bOpenAdmissions: factsFor(readLedger(firstHome, ids.b), CALL_B_EDIT, 'invocation-authority'),
-    bOpenExecutions: factsFor(readLedger(firstHome, ids.b), CALL_B_EDIT, 'execution'),
+    bOpen: settlementOf(firstHome, ids.b, CALL_B_INFLIGHT),
+    bOpenAdmissions: factsFor(readLedger(firstHome, ids.b), CALL_B_INFLIGHT, 'invocation-authority'),
+    bOpenExecutions: factsFor(readLedger(firstHome, ids.b), CALL_B_INFLIGHT, 'execution'),
     bGrepFacts: factsFor(readLedger(firstHome, ids.b), CALL_B_GREP, 'invocation-authority'),
     aLedgerBytes: (() => { try { return readFileSync(ledgerPathOf(firstHome, ids.a), 'utf8').length } catch { return null } })(),
   }
-  if (before.bOpen.state !== 'RUNNING' && before.bOpen.state !== 'ADMITTED') {
-    const admissions = factsFor(readLedger(firstHome, ids.b), CALL_B_EDIT)
-    writeFileSync(join(bootDir, 'inflight-refusal.json'), `${JSON.stringify({ at: new Date().toISOString(), callId: CALL_B_EDIT, state: before.bOpen.state, settlement: settlementOf(firstHome, ids.b, CALL_B_EDIT), admissions }, null, 2)}\n`)
-    throw new Error(`no genuine in-flight call at crash time: ${CALL_B_EDIT} settlement state=${JSON.stringify(before.bOpen.state)} fact=${JSON.stringify(admissions.map((f) => ({ decision: f.decision, axis: f.axis, code: f.code ?? null, reason: String(f.reason ?? f.detail ?? '').slice(0, 300) })))} (the crash judge cannot fake an in-flight call)`)
+  // THE FAIL-CLOSED GATE (round 125): RUNNING is the ONLY state that proves the
+  // body is executing. ADMITTED (opened, body not started), a terminal state,
+  // or no settlement all refuse — with the SAME named reason, and with NO
+  // signal sent. The refusal receipt records that the host was left alive.
+  if (before.bOpen.state !== 'RUNNING') {
+    const admissions = factsFor(readLedger(firstHome, ids.b), CALL_B_INFLIGHT)
+    let hostPidAlive = false
+    try { process.kill(pid, 0); hostPidAlive = true } catch { hostPidAlive = false }
+    const reason = `no genuine in-flight call at crash time: ${CALL_B_INFLIGHT} settlement state=${JSON.stringify(before.bOpen.state)} fact=${JSON.stringify(admissions.map((f) => ({ decision: f.decision, axis: f.axis, code: f.code ?? null, reason: String(f.reason ?? f.detail ?? '').slice(0, 300) })))} (the crash judge cannot fake an in-flight call)`
+    writeFileSync(join(bootDir, 'inflight-refusal.json'), `${JSON.stringify({
+      at: new Date().toISOString(),
+      callId: CALL_B_INFLIGHT,
+      mode: INFLIGHT_MODE,
+      state: before.bOpen.state,
+      settlement: settlementOf(firstHome, ids.b, CALL_B_INFLIGHT),
+      admissions,
+      reason,
+      sigkillIssued: false,
+      killRefused: true,
+      hostPid: pid,
+      hostPidAliveAtRefusal: hostPidAlive,
+      note: 'the judge refused BEFORE process.kill; the host kept running and was torn down by the ordinary teardown path',
+    }, null, 2)}\n`)
+    throw new Error(reason)
   }
   const exit = new Promise((resolveExit) => {
     child.once('exit', (code, signal) => resolveExit({ code, signal }))
@@ -1884,6 +2160,10 @@ async function killAndRestart({ world, harness, phase, bootDir, ids, bootInfo })
   })
   process.kill(pid, 'SIGKILL')
   const killedAt = new Date().toISOString()
+  // Release the blocked writer: with the host dead nobody will ever drain the
+  // pipe, so closing the read end is what makes the surviving confined shell
+  // take SIGPIPE/EPIPE and exit. Recorded, because it is the end of the window.
+  const pipeClosedAfterKill = closeInflightProvider(inflightBlock)
   const exitInfo = await Promise.race([exit, sleep(15_000).then(() => ({ timeout: true }))])
   let pidGone = false
   try { readFileSync(`/proc/${pid}/stat`, 'utf8') } catch { pidGone = true }
@@ -1901,13 +2181,16 @@ async function killAndRestart({ world, harness, phase, bootDir, ids, bootInfo })
   const restartInfo = await harness.boot({ world, phase: `${phase}-resume`, bootTimeoutMs: 300_000 })
   writeFileSync(join(bootDir, 'crash.json'), `${JSON.stringify({
     at: killedAt, pid, exit: exitInfo, pidGone, portFree,
+    inflightMode: INFLIGHT_MODE,
+    inflightCallId: CALL_B_INFLIGHT,
+    pipeClosedAfterKill,
     settlementBefore: {
       aRead: { state: before.aRead.state, transitions: before.aRead.transitions },
       bOpen: { state: before.bOpen.state, transitions: before.bOpen.transitions, executionId: before.bOpen.executionId, file: before.bOpen.file },
     },
     restart: { url: redact(restartInfo.url), logPath: restartInfo.logPath },
   }, null, 2)}\n`)
-  return { before, firstHome, killedPid: pid, signal: 'SIGKILL', exit: exitInfo, pidGone, portFree, bootInfo: restartInfo, bootPhase: 'create-or-open', booted: true }
+  return { before, firstHome, killedPid: pid, signal: 'SIGKILL', exit: exitInfo, pidGone, portFree, pipeClosedAfterKill, inflightMode: INFLIGHT_MODE, bootInfo: restartInfo, bootPhase: 'create-or-open', booted: true }
 }
 
 function renderTranscript(transcript) {
@@ -2010,7 +2293,8 @@ async function main() {
   if (head === null) throw new Error('git rev-parse HEAD failed: the start cannot be bound')
   const grant = readJson(GRANT_PATH)
   if (grant === null) throw new Error(`no dev-live grant at ${GRANT_PATH}`)
-  const archived = archivePriorRuns()
+  // The control run must never archive the measured two-boot runs.
+  const archived = EXPECT_INFLIGHT_REFUSAL ? null : archivePriorRuns()
   log(`ARCHIVE: ${archived === null ? '(nothing to archive)' : archived}`)
   writeFileSync(join(EVIDENCE, 'driver-digest.json'), `${JSON.stringify({
     at: startedAt, head, hostTree: HOST_TREE, hostSha: hostDigest(), pin: HOST_PIN.sha,
@@ -2031,14 +2315,59 @@ async function main() {
     }
   }
 
-  const agreement = buildAgreement(results)
-  writeFileSync(join(EVIDENCE, 'agreement.json'), `${JSON.stringify(agreement, null, 2)}\n`)
-  writeFileSync(join(EVIDENCE, 'agreement.txt'), `${agreement.table}\n`)
-  log(agreement.table)
+  // The control run must not overwrite the measured pair's agreement files.
+  let agreement = null
+  if (!EXPECT_INFLIGHT_REFUSAL) {
+    agreement = buildAgreement(results)
+    writeFileSync(join(EVIDENCE, 'agreement.json'), `${JSON.stringify(agreement, null, 2)}\n`)
+    writeFileSync(join(EVIDENCE, 'agreement.txt'), `${agreement.table}\n`)
+    log(agreement.table)
+  }
   const porcelain = hostPorcelain()
   writeFileSync(join(EVIDENCE, 'host-tree-porcelain.txt'), porcelain.length === 0 ? 'empty\n' : `${porcelain.join('\n')}\n`)
   log(`host porcelain after: ${JSON.stringify(porcelain)}`)
   if (porcelain.length !== 0) process.exitCode = 1
+
+  // ── THE NEGATIVE CONTROL (round 125) ──────────────────────────────────────
+  // `--expect-inflight-refusal` runs ONE boot with the FAST provider and
+  // REQUIRES the judge to refuse with the SAME named reason, with no signal
+  // sent and the host still alive. This is what proves the arm is not vacuous:
+  // the reason is not "always printed", it fires exactly when there is no
+  // blocked body — and only then.
+  if (EXPECT_INFLIGHT_REFUSAL) {
+    const bootDir = join(CONTROL_RUNS, 'boot01')
+    const receipt = readJson(join(bootDir, 'inflight-refusal.json'))
+    const crashFile = join(bootDir, 'crash.json')
+    const reason = String(receipt?.reason ?? '')
+    const checks = [
+      { id: 'boot-failed-at-sigkill-restart', ok: results[0]?.failed === true && results[0]?.stage === 'sigkill-restart', detail: `failed=${String(results[0]?.failed)} stage=${String(results[0]?.stage)} error=${String(results[0]?.error ?? '').slice(0, 400)}` },
+      { id: 'refusal-reason-is-the-named-reason', ok: reason.startsWith('no genuine in-flight call at crash time:'), detail: `reason=${reason.slice(0, 400)}` },
+      { id: 'settlement-was-not-running', ok: receipt?.state !== 'RUNNING' && receipt?.state !== null, detail: `state=${String(receipt?.state)}` },
+      { id: 'no-sigkill-issued', ok: receipt?.sigkillIssued === false && receipt?.killRefused === true, detail: `sigkillIssued=${String(receipt?.sigkillIssued)} killRefused=${String(receipt?.killRefused)}` },
+      { id: 'host-left-alive', ok: receipt?.hostPidAliveAtRefusal === true, detail: `hostPid=${String(receipt?.hostPid)} alive=${String(receipt?.hostPidAliveAtRefusal)}` },
+      { id: 'no-restart-recorded', ok: !existsSync(crashFile), detail: `crash.json exists=${String(existsSync(crashFile))} (a killed boot writes it)` },
+    ]
+    const failing = checks.filter((c) => c.ok !== true)
+    const verdict = {
+      schema: 'dboot-d3/inflight-negative-control/1',
+      at: new Date().toISOString(),
+      mode: INFLIGHT_MODE,
+      provider: 'fast-completing bash write (no FIFO)',
+      bootDir,
+      checks,
+      verdict: failing.length === 0 ? 'PASS' : 'FAIL',
+      failing: failing.map((c) => c.id),
+      note: 'the SAME judge that passes with the blocking provider must refuse here, with no SIGKILL: the arm is not vacuous',
+    }
+    mkdirSync(join(EVIDENCE, 'controls'), { recursive: true })
+    writeFileSync(join(EVIDENCE, 'controls', `negative-inflight-refusal-${utcStamp()}.json`), `${JSON.stringify(verdict, null, 2)}\n`)
+    writeFileSync(join(EVIDENCE, 'controls', 'negative-inflight-refusal.json'), `${JSON.stringify(verdict, null, 2)}\n`)
+    log(`NEGATIVE CONTROL (${INFLIGHT_MODE}): ${verdict.verdict} failing=${JSON.stringify(verdict.failing)}`)
+    for (const c of checks) log(`  control ${c.id}: ${c.ok ? 'PASS' : 'FAIL'} (${c.detail})`)
+    process.exitCode = verdict.verdict === 'PASS' ? 0 : 1
+    return
+  }
+
   const allRan = results.length === BOOTS_WANTED && results.every((r) => r?.failed !== true)
   const pairOk = BOOTS_WANTED < 2 || agreement.agreeing === true
   const allProven = results.every((r) => r?.overall === 'PASS')

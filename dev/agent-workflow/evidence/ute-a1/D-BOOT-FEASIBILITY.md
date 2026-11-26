@@ -923,3 +923,22 @@ Measured live on the D2 world (`--boots 2`, DEV-LIVE, two agreeing boots; `d2/RE
 - The model is the product's scripted mock; the operator is a per-DSH_HOME authenticated human whose
   claim must be an owned root — not multi-user RBAC.
 
+
+---
+
+## ROUND 125 note on the `d3:crash-cold-recovery` arm — the in-flight window is now kernel-blocked
+
+Everything in this document's `d3` sections that describes the in-flight call as an **`edit` of a 256 MiB
+in-lane file** is the ROUND-63..124 method and is now superseded. On 2026-11-26 that method failed at a frozen
+SHA: on boot 2 the edit settled `FAILED` before the driver's SIGKILL, the boots disagreed on
+`inflightBefore`, and the crash judge correctly refused with `no genuine in-flight call at crash time`.
+
+Since round 125 the in-flight call is a governed **`bash`** writing a FINITE **58,720,256-byte** stream into
+a FIFO whose ONLY read end the driver holds (`O_RDONLY|O_NONBLOCK`). The 65,536 B kernel pipe fills, the
+writer parks in `pipe_write`, the driver reads exactly one buffer (proof the write began), stops reading,
+waits 400 ms and re-reads the settlement — it must still be `RUNNING` — and only then SIGKILLs the host pid.
+After the kill it closes the read end, so a surviving writer would get `EPIPE`/`SIGPIPE`. The window is a
+kernel condition, not a slow write; the judge is stricter (`inflight-was-open-at-crash` requires `RUNNING`,
+plus the new `inflight-window-blocked-in-kernel` clause), and the driver refuses to kill anything it has not
+observed `RUNNING` (the fast-provider negative control proves the refusal). Measured six times, three runs per
+host, two boots each, all 12 boots `RUNNING`/`blocked`/`UNKNOWN`-after-restart: `ute-a1/round125/README.md`.

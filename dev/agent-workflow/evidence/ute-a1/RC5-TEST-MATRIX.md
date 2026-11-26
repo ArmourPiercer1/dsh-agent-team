@@ -683,3 +683,19 @@ on rc.5.
 stay collected and red; the 40 rc.2-only Vite suites of §11.7 are untouched. What DID move: no version
 sniff is left in the test infrastructure that decides a dispatch shape, and the harness route's 400/500
 mapping is observed rather than inferred.
+
+## 12. Round 125 — the `d3` crash arm's method changed on BOTH hosts (the population count does not move)
+
+The rc.5 matrix's live `d3` row is unchanged in verdict (**4/4 PROVEN**) but the crash arm's METHOD is
+different in round 125, so the measurement basis is restated here rather than left implicit in the rc.2
+section: the in-flight call is no longer an `edit` of a 256 MiB file (a timing hope — on rc.2 it settled
+`FAILED` before the SIGKILL) but a governed `bash` writing a FINITE 58,720,256-byte stream into a FIFO whose
+only read end the driver holds; the writer parks in `pipe_write`, the driver reads one buffer, re-reads the
+settlement after 400 ms and requires `RUNNING` before SIGKILL.
+
+Measured on **both** hosts, three runs each, two boots each (`round125/runs/`): all 12 boots
+`inflightBefore=RUNNING`, `blocked=true`, `wchan=anon_pipe_write`, SIGKILL, `UNKNOWN` after restart,
+`agreeing=true`. The negative control (fast provider) PASSES on both hosts with the same named reason and
+**no** SIGKILL. Population bookkeeping: **no test file is added or removed by this round**; the rc.5 lane's
+count (18/18 runtime+testkit, 42/44 total) and the catalog (`tests=790 collected=738 excluded=14
+uncollected=38 findings=0`) are unchanged; only the driver and its evidence move.

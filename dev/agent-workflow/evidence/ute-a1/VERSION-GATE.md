@@ -325,3 +325,29 @@ round's rule, the gate was not re-dispatched to chase a green; the run and its b
 `round124/hosted/` (`verdict.json`, `summary.txt`, `legacy-d3-driver-tail.log`,
 `legacy-d3-agreement.txt`, `grading-summary.log`).
 
+
+## 10. Round 125 (2026-11-26) — the frozen-SHA gate's last known red is the `d3` in-flight window, now kernel-blocked
+
+The single red left by round 124's dispatch was the **legacy `d3`** crash arm: the in-flight record was an
+`edit` of a 256 MiB file and, on boot 2, the edit settled `FAILED` before the SIGKILL, so the two boots
+disagreed on `inflightBefore` and the pair judge refused (correctly) with
+`no genuine in-flight call at crash time`. The gate did not need a new layer, a new event, a relaxed judge or
+a widened timeout; it needed the window to be a **condition** instead of a timing hope.
+
+**The change is entirely in the driver** (`tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs`):
+the in-flight call is a governed `bash` writing a FINITE 58,720,256-byte stream into a FIFO whose only read
+end the driver holds `O_RDONLY|O_NONBLOCK`. The 65,536 B pipe fills, the writer parks in `pipe_write`, the
+driver reads exactly one buffer and stops, re-reads the settlement after 400 ms and requires `RUNNING`, and
+only then SIGKILLs the host; it then closes the read end (`pipeClosedAfterKill`). The judge is **stricter**:
+`inflight-was-open-at-crash` requires `RUNNING` (panics on the old `'open'` normalization) and a new clause
+`inflight-window-blocked-in-kernel` requires measured bytes and `stateAfterSettle==='RUNNING'`.
+
+Measured locally before freezing: **six runs, three per host, two boots each** — all 12 boots
+`inflightBefore=RUNNING`, `blocked=true`, writer `wchan=anon_pipe_write`, SIGKILL, `UNKNOWN` after restart,
+`agreeing=true` (`round125/README.md` §4). The **negative control** (fast provider + `--expect-inflight-refusal`)
+PASSES on both hosts with the same named reason, no SIGKILL, host alive, no `crash.json` (§3 there).
+
+The local gate block is green at this commit (`round125/gates/`, incl. `ci-pr-gate --full --census-captures 2`
+`pass=10 fail=0`). The gate is dispatched **once** at the frozen SHA; the verdict line, the receipt (or its
+refusal) and the bundle evidence are recorded in `round125/README.md` §5 and the PR body. Nothing here is
+declared green before it is measured.

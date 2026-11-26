@@ -1,0 +1,32 @@
+[2026-11-26T02:35:18.484Z] ARCHIVE: (nothing to archive)
+[2026-11-26T02:35:18.488Z] START head=b1b6a047811a41422481cea2558f618406ec2ad6 hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next pin=9c2670d3bce5275e0d1610272958121af87787bb boots=1
+[2026-11-26T02:35:18.537Z] host porcelain before: []
+[2026-11-26T02:35:18.642Z] [boot1] candidate: {"host":"next","pin":"9c2670d3bce5275e0d1610272958121af87787bb","source":"tests/paths.mjs#NEXT_HOST","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next","asserted":true,"head":"9c2670d3bce5275e0d1610272958121af87787bb"}
+[2026-11-26T02:35:18.643Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=b1b6a047811a41422481cea2558f618406ec2ad6
+[2026-11-26T02:35:18.662Z] [boot1] alpha6 config gate: ADMISSION_ALPHA6_UNAVAILABLE: ADMISSION_ALPHA6_ROUTING_REQUIRED — alpha6ReviewRouting needs a v5 Blueprint whose authored `reviewRouting` block is enabled — with no authored policy there is no routing decision to take, and Alpha.6 has no implicit default. a coherent configuration (ADMISSION_ALPHA6_R
+[2026-11-26T02:35:18.678Z] blueprint alpha6.yaml accepted: schemaVersion=4 id=team.dboot.d3.alpha6
+[2026-11-26T02:35:36.335Z] [boot1] world=u5u5a5sfdev1-20261126T02-35-36Z-next home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-35-36Z-next
+[2026-11-26T02:35:40.173Z] [boot1] in-flight provider mode=fast fifo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-35-36Z-next/workspace/team-b/inflight-write.fifo pipeCapacityBytes=65536 commandBytes=58720256
+[2026-11-26T02:35:40.173Z] [boot1] grep corpus built in 3837ms (50000 small + 64 big + 8 huge files)
+[2026-11-26T02:35:40.178Z] blueprint main.yaml accepted: schemaVersion=4 id=team.dboot.d3.main
+[2026-11-26T02:35:59.237Z] [boot1] host ready on http://127.0.0.1:13000; health={"ok":true,"boot":1,"ready":true,"rootSessionId":"session-dboot-d3-root","liveSessions":["session-dboot-d3-root"],"toolCount":15}
+[2026-11-26T02:35:59.458Z] [boot1] leader surface tools=49 team=15
+[2026-11-26T02:36:00.678Z] [boot1] member A instance=inst-1vd6cy21kl6k childSession=session-team-child-cdf16bb82ce585d862f447bf6cd8c80f
+[2026-11-26T02:36:00.740Z] [boot1] confinement probe: refusal=true wrote=false outOfLaneExists=false bytes=0 inLaneState=true
+[2026-11-26T02:36:02.065Z] [boot1] member B instance=inst-1v36r931jr7r childSession=session-team-child-6788a23a6d1be9784107fcb7631d08f9
+[2026-11-26T02:36:05.909Z] [boot1] in-flight settlement state=COMPLETED executionId=exec-30e352c6e4d866e04655d65f24896fa0d06eb814 closedTooEarly=true
+[2026-11-26T02:36:05.911Z] [boot1] FAILED at sigkill-restart: Error: no genuine in-flight call at crash time: call-d3-b-inflight settlement state="COMPLETED" fact=[{"decision":"allow","axis":"process.exec","code":null,"reason":""},{"code":null,"reason":""}] (the crash judge cannot fake an in-flight call)
+    at killAndRestart (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs:2154:11)
+    at bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs:1706:19)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs:2310:15)
+[2026-11-26T02:36:10.952Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":14205,"killed":true,"portFree":true},"homeDeleted":null,"releasedPorts":[13000,3492,13000],"killedPids":[14205],"notes":["home kept as evidence: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-35-36Z-next"]}
+[2026-11-26T02:36:10.953Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-26T02:36:11.004Z] boot 1 failed at sigkill-restart; continuing is pointless (no agreeing pair)
+[2026-11-26T02:36:11.052Z] host porcelain after: []
+[2026-11-26T02:36:11.053Z] NEGATIVE CONTROL (fast): PASS failing=[]
+[2026-11-26T02:36:11.053Z]   control boot-failed-at-sigkill-restart: PASS (failed=true stage=sigkill-restart error=no genuine in-flight call at crash time: call-d3-b-inflight settlement state="COMPLETED" fact=[{"decision":"allow","axis":"process.exec","code":null,"reason":""},{"code":null,"reason":""}] (the crash judge cannot fake an in-flight call))
+[2026-11-26T02:36:11.053Z]   control refusal-reason-is-the-named-reason: PASS (reason=no genuine in-flight call at crash time: call-d3-b-inflight settlement state="COMPLETED" fact=[{"decision":"allow","axis":"process.exec","code":null,"reason":""},{"code":null,"reason":""}] (the crash judge cannot fake an in-flight call))
+[2026-11-26T02:36:11.053Z]   control settlement-was-not-running: PASS (state=COMPLETED)
+[2026-11-26T02:36:11.053Z]   control no-sigkill-issued: PASS (sigkillIssued=false killRefused=true)
+[2026-11-26T02:36:11.053Z]   control host-left-alive: PASS (hostPid=14205 alive=true)
+[2026-11-26T02:36:11.053Z]   control no-restart-recorded: PASS (crash.json exists=false (a killed boot writes it))

@@ -1,0 +1,99 @@
+# Member transcript — session-team-child-cdf16bb82ce585d862f447bf6cd8c80f
+# durable log: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-26-37Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261126T02-26-37Z-workspace-team-a--/session-team-child-cdf16bb82ce585d862f447bf6cd8c80f/session.v4.jsonl.zstd
+
+USER:
+[team-work requestToken=dboot-d3-work-a] dboot-d3-a-work You are worker-a in a D-stage acceptance run.
+Deliverable: read the in-lane file, then run the requested bash command, then reply with EXACTLY the line
+DBOOT_D3_DELIVERED_UNIT_ALPHA
+and nothing else. No prose, no quotes, no trailing text.
+
+USER:
+<system-reminder>
+The following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.
+
+Instructions from: AGENTS.md
+
+# AGENTS.md — dsh-agent-team 仓库代理规则
+<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->
+<!-- phase-identity: alpha5-sandbox-first -->
+
+
+本仓库是 DSH Team-mode **vNext** 的 authoritative repository。**CORE PATCH BUDGET = 0**：upstream DSH 保持 clean，全部能力通过外部插件 + 公开 seam 提供；任何需要 upstream source patch 的路径都是阻塞（`CORE_SEAM_BLOCKER`），不是待办。
+
+## 会话开始必读（提示词注入要求）
+
+在本仓库工作的一切 agent（主 Agent、任务子代理、review 子代理、workflow 拉起的任意代理），**会话/子任务开始后的第一步**必须读取：
+
+1. `docs/ROUTER_RULES.md` — 无人值守执行协议：**先读 §0（当期计划优先裁决）**，其余条款为默认底线：blocker 类型与固定格式（含 `CORE_SEAM_BLOCK
+… [rendered truncated at 900 chars; the full text is in member-transcript.json]
+
+USER:
+Current runtime context. This snapshot supersedes earlier runtime-context snapshots.
+
+Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-26-37Z/workspace/team-a". Some platform temporary areas may also be writable.
+
+Approval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.
+
+USER:
+<system-reminder>
+A skill is a reusable set of task-specific instructions. The following skills are available in this session:
+
+<available_skills>
+- `team-blueprint-authoring`: Author a DSH Agent Team blueprint (a saved-source YAML document) and run pre-flight checks before creating a team — identity frontmatter, the frozen closed field sets, exactly one complete LeaderTemplate, member templates, capabilities (teamTools/builtinToolDeny/skills/mcp/permissions with allow-ask-deny lanes, exact/subtree/any resources, shell-class rules), envelopes, policyStates, quotas, the draft-file convention, and live checks over the /team-remote catalog.list / catalog.get endpoints....
+- `team-leader-operations`: Operate a DSH Agent Team as the Leader using the closed set of fifteen team tools — list members/templates, inspect config, create member, delegate, follow up, collect, send message, report prog
+… [rendered truncated at 900 chars; the full text is in member-transcript.json]
+
+USER:
+[team-work requestToken=dboot-d3-work-a2] dboot-d3-a-bash-second-turn Second turn on the same member session.
+Run the requested bash command that reads the state file the first turn wrote, then report done.
+
+USER:
+[team-work requestToken=dboot-d3-work-a-after] dboot-d3-a-after-recovery Post-recovery turn on the same member session.
+Read the in-lane file again and report done.
+
+TOOL CALL [read] call-d3-a-inlane
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-26-37Z/workspace/team-a/in-lane-a.txt
+  command: 
+TOOL RESULT isError=false
+  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-26-37Z/workspace/team-a/in-lane-a.txt</path>
+  <type>file</type>
+  <content>
+  1: DBOOT_D3_A_UNIQUE_BYTES
+  
+  (End of file - total 1 lines)
+  </content>
+
+TOOL CALL [bash] call-d3-a-bash-write-state
+  file_path: 
+  command: printf '%s\n' 'DBOOT_D3_PERSISTENT_SHELL_STATE' > '/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-26-37Z/workspace/team-a/d3-persistent-state.txt' && printf 'DBOOT_D3_STATE_WRITTEN\n'; printf 'DBOOT_D3_ESCAPE_BYTES' > '/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-26-37Z/workspace/team-b/d3-escape.txt' 2>/dev/null; if [ -e '/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-26-37Z/workspace/team-b/d3-escape.txt' ]; then printf 'DBOOT_D3_ESCAPE_WROTE\n'; else printf 'DBOOT_D3_ESCAPE_REFUSED\n'; fi
+TOOL RESULT isError=false
+  DBOOT_D3_STATE_WRITTEN
+  bash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-26-37Z/workspace/team-b/d3-escape.txt: Read-only file system
+  DBOOT_D3_ESCAPE_REFUSED
+  [Command finished with exit code 0]
+
+TOOL CALL [bash] call-d3-a-bash-read-state
+  file_path: 
+  command: cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-26-37Z/workspace/team-a/d3-persistent-state.txt' && printf 'DBOOT_D3_STATE_READ\n'
+TOOL RESULT isError=false
+  DBOOT_D3_PERSISTENT_SHELL_STATE
+  DBOOT_D3_STATE_READ
+  [Command finished with exit code 0]
+
+TOOL CALL [read] call-d3-a-after-recovery
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-26-37Z/workspace/team-a/in-lane-a.txt
+  command: 
+TOOL RESULT isError=false
+  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-26-37Z/workspace/team-a/in-lane-a.txt</path>
+  <type>file</type>
+  <content>
+  1: DBOOT_D3_A_UNIQUE_BYTES
+  
+  (End of file - total 1 lines)
+  </content>
+
+ASSISTANT (final):
+DBOOT_D3_A_AFTER_RECOVERY_DONE <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-26-37Z/workspace/team-a/in-lane-a.txt</path>
+<type>file</type>
+<content>
+1: DBOOT_D3_A_UN

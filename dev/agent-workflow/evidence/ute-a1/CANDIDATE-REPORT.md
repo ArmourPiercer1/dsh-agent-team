@@ -189,7 +189,7 @@ and is never counted as proven.
 | **P1** | Binding monotonicity: `EffectiveIO ⊆ AgentCeiling ∩ ToolRestriction` | `ADM-2`, `ADM-7`, `ADM-29/30`, `ADM-39`, `ADM-45`, `ADM-52` | `d:centre-facts` (rc.2 + rc.5 · 2 agreeing boots · **PROVEN** — one ledger holding `allow` **and** `DENY/LANE_DENY`); `d2:multi-member-concurrency` (**PROVEN**, A's read of B's in-lane file is `LANE_DENY`, zero B bytes); `d2:revocation` (**PROVEN**, widening refused) | widen one axis after approval ⇒ same call refuses (`ADM-52`); live widening refused by the durable lane (`d2:revocation` direction (d): `changed:false`, widened locator still `LANE_DENY`) |
 | **P2** | Face completeness: a tool with all required faces bound runs; a tool missing one is refused **whole** | `ADM-4`, `ADM-18`, `ADM-33`, `ADM-78` | `d3:persistent-subprocess` (rc.2 + rc.5 · 2 agreeing boots · **PROVEN**) — `bash` runs only after the world declares `authorization` + `executionBoundary`; an unplaceable declaration is refused whole (`ADMISSION_EXECUTOR_UNAVAILABLE`) | bind `faces.web = null` ⇒ the whole tool refuses, never "runs without web"; the live-shaped negative is ladder rung 6 (`ADM-76`) |
 | **P3** | Fail-closed: provider absent ⇒ refuse | `ADM-3`, `ADM-42`, `ADM-83`, `ADM-102`, `SLICE-9` | `d:guard-facts` (**PROVEN**, `out-lane-never-reached-provider 0` guard facts) | `SLICE-4`: **without** the realm mount the same outside read **SUCCEEDS** — the confinement arms are falsifiable |
-| **P4** | One fact: one `ExecutionId`, one canonical outcome per physical attempt; a crash between emit and return leaves a recoverable fact | `ADM-21`, `ADM-79`, `ADM-80`, `ADM-81`, `ADM-84` | `d3:crash-cold-recovery` (rc.2 + rc.5 · 2 agreeing boots · **PROVEN**) — real `SIGKILL`, restart on the same home: in-flight `RUNNING` → `UNKNOWN`, no execution fact, never replayed; the completed call's fact/settlement byte-identical | kill after emit ⇒ recovery yields `unknown`, never `succeeded` from memory; `ADM-79`'s control also completes a different call before dying, which stays `COMPLETED` (no blanket rewrite) |
+| **P4** | One fact: one `ExecutionId`, one canonical outcome per physical attempt; a crash between emit and return leaves a recoverable fact | `ADM-21`, `ADM-79`, `ADM-80`, `ADM-81`, `ADM-84` | `d3:crash-cold-recovery` (rc.2 + rc.5 · **3 runs × 2 boots each per host**, every boot `inflightBefore=RUNNING` · **PROVEN**) — the in-flight call is a governed `bash` parked in `pipe_write` on a driver-owned FIFO (kernel-blocked window, round 125: §5.7); real `SIGKILL`, restart on the same home: in-flight `RUNNING` → `UNKNOWN`, no execution fact, never replayed; the completed call's fact/settlement byte-identical | kill after emit ⇒ recovery yields `unknown`, never `succeeded` from memory; `ADM-79`'s control also completes a different call before dying, which stays `COMPLETED` (no blanket rewrite); the live fast-provider control must make the driver REFUSE to kill (§5.7) |
 | **P5** | Stop is durable and non-replaying: after stop + cold start, facts are restored and nothing re-executes | `ADM-56…ADM-62` | `d2:stop` (rc.2 + rc.5 · 2 agreeing boots · **PROVEN**) through the product's own `POST /api/session/cancel`: `ADMISSION_STOPPED`, settlement `REFUSED`/`not-started`, no execution fact, never `UNKNOWN`; a second member completed with zero stops | restart and assert the previous call is not resumed (a resume attempt must red); the second Member is the live negative that Stop is not a blanket |
 
 The mutation half of P1/P2/P4/P5 was performed and reverted in the rounds that landed them (seven and six
@@ -443,6 +443,72 @@ the boots disagreed on `inflightBefore`, and the host row failed (27 judges, `ag
 passed on both hosts and `next` `d3` passed 4/4. The run was not re-dispatched to chase green; bundle
 evidence is in `round124/hosted/`. **This subsection records the diagnosis, the fixes and the one
 re-dispatch, not a green.**
+
+
+### 5.7 Round 125 — the `d3` crash arm's in-flight window is now kernel-blocked, and six runs per host are green
+
+**The round-124 red was a window defect, and the judge was right.** The crash arm held its in-flight call
+open with an ADMITTED `edit` of a 256 MiB file. On boot 2 the edit settled `FAILED` before the SIGKILL, the
+boots disagreed on `inflightBefore`, and the judge refused with `no genuine in-flight call at crash time …`
+— which is the behaviour the judge exists for. The window was a timing hope, not a condition. Round 125
+replaces the **method** and leaves the reason, the host and every other judge untouched.
+
+**The mechanism (kernel-blocked, not slow).** The driver creates a FIFO in Member B's write lane and holds
+**only** the read end (`O_RDONLY|O_NONBLOCK`). B's admitted call is a governed **`bash`** with a FINITE command
+redirected into the FIFO (exactly **58,720,256** bytes). The 65,536 B pipe buffer fills and the writer parks in
+`pipe_write`; the driver reads one buffer (proof bytes flowed), stops reading, waits 400 ms and requires the
+settlement to still be `RUNNING`. Only then does it SIGKILL the host pid; it then closes the read end
+(`pipeClosedAfterKill`), so a survivor would get `EPIPE`/`SIGPIPE`. Completion is gated by the kernel pipe, not
+by elapsed time. `bash` carries the block because the product's `edit`/`write` laws accept only regular files
+(`post-consume-edit.ts` `O_RDWR|O_NOFOLLOW`, `post-consume-write.ts` pre-open `isFile`), so a FIFO is refused
+`not-a-file` there — the call must be one the product really admits, on the `process.exec` axis.
+
+**Fail-closed + a stricter judge.** `waitInFlight` returns only on `RUNNING`; the kill gate is
+`state !== 'RUNNING'` (an `ADMITTED` state no longer counts). A refusal writes `inflight-refusal.json`
+(`sigkillIssued:false`, `killRefused:true`, host alive) and throws the **same** named reason, with no
+`crash.json`. `mkfifo`/open failure refuses with `A5SF_D3_INFLIGHT_BLOCK_UNAVAILABLE` rather than racing. The
+judge gained: `inflight-was-open-at-crash` now requires `RUNNING` (the `'open'` normalization is gone) and a
+new clause `inflight-window-blocked-in-kernel` requires `blocked===true`, `bytesObservedInPipe>0`,
+`stateAfterSettle==='RUNNING'` and `bytesDrainedOfCommand < commandIntendedBytes`. **Nothing was relaxed and
+no timeout was widened.**
+
+**Negative control (live, both hosts).** `A5SF_D3_INFLIGHT_MODE=fast` runs the same arm with a provider that
+completes immediately; the driver must not kill, and `--expect-inflight-refusal` grades six checks: boot
+failed at `sigkill-restart`, the named reason, settlement not `RUNNING` (`COMPLETED`), `sigkillIssued=false`,
+host alive, no `crash.json`. **PASS on both hosts** (`round125/controls/`; the driver's canonical copy is under
+`dev/agent-workflow/evidence/d-boot-feasibility/d3/controls/`).
+
+**Measured six times — three runs per host, two boots each (every run pasted, none omitted):**
+
+| run | host | `inflightBefore` b1 / b2 | bytes in pipe b1 / b2 | `wchan` | pair | exit |
+| --- | --- | --- | --- | --- | --- | --- |
+| legacy-run1 | rc.2 `639ed01539` | **RUNNING / RUNNING** | 30,184 / 51,352 | `anon_pipe_write` | `agreeing=true` | 0 |
+| legacy-run2 | rc.2 `639ed01539` | **RUNNING / RUNNING** | 65,408 / 30,016 | `anon_pipe_write` | `agreeing=true` | 0 |
+| legacy-run3 | rc.2 `639ed01539` | **RUNNING / RUNNING** | 40,964 / 1,876 | `anon_pipe_write` | `agreeing=true` | 0 |
+| next-run1 | rc.5 `9c2670d3bc` | **RUNNING / RUNNING** | 65,408 / 65,408 | `anon_pipe_write` | `agreeing=true` | 0 |
+| next-run2 | rc.5 `9c2670d3bc` | **RUNNING / RUNNING** | 65,408 / 65,408 | `anon_pipe_write` | `agreeing=true` | 0 |
+| next-run3 | rc.5 `9c2670d3bc` | **RUNNING / RUNNING** | 65,408 / 65,408 | `anon_pipe_write` | `agreeing=true` | 0 |
+
+12/12 boots: `RUNNING` before and after the settle, `blocked=true`, drained ≪ 58,720,256, SIGKILL with
+`pidGone=true portFree=true`, `pipeClosedAfterKill=true`; after restart `inflightAfter=UNKNOWN` and the
+completed `read` fact is byte-identical. The `wchan` is best-effort corroboration (writer located by an
+`O_WRONLY` fd on the FIFO, never the driver's own reader), not a judge clause. Trail:
+`round125/README.md`, `round125/runs/<host>-run<N>/`, `d3/runs/` + `archive/` (the aborted first attempt is
+kept).
+
+**What it does and does not prove.** It proves the crash judge's in-flight state is now held by an OS
+condition and that the driver cannot kill a call it has not observed `RUNNING` (the negative control
+falsifies the "just kill anyway" shortcut). It does **not** move any capability row, does **not** make the
+product long-running-tool-safe in general, and does **not** claim PRODUCT-PROVEN: `d3` is still DEV-LIVE and
+the version gate verdict is recorded separately (`round125/README.md` §5, PR body).
+
+**Local gates at this commit** (logs `round125/gates/`): dispatch leg 268 tests / 265 pass / 3 skipped
+(`sha256:0b087a6a…`); catalog `tests=790 collected=738 excluded=14 uncollected=38 findings=0`; cut closure
+`cut(0/148)`; P0 assets `modules=37 files=180 lines=69512 cut(148/148)`; docs-sync `docs=193 findings=0
+blocking=0 contracts=20`; 36 byte-identical dist placements; `EB3-CI-REQUIRED pass workflows=11 findings=0`;
+bound vitest `PASS suites=15 files=15 passed=238 failed=0`; UTE G1 argv 89/89; `EB3-RUN-MANIFEST pass
+records=662 strict=0 incomplete=11 findings=0`; verifier unit 22/22; `ci-pr-gate --full --census-captures 2`
+**`DSH-CI-VERDICT pass pass=10 fail=0 skip=0 refused=0 legs=10`** (306.3 s, two census captures).
 
 
 ## 6. C1–C18 sign-off
@@ -741,6 +807,8 @@ Run in `.worktrees/vnext-a1-cut`. Every command is copy-pasteable; the expected 
 | 13 | `node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/ute-g1-fs/lib/refusal-categories.test.mjs tests/ute-g1-fs/product-route-image.test.mjs tests/ute-g1-search/lane-suite.test.mjs tests/ute-g1-web/lane-suite.test.mjs tests/ute-g1-process/lane-suite.test.mjs tests/ute-g1-agentctl/lane-suite.test.mjs tests/ute-g1-uistate/lane-suite.test.mjs` (the exact CI argv) | `tests 89 / pass 89 / fail 0 / skipped 0` |
 | 14 | `node scripts/ci-pr-gate.mjs --full --census-captures 2` | `DSH-CI-VERDICT pass pass=10 fail=0 skip=0 … refused=0 refusedlegs=none` |
 | 15 | **live drivers** (two agreeing boots each; rc.2 default, rc.5 with `TEAM_TEST_HOST=next`) — `node tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs --boots 2`, `run-boot-d2.mjs --boots 2`, `run-boot-d3.mjs --boots 2`, `probe-d4-routed-wake.mjs --boots 2` | each driver's own `RESULT PASS (2/2 boots; agreeing pair=true)` (d3 prints `evidence-complete=true allProven=true`, d4 `blocked=true` for the one declared refusal); the judge-by-judge verdicts are the §4 tables above and `D-ACCEPTANCE-REPORT.md` §3.2 |
+| 15a | **d3 crash arm, six-run protocol** (round 125; three runs per host, two boots each) — `for h in legacy next; do for i in 1 2 3; do TEAM_TEST_HOST=$h node tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs; done; done` | every run `RESULT evidence-complete=true allProven=true (2/2 boots; agreeing pair=true)`, and **every** boot line `in-flight settlement state=RUNNING` + `blocking window: … stateAfterSettle=RUNNING blocked=true writer={…"wchan":"anon_pipe_write"…}`; the six measured pairs are §5.7. Runner + preserved per-run outputs: `round125/run-d3-six.sh`, `round125/runs/` |
+| 15b | **d3 negative control** (round 125; both hosts) — `A5SF_D3_INFLIGHT_MODE=fast node tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs --expect-inflight-refusal` | `NEGATIVE CONTROL (fast): PASS failing=[]` with the six check lines (§5.7); the driver must NOT kill: `settlement state="COMPLETED"`, `sigkillIssued=false killRefused=true`, `host alive`, no `crash.json` |
 | 16 | **candidate gate, both hosts** (the VERSION gate; non-required on PRs, ~84 min) — `node scripts/candidate-acceptance-gate.mjs --hosts both` | `CANDIDATE-GATE pass hosts=legacy,next judges=62 proven=60 known-refuted=2 env-limited=0` (the 2 are the single enumerated `d4:ask-execute-process`, once per host). The recorded verdict is bound to **`92be91dfb`**, not to this head; it is representative because `git diff --stat 92be91dfb..5cb5c6062 -- 'packages/*/src'` is empty (§8.2) |
 | 17 | `git -C tests/deepseek-harness-test-use status --porcelain \| wc -l` and the same for `tests/deepseek-harness-next` | `0` and `0`; `rev-parse HEAD` = `639ed01539…` and `9c2670d3bc…` |
 | 18 | `GH_TOKEN=$(gh auth token) node scripts/pr-settlement-gate.mjs --repo ArmourPiercer1/dsh-agent-team --pr 822` | `DSH-SETTLEMENT-VERDICT PASS marker=none matches=<n> candidates=<n>` — i.e. a dated settlement comment whose body carries **this** 40-hex head sha (a pushed commit mechanically retires the previous one, §8.5.2) |

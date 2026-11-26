@@ -95,6 +95,82 @@ this repository's own latest verdict (head `92be91dfb`, `62/60/2/0`, exit 0) wit
 missing-receipt refusals, the verifier's 22 negative-control tests (leg `version-gate-verify-unit`), and the
 six manifest-classification controls.
 
+## ROUND 125 (2026-11-26) — the `d3` in-flight window is now a KERNEL-BLOCKED window, measured six times per host; the crash arm's METHOD changed, its judge got stricter (no capability row moves)
+
+**The defect this round removes.** Round 124's frozen-SHA run failed on the legacy `d3` crash arm for a
+scheduling reason, not a product reason: the in-flight record was an ADMITTED `edit` of a **256 MiB** file,
+and on boot 2 that edit settled `FAILED` before the driver's SIGKILL, so the two boots disagreed on
+`inflightBefore` (`open` vs not) and the pair judge failed
+(`no genuine in-flight call at crash time: call-d3-b-inflight-edit settlement state="FAILED"`). The judge was
+right to refuse: a crash judge must never fake an in-flight call. The window had been a **timing hope** (a big
+write is usually still running) rather than a condition.
+
+**The mechanism now.** `tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs` makes the window a
+real blocking window:
+
+1. the driver creates a FIFO in Member B's write lane and opens **only** the read end, `O_RDONLY|O_NONBLOCK`;
+2. B's admitted call is a governed **`bash`** whose command is finite and redirects into the FIFO — exactly
+   **58,720,256** bytes (`i=0; while [ "$i" -lt 2097152 ]; do printf '%s' 'DBOOT_D3_INFLIGHT_FIFO_WRITE'; …;
+   done > FIFO`);
+3. the kernel pipe buffer (65,536 B) fills; the writer parks in `pipe_write`; the tool body cannot return, so
+   the settlement stays `RUNNING`;
+4. the driver reads **one** pipe buffer (proof bytes flowed) and stops reading, so the command can complete
+   only if the driver drains the rest — it never does;
+5. it re-reads the settlement after a 400 ms settle and requires `RUNNING`; only then does it SIGKILL the host
+   pid; afterwards it closes the read end (`pipeClosedAfterKill`), so a surviving writer would get
+   `EPIPE`/`SIGPIPE`. The window ends at process death, never on a timer.
+
+The command is finite on purpose: an infinite loop would be unstoppable even with a drained pipe, which would
+prove nothing. **Why `bash` and not `edit`:** the edit/write laws open the target `O_RDWR|O_NOFOLLOW` and
+require a regular file (`packages/runtime/controlled-fs/src/post-consume-edit.ts`,
+`post-consume-write.ts`), so a FIFO is refused `not-a-file`; a regular-file write cannot be parked in the
+kernel without root/FUSE. The governed `bash` is a real admitted call on the `process.exec` axis, which is
+the honesty the judge enforces.
+
+**Fail-closed, unchanged reason.** `waitInFlight` returns only on `RUNNING`; the kill gate is
+`state !== 'RUNNING'` (an `ADMITTED` state no longer counts). On refusal the driver writes
+`inflight-refusal.json` (`sigkillIssued:false`, `killRefused:true`, `hostPidAliveAtRefusal`) and throws the
+**existing** named reason, leaving the host alive and no `crash.json`. If `mkfifo`/open fails the boot refuses
+with `A5SF_D3_INFLIGHT_BLOCK_UNAVAILABLE` instead of racing. The judge got **stricter**:
+`inflight-was-open-at-crash` now requires `state === 'RUNNING'` (no `'open'` normalization), plus a new clause
+`inflight-window-blocked-in-kernel` (`blocked===true`, `bytesObservedInPipe>0`,
+`stateAfterSettle==='RUNNING'`, `bytesDrainedOfCommand < commandIntendedBytes`). No judge was relaxed and no
+timeout was widened to make this pass.
+
+**The negative control is real.** `A5SF_D3_INFLIGHT_MODE=fast` runs the same arm with a provider that
+completes immediately; `--expect-inflight-refusal` then requires six checks: the boot fails at
+`sigkill-restart`, the reason is the same named reason, the settlement was not `RUNNING` (`COMPLETED`), no
+SIGKILL was issued, the host is alive, and no `crash.json` exists. **PASS on both hosts**
+(`round125/controls/negative-{legacy,next}.json`).
+
+**Measured — six runs, three per host, two boots each (no run omitted, no cherry-picking):**
+
+| run | host | `inflightBefore` b1 / b2 | bytes in pipe b1 / b2 | writer `wchan` | pair | exit |
+| --- | --- | --- | --- | --- | --- | --- |
+| legacy-run1 | rc.2 `639ed01539` | **RUNNING / RUNNING** | 30,184 / 51,352 | `anon_pipe_write` | `agreeing=true` | 0 |
+| legacy-run2 | rc.2 `639ed01539` | **RUNNING / RUNNING** | 65,408 / 30,016 | `anon_pipe_write` | `agreeing=true` | 0 |
+| legacy-run3 | rc.2 `639ed01539` | **RUNNING / RUNNING** | 40,964 / 1,876 | `anon_pipe_write` | `agreeing=true` | 0 |
+| next-run1 | rc.5 `9c2670d3bc` | **RUNNING / RUNNING** | 65,408 / 65,408 | `anon_pipe_write` | `agreeing=true` | 0 |
+| next-run2 | rc.5 `9c2670d3bc` | **RUNNING / RUNNING** | 65,408 / 65,408 | `anon_pipe_write` | `agreeing=true` | 0 |
+| next-run3 | rc.5 `9c2670d3bc` | **RUNNING / RUNNING** | 65,408 / 65,408 | `anon_pipe_write` | `agreeing=true` | 0 |
+
+All 12 boots: `stateAfterSettle=RUNNING`, `blocked=true`, drained bytes ≪ 58,720,256,
+`exit={"code":null,"signal":"SIGKILL"}`, `pidGone=true`, `portFree=true`, `pipeClosedAfterKill=true`; after
+restart `inflightAfter=UNKNOWN` and A's completed `read` is byte-identical. `wchan` is best-effort evidence
+(the driver locates the writer by an `O_WRONLY` fd on the FIFO, never its own read end) — on both hosts it
+read the kernel's own name for the sleep. Trail: `round125/README.md`, `round125/runs/<host>-run<N>/`,
+`dev/agent-workflow/evidence/d-boot-feasibility/d3/runs/` + its `archive/` (the aborted first attempt is kept,
+not hidden).
+
+**Gates and level.** The full local block is green at this commit (`round125/gates/`): 268-test dispatch leg
+(`sha256:0b087a6a…`), catalog `tests=790 collected=738 excluded=14 uncollected=38 findings=0`, cut closure
+`cut(0/148)`, P0 assets `cut(148/148)`, docs-sync `docs=193 findings=0 blocking=0`, 36 byte-identical dist
+placements, `eb3-ci-required workflows=11 findings=0`, bound vitest `238 passed / 0 failed`, UTE G1 argv
+89/89, manifest `records=662 findings=0`, verifier unit 22/22, and `ci-pr-gate --full --census-captures 2`
+**10/10 legs PASS** (306.3 s). **No capability row moves and nothing is PRODUCT-PROVEN.** The version gate is
+dispatched once at the frozen SHA of this commit; its verdict is recorded in `round125/README.md` §5 and the
+PR body when measured (a red is recorded as a red, not retried to green).
+
 ## ROUND 124 (2026-11-26) — the version gate's legacy host gets its pinned assets; the Required red at the frozen SHA is diagnosed as four MECHANICAL failures, not the ready-flip/merge-ref (no capability row moves)
 
 **A. Version gate at a frozen SHA — the first dispatch failed pre-boot, and why.** Run `45727813248`

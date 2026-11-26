@@ -254,3 +254,46 @@ their assertions are unchanged (`persistent-subprocess` REFUTED, `crash-cold-rec
 **Residual:** the search face is governed by the LANE only — a durable overlay rule cannot restrict
 `grep`/`glob` because they are outside the overlay's vocabulary. Shape A (a search face in the closed
 vocabulary with a subtree resource) remains the durable answer and is still open.
+
+---
+
+## Round 125 addendum — the in-flight window is now KERNEL-BLOCKED (the measured record below supersedes the `edit`/256 MiB method above)
+
+The round-63..64 text above describes the arm as it was: an ADMITTED `edit` of a 256 MiB in-lane file, whose
+settlement stays open only because the write is slow. On 2026-11-26 that hope failed on boot 2 of a frozen-SHA
+run (the edit settled `FAILED` before the SIGKILL, so the pair disagreed on `inflightBefore` and the judge
+refused with `no genuine in-flight call at crash time`). Round 125 replaces the method; the judge is
+stricter, not looser.
+
+**Mechanism.** Member B's in-flight call is a governed **`bash`** whose FINITE command (`i=0; while [ "$i" -lt
+2097152 ]; do printf '%s' 'DBOOT_D3_INFLIGHT_FIFO_WRITE'; i=$((i+1)); done > FIFO`, exactly **58,720,256**
+bytes) redirects into a FIFO the driver created in B's write lane. The driver holds **only** the read end,
+`O_RDONLY|O_NONBLOCK`; the 65,536 B kernel pipe buffer fills and the writer parks in `pipe_write`. The driver
+reads exactly one buffer (proof the write began), stops reading, waits 400 ms and re-reads the settlement —
+it must still be `RUNNING`. Only then does it SIGKILL the host pid; then it closes the read end
+(`pipeClosedAfterKill`) so a survivor would get `EPIPE`/`SIGPIPE`. Completion is gated by the kernel pipe, not
+by elapsed time. An infinite loop would have been wrong: it could never finish even with a drained pipe, so
+it would prove nothing.
+
+**Why `bash`, not `edit`.** `edit`/`write` accept only regular files (`post-consume-edit.ts` opens
+`O_RDWR|O_NOFOLLOW` and requires a file; `post-consume-write.ts` refuses a non-regular pre-open target), so a
+FIFO would be refused `not-a-file`; a regular-file write cannot be parked in the kernel without root/FUSE. The
+governed `bash` is a real admitted call (`process.exec` axis) — the honesty the crash judge enforces.
+
+**Fail-closed.** `waitInFlight` returns only on `RUNNING`; the kill gate is `state !== 'RUNNING'` (`ADMITTED`
+no longer counts). A refusal writes `runs/boot0N/inflight-refusal.json` (`sigkillIssued:false`,
+`killRefused:true`, `hostPidAliveAtRefusal`) and throws the SAME named reason; no `crash.json` is written and
+the host is left alive. `mkfifo`/open failure refuses with `A5SF_D3_INFLIGHT_BLOCK_UNAVAILABLE`.
+
+**Evidence files (new/changed).** `runs/boot0N/inflight-block.json` (mode, FIFO, `pipeCapacityBytes`,
+`commandIntendedBytes`, `drainReads`, `bytesObservedInPipe`, `stateOnObserve`, `stateAfterSettle`,
+`blockedWriter` best-effort `/proc` observation, `blocked`, `kernelReason`); `crash.json` now also records
+`inflightMode`, `inflightCallId` and `pipeClosedAfterKill`; `counters.json` carries `inflightMode`,
+`inflightBytesObserved`, `inflightBlockedInKernel`. The judge clause
+`inflight-window-blocked-in-kernel` requires `blocked===true`, bytes observed, `stateAfterSettle==='RUNNING'`
+and drained `<` intended.
+
+**Negative control.** `A5SF_D3_INFLIGHT_MODE=fast` runs the same arm with a provider that completes at once;
+`--expect-inflight-refusal` grades six checks (boot failed at `sigkill-restart`, the named reason, settlement
+not `RUNNING`, no SIGKILL, host alive, no `crash.json`) and writes
+`dev/agent-workflow/evidence/d-boot-feasibility/d3/controls/negative-inflight-refusal.json`.
