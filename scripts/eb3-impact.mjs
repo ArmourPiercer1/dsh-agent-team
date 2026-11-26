@@ -132,9 +132,18 @@ export function selectImpact({ paths, graph = loadGraph() }) {
 }
 
 /** `git diff --name-only` between the merge base of `base` and the worktree HEAD,
- *  plus staged/unstaged/untracked — the same scope docs:probe uses. */
+ *  plus staged/unstaged/untracked — the same scope docs:probe uses.
+ *
+ *  MEASURED 2026-11-26 (round 124, hosted run 45727883993): the cut branch's
+ *  `git diff --name-only a19d1df0..HEAD` is 1,105,461 bytes of names (10,254
+ *  files), above Node's 1 MiB default `execFileSync` buffer, so the whole
+ *  change-impact leg died with `spawnSync git ENOBUFS` before selecting
+ *  anything. A capacity bound is not a selection assertion: the buffer is
+ *  raised to 64 MiB (the same bound `eb3-evidence-guard.mjs` uses) so the
+ *  selector sees the ENTIRE path set. It still refuses a genuinely
+ *  unselectable base (exit 2). */
 export function changedPaths(root, base) {
-  const git = (args) => execFileSync('git', ['-C', root, ...args], { encoding: 'utf8' })
+  const git = (args) => execFileSync('git', ['-C', root, ...args], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
   const lines = (s) => s.split('\n').map((l) => l.trim()).filter(Boolean)
   const mb = lines(git(['merge-base', base, 'HEAD']))[0]
   if (mb === undefined) throw new Error(`base unresolvable: ${base}`)

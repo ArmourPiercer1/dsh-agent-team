@@ -329,12 +329,27 @@ export function sourceEntryForBuiltModule(built, tree) {
 export function createHostResolver(repoRoot, mode = testHostMode()) {
   const root = resolve(repoRoot)
   const resolveRoot = selectedHostResolveRoot(root, mode)
-  const hostTree = realpathSync(selectedHostTree(root, mode))
+  // THE SELECTED HOST TREE IS NOT REQUIRED FOR LEGACY RESOLUTION (round 124,
+  // 2026-11-26). A hosted checkout has no `tests/deepseek-harness-test-use`
+  // (gitignored), and the legacy containment root is the REPO INSTALL
+  // (`node_modules`), not that pristine source tree — which is only used to
+  // decline host-internal importers and to re-point the client source path.
+  // Realpathing it eagerly made every vitest config load on such a checkout die
+  // with ENOENT before a single test ran (measured: hosted run 45727883993,
+  // ci-security ci-product). A missing legacy tree is therefore "nothing to
+  // decline"; a MISSING NEXT tree still refuses (that generation IS its tree),
+  // and any non-absence failure still refuses.
+  let hostTree = null
+  try {
+    hostTree = realpathSync(selectedHostTree(root, mode))
+  } catch (error) {
+    if (!(mode === 'legacy' && error?.code === 'ENOENT')) throw error
+  }
   // BOTH pinned generations, so an importer that is already part of either
   // host resolves its own dependencies through that generation's anchored walk
   // (the rc.5 subject rows load rc.5 files by absolute path inside a
   // legacy-selected process).
-  const pinnedTrees = [hostTree]
+  const pinnedTrees = hostTree === null ? [] : [hostTree]
   for (const generation of ['legacy', 'next']) {
     if (generation === mode) continue
     try {
@@ -457,6 +472,11 @@ export function createHostResolver(repoRoot, mode = testHostMode()) {
     resolveSourceForImporter: (spec) => {
       const parsed = parseHostSpecifier(spec)
       if (parsed === null) return null
+      // The legacy source path needs the pristine tree; a hosted checkout that
+      // does not carry it has no source entries to re-point, which is a
+      // DECLINE (the client population's built/vendor resolution still
+      // answers), never a config-load failure (round 124).
+      if (hostTree === null) return null
       if (sourceCache.has(spec)) return sourceCache.get(spec)
       let built
       try {

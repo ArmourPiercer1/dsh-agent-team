@@ -32,7 +32,8 @@
  * process by construction, so no run-level env switch is needed.
  */
 import assert from 'node:assert/strict'
-import { readFileSync, realpathSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, join, resolve, sep } from 'node:path'
 import { createRequire } from 'node:module'
 import { test } from 'node:test'
@@ -200,6 +201,35 @@ for (const mode of MODES) {
     assert.equal(resolver.resolveHostInternalRealpath('@deepseek-ai/dsh-tools', TEAM_IMPORTER), null)
   })
 }
+
+test('a hosted checkout WITHOUT the pristine legacy tree still resolves legacy modules from the repo install', () => {
+  // MEASURED 2026-11-26 (round 124): a hosted runner has no
+  // `tests/deepseek-harness-test-use` (gitignored), so the eager
+  // `realpathSync(selectedHostTree(...))` in `createHostResolver` killed every
+  // vitest config load with ENOENT (hosted run 45727883993: ci-security,
+  // ci-product). Legacy resolution's containment root is the repo install
+  // (`node_modules`); the pristine tree is only a source reference.
+  const root = mkdtempSync(join(tmpdir(), 'team-host-resolver-no-legacy-tree-'))
+  try {
+    mkdirSync(join(root, 'packages', 'runtime'), { recursive: true })
+    writeFileSync(join(root, 'package.json'), '{"name":"hosted-checkout-fixture","private":true}\n')
+    symlinkSync(join(REPO_ROOT, 'node_modules'), join(root, 'node_modules'), 'dir')
+    const resolver = createHostResolver(root, 'legacy')
+    assert.equal(resolver.hostTree, null, 'a missing legacy source tree is "nothing to decline", not a failure')
+    assert.equal(real(resolver.resolveRoot), real(join(REPO_ROOT, 'node_modules')))
+    const answer = resolver.resolveForImporter('@deepseek-ai/dsh-tools', TEAM_IMPORTER)
+    assert.ok(answer !== null, 'the repo install must still answer under the legacy selector')
+    assert.ok(inside(answer.file, resolver.resolveRoot), `${answer.file} escaped the legacy install root`)
+    assert.equal(resolver.resolveSourceForImporter('@deepseek-ai/dsh-tools'), null, 'the source path has no tree to re-point and must DECLINE, not throw')
+    assert.throws(
+      () => createHostResolver(root, 'next'),
+      (error) => error?.code === 'TREE_MISSING',
+      'the NEXT tree is the selected host itself: its absence must still refuse',
+    )
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
 
 test('an unknown selector is a TYPED refusal on both adapters, never a silent rc.2 fallback', async () => {
   assert.throws(

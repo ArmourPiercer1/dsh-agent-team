@@ -221,6 +221,22 @@ jobs:
             exit 1
           fi
 
+      # THE LEGACY HOST'S NATIVE ASSETS, FROM THE PINNED PUBLISHED PACKAGE (round 124, 2026-11-26).
+      # A hosted runner's own rc.2 host build produces DIFFERENT bytes for `bin/glibc/system.node`
+      # (measured `dfa6d586…` in run 45727813248 vs the committed pin `54a9c25c…`), and the
+      # gitignored `bin/` payload is not carried by the checkout. The gate's pre-flight therefore
+      # refused BOTH hosts' legacy drivers before the first boot with DESTINATION_DIGEST_MISMATCH.
+      # This is the SAME canonical leg the census lane runs (`ci-census` leg
+      # `host-sandbox assets (pinned published package)`, dev/ci/eb3-ci-manifest.json): exact
+      # package@version only, verified against the registry's published dist.integrity (sha512) AND
+      # the committed tarball sha256, then per-file sha256/length/mode before install. It may replace
+      # the runner's build bytes; it never moves the sha256 pin (CORE PATCH BUDGET = 0, no local copy).
+      # Order: after the rc.2 build (the layout's entry module must exist) and before the gate.
+      - name: Native sandbox assets for the rc.2 host (digest-verified published package)
+        shell: bash
+        timeout-minutes: 10
+        run: node scripts/provision-host-assets.mjs --from-package @deepseek-ai/node-addon-system-linux-x64@0.1.2
+
       - name: Materialize the pinned rc.5 test host
         shell: bash
         timeout-minutes: 30
