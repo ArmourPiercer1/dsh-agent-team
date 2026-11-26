@@ -1,0 +1,9 @@
+EB3-CI-REQUIRED pass workflows=11 findings=0
+  by runner: node=149 none=7 vitest=634
+DSH-TEST-CATALOG tests=790 digest=sha256:a67215414ec4be2150da7a854b702c5439e158accfe884fd155ea8775af79d70 refused=0 findings=0
+AUTHORITY_SOURCE_BINDING {"kind":"authority-pointer","pointer_file":"dev/engineering/current-authority.json","snapshot_file":"dev/engineering/authority-snapshots/as20261109r1.json","snapshot_version":"as20261109r1","content_digest":"sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3","pointer_digest_verified":true,"view_may_not_reverse_decide_authority":true}
+LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof
+ℹ tests 268
+ℹ pass 265
+ℹ fail 0
+DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=8 files=8 exit=0 set=sha256:0b087a6a5abff333e151d4556a388f4fe08e42734e10b37860edd501c7a552c1

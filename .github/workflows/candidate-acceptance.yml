@@ -291,7 +291,10 @@ jobs:
             echo "::error::CANDIDATE-GATE wrote no fresh verdict.json in this run; nothing to bind to a HEAD"
             exit 1
           fi
-          GRADED=$(node -e "const j=require(process.argv[1]); process.stdout.write(String(j.head))" "$VERDICT")
+          # `require()` treats a bare relative path as a PACKAGE name; read the file explicitly. (Round 125's
+          # one dispatch failed here — `Cannot find module 'dev/…/verdict.json'` — although the gate itself
+          # had passed 62/62. The fix is path handling only; the binding assertions are unchanged.)
+          GRADED=$(node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));process.stdout.write(String(j.head))" "$VERDICT")
           echo "CANDIDATE-GATE head=${GRADED} requested=${REQUESTED_HEAD} checked-out=${CHECKED_OUT} machine=${VERDICT}"
           if [ "$CHECKED_OUT" != "$REQUESTED_HEAD" ]; then
             echo "::error::VERSION-GATE refused: STALE CHECKOUT: git HEAD ${CHECKED_OUT} != requested ${REQUESTED_HEAD}"
