@@ -6,7 +6,9 @@ disclosed. Nothing else — no product behaviour, no refactor, no widened timeou
 no version sniff left in test infrastructure.** PR #822 stays **DRAFT**; `:3080` and its DSH_HOME untouched;
 `CORE PATCH BUDGET = 0` (no upstream file read, patched or imported).
 
-All gate logs in this directory were measured at `fe09d0dba` unless a log's own header says otherwise.
+All gate logs in this directory were measured at `fe09d0dba` (the code + declaration + booking commit) unless
+a log's own header says otherwise; `gate-ci-pr-gate.log` was measured at `098ed5cb4`, the evidence commit
+whose tree carries every log and report in this directory.
 
 ---
 
@@ -149,7 +151,7 @@ every dispatch-driving arm in that leg — `ADM-64/65/66/67/70/71/72/73/74/75/76
 | UTE G1 argv | `node --import ./scripts/run-tests-hooks.mjs --test --test-concurrency=1 <the 9 declared G1 lane files>` | tests **89 / pass 89 / fail 0**; `FS-VERDICT GREEN`, `SEARCH … new-path=VERIFIED`, `PROCESS … unit=1/2`, `AGENTCTL RETIRED-BY-A0 rows=42` |
 | p4t6 ledger | `packages/testkit/test/p4t6-session-event-scan.test.ts` | **20/20** after the booking |
 | artifacts at head | `node scripts/check-artifacts-at-head.mjs` | `verdict=ok compared=1951 drift=0` |
-| PR gate | `node scripts/ci-pr-gate.mjs --full --census-captures 2` | see `gate-ci-pr-gate.log` (verdict in the settlement comment) |
+| PR gate | `node scripts/ci-pr-gate.mjs --full --census-captures 2` | **`DSH-CI-VERDICT pass pass=10 fail=0 skip=0 refused=0 legs=10`** (288.8 s at `098ed5cb4`); census captured `601f/7446l` twice with **identical identity sets** (`COUNTS MOVED` vs the baseline doc's 626/7936 is the baseline-vs-tree relationship, not a drift), `census-comparison-20261126T001010Z-4.json` |
 
 **Ledger delta, booked with its measurement.** One new scannable file
 (`packages/tools/test/p6t6-tool-route-errors.test.ts`) moves the p4t6 scannable-file ledger: with the file on
