@@ -1,0 +1,40 @@
+{
+  "schema": "dboot-d3/agreement/1",
+  "at": "2026-11-24T13:12:04.974Z",
+  "boots": 2,
+  "agreeing": true,
+  "differing": [],
+  "rows": [
+    {
+      "boot": 1,
+      "overall": "PASS",
+      "persistent": "PROVEN",
+      "crash": "PROVEN",
+      "work": "PROVEN",
+      "alpha6": "PROVEN",
+      "aAdmissions": 4,
+      "bAdmissions": 3,
+      "inflightBefore": "open",
+      "inflightAfter": "UNKNOWN",
+      "collectStatus": "succeeded",
+      "bash1State": "COMPLETED",
+      "bash2State": "COMPLETED"
+    },
+    {
+      "boot": 2,
+      "overall": "PASS",
+      "persistent": "PROVEN",
+      "crash": "PROVEN",
+      "work": "PROVEN",
+      "alpha6": "PROVEN",
+      "aAdmissions": 4,
+      "bAdmissions": 3,
+      "inflightBefore": "open",
+      "inflightAfter": "UNKNOWN",
+      "collectStatus": "succeeded",
+      "bash1State": "COMPLETED",
+      "bash2State": "COMPLETED"
+    }
+  ],
+  "table": "TWO-RUN AGREEMENT (the same command, two boots; every measured row must be identical)\nfact                                boot1                               boot2\noverall                             PASS                                PASS\npersistent                          PROVEN                              PROVEN\ncrash                               PROVEN                              PROVEN\nwork                                PROVEN                              PROVEN\nalpha6                              PROVEN                              PROVEN\naAdmissions                         4                                   4\nbAdmissions                         3                                   3\ninflightBefore                      open                                open\ninflightAfter                       UNKNOWN                             UNKNOWN\ncollectStatus                       succeeded                           succeeded\nbash1State                          COMPLETED                           COMPLETED\nbash2State                          COMPLETED                           COMPLETED\n\nagreeing=true differing=[]"
+}

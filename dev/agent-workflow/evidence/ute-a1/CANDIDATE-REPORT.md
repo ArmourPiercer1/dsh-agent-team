@@ -83,12 +83,35 @@ web/terminals/userQuestions faces**, **C14**, **C14b** (the network-deny invaria
 **C15, C16, C17 or C18**. A green version gate is therefore not a claim about those rows at all. The full
 judge list and per-row mapping is `VERSION-GATE.md` §2.
 
-**What is NOT exercised (stated plainly, not rounded up).** The version gate has **not** run end-to-end as a
-version gate: no `v*` tag, no `release/**`/`candidate/**` push, and no `workflow_dispatch` with a `head`
-input has been fired; the hosted artifact→verifier path is unmeasured; and **no branch/tag protection rule
-has been applied** — those are owner actions (`VERSION-GATE.md` §5–§6). What IS exercised: the receipt writer
-and the verifier against this repository's own latest gate verdict, the verifier's negative controls, and the
-manifest-classification controls (§9 rows 19–21).
+**ROUND 126 — the gate has now been exercised end-to-end (and is green).** The `head`-input dispatch path ran for
+real: `gh workflow run candidate-acceptance.yml --ref vnext/a1-cut -f head=23435646228553715ae51fee98357f5927f69ab1`
+(run **45752072811**). Both pinned hosts were provisioned and built on the runner, **16 real host boots** ran, and
+both jobs are **success**:
+
+```
+CANDIDATE-GATE pass host=legacy judges=31 proven=30 known-refuted=1 env-limited=0 drivers=4 records=8 agreement=true
+CANDIDATE-GATE pass host=next   judges=31 proven=30 known-refuted=1 env-limited=0 drivers=4 records=8 agreement=true
+CANDIDATE-GATE pass hosts=legacy,next judges=62 proven=60 known-refuted=2 env-limited=0
+```
+
+`version-gate-receipt.json` was published, bound to that SHA, and the **`version-gate (Required at frozen candidate
+SHA)`** job verified it. Restoring the receipt's referenced verdict into the tree from the run's own bundle makes the
+binding locally checkable:
+
+```
+VERSION-GATE-VERIFY pass head=2343564622… hosts=legacy,next proven=60 known-refuted=2 env-limited=0   EXIT=0
+```
+
+Therefore **every row the 31 judges cover is now `CANDIDATE-ACCEPTED`** at this frozen SHA (C2, C3, C5, C6, C8, C9,
+C12, C13's fs/subprocess base faces; C7 and C14b only partially, per the coverage note above). The unit of that claim
+is **the SHA**, not the branch tip: evidence commits after `2343564622` do not move it. **No row is `PRODUCT-PROVEN`** —
+that still needs the owner's release-branch protection rule naming the `version-gate` context, and no rule has been
+applied and no release ref exists (`VERSION-GATE.md` §5–§6).
+
+**What is still NOT exercised (stated plainly, not rounded up).** No `v*` tag and no `release/**`/`candidate/**` push
+has triggered the gate (the dispatch path is the one measured); `PRODUCT-PROVEN` requires the protection rule the owner
+must apply; and the hosted **Required** set grades a PR's merge commit, not the frozen SHA (round 124 §B), so the two
+facts stay separate.
 
 ---
 

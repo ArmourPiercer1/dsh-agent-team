@@ -1,0 +1,10 @@
+CANDIDATE-GATE PASS at 2026-11-24T16:32:03.294Z
+head=acc72e58eef3e3d791dca3da2c13cbb3adf7feae hosts=next timeout=2700000ms boots=2
+
+CANDIDATE-GATE pass host=next judges=31 proven=30 known-refuted=1 env-limited=0 drivers=4 records=8 agreement=true
+  d   pass judges=6 proven=6 known-refuted=0 env-limited=0 exit=0 [2026-11-24T16:34:18.638Z] RESULT PASS (2/2 boots; agreeing pair=true)
+  d2  pass judges=4 proven=4 known-refuted=0 env-limited=0 exit=0 [2026-11-24T16:36:58.328Z] RESULT PASS (2/2 boots; agreeing pair=true)
+  d3  pass judges=4 proven=4 known-refuted=0 env-limited=0 exit=0 [2026-11-24T16:42:14.969Z] RESULT evidence-complete=true allProven=true (2/2 boots; agreeing pair=true)
+  d4  pass judges=17 proven=16 known-refuted=1 env-limited=0 exit=3 [2026-11-24T16:51:33.936Z] RESULT evidence-complete=true allBooted=true blocked=true runRecordsValid=true (2/2 boots; agreeing pair=true)
+
+CANDIDATE-GATE pass hosts=next judges=31 proven=30 known-refuted=1 env-limited=0

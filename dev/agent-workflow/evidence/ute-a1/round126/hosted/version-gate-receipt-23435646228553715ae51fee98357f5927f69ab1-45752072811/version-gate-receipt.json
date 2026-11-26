@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "kind": "version-gate-receipt",
+  "head": "23435646228553715ae51fee98357f5927f69ab1",
+  "verdict": "pass",
+  "judges": {
+    "proven": 60,
+    "knownRefuted": 2,
+    "envLimited": 0
+  },
+  "knownRefutedIds": [
+    "d4:ask-execute-process"
+  ],
+  "hosts": [
+    "legacy",
+    "next"
+  ],
+  "startedAt": "2026-11-26T04:06:28.841Z",
+  "finishedAt": "2026-11-26T04:15:35.302Z",
+  "gateVersion": "candidate-acceptance-gate/1",
+  "verdictFile": {
+    "path": "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T04-06-28-840Z/verdict.json",
+    "digest": "sha256:471423ac53aed3135f9b722c5291f9426218a691ab9921bcc2b6ced738276d73"
+  }
+}

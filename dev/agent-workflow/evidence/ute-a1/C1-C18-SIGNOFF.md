@@ -36,6 +36,15 @@ rather than buried in a mixed row. No new capability id is invented: the split r
 | **UNSUPPORTED BY PRODUCT RULING** | the capability is deliberately **not offered** by this generation under a named owner ruling; the refusal is the product | not "incomplete", not a pending fix, not "missing tests" |
 | **NOT PROVEN** | there is no admissible evidence for the row at all | — |
 
+**ROUND 126 (2026-11-26) — `CANDIDATE-ACCEPTED` is now a fact for the rows the version gate covers.** The version gate
+ran end-to-end at frozen SHA `23435646228553715ae51fee98357f5927f69ab1` (run 45752072811): both hosts, 62 judges,
+`proven=60 known-refuted=2 env-limited=0`, receipt written and verified by the `version-gate` job. Per the round-118
+vocabulary, the rows whose deterministic acceptance evidence the 31 judges carry — **C2, C3, C5, C6, C8, C9, C12,
+C13 (fs/subprocess base faces)**, with **C7** and **C14b** only partially — are `CANDIDATE-ACCEPTED` **at that SHA**.
+This is not a level change in the per-row table: the rows keep `DEV-LIVE`/`ENV-LIMITED`/`UNSUPPORTED` as written, and
+**no row is `PRODUCT-PROVEN`** (the owner's release-branch protection rule naming the `version-gate` context is still
+unapplied, and no release ref exists).
+
 No row is **PRODUCT-PROVEN**; that word does not appear as a level here. **Definition in force** (owner
 ruling 2026-11-25): PRODUCT-PROVEN means *gate-backed at the frozen candidate SHA of a version, with the
 version gate Required and green at that SHA and its `version-gate-receipt.json` verified there* — **not**

@@ -1,0 +1,23 @@
+TWO-RUN AGREEMENT (the same command, two boots; every measured row must be identical)
+fact                                     boot1                                    boot2
+overall                                  FAIL                                     FAIL
+multiMemberVerdict                       PROVEN                                   PROVEN
+revocationVerdict                        PROVEN                                   PROVEN
+stopVerdict                              PROVEN                                   PROVEN
+remoteDeliveryVerdict                    REFUTED                                  REFUTED
+aAdmissions                              10                                       10
+bAdmissions                              10                                       10
+aGuardFacts                              14                                       14
+bGuardFacts                              16                                       16
+windowsOverlap                           true                                     true
+crossRefused                             true                                     true
+stopSettlementState                      REFUSED                                  REFUSED
+revocationDenyRefused                    true                                     true
+revocationRestored                       true                                     true
+revocationWideningNotMinted              true                                     true
+bAfterStopCompleted                      true                                     true
+deliveryAckIsNotAnExecution              true                                     true
+deliveredTurnAdmittedUnderMemberBinding  true                                     true
+memberAdmissionFacts                     1                                        1
+
+agreeing=true differing=[]
