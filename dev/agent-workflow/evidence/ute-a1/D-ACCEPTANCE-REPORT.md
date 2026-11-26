@@ -95,6 +95,51 @@ this repository's own latest verdict (head `92be91dfb`, `62/60/2/0`, exit 0) wit
 missing-receipt refusals, the verifier's 22 negative-control tests (leg `version-gate-verify-unit`), and the
 six manifest-classification controls.
 
+## ROUND 124 (2026-11-26) — the version gate's legacy host gets its pinned assets; the Required red at the frozen SHA is diagnosed as four MECHANICAL failures, not the ready-flip/merge-ref (no capability row moves)
+
+**A. Version gate at a frozen SHA — the first dispatch failed pre-boot, and why.** Run `45727813248`
+(`workflow_dispatch`, `head=0d66cf8eb`) passed the head binding and the rc.5 host (31/31) but **all four
+legacy drivers refused before the first host start**:
+`host-sandbox-assets: DESTINATION_DIGEST_MISMATCH: bin/glibc/system.node … dfa6d586… vs pin 54a9c25c…`.
+The candidate workflow built the rc.2 host but never ran the native-asset provisioning leg, so the gate
+graded the runner's own build — exactly the hazard the asset manifest's `transport` field documents. The
+fix is the canonical census leg, not a new flag and not a moved pin: after the rc.2 build and before the
+gate, `.github/workflows/candidate-acceptance.yml` now runs
+`node scripts/provision-host-assets.mjs --from-package @deepseek-ai/node-addon-system-linux-x64@0.1.2`.
+That leg fetches the exact pinned tarball, verifies registry `dist.integrity` + the committed tarball
+sha256 + every file's sha256/length/mode, and replaces mismatched build bytes with the fixed published
+bytes. Local proof: `HOST-ASSETS-PROVISIONED … files=2 host=639ed01539…`; a second run's receipt shows
+`preExistingSha256 == sha256` for both files (verified install, no drift), `round124/asset-provision.log`.
+The sha256 pin and the host pins are unchanged (CORE PATCH BUDGET = 0; no local-tree copy in the workflow).
+
+**B. The Required red at `0d66cf8e` — the ready flip is NOT the cause.** Run `45727883993` (`ci-required`,
+event `pull_request`, `ready_for_review`, `2026-11-26T00:19:14Z`) checked out
+`refs/pull/822/merge` = `23df45eb` (`Uses: …/ci-fast.yml@refs/pull/822/merge`; first parent master
+`a19d1df0`, head `0d66cf8e`), and **every layer's `EVENT_NAME=pull_request` and two-parent-merge guard
+passed**. The strings `event ${EVENT_NAME} is not supported` / `the checkout is not a two-parent merge
+commit` visible in a raw log are the step's echoed command text, not fired errors. The actual reds —
+identical in the preceding **draft** run `45727536793`, so the ready flip changed nothing — were four
+mechanical failures, all fixed this round:
+
+| layer | measured red (hosted log) | round-124 fix |
+| --- | --- | --- |
+| `ci-fast` | `EB3-IMPACT REFUSED BASE_UNRESOLVABLE: spawnSync git ENOBUFS` (the branch's name-only diff is 1,105,461 B / 10,254 files > Node's 1 MiB buffer) | `scripts/eb3-impact.mjs` git buffer 64 MiB — capacity, not selection logic |
+| `ci-integration` | `EB3-EVIDENCE-GUARD fail added=9226 … findings=6` (six preserved round-120 real-model transcripts > 1 MiB) | six reasoned entries in `dev/ci/evidence-large-allowlist.json`; the 1 MiB bound and the raw-capture refusal are unchanged |
+| `ci-security`, `ci-product` | vitest config load died: `lstat …/tests/deepseek-harness-test-use` ENOENT (round 118's eager realpath of the gitignored pristine tree, absent on a hosted checkout) | `tests/next-host/host-select.mjs`: a missing legacy tree is "nothing to decline" (legacy resolution is the repo install); a missing **next** tree still refuses; new regression test |
+
+No layer guard was weakened and no event was declared unsupported: `ready_for_review` is a supported
+`pull_request` activity and GitHub served the merge ref. The supported way to a **full Required set with
+census** is to make the PR ready (or push a `synchronize` while ready); that run grades the **merge
+commit** `M = merge(master tip, event head)` — for the measured run `M = 23df45eb`, not `0d66cf8e`.
+Returning to draft makes `ci-required` red because census skips on a draft (the documented deferred
+tier), not because of a product failure. The **frozen SHA itself** is graded only by the
+`candidate-acceptance` dispatch (`head=<S>`) and its separate `version-gate` context. Operational text is
+in `VERSION-GATE.md` §9; `ci-required.yml`'s header records the same truth.
+
+**Level.** No capability row moves; no row is PRODUCT-PROVEN. The version gate was re-dispatched at the
+new HEAD and its result is recorded in `VERSION-GATE.md` §8 / `CANDIDATE-REPORT.md` §5 when it settles
+(this section records the two fixes and the diagnosis, not a green).
+
 ## ROUND 123 (2026-11-26) — the two round-122 residues close: no version-keyed dispatch shape is left in test infrastructure, and the `/__p6t6/tool` error mapping has route-level arms (no capability row moves)
 
 **Scope.** Exactly the two gaps round 122 disclosed in its own §G. No product behaviour, no refactor, no

@@ -11569,3 +11569,43 @@ records=640 strict=0 findings=0`; `ci-pr-gate --full --census-captures 2` **10/1
 host, not independent sessions across time; the real model stays non-deterministic (one flaky negative-arm
 boot preserved, not retried away); `d4:ask-execute-process` (no PTY backend in the governed-shell world).
 PR stays DRAFT; no merge.
+
+## ROUND 124 (2026-11-26) — the version gate's legacy host gets its pinned assets; the Required red at the frozen SHA is diagnosed as four MECHANICAL failures, not the ready-flip/merge-ref
+
+**A. Version gate, first frozen-SHA dispatch (`45727813248`, `head=0d66cf8eb`).** Head binding passed and
+the rc.5 host passed 31/31, but **all four legacy drivers refused pre-boot**:
+`host-sandbox-assets: DESTINATION_DIGEST_MISMATCH: bin/glibc/system.node … dfa6d586… vs pin 54a9c25c…`.
+The workflow built the rc.2 host but never ran the native-asset provisioning leg, so the gate saw the
+runner's own build. Fix: `.github/workflows/candidate-acceptance.yml` now runs the canonical census command
+after the rc.2 build and before the gate —
+`node scripts/provision-host-assets.mjs --from-package @deepseek-ai/node-addon-system-linux-x64@0.1.2` —
+which verifies registry `dist.integrity` + committed tarball sha256 + per-file sha256/length/mode and
+replaces only mismatched build bytes. The sha256 pin did not move; no local tree is copied. Local proof:
+`ute-a1/round124/asset-provision.log` (second run receipt: `preExistingSha256 == sha256` for both files).
+
+**B. `ci-required` at `0d66cf8e` — exact truth.** Run `45727883993` (event `pull_request`,
+`ready_for_review`, 00:19:14Z) checked out `refs/pull/822/merge` = `23df45eb` (first parent master
+`a19d1df0`, head `0d66cf8e`); **the `EVENT_NAME=pull_request` and two-parent-merge guards PASSED**. The
+`event ${EVENT_NAME} is not supported` string in a raw log is the step's echoed command. The reds were
+identical in the preceding draft run `45727536793`: `ci-fast` `spawnSync git ENOBUFS` (name-only diff
+1,105,461 B > Node 1 MiB), `ci-integration` evidence guard 6 oversized preserved round-120 model transcripts,
+`ci-security`/`ci-product` vitest config-load ENOENT on the gitignored pristine legacy tree (round-118 eager
+realpath). Fixed mechanically this round: `eb3-impact.mjs` git buffer 64 MiB; six reasoned size exemptions
+under the unchanged 1 MiB bound; `host-select.mjs` treats a missing legacy tree as "nothing to decline"
+(a missing **next** tree still refuses) with a regression test. **No layer guard weakened; no event declared
+unsupported.** Supported full-Required path: mark ready / synchronize while ready → the run grades the merge
+commit `M = merge(master tip, event head)` (here `23df45eb`, not the head) and includes census; draft
+re-evaluation is red because census skips by design. The frozen SHA is graded only by the
+`candidate-acceptance` dispatch and its separate `version-gate` context. Documented in `VERSION-GATE.md` §9,
+`ci-required.yml` header, `D-ACCEPTANCE-REPORT.md` ROUND 124, `CANDIDATE-REPORT.md` §5.6.
+
+**Gates at this round (`ute-a1/round124/gates/`).** `ute-vnext-a1` dispatch 8 suites / 268 tests /
+265 pass / 0 fail / 3 skipped (set `sha256:0b087a6a…`); catalog tests=790 collected=738 excluded=14
+uncollected=38 findings=0; cut closure `cut(0/148)`; P0 assets modules=37 files=180 lines=69512; docs-sync
+docs=193 findings=0 blocking=0; place-dist-glue 36 byte-identical; eb3-ci-required workflows=11 findings=0;
+bound vitest PASS 15 suites / 238 passed / 0 failed; UTE G1 argv 89/89; run manifest records=662 strict=0
+incomplete=11 findings=0; version-gate verifier 22/22; `ci-pr-gate --full --census-captures 2` **10/10 legs
+PASS** (289.4 s; census 601f/7446l twice, identical identity sets).
+
+**Not done.** The four hosted Required layers were not re-run this round; the re-dispatched version gate's
+result is recorded separately once it settles; no row is PRODUCT-PROVEN; PR restored to DRAFT; no merge.

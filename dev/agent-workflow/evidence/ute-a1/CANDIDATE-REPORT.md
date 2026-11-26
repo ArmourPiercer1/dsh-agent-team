@@ -400,6 +400,39 @@ green run of the candidate gate is **not** PRODUCT-PROVEN by itself — PRODUCT-
 of §1.1 (frozen SHA + Required context + green + verified receipt), which has not happened and is an owner
 action (`VERSION-GATE.md`).
 
+### 5.6 Round 124 — the required red at `0d66cf8e` was NOT the ready flip, and the version gate's legacy assets
+
+**The hosted Required set at the frozen SHA was red for four mechanical reasons, not an event/merge-ref
+failure.** Run `45727883993` (event `pull_request`, `ready_for_review`, `2026-11-26T00:19:14Z`) checked out
+`refs/pull/822/merge` = `23df45eb` (first parent = master tip `a19d1df0`, head = `0d66cf8e`); every layer's
+`EVENT_NAME=pull_request` and two-parent-merge guard PASSED. The `event … is not supported` text in a raw
+log is the step's echoed command, not a fired error. The reds were identical in the preceding **draft** run
+`45727536793`, so the ready flip changed nothing: (a) `ci-fast` died on `spawnSync git ENOBUFS` because the
+branch's name-only diff is 1,105,461 B; (b) `ci-integration` refused six >1 MiB preserved round-120
+real-model transcripts; (c) `ci-security` and `ci-product` died at vitest config load because round 118's
+resolver eagerly realpathed the gitignored pristine legacy tree, absent on a hosted checkout. Round 124 fixes
+all three at the mechanical layer (git buffer; reasoned size exemptions under the unchanged 1 MiB bound;
+missing-legacy-tree tolerance with a *missing-next-tree-still-refuses* control). **No layer guard was
+weakened and no event was declared unsupported.**
+
+**The supported path to a full Required set with census** is: make the PR ready (or push a `synchronize`
+while ready) so GitHub serves the merge ref. That run grades the **merge commit** `M = merge(master tip,
+event head)` — `23df45eb` above, not the head — and includes `ci-census`. Returning the PR to draft makes
+`ci-required` red because census skips on a draft (the documented deferred tier), not because of a product
+failure. The **frozen candidate SHA** is graded only by the `candidate-acceptance` dispatch
+(`-f head=<S>`), whose separate `version-gate` job is the Required context at that SHA.
+
+**The version gate's legacy assets.** Run `45727813248` (`head=0d66cf8eb`) failed all four legacy drivers
+pre-boot with `DESTINATION_DIGEST_MISMATCH: bin/glibc/system.node … dfa6d586… vs pin 54a9c25c…`: the
+workflow built the rc.2 host but did not provision its gitignored native assets. Round 124 adds the
+canonical census command after the rc.2 build and before the gate —
+`node scripts/provision-host-assets.mjs --from-package @deepseek-ai/node-addon-system-linux-x64@0.1.2` —
+which verifies the registry `dist.integrity`, the committed tarball sha256 and every file's
+sha256/length/mode, replacing only mismatched build bytes. The sha256 pin did not move; no local tree is
+copied. Local proof: `round124/asset-provision.log`. The re-dispatched result at the new HEAD is stated in
+§1/§5.1 once it settles; **this subsection records the diagnosis and fixes, not a green.**
+
+
 ## 6. C1–C18 sign-off
 
 The authoritative list is `docs/plans/memo/ute-p0-20261121/06-CAPABILITY-CONTRACT.md:30-52` — **19 contract

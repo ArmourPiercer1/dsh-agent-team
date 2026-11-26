@@ -225,3 +225,66 @@ unfrozen head would be mistakable for a freeze.
   owner applies them, `version-gate` is a job with the right shape and no requirement behind it.
 - **No row is PRODUCT-PROVEN** and none can be until §5 + §6 have actually been performed at a frozen
   SHA.
+
+## 9. Operational finding, round 124 (2026-11-26) — what a frozen-SHA run needs, and the Required-set path
+
+Measured on the first frozen-SHA dispatch, run `45727813248` (`workflow_dispatch`, `head=0d66cf8eb`,
+event `workflow_dispatch`, job `candidate-acceptance (VERSION GATE …)`). The head-binding and next-host
+halves passed (next host 31/31); **all four legacy drivers refused before the first boot**:
+
+```
+HostBaseError: host base guard: sandbox pre-flight refused before the first host start:
+host-sandbox-assets: DESTINATION_DIGEST_MISMATCH:
+bin/glibc/system.node in …/tests/deepseek-harness-test-use hashes dfa6d5861f51ddb5112a7c92e560752d79c2a89362c0634c8d4f0fc888b21487,
+the pinned manifest says 54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc
+```
+
+**Cause.** The workflow built the rc.2 host but did not run the native-asset provisioning leg, so the
+gate saw the runner's own build bytes. The manifest's `transport` field documents exactly this hazard: a
+hosted runner's build produces different `bin/glibc/system.node` bytes; the fixed published asset is the
+standard, and the sha256 pin is never moved to match a build.
+
+**Fix (one step, the canonical leg, no new flags).** `.github/workflows/candidate-acceptance.yml` now
+runs, after the rc.2 build and before the gate, the SAME command the census lane runs
+(`dev/ci/eb3-ci-manifest.json`, `ci-census` leg `host-sandbox assets (pinned published package)`):
+
+```
+node scripts/provision-host-assets.mjs --from-package @deepseek-ai/node-addon-system-linux-x64@0.1.2
+```
+
+It fetches only the exact pinned tarball, verifies the registry `dist.integrity` (sha512) **and** the
+committed tarball sha256 (`77fb771b…cc20`), then verifies every installed file's sha256 + length + mode
+before publishing it under the destination `bin/`. A mismatched runner build is replaced by the fixed
+published bytes; good pinned bytes are re-verified, never overwritten with different bytes; no local tree
+is copied and the pin is unchanged. Local proof at this tree (`HOST-ASSETS-PROVISIONED … files=2
+host=639ed01539…` followed by an idempotent re-run whose receipt shows `preExistingSha256 == sha256` for
+both files) is in `round124/asset-provision.log`.
+
+**The hosted Required set at the frozen SHA: the exact event/merge-ref truth.** Run `45727883993`
+(`ci-required`, event `pull_request`, created `2026-11-26T00:19:14Z` by PR #822's `ready_for_review`
+flip) did **not** fail on an event or merge-ref guard. Its layer jobs checked out
+`refs/pull/822/merge` (`Uses: …/ci-fast.yml@refs/pull/822/merge`) = `23df45eb`, first parent = master tip
+`a19d1df0`, head = `0d66cf8e`; the `EVENT_NAME=pull_request` and two-parent-commit guards all passed. The
+text `event ${EVENT_NAME} is not supported` that appears in a raw log is the step's **command echo**, not
+a fired error. The reds — identical in the preceding draft run `45727536793` — were four mechanical
+infrastructure failures, now fixed (round 124):
+
+| layer | measured red | fix |
+| --- | --- | --- |
+| `ci-fast` | `EB3-IMPACT REFUSED BASE_UNRESOLVABLE: spawnSync git ENOBUFS` — the branch's `git diff --name-only a19d1df0..HEAD` is **1,105,461 B** (10,254 files), over Node's 1 MiB default buffer | `scripts/eb3-impact.mjs` raises the git buffer to 64 MiB (capacity only; selection logic unchanged) |
+| `ci-integration` | `EB3-EVIDENCE-GUARD fail … findings=6` — six preserved round-120 real-model transcripts > 1 MiB | six entries with reasons in `dev/ci/evidence-large-allowlist.json` (the guard's own reviewed mechanism; bound unchanged, census-capture names still refused) |
+| `ci-security`, `ci-product` | vitest died at config load: `lstat …/tests/deepseek-harness-test-use ENOENT` — round 118's resolver realpathed the (gitignored) pristine legacy tree eagerly, which a hosted checkout never has | `tests/next-host/host-select.mjs`: a missing legacy tree is "nothing to decline" (legacy resolution is the repo install); a missing **next** tree still refuses; regression test added |
+
+**The supported way to obtain a full Required set (with census), and the SHA it grades.** The census is
+skipped while the PR is a draft, so a **draft** run is red by design (the deferred tier). The supported
+procedure is to **make the PR ready, or push a `synchronize` commit while it is ready**, so the event's
+`refs/pull/N/merge` exists; that run executes all four layers **and** `ci-census`, and `ci-required`
+grades them. That run grades the **merge commit** `M = merge(master tip, event head)` — for the measured
+run, `M = 23df45eb`, **not** the event head `0d66cf8e`. After restoring the PR to draft, GitHub
+re-evaluates and `ci-required` goes red because census is skipped; that is the draft mechanism, not a
+candidate red. The **frozen candidate SHA itself** is graded only by this workflow's
+`workflow_dispatch -f head=<S>` run, whose `version-gate` job is the separate Required-at-frozen-SHA
+context. `ci-required` intentionally has no `workflow_dispatch` trigger: its synthesize job requires the
+two-parent merge checkout only GitHub's PR merge ref provides, and no layer guard was weakened to change
+that.
+
