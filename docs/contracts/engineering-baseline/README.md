@@ -41,3 +41,14 @@ A plan may be archived; a still-valid REQ/INV and its tests do not retire with i
    revision), the anchor points at the in-repo file that carries the pin.
 3. Promotion of an entry to a ratified status is a registry change, and the
    probe/sync checks treat it as such.
+
+## Change-scope reads are capacity-bounded and fail closed (round 127, 2026-11-27)
+
+`scripts/docs-probe.mjs` (this directory's `scripts/docs-*.mjs` owner rule) reads
+the change scope with `git diff --name-only`. On the A1 cut that output is
+1,225,506 bytes / 11,284 files — above Node's 1 MiB default — so the read failed
+with `ENOBUFS` and was folded into an empty scope, i.e. a green probe over
+nothing. The read now uses an explicit 64 MiB bound (whole path set, never a
+truncated one), and a resolvable merge-base whose diff cannot be read is refused
+as `DIFF_UNREADABLE` rather than read as "no changes". The rule's meaning is
+unchanged: only a fully read change scope can be graded.

@@ -97,9 +97,17 @@ const FATAL_PERSONA_DATA = {
   },
 }
 
+// THE REAL SHIPPED PRESET IDS. The pre-round-127 fixture invented `team`/`solo`,
+// which are not shipped agent presets; since pre-alpha3 PR-E (plan §E.3) the
+// persona environment fact carries the OBSERVED KIND (`standard` | `complete`,
+// roster in `PRESET_PERSONA_KIND_ROSTER`), so an invented id takes the
+// documented fail-loud lane (`available: false`) instead of reading as a
+// composable preset. These are the ids the pinned host's web bundle ships
+// (`tests/deepseek-harness-test-use/packages/bundle/web-app/presets/`).
 const PRESETS: readonly TeamPresetRow[] = [
-  { id: 'team', name: 'Team 运行时', isDefault: false },
-  { id: 'solo', name: 'Solo', isDefault: true },
+  { id: 'standard', name: 'Standard 运行时', isDefault: false },
+  { id: 'cordis', name: 'Cordis', isDefault: true },
+  { id: 'minimal', name: 'Minimal', isDefault: false },
 ]
 
 const WORKSPACE: readonly TeamWorkspaceOption[] = [
@@ -107,7 +115,7 @@ const WORKSPACE: readonly TeamWorkspaceOption[] = [
 ]
 
 /** The preselected blueprint draft (the probe fires on mount). */
-const BP_DRAFT: TeamIntentDraft = { ...emptyTeamIntentDraft, blueprintId: BP, revision: 2, presetId: 'team' }
+const BP_DRAFT: TeamIntentDraft = { ...emptyTeamIntentDraft, blueprintId: BP, revision: 2, presetId: 'standard' }
 
 /** One provenance-bearing success envelope (the wire shape, verbatim). */
 function okResponse(data: unknown, method: string): RemoteResponse {
@@ -239,7 +247,7 @@ function createButton(container: HTMLElement): HTMLButtonElement {
 afterEach(cleanup)
 
 describe('TeamCreationPanel', () => {
-  it('loads the catalog rows with the per-row display names and preselects the team preset (S0 seam, UI §6/§7.2)', async () => {
+  it('loads the catalog rows with the per-row display names and preselects the default runtime preset (S0 seam, UI §6/§7.2)', async () => {
     const face = makeFace()
     const view = render(<PanelHarness face={face} />)
     await vi.waitFor(() => {
@@ -248,8 +256,11 @@ describe('TeamCreationPanel', () => {
     const options = [...blueprintSelect(view.container).querySelectorAll('option')]
       .filter(option => option.value !== '')
     expect(options.map(option => option.textContent)).toEqual(['Atlas (rev 2)'])
-    // The §7.2 default: the `team` row wins (not the isDefault flag).
-    expect(presetSelect(view.container).value).toBe('team')
+    // The §7.2 default over the SHIPPED roster: `selectDefaultPresetId` prefers a row
+    // literally named `team` (none ships) and otherwise the provider-flagged default.
+    // The unit control in team-intent-model.test.ts keeps the `team`-row preference
+    // visible; this arm asserts the default the real roster produces.
+    expect(presetSelect(view.container).value).toBe('cordis')
     expect(presetSelect(view.container).disabled).toBe(false)
   })
 
@@ -291,7 +302,7 @@ describe('TeamCreationPanel', () => {
     expect(face.probeCompatibility).toHaveBeenCalledWith({
       blueprintId: BP,
       blueprintRevision: 2,
-      environmentFacts: [{ domain: 'persona', subject: 'team', available: true, generation: 0 }],
+      environmentFacts: [{ domain: 'persona', subject: 'standard', available: true, generation: 0 }],
     })
     await vi.waitFor(() => {
       expect(view.container.querySelector<HTMLElement>('[data-intent-compatibility]')?.dataset.intentStatus).toBe('OPEN')
@@ -384,12 +395,17 @@ describe('TeamCreationPanel', () => {
     await vi.waitFor(() => {
       expect(button.disabled).toBe(false)
     })
-    fireEvent.change(presetSelect(view.container), { target: { value: 'solo' } })
+    // Switching to the `minimal` (web-bundle COMPLETE) preset changes the persona
+    // fact's KIND (`standard` -> `complete`), so the last call is observably new:
+    // an arm that only re-asserted `standard` would be green even if no re-probe
+    // happened. The verdict itself is this fixture's mock; the engine's
+    // classification of the complete kind is covered by its own suites.
+    fireEvent.change(presetSelect(view.container), { target: { value: 'minimal' } })
     await vi.waitFor(() => {
       expect(face.probeCompatibility).toHaveBeenLastCalledWith({
         blueprintId: BP,
         blueprintRevision: 2,
-        environmentFacts: [{ domain: 'persona', subject: 'solo', available: true, generation: 0 }],
+        environmentFacts: [{ domain: 'persona', subject: 'complete', available: false, generation: 0 }],
       })
     })
     // The OPEN verdict still lands: Create stays enabled.

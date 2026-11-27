@@ -58,9 +58,11 @@ const OPEN_DATA = {
   },
 }
 
+// Real shipped preset ids (see `PRESET_PERSONA_KIND_ROSTER`): `team`/`solo` are not
+// agent presets, and since plan §E.3 an invented id travels as the fail-loud lane.
 const PRESETS: readonly TeamPresetRow[] = [
-  { id: 'team', name: 'Team runtime', isDefault: false },
-  { id: 'solo', name: 'Solo', isDefault: true },
+  { id: 'standard', name: 'Standard runtime', isDefault: false },
+  { id: 'cordis', name: 'Cordis', isDefault: true },
 ]
 
 function okResponse(data: unknown, method: string): RemoteResponse {

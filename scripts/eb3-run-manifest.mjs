@@ -291,6 +291,30 @@ export function validateRunRecord({ record, rel, ctx, strictGeneration = false }
   return { findings }
 }
 
+/**
+ * THE STRICT-GRADING SET, computed from `git diff --name-only <since>...HEAD` over the
+ * evidence root. Exported so a control can grade a synthetic diff LARGER than Node's
+ * default 1 MiB `execFileSync` `maxBuffer` and assert the MEASURED count, not just exit 0.
+ *
+ * MEASURED 2026-11-27 (round 127, hosted run 45754488920 step "EB3-D: RUN Manifest"):
+ * this diff on the A1 cut branch is 1,167,305 bytes of names (10,262 added files at
+ * `a19d1df0...HEAD`), above the 1,048,576-byte default, so the whole leg died with
+ * `spawnSync git ENOBUFS` BEFORE grading anything. The bound below is a capacity bound,
+ * not a selection rule: the scan still sees the WHOLE tree (it is not truncated).
+ */
+export const GIT_SCAN_MAX_BUFFER = 64 * 1024 * 1024
+
+/**
+ * Evidence paths ADDED/CHANGED since `since`, as the `--new-since` strict set.
+ * @param {string} root repository root
+ * @param {string} since base ref (`<since>...HEAD` is the diff)
+ * @returns {string[]} repo-relative paths (the caller filters to `.json`)
+ */
+export function freshEvidencePaths(root, since) {
+  return execFileSync('git', ['-C', root, 'diff', '--name-only', `${since}...HEAD`, '--', 'dev/agent-workflow/evidence'], { encoding: 'utf8', maxBuffer: GIT_SCAN_MAX_BUFFER })
+    .split('\n').map((s) => s.trim()).filter(Boolean)
+}
+
 /** RUN records on the tree: any tracked JSON whose `schema` is the RUN schema. */
 export function findRunRecords(root = ROOT, only = null) {
   const list = only ?? execFileSync('git', ['-C', root, 'ls-files', '-z', 'dev/agent-workflow/evidence'], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 })
@@ -324,8 +348,7 @@ if (invokedDirectly) {
     const since = arg('--new-since')
     let freshList = arg('--new')?.split(',').map((s) => s.trim()).filter(Boolean) ?? []
     if (since !== null) {
-      freshList = execFileSync('git', ['-C', ROOT, 'diff', '--name-only', `${since}...HEAD`, '--', 'dev/agent-workflow/evidence'], { encoding: 'utf8' })
-        .split('\n').map((s) => s.trim()).filter((s) => s.endsWith('.json'))
+      freshList = freshEvidencePaths(ROOT, since).filter((s) => s.endsWith('.json'))
     }
     const fresh = new Set(freshList)
     const records = findRunRecords(ROOT, only)

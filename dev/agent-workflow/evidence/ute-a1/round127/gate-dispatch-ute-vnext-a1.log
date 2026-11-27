@@ -1,0 +1,52 @@
+=== dispatch-tests ute-vnext-a1 legacy
+✔ READER-5 — a session with no log seam is unavailable, not a throw and not a success (0.22478ms)
+✔ READER-6 — a delivery that never appears is unavailable and NAMES the token (0.438159ms)
+✔ READER-7 — text blocks join in order and non-text blocks contribute nothing (0.219485ms)
+✔ [legacy] Node and Vite agree on the package mapping, the subpath and containment (56.201016ms)
+✔ [legacy] the module the shared answer loads is inside the selected host tree (23.305634ms)
+✔ [legacy] an unexported subpath refuses on both paths (no source fallback, no rc.2 fallback) (17.103754ms)
+✔ [legacy] the client source-preference path resolves into the SAME selected tree (178.566379ms)
+✔ [legacy] a host-internal importer: the resolver declines, the Vite adapter unifies ONE realpath (13.339514ms)
+✔ [next] Node and Vite agree on the package mapping, the subpath and containment (86.847659ms)
+✔ [next] the module the shared answer loads is inside the selected host tree (43.617879ms)
+✔ [next] an unexported subpath refuses on both paths (no source fallback, no rc.2 fallback) (32.711531ms)
+✔ [next] the client source-preference path resolves into the SAME selected tree (189.66403ms)
+✔ [next] a host-internal importer: the resolver declines, the Vite adapter unifies ONE realpath (42.156832ms)
+✔ a hosted checkout WITHOUT the pristine legacy tree still resolves legacy modules from the repo install (1.571707ms)
+✔ an unknown selector is a TYPED refusal on both adapters, never a silent rc.2 fallback (0.273046ms)
+✔ the two selectors pin DIFFERENT host generations (the matrix cannot be green by one host) (6.173284ms)
+ℹ tests 268
+ℹ suites 0
+ℹ pass 267
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 31572.439344
+DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=8 files=8 exit=0 set=sha256:0b087a6a5abff333e151d4556a388f4fe08e42734e10b37860edd501c7a552c1
+=== dispatch-tests ute-vnext-a1 next
+✔ READER-5 — a session with no log seam is unavailable, not a throw and not a success (0.157077ms)
+✔ READER-6 — a delivery that never appears is unavailable and NAMES the token (0.233522ms)
+✔ READER-7 — text blocks join in order and non-text blocks contribute nothing (0.128744ms)
+✔ [legacy] Node and Vite agree on the package mapping, the subpath and containment (57.712346ms)
+✔ [legacy] the module the shared answer loads is inside the selected host tree (22.600077ms)
+✔ [legacy] an unexported subpath refuses on both paths (no source fallback, no rc.2 fallback) (16.510631ms)
+✔ [legacy] the client source-preference path resolves into the SAME selected tree (29.888557ms)
+✔ [legacy] a host-internal importer: the resolver declines, the Vite adapter unifies ONE realpath (13.263876ms)
+✔ [next] Node and Vite agree on the package mapping, the subpath and containment (89.435806ms)
+✔ [next] the module the shared answer loads is inside the selected host tree (44.027984ms)
+✔ [next] an unexported subpath refuses on both paths (no source fallback, no rc.2 fallback) (35.542535ms)
+✔ [next] the client source-preference path resolves into the SAME selected tree (42.005365ms)
+✔ [next] a host-internal importer: the resolver declines, the Vite adapter unifies ONE realpath (40.063792ms)
+✔ a hosted checkout WITHOUT the pristine legacy tree still resolves legacy modules from the repo install (1.033005ms)
+✔ an unknown selector is a TYPED refusal on both adapters, never a silent rc.2 fallback (0.318994ms)
+✔ the two selectors pin DIFFERENT host generations (the matrix cannot be green by one host) (5.975851ms)
+ℹ tests 268
+ℹ suites 0
+ℹ pass 267
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 31478.729738
+DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=8 files=8 exit=0 set=sha256:0b087a6a5abff333e151d4556a388f4fe08e42734e10b37860edd501c7a552c1

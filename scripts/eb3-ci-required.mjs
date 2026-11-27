@@ -101,6 +101,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parse as parseYaml } from 'yaml'
 import { loadManifest, MANIFEST_REL } from './eb3-ci-manifest.mjs'
+import { checkVersionGateBinding } from './version-gate-head-binding.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(HERE, '..')
@@ -1036,7 +1037,27 @@ export function checkVersionGateClassification({ docs, manifest = loadManifest()
   if (!gradingIf.includes(`contains(github.event.pull_request.labels.*.name, '${VERSION_GATE_PR_LABEL}')`)) {
     add('CI_VERSION_GATE_PR_PATH_UNGATED', `${VERSION_GATE_WORKFLOW}#candidate-acceptance if=${JSON.stringify(grading?.if ?? null)} no longer tests for the "${VERSION_GATE_PR_LABEL}" label — the PR path would become an every-PR 84 min run instead of an explicit opt-in`)
   }
+
+  // ── the graded head is BOUND to the triggering commit (round 127), and the stable context depends
+  //    on the grading job's SUCCESS. Before this, a dispatch at commit A could grade commit B, and the
+  //    stable `version-gate` job (which only verifies a downloaded receipt) could report green over a
+  //    failed grading job. Both are shape facts, so both are asserted here, not left to prose.
+  findings.push(...checkVersionGateBinding(doc))
+  if (!stableJobNeeds(doc).includes('candidate-acceptance')) {
+    add('CI_VERSION_GATE_NEEDS_MISSING', `${VERSION_GATE_WORKFLOW}#${VERSION_GATE_JOB} needs=${JSON.stringify(doc.jobs?.[VERSION_GATE_JOB]?.needs ?? null)} — it must depend on the grading job "candidate-acceptance", or it can pass over a run whose candidate was never graded`)
+  }
+  if (!text.includes('needs.candidate-acceptance.result') || !text.includes('GRADING_NOT_SUCCESS')) {
+    add('CI_VERSION_GATE_GRADING_SUCCESS_UNGUARDED', `${VERSION_GATE_WORKFLOW}#${VERSION_GATE_JOB} carries no explicit needs.candidate-acceptance.result guard — with \`always()\` a failed/cancelled grading job would leave the stable context to verify a stale receipt and report green (failure must never be skipped-green)`)
+  }
   return { findings }
+}
+
+/** Normalise a job's `needs` (string or list) to a list of job ids. */
+function stableJobNeeds (doc) {
+  const needs = doc?.jobs?.[VERSION_GATE_JOB]?.needs
+  if (Array.isArray(needs)) return needs.map((n) => String(n))
+  if (typeof needs === 'string' && needs !== '') return [needs]
+  return []
 }
 
 /**

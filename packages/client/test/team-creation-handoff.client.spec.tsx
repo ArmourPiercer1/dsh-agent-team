@@ -79,9 +79,11 @@ const OPEN_DATA = {
   },
 }
 
+// Real shipped preset ids (see `PRESET_PERSONA_KIND_ROSTER`): `team`/`solo` are not
+// agent presets, and since plan §E.3 an invented id travels as the fail-loud lane.
 const PRESETS: readonly TeamPresetRow[] = [
-  { id: 'team', name: 'Team runtime', isDefault: false },
-  { id: 'solo', name: 'Solo', isDefault: true },
+  { id: 'standard', name: 'Standard runtime', isDefault: false },
+  { id: 'cordis', name: 'Cordis', isDefault: true },
 ]
 
 const WORKSPACE: readonly TeamWorkspaceOption[] = [
@@ -89,7 +91,7 @@ const WORKSPACE: readonly TeamWorkspaceOption[] = [
 ]
 
 /** The preselected blueprint draft (the probe fires on mount). */
-const BP_DRAFT: TeamIntentDraft = { ...emptyTeamIntentDraft, blueprintId: BP, revision: 2, presetId: 'team' }
+const BP_DRAFT: TeamIntentDraft = { ...emptyTeamIntentDraft, blueprintId: BP, revision: 2, presetId: 'standard' }
 
 /** The handoff source (UI §32.2: A is the source session, never converted). */
 const SOURCE: TeamCreationHandoffSource = { sourceSessionId: SOURCE_SESSION, sourceWorkspaceId: 'wsp-1' }

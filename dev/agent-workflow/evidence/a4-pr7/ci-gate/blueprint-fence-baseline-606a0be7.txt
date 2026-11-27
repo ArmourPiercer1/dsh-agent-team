@@ -217,4 +217,11 @@ OFFENDING packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts :: 
 #     net, both ABOVE the two fixtures): rc.5's MCP client calls `AbortSignal.any` and rejects a missing
 #     signal (`ERR_INVALID_ARG_TYPE`). No blueprint document was authored, edited or resolved; the two v5
 #     fixture literals are byte-unchanged. Re-recorded from the gate's own report.
-OFFENDING packages/runtime/test/vnext-admission.test.mjs :: L4721=v5, L7780=v5
+#   - vnext-admission.test.mjs moved L4721 -> L4733 and L7780 -> L7792 because round 127 (2026-11-27)
+#     rewrote ADM-147 from a declared-skip vacancy into unsupported-and-refused acceptance (+12 lines
+#     net, ABOVE both fixtures): the arm now dispatches `run_code` and asserts the typed
+#     ADMISSION_PTC_UNAVAILABLE refusal, the status on both durable facts, REFUSED/not-started and zero
+#     fallback, while still emitting the ruling marker. No blueprint document was authored, edited or
+#     resolved; the two `=v5` fixture literals are byte-unchanged. Re-recorded from the gate's own
+#     report (`node scripts/verify-blueprint-version-clean.mjs`), not by hand-guessing an offset.
+OFFENDING packages/runtime/test/vnext-admission.test.mjs :: L4733=v5, L7792=v5

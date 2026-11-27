@@ -249,7 +249,10 @@ function ghJsonPages(path, field) {
 }
 
 function gitOut(args) {
-  return execFileSync('git', args, { encoding: 'utf8' }).trim()
+  // `git status --porcelain` on a tree with >11k untracked/changed paths is
+  // scale-dependent (measured 2026-11-27: the A1 cut tree carries 10k+ evidence
+  // additions); the 1 MiB default is ENOBUFS, not a claim about cleanliness.
+  return execFileSync('git', args, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }).trim()
 }
 
 function gitOk(args) {

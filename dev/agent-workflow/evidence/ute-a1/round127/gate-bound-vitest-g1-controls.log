@@ -1,0 +1,10 @@
+=== bound vitest
+EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0 clock_ms=30000
+=== UTE G1 argv
+ℹ tests 89
+ℹ pass 89
+ℹ fail 0
+ℹ skipped 0
+=== negative controls
+
+38/38 control(s) behaved as required

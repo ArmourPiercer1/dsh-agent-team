@@ -1342,9 +1342,10 @@ control('C14 leg-allowlist-not-denylist', () => {
  *            and keeps only the sidecar in tracked scratch/ — separation at the source,
  *            so the guard is the backstop, not the mechanism.
  */
-function plantedRepo(files, allowlist = null) {
+function plantedRepo(files, allowlist = null, { date = null } = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'eb3-evguard-'))
-  const git = (...a) => execFileSync('git', ['-C', dir, ...a], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+  const env = date === null ? process.env : { ...process.env, GIT_AUTHOR_DATE: date, GIT_COMMITTER_DATE: date }
+  const git = (...a) => execFileSync('git', ['-C', dir, ...a], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], env }).trim()
   git('init', '-q', '-b', 'main')
   git('config', 'user.email', 'controls@example.invalid')
   git('config', 'user.name', 'eb3 controls')
@@ -1367,9 +1368,9 @@ function plantedRepo(files, allowlist = null) {
 }
 
 /** Grade one planted repo through the guard's own entry point (git diff + allowlist load). */
-function guardPlanted(files, allowlist = null) {
+function guardPlanted(files, allowlist = null, opts = {}) {
   const { guardAddedEvidence } = requireModule('scripts/eb3-evidence-guard.mjs')
-  const r = plantedRepo(files, allowlist)
+  const r = plantedRepo(files, allowlist, opts)
   try { return guardAddedEvidence({ root: r.dir, since: r.base }) } finally { r.cleanup() }
 }
 
@@ -1440,6 +1441,90 @@ control('C19 census-leg-writes-captures-outside-tracked-evidence', () => {
   if (CENSUS_SIDECAR_REL !== SCRATCH) misses.push(`sidecar dir moved to ${CENSUS_SIDECAR_REL}`)
   if (isRawCaptureName('census-comparison-20261027T003234Z-4.json')) misses.push('the sidecar name matches the raw-capture grammar')
   return { ok: misses.length === 0, detail: misses.length === 0 ? `captures -> ${cap.split('/').slice(0, -1).join('/')}/ and resamples -> ${res.split('/').slice(0, -1).join('/')}/ (gitignored, outside the evidence root, still raw-capture-named); sidecar stays in ${CENSUS_SIDECAR_REL}/` : misses.join(' ;; ') }
+})
+
+// ────────────── control 25–27: scan capacity and the evidence-volume rule (round 127)
+/**
+ * THE ENOBUFS DEFECT (round 127, hosted run 45754488920). `eb3-run-manifest --new-since` ran
+ * `git diff --name-only` with Node's default 1 MiB `execFileSync` buffer on a diff that is
+ * 1,167,305 bytes / 10,262 files at the A1 cut, so the leg died "could-not-grade" before
+ * grading anything. `docs-probe` had the same default AND folded the failure into an empty
+ * change set (a pass over nothing). The fix is a capacity bound, never a truncated list, and
+ * these controls prove the difference:
+ *
+ *   C25  a synthetic diff LARGER than the old default is counted in FULL (asserts the measured
+ *        path count and the measured byte size, not just "exit 0");
+ *   C26  a verbatim bulk run artifact added AFTER the grandfather cutoff is refused by NAME
+ *        (the size allowlist cannot launder it), while text conclusions still pass;
+ *   C27  the SAME artifact committed BEFORE the cutoff is grandfathered — the rule is not
+ *        retroactive, so committed history is neither deleted nor rewritten.
+ */
+control('C25 run-manifest-large-diff-is-fully-counted', () => {
+  const { freshEvidencePaths } = requireModule('scripts/eb3-run-manifest.mjs')
+  if (typeof freshEvidencePaths !== 'function') return { ok: false, detail: 'scripts/eb3-run-manifest.mjs exports no freshEvidencePaths — the scan cannot be exercised at scale' }
+  const dir = mkdtempSync(join(tmpdir(), 'eb3-scan-'))
+  const git = (...a) => execFileSync('git', ['-C', dir, ...a], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+  try {
+    git('init', '-q', '-b', 'main')
+    git('config', 'user.email', 'controls@example.invalid')
+    git('config', 'user.name', 'eb3 controls')
+    mkdirSync(join(dir, 'dev/agent-workflow/evidence'), { recursive: true })
+    writeFileSync(join(dir, 'dev/agent-workflow/evidence/README.md'), 'base\n')
+    git('add', '.')
+    git('commit', '-q', '-m', 'base')
+    const base = git('rev-parse', 'HEAD')
+    const bulk = join(dir, 'dev/agent-workflow/evidence/bulk')
+    mkdirSync(bulk, { recursive: true })
+    const NAME = `${'f'.repeat(245)}.json` // 250-char basename stays inside the 255-byte limit
+    const COUNT = 4000
+    for (let i = 0; i < COUNT; i += 1) writeFileSync(join(bulk, `${String(i).padStart(4, '0')}-${NAME}`), 'x')
+    git('add', '.')
+    git('commit', '-q', '-m', 'bulk')
+    const diffArgs = ['diff', '--name-only', `${base}...HEAD`, '--', 'dev/agent-workflow/evidence']
+    // The control's OWN measurement of the output that used to exceed the default buffer.
+    const rawBytes = execFileSync('git', ['-C', dir, ...diffArgs], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 }).length
+    const paths = freshEvidencePaths(dir, base)
+    const misses = []
+    if (rawBytes <= 1024 * 1024) misses.push(`the synthetic diff is only ${String(rawBytes)} B, not above the old 1 MiB default — the control would prove nothing`)
+    if (paths.length !== COUNT) misses.push(`freshEvidencePaths counted ${String(paths.length)} of ${String(COUNT)} paths — the scan was cut`)
+    if (new Set(paths).size !== COUNT) misses.push('the scan returned duplicates')
+    return { ok: misses.length === 0, detail: misses.length === 0 ? `${String(COUNT)} added paths / ${String(rawBytes)} B of diff (above the 1 MiB default) counted in FULL` : misses.join(' ;; ') }
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+control('C26 evidence-guard-refuses-verbatim-artifact', () => {
+  const refused = [
+    'dev/agent-workflow/evidence/lane-a/model-calls-20261127.jsonl',
+    'dev/agent-workflow/evidence/lane-a/model-calls.snapshot.json',
+    'dev/agent-workflow/evidence/lane-a/results.vitest.json',
+  ]
+  const accepted = [
+    'dev/agent-workflow/evidence/lane-a/gate.log',
+    'dev/agent-workflow/evidence/lane-a/CONCLUSION.md',
+  ]
+  const planted = Object.fromEntries([...refused, ...accepted].map((p) => [p, '{"small":true}\n']))
+  const out = guardPlanted(planted)
+  const hit = new Set(out.findings.filter((f) => f.code === 'EVIDENCE_VERBATIM_ARTIFACT').map((f) => f.path))
+  // A reviewed size exemption may not launder a verbatim artifact name.
+  const laundered = guardPlanted({ [refused[0]]: '{"small":true}\n' }, { schema: 'evidence-large-allowlist/1', entries: [{ path: refused[0], reason: 'trying to launder a transcript' }] })
+  const misses = []
+  for (const p of refused) if (!hit.has(p)) misses.push(`${p} not refused as verbatim`)
+  for (const p of accepted) if (hit.has(p)) misses.push(`${p} (a text conclusion) was refused`)
+  if (!laundered.findings.some((f) => f.code === 'EVIDENCE_VERBATIM_ARTIFACT')) misses.push('an allowlist entry laundered a verbatim artifact')
+  return { ok: misses.length === 0, detail: misses.length === 0 ? `${String(hit.size)} verbatim artifacts refused by NAME (tiny, so not the size rule); text logs/conclusions accepted; the size allowlist does not exempt the name` : misses.join(' ;; ') }
+})
+
+control('C27 evidence-guard-grandfathers-pre-cutoff-artifacts', () => {
+  const rel = 'dev/agent-workflow/evidence/lane-old/model-calls.snapshot.json'
+  // Committed BEFORE GRANDFATHER_BEFORE: history that exists already is not retro-graded.
+  const out = guardPlanted({ [rel]: '{"small":true}\n' }, null, { date: '2026-11-20T00:00:00Z' })
+  const misses = []
+  if (out.grandfatherCommit === null) misses.push('the pre-cutoff commit was not discovered as the grandfather cutoff')
+  if (out.postRule !== 0) misses.push(`post-rule additions=${String(out.postRule)}, expected 0`)
+  if (out.findings.some((f) => f.code === 'EVIDENCE_VERBATIM_ARTIFACT')) misses.push('a pre-cutoff artifact was retro-refused')
+  return { ok: misses.length === 0, detail: misses.length === 0 ? `${rel} committed 2026-11-20 is GRANDFATHERED (cutoff ${String(out.grandfatherCommit).slice(0, 9)}); the rule applies going forward only` : misses.join(' ;; ') }
 })
 
 // ────────────── control 20: the acceptance ledger cannot keep a PROVEN level alive

@@ -174,15 +174,26 @@ like `candidate-acceptance … head=`.
 1. **Freeze the SHA.** Choose the candidate SHA `S` (the commit that will be tagged). No non-evidence
    commit may be added to `S` after this point; a documentation/evidence commit that changes
    `packages/*/src` re-opens the freeze.
-2. **Run the version gate at `S`.** Either push `S` to `release/**` (the `push` trigger) or dispatch it:
+2. **Run the version gate AT `S` (the graded head must BE the triggering commit).** A dispatch that
+   names a SHA other than the commit it was triggered on is refused with
+   `VERSION_GATE_SHA_BINDING_REFUSED` before checkout (round 127, §11) — secrets, environments and
+   protection rules attach to the triggering ref, so a run may not certify a tree it never saw. The two
+   supported paths both put `S` in front of the gate as `github.sha`:
 
    ```bash
+   # (a) push trigger: S is the tip of a version ref (preferred for a release)
+   git push origin <S>:refs/heads/release/<candidate>
+
+   # (b) dispatch ON a ref whose commit IS S (e.g. candidate/<name> created at S);
+   #     `-f head=<S>` is a consistency assertion here, not a selector
    gh workflow run candidate-acceptance.yml \
-     --ref release/<candidate> \
+     --ref candidate/<name> \
      -f head=<S>
    ```
 
-   The run's grading job is named `candidate-acceptance (VERSION GATE, NOT per-PR Required) head=<S>`.
+   The run's grading job is named `candidate-acceptance (VERSION GATE, NOT per-PR Required) head=<S>`,
+   and the stable `version-gate` job first asserts `needs.candidate-acceptance.result == 'success'`
+   (a failed/cancelled grading job makes the stable context RED, never skipped-green).
 3. **Collect the receipt.** From the run's artifacts (`version-gate-bundle-<run_id>`), or from the
    checked-out evidence tree if the run was local. Verify it — this is the gate's own check, and it must
    exit 0:
@@ -384,3 +395,39 @@ candidate SHA)` job concluded **failure** with its fail-closed line
 exists at this SHA and the Required context is not green; no green is claimed.** Per the round's
 dispatch-once rule the gate was **not** re-dispatched. Fix: `require(path.resolve(process.argv[1]))`, or an
 absolute `find` root, or `fs.readFileSync` + `JSON.parse`; then a fresh freeze + one dispatch.
+
+## 11. Round 127 (2026-11-27) — the graded head is bound to the trigger, and the stable context requires a SUCCESSFUL grading job
+
+**Two shape gaps closed. Both were reachable without any code change to the gate.**
+
+1. **Dispatch could grade a commit other than the one that triggered it.** The resolve step accepted
+   `workflow_dispatch` `head=<40-hex>` and checked it out while `github.sha` stayed the dispatched
+   ref's commit. A run triggered at `A` could therefore certify `B`: the receipt says `B`, the run's
+   identity says `A`, and the protected environment/secrets belong to `A`. The rule is now explicit and
+   single-sourced: `scripts/version-gate-head-binding.mjs#bindVersionGateHead` requires
+   `requested == github.sha` for EVERY event and refuses a mismatch with
+   `VERSION_GATE_SHA_BINDING_REFUSED`, naming the supported path (push a `candidate/**`/`release/**`
+   branch AT the frozen SHA, or dispatch on a ref whose commit is that SHA). The workflow executes the
+   script in both head-resolution steps; `eb3-ci-required` asserts the invocation stays
+   (`CI_VERSION_GATE_SHA_BINDING_MISSING`), so the rule cannot decay into a comment.
+
+2. **The stable `version-gate` job could be green over a failed grading job.** It already had
+   `needs: candidate-acceptance` + `always()` (a skip is not a pass), but its own steps only verified a
+   downloaded receipt; if the grading job failed before uploading one, the verify step failed too — yet
+   the failure was incidental, not required by shape, and a stale artifact from the same run id could
+   in principle be present. The job now starts with an explicit guard:
+   `needs.candidate-acceptance.result == 'success'` or `::error::… (CI_VERSION_GATE_GRADING_NOT_SUCCESS)`.
+   `eb3-ci-required` asserts BOTH the `needs` edge (`CI_VERSION_GATE_NEEDS_MISSING`) and the explicit
+   guard (`CI_VERSION_GATE_GRADING_SUCCESS_UNGUARDED`), each with a mutation control in
+   `scripts/eb3-ci-required.test.mjs`.
+
+**Unit controls** (`scripts/version-gate-verify.test.mjs`, already collected by the
+`version-gate-verify-unit` leg — no new test file): binding accepts only equal 40-hex SHAs; a dispatch
+drift is the typed refusal that names the supported path; a non-40-hex requested/github SHA is
+`VERSION_GATE_HEAD_NOT_SHA`; the real workflow executes the binding script and the shape check reds when
+it stops. `node --test scripts/version-gate-verify.test.mjs` → 24 tests, 24 pass.
+
+**What this changes operationally.** `gh workflow run candidate-acceptance.yml -f head=<S>` on a ref
+whose commit is not `S` now refuses instead of grading `S`. That is the intended trade: a version
+receipt must describe the run that produced it. The push path (`release/**` at `S`) is unaffected and
+remains the preferred way to freeze a release candidate.

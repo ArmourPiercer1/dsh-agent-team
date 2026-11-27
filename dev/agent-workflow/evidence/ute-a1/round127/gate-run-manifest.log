@@ -1,0 +1,2 @@
+EB3-RUN-MANIFEST pass records=765 strict=393 incomplete=11 findings=0
+LIMIT a green here means the record is internally honest and tied to THIS tree/host-pin/authority generation; it is not a claim that the graded behaviour was correct (that is the suite C2 evidence)

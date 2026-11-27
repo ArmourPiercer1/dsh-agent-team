@@ -99,10 +99,14 @@ jobs:
       (github.event_name == 'pull_request' &&
        contains(github.event.pull_request.labels.*.name, 'candidate-acceptance'))
     steps:
-      # STRICT HEAD RESOLUTION, BEFORE CHECKOUT. `workflow_dispatch` may name any frozen 40-hex SHA; every
-      # other event grades `github.sha`. No branch/tag name and no abbreviated SHA is accepted, because
-      # "the head I graded" must be one immutable commit for the receipt to mean anything.
-      - name: Resolve the requested head SHA (strict)
+      # STRICT HEAD RESOLUTION, BEFORE CHECKOUT. The graded head must be the commit this run
+      # TRIGGERED on (`github.sha`) for every event, workflow_dispatch included: secrets,
+      # environments and protection rules attach to the triggering ref, so grading a different SHA
+      # would certify a tree the run never saw. `scripts/version-gate-head-binding.mjs` is the ONE
+      # implementation of that rule (unit-tested; `eb3-ci-required` asserts this step runs it). A
+      # dispatch naming another SHA is refused typed — the supported way to grade a frozen commit
+      # is to push a `candidate/**` or `release/**` branch AT it (or dispatch on that branch).
+      - name: Resolve the requested head SHA (strict; must equal the triggering commit)
         id: head
         shell: bash
         env:
@@ -110,17 +114,10 @@ jobs:
         run: |
           set -euo pipefail
           REQUESTED="${DISPATCH_HEAD:-$GITHUB_SHA}"
-          if ! printf '%s' "$REQUESTED" | grep -Eq '^[0-9a-f]{40}$'; then
-            echo "::error::VERSION-GATE refused: requested head '${REQUESTED}' is not a full 40-hex SHA; a branch name, tag or abbreviated SHA cannot be frozen"
-            exit 1
-          fi
-          if [ "${{ github.event_name }}" != "workflow_dispatch" ] && [ "$REQUESTED" != "$GITHUB_SHA" ]; then
-            echo "::error::VERSION-GATE refused: only workflow_dispatch may grade a SHA other than github.sha (requested ${REQUESTED}, event commit ${GITHUB_SHA})"
-            exit 1
-          fi
+          REQUESTED=$(node scripts/version-gate-head-binding.mjs --requested "$REQUESTED" --github-sha "$GITHUB_SHA" --event "${{ github.event_name }}")
           echo "requested=$REQUESTED" >> "$GITHUB_OUTPUT"
           echo "REQUESTED_HEAD=$REQUESTED" >> "$GITHUB_ENV"
-          echo "VERSION-GATE requested head=${REQUESTED} event=${{ github.event_name }}"
+          echo "VERSION-GATE requested head=${REQUESTED} event=${{ github.event_name }} (== github.sha)"
 
       - name: Checkout the requested head (the tree this run grades)
         uses: actions/checkout@v4
@@ -336,14 +333,29 @@ jobs:
   # THE REQUIRED CONTEXT. A STABLE check name (no SHA in it) is the one a branch/tag protection rule can
   # require; the grading job above carries the SHA. `if: always()` is deliberate: a skipped required check
   # must never be able to look like a pass, so when the grading job fails this job still runs and REFUSES
-  # (the receipt is absent) instead of being skipped green.
+  # (the receipt is absent) instead of being skipped green. The FIRST step additionally requires
+  # `needs.candidate-acceptance.result == 'success'`: a version-gate that only verified a receipt left by a
+  # red/failed grading job would still be green over an ungraded candidate.
   version-gate:
     name: version-gate (Required at frozen candidate SHA)
     needs: candidate-acceptance
     if: ${{ github.event_name != 'pull_request' && always() }}
     runs-on: ubuntu-latest
     steps:
-      - name: Resolve the requested head SHA (strict)
+      - name: Require the grading job to have PASSED
+        if: always()
+        shell: bash
+        env:
+          GRADING_RESULT: ${{ needs.candidate-acceptance.result }}
+        run: |
+          set -euo pipefail
+          if [ "$GRADING_RESULT" != "success" ]; then
+            echo "::error::VERSION-GATE refused (CI_VERSION_GATE_GRADING_NOT_SUCCESS): candidate-acceptance concluded '${GRADING_RESULT}'; the stable version-gate context must never report green over a run whose grading job did not succeed"
+            exit 1
+          fi
+          echo "VERSION-GATE grading job succeeded (needs.candidate-acceptance.result=success)"
+
+      - name: Resolve the requested head SHA (strict; must equal the triggering commit)
         id: head
         shell: bash
         env:
@@ -351,10 +363,7 @@ jobs:
         run: |
           set -euo pipefail
           REQUESTED="${DISPATCH_HEAD:-$GITHUB_SHA}"
-          if ! printf '%s' "$REQUESTED" | grep -Eq '^[0-9a-f]{40}$'; then
-            echo "::error::VERSION-GATE refused: requested head '${REQUESTED}' is not a full 40-hex SHA"
-            exit 1
-          fi
+          REQUESTED=$(node scripts/version-gate-head-binding.mjs --requested "$REQUESTED" --github-sha "$GITHUB_SHA" --event "${{ github.event_name }}")
           echo "requested=$REQUESTED" >> "$GITHUB_OUTPUT"
           echo "REQUESTED_HEAD=$REQUESTED" >> "$GITHUB_ENV"
 

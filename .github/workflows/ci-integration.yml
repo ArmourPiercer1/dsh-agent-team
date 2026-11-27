@@ -154,10 +154,12 @@ jobs:
           set -euo pipefail
           node scripts/eb3-run-manifest.mjs --new-since "$CI_BASE"
 
-      - name: "EB3 evidence guard (no raw census capture, no unexempted file > 1 MiB added under evidence/)"
+      - name: "EB3 evidence guard (no raw capture, no post-rule verbatim run artifact, no unexempted file > 1 MiB added under evidence/)"
         shell: bash
         # ONE simple command, same base as the RUN Manifest step: the added set is
         # `git diff --diff-filter=A $CI_BASE...HEAD -- dev/agent-workflow/evidence/`.
+        # The verbatim-artifact rule is not retroactive: evidence committed at or before
+        # 2026-11-27T00:00:00Z is grandfathered (docs/TEST_METHODS.md §8).
         run: |
           set -euo pipefail
           node scripts/eb3-evidence-guard.mjs --new-since "$CI_BASE"

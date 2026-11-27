@@ -196,3 +196,44 @@ test('eb3-ci-required: removing the PR label gate makes the 84 min run every-PR 
     .filter((f) => f.code === 'CI_VERSION_GATE_PR_PATH_UNGATED')
   assert.equal(hit.length, 1, JSON.stringify(hit))
 })
+
+// ── ROUND 127: the stable context must DEPEND on the grading job's success, and the graded head must
+// be bound to the triggering commit. Each control removes exactly one fact from the real workflow.
+test('eb3-ci-required: removing the version-gate needs edge is CI_VERSION_GATE_NEEDS_MISSING', () => {
+  const files = workflowFiles()
+  const rel = '.github/workflows/candidate-acceptance.yml'
+  const before = files.get(rel)
+  const edge = '    needs: candidate-acceptance\n'
+  assert.ok(before.includes(edge), 'the stable job must declare the needs edge')
+  files.set(rel, before.replace(edge, ''))
+  const hit = checkRequiredJobs({ files, manifest: loadManifest() }).findings
+    .filter((f) => f.code === 'CI_VERSION_GATE_NEEDS_MISSING')
+  assert.equal(hit.length, 1, JSON.stringify(hit))
+  assert.match(hit[0].detail, /candidate-acceptance/)
+})
+
+test('eb3-ci-required: removing the explicit grading-success guard is CI_VERSION_GATE_GRADING_SUCCESS_UNGUARDED', () => {
+  const files = workflowFiles()
+  const rel = '.github/workflows/candidate-acceptance.yml'
+  const before = files.get(rel)
+  assert.ok(before.includes('GRADING_NOT_SUCCESS'), 'the success guard must exist')
+  // Keep `needs` and `always()`: only the explicit success check disappears — the exact
+  // skipped-green shape the owner forbade.
+  files.set(rel, before.replaceAll('needs.candidate-acceptance.result', 'needs.candidate-acceptance.outcome').replaceAll('GRADING_NOT_SUCCESS', 'GRADING_MAYBE'))
+  const hit = checkRequiredJobs({ files, manifest: loadManifest() }).findings
+    .filter((f) => f.code === 'CI_VERSION_GATE_GRADING_SUCCESS_UNGUARDED')
+  assert.equal(hit.length, 1, JSON.stringify(hit))
+  assert.match(hit[0].detail, /always\(\)/)
+})
+
+test('eb3-ci-required: dropping the SHA-binding script invocation is CI_VERSION_GATE_SHA_BINDING_MISSING', () => {
+  const files = workflowFiles()
+  const rel = '.github/workflows/candidate-acceptance.yml'
+  const before = files.get(rel)
+  assert.ok(before.includes('scripts/version-gate-head-binding.mjs'), 'the binding script must be executed')
+  files.set(rel, before.replaceAll('scripts/version-gate-head-binding.mjs', 'scripts/not-the-binding.mjs'))
+  const hit = checkRequiredJobs({ files, manifest: loadManifest() }).findings
+    .filter((f) => f.code === 'CI_VERSION_GATE_SHA_BINDING_MISSING')
+  assert.equal(hit.length, 1, JSON.stringify(hit))
+  assert.match(hit[0].detail, /graded head/)
+})

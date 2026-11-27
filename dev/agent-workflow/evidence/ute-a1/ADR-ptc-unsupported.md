@@ -84,8 +84,10 @@ converts that permanent gap into an explicit product boundary instead of a waiti
 
 - **DSH host PTC**: the upstream module, its registration and its host-level smoke tests are
   untouched. The host registry still registers its reserved `run_code` transport whenever the host is
-  configured to present PTC (measured in `ADM-79`); the product simply never offers it to a governed
-  Member and refuses it if reached.
+  configured to present PTC; the product simply never offers it to a governed Member and refuses it if
+  reached. Since rc.5 the transport is internal to `PtcExecutor.requirePtcTransport()`, so the MEMBER
+  scope resolves no `run_code` even where the host keeps its own host-wide registration; the by-name
+  dispatch entry still refuses typed (round 127, §9).
 - **Native `bash`, persistent bash, PTY**: unchanged (round 76 evidence and `ADM-125…132` stand).
 - **ControlService asks/grants and Stop**: unchanged; the escalation row stays (§6).
 - **Other invariants**: no invariant is relaxed. The refusal is fail-closed; the status is additive.
@@ -170,7 +172,7 @@ future round, in order:
 
 Until then, `run_code` remains refused, and the refusal is reported as the product ruling it is.
 
-## 8. Counts that moved, and why
+## 8. Counts that moved, and why (round 126, historical)
 
 Measured at the settlement HEAD (see the dated settlement comment for the exact SHA):
 
@@ -182,3 +184,42 @@ Measured at the settlement HEAD (see the dated settlement comment for the exact 
 - Test catalog counts are unchanged in KIND (no test FILE added or removed); the numbers are stated in
   the settlement comment with their bounds.
 - No frozen A0 evidence file changed; no upstream file changed.
+
+## 9. Amendment 2026-11-27 (round 127, owner review 20261127-1459): the acceptance form
+
+**The decision is unchanged.** `run_code` remains unsupported for governed Members, the typed code
+`ADMISSION_PTC_UNAVAILABLE` and the status `unsupported-by-product-ruling` are unchanged, and no
+security boundary is relaxed. What changes is how the two positive arms record the decision.
+
+**What was wrong with the old form.** `ADM-69` and `ADM-147` both `skip`ped after asserting the
+marker. A skip reads as "verified nothing": it cannot distinguish "the product refuses this scope"
+from "the suite could not run". The old `ADM-63`/`ADM-79` blocks compounded it — they ALSO asserted
+`definitionOf('run_code') !== undefined`, i.e. they required a per-member transport registration; on
+rc.5 (transport moved inside `PtcExecutor.requirePtcTransport()`) that expectation describes a
+registration the product does not have, so the arms went red for demanding the opposite of the ruling.
+
+**The form accepted now (all four arms, both host generations).** No arm requires a per-member PTC
+transport to exist. Each dispatches `run_code` through the same entry a model would reach, with no
+authorization and with a DECLARED authorization (ADM-147), and asserts:
+
+- the product's real typed refusal `ADMISSION_PTC_UNAVAILABLE`, status `unsupported-by-product-ruling`;
+- exactly one admission fact and one execution fact (`outcome: admission-refusal`), both carrying the
+  status — a silent fallback retry would add records;
+- the refused body never ran (marker absent / `body.count === 0`), settlement `REFUSED`,
+  `dispatch: not-started`, `bodyOutcome: not-started`, `effectEvidence: none-confirmed`;
+- zero spawn and zero confine calls;
+- the registry state per host generation: rc.2 resolves ONE host-wide transport object (no
+  per-scope copy); rc.5 resolves none on the member scope while the host's own host-wide registration,
+  where present, stays the host module's body. Neither generation confers member reach.
+
+The historical positive ("run_code executes in the governed Member world") is kept in the suites ONLY
+as a dated comment block; it is not executed, not restored, and not weakened into a skip. The marker
+line stays machine-visible: `ADM-80` and `ADM-148` still require exactly one
+`VNEXT-PTC-PRODUCT-UNSUPPORTED` report per ruled arm and a closed two-entry arm list, and
+`reportProductUnsupported` still throws for any unlisted arm.
+
+**Counts after this amendment (measured locally, both hosts).** `vnext-b-probe-ladder.test.mjs`:
+18 tests, 17 pass, **1 skip** (`ADM-68` bash positive, pre-existing and disclosed — NOT a PTC arm).
+`vnext-admission.test.mjs`: 167 tests, 167 pass, **0 skips**. So the PTC-side skips went `2 → 0`; the
+only skip left in these two suites is the pre-existing bash-positive ENV-BLOCK. Suite file set and
+leg set digest unchanged; this amendment adds no test file.

@@ -762,14 +762,37 @@ arm('ADM-63 — the ladder\'s definitions are the HOST\'s own: every rung resolv
     assert.equal(collected[0].name, 'bash')
     assert.equal(String(world.definitionOf('bash').execute), String(collected[0].execute), 'bash: the member must run the host module\'s body, not a Team-authored one')
 
-    // `run_code` is NOT a mountable module: it is the host registry's reserved transport. The member
-    // must resolve the SAME object the standing scope resolves — there is no shadow to find.
+    // `run_code` is NOT a mountable module: it is the host registry's reserved transport. Two host
+    // generations exist and BOTH are graded here, because the arm must not demand a per-member
+    // registration the product removed:
+    //   * rc.2: the member scope resolves the SAME transport object the preset scope resolves (no
+    //     per-scope copy, no shadow);
+    //   * rc.5: `PtcExecutor.requirePtcTransport()` keeps the transport internal, so the MEMBER scope
+    //     resolves nothing. The host may still hold its own `run_code` registration host-wide — that
+    //     is the host's module, not a member shadow, and the member clearly cannot reach it by
+    //     resolution (the typed refusal is proved by ADM-69/ADM-79).
+    //
+    // HISTORICAL POSITIVE (superseded 2026-11-27; ADR-ptc-unsupported.md amendment). Until round 126
+    // this block asserted `definitionOf('run_code') !== undefined` for member AND preset on every
+    // host. On rc.5 that described a per-member resolution the product no longer has, so the arm
+    // failed for demanding the opposite of the ruling. The rung's positive claim ("run_code
+    // EXECUTES inside the governed member world") was never supported; it is now accepted as
+    // unsupported-and-refused, and this arm only reports what each scope resolves.
     const memberRunCode = world.definitionOf('run_code')
     const presetRunCode = world.presetDefinition('run_code')
-    assert.notEqual(memberRunCode, undefined, 'the member must resolve the host registry\'s reserved run_code transport')
-    assert.notEqual(presetRunCode, undefined, 'the standing scope must resolve the same transport')
-    assert.equal(memberRunCode, presetRunCode, 'run_code must be the registry\'s ONE transport object, never a per-scope copy or a shadow')
-    assert.equal(typeof memberRunCode.execute, 'function')
+    const hostRunCode = world.globalDefinitionOf('run_code')
+    if (memberRunCode === undefined) {
+      // No per-member resolution. The host-wide entry, where the host keeps one, must still be a real
+      // host definition (a body and a name) — never evidence of a Team-authored wrapper.
+      if (hostRunCode !== undefined) {
+        assert.equal(hostRunCode.name, 'run_code', 'a host-retained run_code entry may not be renamed')
+        assert.equal(typeof hostRunCode.execute, 'function', 'a host-retained run_code entry must be the host module\'s body')
+      }
+    } else {
+      assert.notEqual(presetRunCode, undefined, 'the standing scope must resolve the same transport')
+      assert.equal(memberRunCode, presetRunCode, 'run_code must be the registry\'s ONE transport object, never a per-scope copy or a shadow')
+      assert.equal(typeof memberRunCode.execute, 'function')
+    }
   })
 })
 
@@ -890,20 +913,74 @@ arm('ADM-68 — BASH positive: NOT RUN in this world (no compiled execution auth
   t.skip(`BASH positive control NOT RUN (${POSITIVE_BLOCKED.bash}); the positive control on a declared world is ADM-125, the negative IS proven (ADM-75)`)
 })
 
-arm('ADM-69 — RUN_CODE positive: NOT APPLICABLE — PRODUCT UNSUPPORTED (owner ruling 20261124-0151 §PTC; a ruled scope, not a pending fix)', (t) => {
+arm('ADM-69 — RUN_CODE positive: ACCEPTED AS UNSUPPORTED-AND-REFUSED — typed ADMISSION_PTC_UNAVAILABLE, zero worker, REFUSED/not-started (product ruling 20261124-0151 §PTC; owner instruction 20261127-1459)', async () => {
   const world = inLane
-  // The host registry's reserved transport IS registered in this world: what is absent is not a tool
-  // but a SUPPORTED governance story. The ruling closes the rung as a SCOPE decision, so the positive
-  // claim has no supported target — and saying so is not the same as "skipped pending a fix".
-  assert.notEqual(world.definitionOf('run_code'), undefined, 'the host registry retains the transport, which is exactly why the REFUSAL (not the hiding) is the control')
-  assert.equal(world.binding.process, undefined, 'the compiled answer carries no process authorization, and the ruling does not invent one')
+  // THE POSITIVE CLAIM THIS ARM USED TO CARRY, KEPT AS DATED HISTORY: "run_code executes in the
+  // governed Member world" — asserted by resolving the host registry's reserved transport in this
+  // scope. The owner ruling of 20261124-0151 closed that claim as NOT SUPPORTED by this generation,
+  // and rc.5 removed the transport from every scope, so the old expectation (non-undefined) both
+  // demanded an unsupported capability and described a registration the product no longer has.
+  //
+  // THE FORM ACCEPTED NOW (owner review 2026-11-27): the rung is verified ONLY as
+  // run_code -> typed refusal -> zero worker -> REFUSED/not-started, through the same dispatch entry a
+  // model would reach. A skip is not acceptance; this arm asserts the refusal's full shape, including
+  // that NO fallback path (shell/pty/provider retry) was taken. The historical positive is NOT
+  // restored, and the negative controls ADM-76/ADM-79 are not replaced by it.
   assert.equal(PTC_PRODUCT_RULING.status, 'unsupported-by-product-ruling')
   assert.equal(PTC_PRODUCT_RULING.marker, PTC_NOT_APPLICABLE_MARKER)
   const declared = PTC_PRODUCT_RULING.notApplicableArms.find((entry) => entry.id === 'ADM-69')
   assert.notEqual(declared, undefined, 'the ruling declaration must enumerate this arm; an undeclared not-applicable skip is not allowed')
   assert.match(declared.claim, /executes in the governed Member world/u)
+
+  // The registry state is graded per host generation, not assumed: rc.2 retains one host-wide object
+  // that the member scope resolves; rc.5 no longer resolves it per member (the transport is internal
+  // to PtcExecutor) even where the host keeps its own host-wide registration. BOTH are coherent; a
+  // per-scope COPY would not be.
+  const scoped = world.definitionOf('run_code')
+  const hostWide = world.globalDefinitionOf('run_code')
+  if (scoped === undefined) {
+    // rc.5: no per-member PTC resolution. A host-wide registration, when present, is the host's own
+    // module and confers no member reach — the by-name dispatch below still refuses typed.
+    if (hostWide !== undefined) {
+      assert.equal(hostWide.name, 'run_code', 'a host-retained PTC entry may not be renamed')
+      assert.equal(typeof hostWide.execute, 'function', 'a host-retained PTC entry must be the host module\'s body')
+    }
+  } else {
+    assert.equal(scoped, hostWide, 'a retained PTC entry must be the registry\'s ONE transport object, never a per-scope copy')
+  }
+
+  const before = { spawn: world.spawnCalls(), confine: world.confineCalls(), admissions: world.ledger.readAll().filter((record) => record.kind === 'invocation-authority').length }
+  const callId = 'ladder-ptc-positive-refused'
+  const result = await world.dispatch('run_code', { code: `return '${RUN_CODE_MARKER}'`, description: 'accept the rung as unsupported-and-refused' }, callId)
+  assert.equal(result.isError, true, `run_code must be refused, never executed: ${result.text}`)
+  assert.doesNotMatch(result.text, new RegExp(RUN_CODE_MARKER, 'u'), 'the refused code must not have run, and the refusal must not echo a fabricated result')
+
+  const { admission, execution } = world.recordsOf(callId)
+  assert.notEqual(admission, undefined, 'the refusal must be a durable admission fact, not a transport error')
+  assert.equal(admission.toolName, 'run_code')
+  assert.equal(admission.axis, 'process.exec')
+  assert.equal(admission.decision, 'deny')
+  assert.equal(admission.refusalCode, 'ADMISSION_PTC_UNAVAILABLE', 'the product\'s REAL typed code, not a generic tool error')
+  assert.equal(admission.status, PTC_PRODUCT_RULING.status, 'the durable fact carries the product-ruling status')
+  assert.equal(execution?.outcome, 'admission-refusal', 'the body never started')
+  assert.equal(execution?.status, PTC_PRODUCT_RULING.status, 'the execution fact carries the same status as the admission fact')
+
+  const settled = world.settlementOf(callId)
+  assert.equal(settled?.state, 'REFUSED')
+  assert.equal(settled.observation.dispatch, 'not-started')
+  assert.equal(settled.observation.bodyOutcome, 'not-started')
+  assert.equal(settled.observation.effectEvidence, 'none-confirmed')
+  assert.match(String(settled.terminalReason ?? ''), /ADMISSION_PTC_UNAVAILABLE/u)
+  assert.match(String(settled.terminalReason ?? ''), /unsupported-by-product-ruling/u)
+
+  // ZERO EXECUTION, ZERO FALLBACK: nothing reached the process/confine faces, and the refusal produced
+  // EXACTLY ONE admission fact — a silent retry through a shell or provider would add another.
+  assert.equal(world.spawnCalls(), before.spawn, 'a refused run_code must not start a worker or a process')
+  assert.equal(world.confineCalls(), before.confine, 'and it must not reach the sandbox provider')
+  assert.equal(world.ledger.readAll().filter((record) => record.kind === 'invocation-authority').length, before.admissions + 1, 'exactly one admission fact, no fallback retry')
+  assert.equal(world.ledger.readAll().filter((record) => record.kind === 'execution' && record.callId === callId).length, 1, 'exactly one execution fact for the refused call, no fallback body')
+
   process.stdout.write(`${reportProductUnsupported('ADM-69')}\n`)
-  t.skip(`${PTC_NOT_APPLICABLE_MARKER} — ${PTC_PRODUCT_RULING.ruling}: the rung-6 POSITIVE has no supported target this generation; the refusal controls ADM-76/ADM-79 stand, with the rung verified ONLY as run_code -> typed refusal -> zero worker -> REFUSED/not-started`)
 })
 
 arm('ADM-70 — ORDER (positive): the durable facts read back in LADDER order', async (t) => {
@@ -1064,7 +1141,7 @@ arm('ADM-77 — ORDER (negative): the durable refusals read back in LADDER order
   for (const execution of executions) assert.equal(execution.outcome, 'admission-refusal', 'every rung must record that its body never started')
 })
 
-arm('ADM-79 — PTC is ABSENT from the governed Member\'s OFFERED set, and the host-retained entry is a TYPED refusal with zero worker start (the real composition, shipped and PTC presentations)', async () => {
+arm('ADM-79 — PTC is ABSENT from the governed Member\'s OFFERED set, and a by-name run_code call is a TYPED refusal with zero worker start on BOTH host generations (rc.2 retains the transport, rc.5 does not)', async () => {
   // ---- (1) THE OFFER, under the presentation the product ships (`native`) ----
   // `schemas()` is the host's model-visible projection for THIS member's scope: it is the set a model
   // would be shown. `definitionOf` is the per-scope resolution the executor uses. Neither may offer
@@ -1080,8 +1157,27 @@ arm('ADM-79 — PTC is ABSENT from the governed Member\'s OFFERED set, and the h
   // A deployment that presents PTC keeps the transport registered host-wide; a mis-wired member scope
   // could still reach it. That is the accidental path the ruling requires to fail TYPED, not to fall
   // through to a worker.
-  assert.notEqual(inLane.globalDefinitionOf('run_code'), undefined, 'the PTC-presenting deployment retains the host transport: the entry point exists')
-  assert.notEqual(inLane.definitionOf('run_code'), undefined, 'and on this member scope it resolves, so the refusal below is reached through the REAL entry, not a fabricated one')
+  //
+  // HISTORICAL POSITIVE (superseded 2026-11-27; ADR-ptc-unsupported.md amendment). This section used
+  // to REQUIRE `inLane.globalDefinitionOf('run_code') !== undefined` and
+  // `inLane.definitionOf('run_code') !== undefined`, i.e. it asserted the retained transport existed.
+  // rc.5 keeps the transport internal to `PtcExecutor.requirePtcTransport()`, so neither resolves and
+  // the old assertion demanded a registration the product removed. The REFUSAL is the subject, and it
+  // must hold through the by-name dispatch entry whether or not a definition resolves.
+  const retained = inLane.globalDefinitionOf('run_code')
+  const memberView = inLane.definitionOf('run_code')
+  if (memberView === undefined) {
+    // rc.5 gap: no per-member PTC resolution. The host-wide registration may still exist (the host's
+    // own module), but it must not be reachable as a member definition, and the by-name dispatch below
+    // must STILL refuse typed — not fail as an unknown tool and not fall back to the PTC worker.
+    if (retained !== undefined) {
+      assert.equal(retained.name, 'run_code', 'a host-retained PTC entry may not be renamed')
+      assert.equal(typeof retained.execute, 'function', 'a host-retained PTC entry must be the host module\'s body')
+    }
+  } else {
+    assert.notEqual(retained, undefined, 'a member-resolved PTC entry must come from a host-wide registration (no per-scope fabrication)')
+    assert.equal(memberView, retained, 'the member must resolve the registry\'s ONE transport object')
+  }
   const before = { spawn: inLane.spawnCalls(), confine: inLane.confineCalls() }
   const callId = 'ladder-ptc-retained-entry'
   const result = await inLane.dispatch('run_code', { code: `return '${RUN_CODE_MARKER}'`, description: 'accidental PTC call through the retained entry' }, callId)

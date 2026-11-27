@@ -12,8 +12,18 @@
  * declared-world positive the ladder header used to say was "no longer contract-blocked") can never
  * become green under this ruling: there is no supported positive to run. They are therefore reported
  * as `NOT APPLICABLE — PRODUCT UNSUPPORTED`, never as "skipped pending a fix": a pending-fix skip
- * reads as debt that a later round may pay, while this is a scope the product does not ship. The
- * REFUSAL side is untouched and stays a real negative control (`ADM-76`, `ADM-87`): `run_code` is
+ * reads as debt that a later round may pay, while this is a scope the product does not ship.
+ *
+ * THE ACCEPTANCE FORM (owner review 2026-11-27, round 127). "Not applicable" is NOT "not asserted":
+ * since round 127 neither arm skips. Each one DISPATCHES `run_code` through the same entry a model
+ * would reach, and asserts the product's real refusal end to end — typed
+ * `ADMISSION_PTC_UNAVAILABLE`, status `unsupported-by-product-ruling`, one admission + one execution
+ * fact, body marker absent, settlement `REFUSED` / `not-started`, zero spawn/confine, and no
+ * fallback retry (the ledger gains exactly one admission). The previous positive expectation
+ * ("run_code executes in the governed Member world") survives only as a dated historical block in
+ * the suites; it is not restored and this declaration does not weaken the security boundary.
+ *
+ * The REFUSAL side is untouched and stays a real negative control (`ADM-76`, `ADM-87`): `run_code` is
  * admitted nowhere, the body never runs, no worker is started, and both durable shapes close
  * REFUSED / `not-started`.
  *
@@ -48,7 +58,13 @@ export const PTC_PRODUCT_RULING = Object.freeze({
   supportedPositiveLadder: Object.freeze(['read', 'write', 'grep', 'web_fetch', 'bash']),
   /** The ONLY verification PTC gets in this generation: the refusal chain, end to end. */
   refusalVerification: Object.freeze(['run_code', 'typed-refusal', 'zero-worker-execution', 'REFUSED/not-started']),
-  /** The two PTC POSITIVE arms, now not-applicable. Order is stable (assertions read it). */
+  /** The product's real typed refusal code carried by the admission/execution facts. */
+  refusalCode: 'ADMISSION_PTC_UNAVAILABLE',
+  /**
+   * The two PTC POSITIVE claims this generation refuses to run. Since round 127 both arms assert the
+   * typed refusal chain (no skip); this list stays CLOSED so a new "temporarily parked" PTC positive
+   * cannot borrow the status. Order is stable (assertions read it).
+   */
   notApplicableArms: Object.freeze([
     Object.freeze({
       id: 'ADM-69',

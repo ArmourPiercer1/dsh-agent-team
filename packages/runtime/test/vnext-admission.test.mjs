@@ -3483,11 +3483,13 @@ test('ADM-88 — the capability table is CLOSED, each refusal names its own miss
   assert.throws(() => hostSurfaceRefusal('mcp'), (error) => /closed table/u.test(error.message), 'a new capability cannot be refused by being forgotten')
 })
 
-test('ADM-147 — the governed PTC POSITIVE on a world that DECLARES the process authorization: NOT APPLICABLE — PRODUCT UNSUPPORTED (declared, reported, never silently skipped)', async (t) => {
-  // THIS ARM IS THE DECLARED VACANCY, not a pass. The rung-6 positive cannot be run under the ruling,
-  // so the honest arm is: build the world that WOULD have carried it (a compiled `run_code` execution
-  // authorization + a ready executor, the ADM-125 shape applied to PTC), prove the declaration cannot
-  // make PTC supported, and report the not-applicable marker through the machine declaration.
+test('ADM-147 — the governed PTC POSITIVE on a world that DECLARES the process authorization: ACCEPTED AS UNSUPPORTED-AND-REFUSED (typed refusal, zero body, REFUSED/not-started, declared and reported)', async () => {
+  // HISTORICAL POSITIVE (superseded 2026-11-27; ADR-ptc-unsupported.md amendment). This arm used to
+  // be "the declared vacancy": it proved the declaration could not make PTC supported, then skipped
+  // with the not-applicable marker. Owner review 20261127-1459 requires the acceptance form, not a
+  // skip: assert the product's REAL typed refusal end to end on the world that would have carried the
+  // positive, and report the ruling. The positive is NOT restored; nothing in the security boundary
+  // is relaxed.
   const world = await centreWorld('ptc-declared-world', {
     binding: processBinding('allow', {
       perTool: { run_code: processTool('allow') },
@@ -3503,17 +3505,27 @@ test('ADM-147 — the governed PTC POSITIVE on a world that DECLARES the process
     const fact = world.admissionFact('ptc-declared-1')
     assert.equal(fact.axis, 'process.exec')
     assert.equal(fact.decision, 'deny')
+    assert.equal(fact.refusalCode, 'ADMISSION_PTC_UNAVAILABLE', 'the product\'s real typed code')
     assert.equal(fact.status, PTC_PRODUCT_RULING.status, 'the declared world gets the SAME ruling status, not a different one')
     const settled = world.store.read(world.executionIdOf(exec))
     assert.equal(settled.state, 'REFUSED')
     assert.equal(settled.observation.dispatch, 'not-started')
+    assert.equal(settled.observation.bodyOutcome, 'not-started')
+    assert.equal(settled.observation.effectEvidence, 'none-confirmed')
 
-    // The declaration must ENUMERATE this arm; an undeclared not-applicable skip cannot exist.
+    // The durable facts: exactly one admission + one execution, both carrying the ruling status, so a
+    // reader joining them does not parse prose — and a silent fallback body would add records.
+    const records = world.ledger.readAll().filter((record) => record.callId === 'ptc-declared-1')
+    assert.equal(records.filter((record) => record.kind === 'invocation-authority').length, 1, 'exactly one admission fact, no fallback retry')
+    assert.equal(records.filter((record) => record.kind === 'execution').length, 1, 'exactly one execution fact, no fallback body')
+    assert.equal(records.find((record) => record.kind === 'execution').outcome, 'admission-refusal')
+    assert.equal(records.find((record) => record.kind === 'execution').status, PTC_PRODUCT_RULING.status)
+
+    // The declaration must ENUMERATE this arm; an undeclared not-applicable arm cannot exist.
     const declared = PTC_PRODUCT_RULING.notApplicableArms.find((entry) => entry.id === 'ADM-147')
     assert.notEqual(declared, undefined, 'the ruling declaration must enumerate ADM-147')
     assert.match(declared.claim, /DECLARES the process authorization/u)
     process.stdout.write(`${reportProductUnsupported('ADM-147')}\n`)
-    t.skip(`${PTC_NOT_APPLICABLE_MARKER} — ${PTC_PRODUCT_RULING.ruling}: the declared-world PTC POSITIVE has no supported target this generation (the ADM-125 shape applied to run_code refuses, by ruling)`)
   } finally {
     world.dispose()
   }

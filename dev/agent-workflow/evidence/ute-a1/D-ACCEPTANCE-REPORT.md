@@ -291,6 +291,10 @@ both hosts — identical to round 122**. Dispatch leg `ute-vnext-a1` **exit 0, 2
 widened, no assertion weakened, no retry added.
 
 **Disclosed, not hidden: on the rc.5 pinned tree the `ute-vnext-a1` leg has 4 pre-existing reds.**
+
+> **Superseded by ROUND 127 below.** These four are closed as typed-refusal acceptance (the arms
+> demanded a per-member transport rc.5 removed); the leg now measures 268 / 267 pass / 0 fail / 1 skip
+> on both hosts. This paragraph is round 118's measurement, kept as history.
 `TEAM_TEST_HOST=next` reds `ADM-63/69/79/80` in `vnext-b-probe-ladder.test.mjs` — the ladder's PTC /
 `run_code`-transport identity arms, where this pinned rc.5 tree never mounts `PtcExecutor` on the member
 scope, so `requirePtcTransport()` answers `undefined`. They are **not on the dispatch path** (they read
@@ -364,7 +368,11 @@ weakened, no retry added. The p4t6 scannable-file ledger moved by exactly one pa
 measurement (`packages/testkit/test/p4t6-bookings/round122tooldispatchshape.json`, 1323 → 1324).
 
 **The three client reds are pre-existing on `master`, attributed to exact commits, and disclosed — not
-skipped.** A0 `a19d1df01` and HEAD both measure `Test Files 2 failed (2)` / `Tests 3 failed | 46 passed
+skipped.**
+
+> **Closed in ROUND 127 below: all three were STALE FIXTURES (the fixtures sent payloads/preset ids the
+> product never ships), fixed in the fixtures with no product change; 65/65 pass on both hosts.** This
+> paragraph is round 122's measurement, kept as history. A0 `a19d1df01` and HEAD both measure `Test Files 2 failed (2)` / `Tests 3 failed | 46 passed
 (49)` on the same three suites, and HEAD measures the same on rc.5 with the guard line proving the loaded
 tree. In-place bisect: `dcf661468` (W1 fix-A F10) reds the governance `override reset` arm
 (`TeamGovernance.tsx` reads `response.value.data['removed']` from a `null` fixture before `pullProjection`,
@@ -2949,3 +2957,31 @@ existence `false`, settlement `FAILED` — no process, no bytes, nothing widened
 four FS mutations and for BOTH process faces (spawn-point verification, all negatives); the live
 process leg is BLOCKED by the named assembly gap and is the next owner-ruled step. `apply_patch`
 remains unbound (R4). No row is PRODUCT-PROVEN.
+
+## ROUND 127 (2026-11-27) — the four rc.5 PTC reds are now typed-refusal acceptance; the three client reds are stale fixtures, fixed
+
+**What this round supersedes in the earlier round records above.** The round-118/122 sections say the
+`ute-vnext-a1` rc.5 leg carries four pre-existing reds (`ADM-63/69/79/80`) and that the three client
+arms "stay collected and red". Both statements were true of their measurement and are now stale:
+
+- **PTC (`ADM-63/69/79/80`, `ADM-147`; both hosts).** The arms asserted a per-member `run_code`
+  transport that rc.5 deliberately moved inside `PtcExecutor.requirePtcTransport()`, and `ADM-69`/
+  `ADM-147` ended in a `skip`. Round 127 rewrites the form as unsupported-and-refused acceptance
+  (`ADR-ptc-unsupported.md` §9): the registry state is graded per host generation, and every dispatch of
+  `run_code` asserts the product's typed `ADMISSION_PTC_UNAVAILABLE`, status
+  `unsupported-by-product-ruling`, exactly one admission + one execution fact, body marker absent,
+  `REFUSED` / `not-started` / `none-confirmed`, zero spawn/confine and no fallback. The historical
+  positive stays as a dated comment block; it is not restored and no boundary is relaxed. The marker
+  lines and the closed two-entry list are still asserted by `ADM-80`/`ADM-148`.
+- **Measured, both hosts:** `dispatch-tests --run --leg ute-vnext-a1` → **268 tests / 267 pass / 0 fail
+  / 1 skip**, exit 0, set digest `sha256:0b087a6a…` (`round127/gate-dispatch-ute-vnext-a1.log`); the one
+  skip is the pre-existing `ADM-68` bash-positive ENV-BLOCK. PTC-side skips went **2 → 0**.
+- **The three client reds were STALE FIXTURES, not product bugs, and are fixed in the fixtures.**
+  Governance sent `null` for an `override.reset` whose contract value is `{ removed: boolean }`; the
+  creation panel used invented preset ids `team`/`solo` that the §E.3 kind roster sends down the
+  fail-loud lane. No product file changed; assertions kept (the switch arm now changes the observed
+  kind). Current measurement **65/65 on both hosts** across the four client specs.
+
+**No capability level moves:** no row becomes PRODUCT-PROVEN (the candidate gate is a VERSION gate and no
+version is frozen). Trail: `RC5-TEST-MATRIX.md` §13, `CANDIDATE-REPORT.md` §8 items 3–5,
+`ADR-ptc-unsupported.md` §9, `round127/`.

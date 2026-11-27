@@ -627,6 +627,11 @@ frozen), and the 3 client reds stay collected and red (they are disclosed in `CA
 paragraph is closed; the entry dispatches in the host's own capability-detected shape and refuses a
 caller's wrong shape by name.
 
+> **Superseded by §13 (round 127).** The three client reds above are STALE FIXTURES, not product
+> defects: the fixtures sent payloads/preset ids the product never ships. They are fixed in the
+> fixtures (no product change) and now pass on `legacy` and `next`. The statement "stay collected and
+> red" above is round 122's measurement, kept as history.
+
 ## 11.8 Round 123 — the World stops version-sniffing its dispatch shape, and the harness route gets its status-code arms
 
 **Why this section exists.** §11.6/§11.7 closed the PRODUCT seam. Round 122's own §G then disclosed that
@@ -699,3 +704,43 @@ Measured on **both** hosts, three runs each, two boots each (`round125/runs/`): 
 **no** SIGKILL. Population bookkeeping: **no test file is added or removed by this round**; the rc.5 lane's
 count (18/18 runtime+testkit, 42/44 total) and the catalog (`tests=790 collected=738 excluded=14
 uncollected=38 findings=0`) are unchanged; only the driver and its evidence move.
+
+## 13. Round 127 — the four rc.5 PTC reds become typed-refusal acceptance, and the three client reds are stale fixtures
+
+**PTC (`ADM-63/69/79/80`, `ADM-147`, both hosts).** The rc.5 reds were not a product defect and not a
+reason to restore PTC: round 126's arms asserted a per-member `run_code` transport that rc.5
+deliberately moved inside `PtcExecutor.requirePtcTransport()`, and `ADM-69`/`ADM-147` ended in a
+`skip` after asserting the marker. Round 127 rewrites the form (ADR-ptc-unsupported.md §9):
+`ADM-63`/`ADM-79` grade the registry state per host generation (rc.2: one host-wide object, no
+per-scope copy; rc.5: no member resolution) and the by-name dispatch still refuses typed; `ADM-69`/
+`ADM-147` no longer skip — each dispatches `run_code` and asserts `ADMISSION_PTC_UNAVAILABLE`, status
+`unsupported-by-product-ruling`, exactly one admission + one execution fact, marker absent / body never
+run, `REFUSED` / `not-started` / `none-confirmed`, zero spawn/confine and no fallback. The historical
+positive expectation is kept only as a dated comment block. `ADM-80`/`ADM-148` still require exactly one
+`VNEXT-PTC-PRODUCT-UNSUPPORTED` report per ruled arm and the closed two-entry list.
+
+Measured (local, both hosts): `dispatch-tests --run --leg ute-vnext-a1` **268 tests / 267 pass / 0 fail
+/ 1 skip**, exit 0, set digest `sha256:0b087a6a…` on BOTH `TEAM_TEST_HOST=legacy` and `next`
+(`round127/gate-dispatch-ute-vnext-a1.log`); the full gate's census captured the client suites too —
+**601 files / 7446 line identities**, twice identical (`round127/gate-ci-pr-gate.log`);
+`vnext-b-probe-ladder` **18 / 17 / 0 / 1 skip** (the only
+skip is the pre-existing `ADM-68` bash-positive ENV-BLOCK, not a PTC arm); `vnext-admission` **167 /
+167 / 0 / 0**. PTC-side skips went **2 → 0**; no assertion was weakened, no arm deleted, no security
+boundary relaxed.
+
+**The three client reds: all STALE FIXTURES (not product bugs), now green on both hosts.** Round 122
+disclosed them as pre-existing reds; round 127 read the component/contract against the fixture:
+
+| arm | classification (measured) | fix | proof |
+| --- | --- | --- | --- |
+| `team-governance :: override reset` | **stale fixture**: the contract's `RemoteOverrideResetValue` is `{ removed: boolean }` and the `dsh` handler answers `{ data: { removed } }`; the fixture passed `null`, which `TeamGovernance.tsx` reads as a record (`data['removed']`). No product change since `dcf661468` — the fixture never sent the product's payload | `okResponse({ removed: true }, 'override.reset')`; the once-pull assertion is unchanged | 65/65 on both hosts |
+| `team-creation-panel :: blueprint selection` | **stale fixture**: `team`/`solo` are not shipped presets; since pre-alpha3 PR-E (§E.3) the persona fact carries the observed KIND (`standard`/`complete`, roster `standard/ptc/cordis/minimal`), so an invented id takes the documented fail-loud lane (`available:false`) | real ids `standard`/`cordis`/`minimal`; the selected default is `cordis` (the shipped roster's `isDefault`; `selectDefaultPresetId`'s literal-`team` preference is kept visible in `team-intent-model.test.ts`'s own control) | 65/65 on both hosts |
+| `team-creation-panel :: switching the runtime preset` | **stale fixture**: same invented `solo` id; switching it could not change the observed kind | switch to `minimal` so the fact's subject changes `standard → complete` (an arm that only re-asserted `standard` would pass even without a re-probe) | 65/65 on both hosts |
+
+The two sibling specs (`team-creation-panel-refresh`, `team-creation-handoff`) carried the same invented
+ids and are aligned in the same change (they build no persona-fact assertion). No product file changed,
+no assertion was dropped, and the arms are collected and green on `TEAM_TEST_HOST=legacy|next`.
+
+**What does NOT move:** no row becomes PRODUCT-PROVEN (the candidate gate is a VERSION gate, no version
+frozen); the 40 rc.2-only Vite suites of §11.7 are untouched; no test file was added or removed, so the
+catalog population is unchanged.

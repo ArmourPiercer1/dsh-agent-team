@@ -286,3 +286,35 @@ describe('version-gate verifier — pure surface', () => {
     assert.equal(validateReceiptSchema(built.receipt).ok, true)
   })
 })
+
+// ── ROUND 127: the graded head must be the TRIGGERING commit, for workflow_dispatch too.
+// These controls bind the rule the workflow now applies (`scripts/version-gate-head-binding.mjs`):
+// a dispatch at commit A may not certify commit B, and the refusal is typed, not a generic error.
+describe('version-gate head binding (round 127)', () => {
+  it('binds only when the requested head EQUALS github.sha', async () => {
+    const { bindVersionGateHead, VERSION_GATE_SHA_BINDING_REFUSED, VERSION_GATE_HEAD_NOT_SHA, FROZEN_SHA_SUPPORTED_PATH } = await import('./version-gate-head-binding.mjs')
+    const same = bindVersionGateHead({ eventName: 'workflow_dispatch', requestedSha: HEAD, githubSha: HEAD })
+    assert.deepEqual(same, { ok: true, sha: HEAD })
+    // A push event at the same SHA is the documented frozen-SHA path: same binding, different trigger.
+    assert.deepEqual(bindVersionGateHead({ eventName: 'push', requestedSha: HEAD, githubSha: HEAD }), { ok: true, sha: HEAD })
+
+    const drift = bindVersionGateHead({ eventName: 'workflow_dispatch', requestedSha: OTHER, githubSha: HEAD })
+    assert.equal(drift.ok, false)
+    assert.equal(drift.code, VERSION_GATE_SHA_BINDING_REFUSED, 'a dispatch naming another commit is the binding refusal, not a format error')
+    assert.match(drift.message, /github\.sha/u)
+    assert.ok(drift.message.includes(FROZEN_SHA_SUPPORTED_PATH), 'the refusal must name the supported frozen-SHA path, not just say no')
+
+    const bad = bindVersionGateHead({ eventName: 'workflow_dispatch', requestedSha: 'abc', githubSha: HEAD })
+    assert.equal(bad.code, VERSION_GATE_HEAD_NOT_SHA)
+    assert.equal(bindVersionGateHead({ eventName: 'push', requestedSha: HEAD, githubSha: '' }).code, VERSION_GATE_HEAD_NOT_SHA)
+  })
+
+  it('the real workflow executes the binding script, and the shape check reds when it stops', async () => {
+    const { checkVersionGateBinding, HEAD_BINDING_SCRIPT } = await import('./version-gate-head-binding.mjs')
+    const { readFileSync } = await import('node:fs')
+    const workflow = readFileSync(resolve(ROOT, '.github/workflows/candidate-acceptance.yml'), 'utf8')
+    assert.ok(workflow.includes(HEAD_BINDING_SCRIPT), 'the version-gate workflow must execute the binding script, not re-implement the rule in prose')
+    assert.deepEqual(checkVersionGateBinding({ text: workflow }), [])
+    assert.deepEqual(checkVersionGateBinding({}), [{ code: 'CI_VERSION_GATE_SHA_BINDING_MISSING', detail: checkVersionGateBinding({})[0].detail }])
+  })
+})

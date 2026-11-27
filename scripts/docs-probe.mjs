@@ -51,9 +51,17 @@ const LIMITS = [
   'natural-language claims are matched by conservative patterns; a novel phrasing can evade the pattern (reported as a limit, not as a pass)',
 ];
 
+// CAPACITY, NOT SELECTION. `git diff --name-only` over this tree is 1,225,506 bytes
+// (11,284 changed files at the A1 cut, measured 2026-11-27), above Node's 1 MiB
+// default buffer. With the default, this helper caught ENOBUFS and returned null,
+// which `changeScope` folded into an EMPTY change set — a mandatory docs leg grading
+// nothing while printing a pass. The bound keeps the WHOLE path set; an unreadable
+// diff now REFUSES the scope instead of reading as "no changes".
+const GIT_DIFF_MAX_BUFFER = 64 * 1024 * 1024
+
 function git(root, args, allowFail = true) {
   try {
-    return execFileSync('git', ['-C', root, ...args], { encoding: 'utf8' });
+    return execFileSync('git', ['-C', root, ...args], { encoding: 'utf8', maxBuffer: GIT_DIFF_MAX_BUFFER });
   } catch (e) {
     if (allowFail) return null;
     throw e;
@@ -67,7 +75,11 @@ export function changeScope(root, base) {
   if (base) {
     const mb = git(root, ['merge-base', base, 'HEAD']);
     if (!mb) return { refused: `BASE_UNRESOLVABLE:${base}` };
-    sets.committed = lines(git(root, ['diff', '--name-only', `${mb.trim()}..HEAD`])).map(toPosix);
+    const committed = git(root, ['diff', '--name-only', `${mb.trim()}..HEAD`]);
+    // A resolvable merge-base with an UNREADABLE diff is a refusal, never an empty
+    // change set: "the diff failed" and "nothing changed" are different facts.
+    if (committed === null) return { refused: `DIFF_UNREADABLE:${base}` };
+    sets.committed = lines(committed).map(toPosix);
     sets.merge_base = mb.trim();
   }
   sets.staged = lines(git(root, ['diff', '--name-only', '--cached'])).map(toPosix);

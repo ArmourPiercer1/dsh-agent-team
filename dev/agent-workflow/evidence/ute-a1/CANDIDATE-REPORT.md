@@ -232,7 +232,7 @@ are `OS-1/2/3` plus the provider's own kernel-level refusals.
 | **3 grep** | `ADM-66` positive / `ADM-73` negative (`LANE_DENY`, zero confined spawns) | `d:guard-facts` + the round-64 live in-lane `grep` (`decision=allow`, `overlayOutcome=no-opinion`, a real match); `SLICE-39` parent-allow/child-deny recursive control **GREEN** | the search runs through the **confined subprocess** face, i.e. the same netns/Landlock capability the ladder probes before admitting a confined spawn (`A5SF-CAPABILITY network-deny=…`); on a runner that cannot prove it, the arm fails closed | **`ENV-LIMITED` on the hosted `ci-census` runner**: 5 arms (`OS-2`, `OS-3`, `ADM-66`, `SLICE-28`, `ADM-70`) assert the product's fail-closed refusal instead, printed as `UTE-VNEXT-A1-ENV-LIMITED` and aggregated `DSH-TEST-DISPATCH-ENV-LIMITED count=5 proven=0 env_blocks=3 fail_closed_controls=2`. Never counted as PASS |
 | **4 web_fetch** | `ADM-67` positive (one transport call, loopback body) / `ADM-74` negative (`NETWORK_DENY`, zero transport calls) | **no live boot**: the web face is in-process only (`SLICE-31/32`, `ADM-67/74`) — stated as a limit, not as live evidence | the network axis is decided at the centre **before** any transport, and no fs lane can authorise the network (`ADM-111`); the OS-level `network: deny` proof is the same netns capability as rung 3 and is `ENV-LIMITED` on the hosted runner | **`ENV-LIMITED`** — no live `web_fetch` judge exists in this candidate |
 | **5 persistent bash** | `ADM-125` positive (the real positive control) / `ADM-75` negative (`ADMISSION_EXECUTION_UNAUTHORIZED`, zero spawns, zero confines); `ADM-68` in the ladder is the **declared non-run** (the ladder world compiles no execution authorization) | `d3:persistent-subprocess` — rc.2 **and** rc.5, 2 agreeing boots, **PROVEN**: first call admitted (`process.exec allow`), durable shell state written, a second turn reuses the **same** shell and reads it back, both settlements `ADMITTED→RUNNING→COMPLETED` | the shell is wrapped by the host `sandbox` provider (`sandbox.confine`; bubblewrap 0.11.1 verified usable, Landlock launcher fallback): the in-lane file is written (32 B) while the out-of-lane write is refused — the shell itself reports `Read-only file system`, and the driver outside the sandbox finds no file (0 B) | `ADM-68` is a disclosed, labelled non-run (a skip that prints a machine line; never a pass) |
-| **6 run_code / PTC** | `ADM-76` negative (typed `ADMISSION_PTC_UNAVAILABLE` + ruling status, zero worker, `REFUSED`/`not-started`), `ADM-79`, `ADM-87`; `ADM-69`/`ADM-147` positives are **`NOT APPLICABLE — PRODUCT UNSUPPORTED`**, asserted by `ADM-80`/`ADM-148` | **no live judge and none owed**: the product does not offer the capability, so the refusal is the deliverable | the refusal happens **before** any worker exists (zero effect); no OS profile is created for a call that never runs | **`UNSUPPORTED BY PRODUCT RULING`** (owner, 2026-11-24): `docs/reviews/20261124-0151.txt` §PTC, `ADR-ptc-unsupported.md`, `ptc-product-ruling.mjs` |
+| **6 run_code / PTC** | `ADM-76` negative (typed `ADMISSION_PTC_UNAVAILABLE` + ruling status, zero worker, `REFUSED`/`not-started`), `ADM-79`, `ADM-87`; `ADM-69`/`ADM-147` positives are **`NOT APPLICABLE — PRODUCT UNSUPPORTED`** and (round 127) each DISPATCHES `run_code` to assert the typed `ADMISSION_PTC_UNAVAILABLE` refusal / zero worker / `REFUSED`-`not-started`, with the marker still asserted by `ADM-80`/`ADM-148` | **no live judge and none owed**: the product does not offer the capability, so the refusal is the deliverable | the refusal happens **before** any worker exists (zero effect); no OS profile is created for a call that never runs | **`UNSUPPORTED BY PRODUCT RULING`** (owner, 2026-11-24): `docs/reviews/20261124-0151.txt` §PTC, `ADR-ptc-unsupported.md`, `ptc-product-ruling.mjs` |
 
 **rc.5 test-matrix outcome, in one place** (`RC5-TEST-MATRIX.md`; numbers from round 112/116 measurements):
 
@@ -752,25 +752,34 @@ log line (`host:"legacy"`/`source:tests/paths.mjs#TEST_USE_BASELINE_SHA`, `host:
    leg carries **4 pre-existing reds** (`ADM-63/69/79/80`, the ladder's PTC/`run_code`-transport identity
    arms on this pinned rc.5 tree), reproduced identically with the round-123 files checked out at the
    parent head `af2b03f20`, off the dispatch path, and not caused by this round.
-4. **KNOWN-RED disclosure (round 122) — three client arms are red on `master` BEFORE this branch and are
-   deliberately NOT skipped, NOT deleted and NOT retried.** Identity and attribution are measured, not
-   asserted (full method and logs: `round122/POPULATION.md` §4):
+4. **KNOWN-RED disclosure (round 122) — three client arms were red on `master` BEFORE this branch;
+   round 127 classified all three as STALE FIXTURES and fixed the fixtures (no product change).** They
+   were deliberately not skipped, not deleted and not retried; identity and attribution are measured,
+   not asserted (full method and logs: `round122/POPULATION.md` §4, closing measurement
+   `RC5-TEST-MATRIX.md` §13):
    - `packages/client/test/team-governance.client.spec.tsx :: override reset … pulls once on success` —
-     red since **`dcf661468`** (W1 fix-A F10): `TeamGovernance.tsx` reads
-     `(response.value.data)['removed']` while the fixture's `okResponse(null, 'override.reset')` is `null`,
-     so it throws before `pullProjection` runs (0 calls).
+     red since **`dcf661468`** (W1 fix-A F10) because the fixture sent `okResponse(null,
+     'override.reset')` while the contract's `RemoteOverrideResetValue` is `{ removed: boolean }` and
+     the handler answers `{ data: { removed } }`; `TeamGovernance.tsx` reads the value as a record, so
+     the stale null threw before `pullProjection` ran (0 calls). **Fixture fixed** to
+     `okResponse({ removed: true }, 'override.reset')`; the once-pull assertion is unchanged.
    - `packages/client/test/team-creation-panel.client.spec.tsx :: selecting a blueprint … persona-fact
      probe` and `:: switching the runtime preset …` — red since **`4f07e2da9`** (pre-alpha3 PR-E):
-     `intentEnvironmentFacts` changed `available: true` → `observedKind === 'standard'` (roster
-     `standard/ptc/cordis/minimal`), so `team`/`solo` become `available:false`.
-   Both commits are **ancestors of the A0 base `a19d1df01`**, and the A0 measurement is identical
-   (`Test Files 2 failed (2)`, `Tests 3 failed | 46 passed (49)`) to HEAD on rc.2 and on rc.5 (guard lines
-   prove the loaded tree). The two spec files and every product file behind them are unchanged since A0
-   (`git diff --name-status a19d1df01..HEAD -- <paths>` prints nothing). Disposition: **out of scope for
-   the dispatch round** — the fix is a client panel/governance task; the reds are published here so no
-   reader can mistake the 3-failure aggregate for a green population.
-5. **The 18 B-ladder arms are green on BOTH hosts** (18/18 rc.2 and 18/18 rc.5; 16 pass + the same 2 declared
-   non-runs each), but they are **in-process `MECHANISM`**, not boots; C-ptc stays unsupported.
+     `intentEnvironmentFacts` carries the OBSERVED KIND (`standard`/`complete`, roster
+     `standard/ptc/cordis/minimal`), so the fixture's invented ids `team`/`solo` take the documented
+     fail-loud lane (`available:false`). **Fixture fixed** to real shipped ids; the switch arm now
+     changes the kind (`standard → complete`), so it cannot pass without a re-probe.
+   Both commits are **ancestors of the A0 base `a19d1df01`**, and the A0 measurement was identical
+   (`Test Files 2 failed (2)`, `Tests 3 failed | 46 passed (49)`) to HEAD on rc.2 and on rc.5 before the
+   fix (guard lines prove the loaded tree). The two spec files and every product file behind them are
+   unchanged since A0 (`git diff --name-status a19d1df01..HEAD -- <paths>` printed nothing) — which is
+   why the failures were fixture facts, not product regressions. **Current measurement: 65/65 pass on
+   both hosts** across the four specs (`team-governance`, `team-creation-panel`, `-refresh`, `-handoff`).
+5. **The 18 B-ladder arms are green on BOTH hosts** (18/18 rc.2 and 18/18 rc.5; **17 pass + the ONE
+   declared non-run** `ADM-68`, the bash-positive ENV-BLOCK, each), but they are **in-process
+   `MECHANISM`**, not boots; C-ptc stays unsupported — and since round 127 the two PTC positives
+   (`ADM-69`, `ADM-147`) are asserted as typed-refusal acceptance rather than skipped
+   (`ADR-ptc-unsupported.md` §9).
 6. **Two declared boundaries (not controls):** **SEC-03** — host-capability tools (`subagent`,
    `send_message`, `interrupt_agent`, `skill`, the 15 `team_*`) are admitted on host authority with **no managed
    fs/net lane**, so the lane algebra does not bound their effects; a hostile-code model must treat them as
@@ -909,3 +918,35 @@ retires the previous marker.
    selection seam** (then these 40 can be graded on rc.5 through one authority), rule these suites
    **host-version-agnostic by contract** (they stop being a coverage gap by definition), or accept the gap with
    its measured `ENV-LIMITED` label. A Team-authored Vite alias is refused and is not an option.
+
+## ROUND 127 gate block (2026-11-27) — the candidate is installable/trialable; no evidence growth
+
+Raw logs: `round127/`. Every line below was run at the working tree that becomes the round's commit;
+the settlement comment carries the final SHA.
+
+| gate | measured |
+| --- | --- |
+| `dispatch-tests --run --leg ute-vnext-a1` (both hosts) | **268 tests / 267 pass / 0 fail / 1 skip**, exit 0, set `sha256:0b087a6a…` on `legacy` AND `next` (the one skip is `ADM-68`'s pre-existing bash-positive ENV-BLOCK; PTC skips now 0) |
+| affected vitest (client, both hosts) | **65/65 pass** across `team-governance`, `team-creation-panel`, `-refresh`, `-handoff` |
+| `test-catalog --max-uncollected 41 --max-excluded 7` | `tests=790 … UNCOLLECTED 38 … findings=0` (no file added/removed) |
+| `ute-cut-closure --check` | `pass deleted=148 references=3 prodRefs=0 distResiduals=0 … findings=0` |
+| `ute-p0-assets --check` | `pass modules=37 files=180 lines=69512 … findings=0` |
+| `docs-sync --check` | `docs=193 … findings=0 blocking=0 contracts=20 pairs compared` |
+| `docs-probe --base a19d1df0…` | `blocking=0 … advisories=3` (the previously-silent ENOBUFS path now reads the WHOLE 1.2 MB diff) |
+| `place-dist-glue` | done, **36** byte-identical placements |
+| `eb3-ci-required` | `pass workflows=11 findings=0` (with the new needs/guard/SHA-binding checks) |
+| bound vitest (`eb3-security-run --layer ci-integration`) | `verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0` |
+| UTE G1 argv (9 files) | **89/89 pass, 0 fail** |
+| `eb3-ci-negative-controls` | **38/38** controls behaved (C25 large-diff full count, C26 verbatim refusal, C27 grandfather added) |
+| `ci-pr-gate --full --census-captures 2` | **`DSH-CI-VERDICT pass pass=10 fail=0 skip=0`** (316 s); census `601f/7446l` captured twice, identity sets identical |
+| `eb3-run-manifest --new-since a19d1df0…` | `pass records=765 strict=393 incomplete=11 findings=0` |
+| `eb3-evidence-guard --new-since a19d1df0…` | `pass added=10253 bound=1048576 exempted=6 verbatim=0 findings=0`; grandfather cutoff `8c5fcb505` |
+
+**The hosted red this round answers:** `EB3-RUN-MANIFEST refused could-not-grade: spawnSync git ENOBUFS`
+(run 45754488920, `ci-integration`) was a 1 MiB default buffer on a 1,167,305-byte evidence-scoped diff.
+The read is now capacity-bounded (64 MiB) and the WHOLE tree is still graded; `docs-probe` had the same
+default AND folded the unreadable diff into an empty change set — it now REFUSES (`DIFF_UNREADABLE`)
+instead of passing over nothing. Controls C25–C27 prove the difference mechanically.
+
+**No capability level moves:** no row becomes PRODUCT-PROVEN (VERSION gate, no version frozen); PR #822
+stays DRAFT.
