@@ -1,0 +1,7 @@
+boot_line=dsh web: http://127.0.0.1:3180/?token=<redacted>
+root_status=401
+team_remote_status=405
+skill_registration=0
+remote_mount=
+sigterm_exit=0
+process_gone=yes

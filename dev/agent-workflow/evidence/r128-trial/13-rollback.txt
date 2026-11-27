@@ -1,0 +1,60 @@
+# 13 — rollback: remove the bundle, verify the prior bundle set, boot again
+
+## before
+{
+ "name": "dsh-profile-web",
+ "private": true,
+ "dependencies": {
+  "dsh-agent-team": "github:ArmourPiercer1/dsh-agent-team#v0.3.0-trial.1"
+ },
+ "dsh": {
+  "profile": {
+   "bundles": [
+    "@deepseek-ai/dsh-base",
+    "@deepseek-ai/dsh-web-app",
+    "dsh-agent-team"
+   ]
+  }
+ }
+}
+
+## pnpm dsh plugin --profile web remove dsh-agent-team
+✓ Lockfile passes supply-chain policies (verified 28s ago)
+
+dependencies:
+- dsh-agent-team github:ArmourPiercer1/dsh-agent-team#v0.3.0-trial.1
+
+Already up to date
+Done in 399ms using pnpm v11.7.0
+remove_exit=0
+
+## after
+{
+ "name": "dsh-profile-web",
+ "private": true,
+ "dsh": {
+  "profile": {
+   "bundles": [
+    "@deepseek-ai/dsh-base",
+    "@deepseek-ai/dsh-web-app"
+   ]
+  }
+ }
+}
+
+## node_modules/dsh-agent-team present?
+GONE
+
+## dump-config bundle rows (expect none)
+0
+0
+
+## boot after rollback (same isolated home)
+boot_line=dsh web: http://127.0.0.1:3180/?token=<redacted>
+root_status=401
+team_remote_status=405
+skill_registration=0
+remote_mount=
+sigterm_exit=0
+process_gone=yes
+team_rows_in_log=0
