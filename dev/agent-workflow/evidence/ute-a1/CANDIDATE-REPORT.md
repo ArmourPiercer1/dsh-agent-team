@@ -942,6 +942,8 @@ the settlement comment carries the final SHA.
 | `eb3-run-manifest --new-since a19d1df0…` | `pass records=765 strict=393 incomplete=11 findings=0` |
 | `eb3-evidence-guard --new-since a19d1df0…` | `pass added=10253 bound=1048576 exempted=6 verbatim=0 findings=0`; grandfather cutoff `8c5fcb505` |
 
+| `devex-diag` (hosted re-run exposed it) | `integration-order` BOUND HIT at 12,883 tracked evidence `.json` > `maxCandidates` 12000; raised to **16000 with that measurement** (never a lowered assertion), local leg **exit 0** (`round127/gate-devex-diag.log`) |
+
 **The hosted red this round answers:** `EB3-RUN-MANIFEST refused could-not-grade: spawnSync git ENOBUFS`
 (run 45754488920, `ci-integration`) was a 1 MiB default buffer on a 1,167,305-byte evidence-scoped diff.
 The read is now capacity-bounded (64 MiB) and the WHOLE tree is still graded; `docs-probe` had the same

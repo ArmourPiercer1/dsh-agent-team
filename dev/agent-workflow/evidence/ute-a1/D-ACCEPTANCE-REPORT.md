@@ -2982,6 +2982,13 @@ arms "stay collected and red". Both statements were true of their measurement an
   fail-loud lane. No product file changed; assertions kept (the switch arm now changes the observed
   kind). Current measurement **65/65 on both hosts** across the four client specs.
 
+**Hosted confirmation and one further masked capacity red.** The `ci-integration` re-run at this HEAD
+logs the two EB3 steps GREEN at the measured sizes (`EB3-RUN-MANIFEST pass records=765`,
+`EB3-EVIDENCE-GUARD pass added=10260 verbatim=0`) and then fails in `devex-diag` on a different capacity
+budget (`12883` evidence `.json` > `maxCandidates` 12000). Raised to 16000 with the measurement in
+`scripts/integration-order.mjs`'s header; `E5`/`E7`/`E8` unchanged and green locally
+(`round127/gate-devex-diag.log`). The failure had been masked by the manifest red on every earlier run.
+
 **No capability level moves:** no row becomes PRODUCT-PROVEN (the candidate gate is a VERSION gate and no
 version is frozen). Trail: `RC5-TEST-MATRIX.md` §13, `CANDIDATE-REPORT.md` §8 items 3–5,
 `ADR-ptc-unsupported.md` §9, `round127/`.

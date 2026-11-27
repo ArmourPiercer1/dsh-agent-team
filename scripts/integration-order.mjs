@@ -101,7 +101,17 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 // its own measurement). No assertion is weakened: `E7` still builds `BOUNDS.maxRecords + 1` fixture
 // records and requires BOUND HIT (a partial audit is never a clean report), `E8` still requires a
 // late record to be graded without BOUND HIT, and no committed evidence was deleted or trimmed.
-export const BOUNDS = Object.freeze({ maxRecords: 900, maxCandidates: 12000, maxRecordBytes: 512 * 1024, perClass: 40, outputBytes: 24 * 1024 })
+// maxCandidates raised 12000 → 16000 on 2026-11-27 (Round 127, hosted-CI repair), with this
+// measurement at `03500b51b` on `vnext/a1-cut`: `git ls-files 'dev/agent-workflow/evidence/**'`
+// reports **12883 tracked `.json`** (30 of them over the 512 KiB per-record cap, so NOT GRADED by name
+// and size and never read). The audit therefore hit BOUND HIT at 12000 and REFUSED with no partial
+// report, which is what made the hosted `ci-integration` `devex-diag` step fail (run 45960633416, job
+// 140377491907: "BOUND HIT: 12883 … > maxCandidates 12000"). The raise is a capacity budget with a
+// measurement, exactly as the Rounds 72/100/115 raises above: 16000 leaves ~3117 candidates of
+// headroom, maxRecords stays 900 (the record population is measured separately below by `E5`; the
+// bound is not trimmed to fit the tree), no committed evidence was deleted or trimmed, and `E5`/`E7`/
+// `E8` keep their refusals — a partial audit is still never a clean report.
+export const BOUNDS = Object.freeze({ maxRecords: 900, maxCandidates: 16000, maxRecordBytes: 512 * 1024, perClass: 40, outputBytes: 24 * 1024 })
 const EVIDENCE_ROOT = 'dev/agent-workflow/evidence'
 const SCHEMA = 'u5-run-record/1'
 

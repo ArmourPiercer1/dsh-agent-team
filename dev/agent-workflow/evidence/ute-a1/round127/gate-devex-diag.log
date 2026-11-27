@@ -1,0 +1,15 @@
+=== devex-diag leg (post maxCandidates raise 12000 -> 16000)
+ℹ suites 0
+ℹ pass 44
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15518.712983
+DSH-TEST-DISPATCH mode=run leg=devex-diag suites=2 files=2 exit=0 set=sha256:08ea42463381f08e6797e90afa6c9bc910a7dc6e4b1e3d7891f94bfce22bb3e1
+=== integration-order --self-test
+integration-order --self-test: OK (six classes, fail-closed record checks)
+=== audit (measurement)
+NOT GRADED (30):
+RULE branch-local C2 cannot substitute for merged-head C2: 639 record(s) do not bind the candidate; 0 do.
+LIMIT read-only evidence binding audit of the run records COMMITTED at 03500b51b754 (git ls-tree; untracked and uncommitted files are not read): no test run, no Host boot, no verdict on whether any C2 PASSED its own lanes

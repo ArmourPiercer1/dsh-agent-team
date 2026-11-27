@@ -741,6 +741,17 @@ The two sibling specs (`team-creation-panel-refresh`, `team-creation-handoff`) c
 ids and are aligned in the same change (they build no persona-fact assertion). No product file changed,
 no assertion was dropped, and the arms are collected and green on `TEAM_TEST_HOST=legacy|next`.
 
+**Hosted re-run at the round's HEAD: the advertised red is gone, and it exposed a SECOND capacity red
+that was previously masked.** `ci-integration` run `45960633416` (job `140377491907`) now logs
+`EB3-RUN-MANIFEST pass records=765 …` and `EB3-EVIDENCE-GUARD pass added=10260 … verbatim=0` — the
+`ENOBUFS` refusal is fixed at the measured size. The leg then failed in `devex-diag`: `BOUND HIT: 12883
+committed .json under dev/agent-workflow/evidence > maxCandidates 12000 — REFUSED`. The same doctrine as
+the buffer fix (a capacity budget, never an assertion): measured 12,883 tracked `.json` (30 over the
+512 KiB per-record cap, NOT GRADED) and raised `scripts/integration-order.mjs` `maxCandidates`
+12000 → 16000 with the measurement in its header; `E5`/`E7`/`E8` keep their refusals and the local leg is
+green (`round127/gate-devex-diag.log`). This red had been MASKED by the manifest failure on every
+earlier run — which is exactly why "the manifest is green" must not be read as "the layer is green".
+
 **What does NOT move:** no row becomes PRODUCT-PROVEN (the candidate gate is a VERSION gate, no version
 frozen); the 40 rc.2-only Vite suites of §11.7 are untouched; no test file was added or removed, so the
 catalog population is unchanged.
