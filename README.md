@@ -165,6 +165,11 @@ Details live in the frozen Detailed Architecture doc (`docs/plans/finished/DSH_A
   `docs/INSTALL.md` §2), so
   `pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team`
   installs and registers in ONE command with **no `allowBuilds` whitelist**.
+  **Trial candidate (2026-11-27, round 128):** the owner trial tag installs with
+  `pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team#v0.3.0-trial.1`;
+  it is a TRIAL, not a release — the step-by-step trial (isolated `DSH_HOME`, governed
+  Leader+Worker+Officer blueprint, durable artifacts, rollback, the `:3080` safety rule) is
+  `docs/TRIAL-GUIDE.md`.
   Two disclosed windows in this claim's history, each closed at a named commit:
   commits ≤ `e832d73` need the one-time `allowBuilds` key (INSTALL.md §6
   troubleshooting); and the **RED-A window** above — inside it the *runtime

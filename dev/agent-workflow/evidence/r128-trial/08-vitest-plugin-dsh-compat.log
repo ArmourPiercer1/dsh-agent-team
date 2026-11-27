@@ -1,0 +1,13 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut
+
+stdout | packages/testkit/test/plugin-dsh-compat.test.ts
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts (14 tests) 218ms
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  17:31:08
+   Duration  414ms (transform 123ms, setup 74ms, import 31ms, tests 218ms, environment 0ms)
+

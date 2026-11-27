@@ -11665,3 +11665,62 @@ next dispatch belong to the next round. Evidence `ute-a1/round125/hosted/`.
 
 **Not done / not claimed.** No capability row moves; nothing PRODUCT-PROVEN; the Required `version-gate`
 context is NOT green (no receipt); PR #822 stays DRAFT; no merge; `:3080` untouched; `CORE PATCH BUDGET = 0`.
+
+---
+
+**Round 128 — 2026-11-27 — TRIAL CANDIDATE: an installable, rollback-able trial tag split from release
+semantics.** The owner asked for something they can *install and try* without waiting for the version freeze.
+This round delivers `v0.3.0-trial.1` (annotated, on the round's documentation commit), installable as
+`pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team#v0.3.0-trial.1`, plus
+`docs/TRIAL-GUIDE.md` and `docs/trial/` (v4 Leader+Worker+Officer blueprint + profile-layer installer). Owner
+ruling recorded in `ute-a1/OWNER-DECISIONS.md` (round 128): a trial tag may be published/installed/rolled back
+without the freeze, but `PRODUCT-PROVEN` is untouched by it and the release protection rule (frozen candidate
+SHA + version gate Required and green + verified receipt) stands unchanged. `CANDIDATE-REPORT.md` states the
+same split.
+
+**The manifest change (the reason rc.5 installs).** `version` = `0.3.0-trial.1`; `engines.dsh` =
+`0.2.0-rc.2 || 0.2.2-rc.5`; all 18 `@deepseek-ai/dsh*` peers carry that BYTE-IDENTICAL enumeration (the only
+two hosts this branch has MEASURED). No comparator, no wildcard, no `allow-version` exemption, no peer left on
+an exact pin. The 18 exact `0.2.0-rc.2` pins moved from `peerDependencies` to `devDependencies` — they are the
+checkout's build/test host selection, not a compatibility claim; the lock still resolves all 18 to `0.2.0-rc.2`
+(0 occurrences of `0.2.2-rc.5`). `@deepseek-ai/dsh-web-search-exa` remains the only `@deepseek-ai/*` regular
+dependency (host-absent, exact pin, PD-37 intact). Truth table against the REAL evaluators of both hosts
+(`003`): shipped ACCEPTs exactly rc.2 and rc.5 on both evaluators, REFUSEs 0.1.7-rc.1 / 0.2.0 /
+0.2.3-alpha.2 with `exempted=false`; the exact-pin control accepts only rc.2 — the relaxation is load-bearing.
+`check-install-manifest` now requires exact-or-enumeration on the peer surface, demands `engines.dsh` enumerate
+the SAME set, and (fixed this round) enforces peer byte-identity **unconditionally** — the first version only
+ran it when `engines.dsh` was absent, which a negative control (`e-peer-drift`) caught.
+
+**Measured in isolation** (`dev/agent-workflow/evidence/r128-trial/`, `DSH_HOME=.artifacts/trial-home`, rc.5
+host 0.2.2-rc.5, port 3180, never `:3080`, never `~/.dsh`): local-spec install exit 0 → profile dep +
+`dsh.profile.bundles` + `--dump-config` both rows + profile `node_modules/@deepseek-ai` = only the web-search
+dep; pack 1976 files with every required install-face target and 0 missing `exports`; boot smoke (ungoverned)
+and governed-profile boot (v4 blueprint served by `catalog.list`) each SIGTERM→exit 0 with the process gone;
+then the tag install after wiping the profile (see the tag-phase logs). Negative control on the relaxed
+checker: six mutated manifests (comparator peer, engine comparator, engine subset, engine extra, peer drift,
+no-engine) — five are named refusals, and "no-engine" is legal by design (peers alone then decide and still
+enumerate exactly two hosts).
+
+**Gates (this tree).** `dispatch-tests --leg ute-vnext-a1 --run` 268 tests / 267 pass / 1 skip / exit 0;
+`test-catalog --max-uncollected 41 --max-excluded 7` findings=0 (790 tests, 38 uncollected, 14 excluded);
+`ute-cut-closure --check` pass; `ute-p0-assets --check` pass; `docs-sync --check` 194 docs findings=0;
+`place-dist-glue` 36 byte-identical; `eb3-ci-required` pass workflows=11; bound vitest
+`plugin-dsh-compat` 14/14; UTE G1 argv 89/89; `eb3-run-manifest` pass records=765 findings=0;
+`ci-pr-gate --full --census-captures 2` **PASS 10/10** (`refused=0 refusedlegs=none`), census twice with
+identical identity sets. `check-install-manifest` stays at **11 issues, base-equal** (same 11 against the
+pre-change manifest; all computed-specifier rejections in committed dist; lock leg PASS) — reported red, not
+claimed green.
+
+**Disclosed, not hidden.** (1) A helper script defaulted to `${DSH_HOME:-…}` and the tool environment exports
+`DSH_HOME=$HOME/.dsh`: one boot attempt therefore targeted the stable home and the host aborted at
+`prepareProfile` with `EROFS … /home/armourpiercer/.dsh/profiles/web/cordis.yml`. It READ the stable home and
+its first WRITE was refused by the read-only mount; no file changed, no process stayed up, `:3080` was never
+contacted. The script now refuses any home under `$HOME/.dsh` before starting the host
+(`r128-trial/README.md` disclosure 2). (2) The `ci-pr-gate` install leg needed `CI=true` + the tree's own
+writable pnpm store (read-only `HOME` here); the two failed attempts are kept as `10a`/`10b`, and the green
+verdict is `pass=10 fail=0 skip=0`. (3) Not measured: a full Member turn with a real model credential, MCP and
+subagent end-to-end, macOS/Windows governed tier — the trial guide says so to the owner.
+
+**Not done / not claimed.** No capability row moves; nothing is PRODUCT-PROVEN; no release/tag of the release
+line; PR #822 stays DRAFT; no merge; `CORE PATCH BUDGET = 0`; `:3080` and `~/.dsh` untouched; no existing tag
+moved.

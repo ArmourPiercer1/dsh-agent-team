@@ -332,3 +332,34 @@ approval fact on `host.service` IS adjudication, then wire the PA approval-fact 
 - No row moves to PRODUCT-PROVEN on the strength of these documents; that needs the **version freeze**
   (`VERSION-GATE.md` §6) — a frozen candidate SHA, the version gate Required and green there, and a verified
   receipt — plus a judge that actually asserts the row.
+
+---
+
+## ROUND 128 (2026-11-27) — TRIAL ≠ RELEASE: the trial candidate is split from release protection
+
+**The ruling.** The owner asked for an installable trial candidate while the release path stays blocked.
+This round fixes the split as an owner ruling, not a judgement call by whoever is cutting the next tag:
+
+1. A **trial tag** (`v0.3.0-trial.1`, and its successors `vX.Y.Z-trial.N`) may be published, installed,
+   tried and rolled back **without** the version freeze. Its obligation is narrower and concrete: it must
+   install from the tag, boot, expose the documented surfaces, and roll back — each measured in an isolated
+   `DSH_HOME`, never on `:3080` / `~/.dsh`.
+2. **`PRODUCT-PROVEN` is untouched by a trial.** A trial run, a green trial checklist, or a working trial
+   install never implies it, and trial evidence may not be quoted as candidate-acceptance evidence.
+3. **The release protection rule stands unchanged**: a release claim still requires a frozen candidate SHA,
+   the version gate **Required and green at that SHA**, and a verified `version-gate-receipt.json`
+   (`VERSION-GATE.md` §6). The trial does not shorten, pre-pay or partially satisfy that.
+4. **The trial is truthful about compatibility.** Its manifest enumerates the hosts it has measured
+   (`0.2.0-rc.2`, `0.2.2-rc.5`) in `engines.dsh` and in every `@deepseek-ai/dsh*` peer. No
+   `allow-version` exemption, no comparator range that would admit an unmeasured runtime, no
+   "works with any 0.2.x" prose.
+5. **The trial keeps the hard red lines**: no build-at-install (prebuilt artifacts stay committed), no
+   `~/.dsh` / `:3080` contact, no moving existing tags, no history rewrite, PR #822 stays DRAFT, and a
+   trial that cannot install is reported as `CORE_SEAM_BLOCKER` rather than papered over by loosening the
+   manifest.
+
+**Where this is operationalised**: `docs/TRIAL-GUIDE.md` (owner-facing steps, governed blueprint, durable
+artifact map, rollback, `:3080` statement) + `docs/trial/` (the v4 blueprint template and the profile-layer
+installer). **What the owner is expected to decide after trying it**: whether the trial's visible surface is
+what they want to hand to a second person, and which of the remaining known limitations (realmless refusal,
+search-face depth, review routing) matters enough to become the next product increment.

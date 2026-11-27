@@ -21,7 +21,12 @@
 //      kind matching site class (value -> exact dependency or host peer; type-only ->
 //      peer). HOST = every exports entry EXCEPT the DSH browser entry `./client`,
 //      matched as an exact key (no name guessing).
-//   2. every @deepseek-ai/* peer version equals the declared @deepseek-ai/dsh version.
+//   2. every @deepseek-ai/* peer requirement is BYTE-IDENTICAL to the declared
+//      @deepseek-ai/dsh requirement, and that requirement is either one exact semver
+//      or an explicit `||` enumeration of exact semvers (the audited host set) —
+//      never a comparator/wildcard range, so no host is admitted without being
+//      named. When `engines.dsh` is present it must enumerate the SAME exact set,
+//      so the two compatibility surfaces cannot disagree.
 //   3. browser module table members may appear only in the `./client` graph and never
 //      as Node dependencies; the same file reached via both `./client` and a host entry
 //      is scanned in both graphs (dedup is (file, graph)).
@@ -50,6 +55,20 @@ try { ts = require2('typescript'); } catch {
   process.exit(1);
 }
 const SEMVER_EXACT = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
+/** Parse an exact host requirement: one exact semver, or `A || B` exact alternatives.
+ *  A comparator/wildcard form returns null — this repo names every admitted host, so an
+ *  unbounded range can never paper over an unmeasured runtime. */
+function exactAlternatives(spec) {
+  if (typeof spec !== 'string') return null;
+  const parts = spec.split('||').map((s) => s.trim()).filter((s) => s !== '');
+  if (parts.length === 0 || !parts.every((s) => SEMVER_EXACT.test(s))) return null;
+  return new Set(parts);
+}
+/** The base version of a lock importer entry (`0.2.0-rc.2(peer@ctx)` → `0.2.0-rc.2`). */
+function baseVersion(version) {
+  const at = version.indexOf('(');
+  return at === -1 ? version : version.slice(0, at);
+}
 const NODE_BUILTINS = new Set([
   'assert', 'async_hooks', 'buffer', 'child_process', 'crypto', 'dns', 'events', 'fs',
   'http', 'https', 'module', 'net', 'os', 'path', 'process', 'stream', 'string_decoder',
@@ -89,18 +108,34 @@ function classify(spec, where, kind, graph) {
     return;
   }
   if (inPeers) {
-    if (!SEMVER_EXACT.test(peers[name])) errors.push(`peerDependency version must be an exact semver: ${name}@${peers[name]} (${where})`);
+    if (exactAlternatives(peers[name]) === null) errors.push(`peerDependency requirement must be an exact semver or a '||' enumeration of exact semvers (no comparator/wildcard ranges): ${name}@${peers[name]} (${where})`);
     return;
   }
   if (!undeclared.has(name)) undeclared.set(name, `${kind}/${graph} first: ${where}`);
 }
 
 const dshPeer = peers['@deepseek-ai/dsh'];
+const dshPeerHosts = exactAlternatives(dshPeer);
 if (!dshPeer) errors.push('peerDependencies missing @deepseek-ai/dsh (host identity anchor)');
-else if (!SEMVER_EXACT.test(dshPeer)) errors.push(`@deepseek-ai/dsh peer must be an exact semver: ${dshPeer}`);
-else for (const [name, version] of Object.entries(peers)) {
-  if (name !== '@deepseek-ai/dsh' && name.startsWith('@deepseek-ai/') && version !== dshPeer) {
-    errors.push(`@deepseek-ai/* peer must equal the declared @deepseek-ai/dsh peer version (${dshPeer}): ${name}@${version}`);
+else if (dshPeerHosts === null) errors.push(`@deepseek-ai/dsh peer requirement must be an exact semver or a '||' enumeration of exact semvers: ${dshPeer}`);
+else {
+  if (typeof pkg.engines?.dsh !== 'undefined') {
+    const engineHosts = exactAlternatives(pkg.engines.dsh);
+    if (engineHosts === null) errors.push(`engines.dsh must be an exact semver or a '||' enumeration of exact semvers (no comparator/wildcard ranges): ${pkg.engines.dsh}`);
+    else {
+      const missing = [...dshPeerHosts].filter((v) => !engineHosts.has(v));
+      const extra = [...engineHosts].filter((v) => !dshPeerHosts.has(v));
+      if (missing.length || extra.length) errors.push(`engines.dsh and the @deepseek-ai/dsh peer must enumerate the same host set (agreeing surfaces, one compatibility claim): engines=${JSON.stringify([...engineHosts])} peers=${JSON.stringify([...dshPeerHosts])} missing-from-engines=${JSON.stringify(missing)} extra-in-engines=${JSON.stringify(extra)}`);
+    }
+  }
+  // Unconditional: the 18 @deepseek-ai/* peers must carry BYTE-IDENTICAL requirements
+  // whether or not engines.dsh exists — one compatibility claim, never two surfaces
+  // that can drift apart (a drifted peer would let the pre-engines evaluator admit a
+  // host the engines surface refuses).
+  for (const [name, version] of Object.entries(peers)) {
+    if (name !== '@deepseek-ai/dsh' && name.startsWith('@deepseek-ai/') && version !== dshPeer) {
+      errors.push(`@deepseek-ai/* peer must be byte-identical to the declared @deepseek-ai/dsh peer requirement (${dshPeer}): ${name}@${version}`);
+    }
   }
 }
 
@@ -369,8 +404,18 @@ function checkLock(struct, label) {
     if (!imp) { found.push(`${label}: manifest ${d.kind} ${name}@${d.spec} missing from root importer block`); continue; }
     const impSpec = typeof imp === 'object' && imp !== null ? String(imp.specifier ?? '') : '';
     const impVer = typeof imp === 'object' && imp !== null ? String(imp.version ?? '') : String(imp);
-    if (impSpec !== d.spec) found.push(`${label}: ${name} specifier mismatch manifest=${d.spec} lock=${impSpec}`);
-    if (impVer !== d.spec && !impVer.startsWith(`${d.spec}(`)) found.push(`${label}: ${name} version is neither the manifest exact version nor its peer-context form: lock=${impVer.slice(0, 70)}`);
+    if (impSpec !== d.spec) {
+      // A peer requirement that names several host versions is SATISFIED by an exact
+      // pinned devDependency at any named version: the checkout builds/tests against
+      // one host while the declaration admits the audited set.
+      const hosts = d.kind === 'peer' ? exactAlternatives(d.spec) : null;
+      if (!(hosts !== null && hosts.has(impSpec))) found.push(`${label}: ${name} specifier mismatch manifest=${d.spec} lock=${impSpec}`);
+    }
+    const base = baseVersion(impVer);
+    if (impVer !== d.spec && !impVer.startsWith(`${d.spec}(`) && base !== d.spec) {
+      const hosts = exactAlternatives(d.spec);
+      if (!(hosts !== null && hosts.has(base))) found.push(`${label}: ${name} version is neither the manifest exact version nor a named host alternative nor its peer-context form: lock=${impVer.slice(0, 70)}`);
+    }
   }
   const dangling = [];
   for (const [name, imp] of Object.entries(deps)) {

@@ -13,6 +13,31 @@ change is a CONTRACT change, not a measurement**: the owner ruled that the Candi
 `PRODUCT-PROVEN` changed — §1.1 states it, `VERSION-GATE.md` is the operational procedure, and every document
 that defines or consumes the term now points at that one definition.
 
+**Round 128, 2026-11-27 — TRIAL CANDIDATE (not a release).** The owner asked for something they can
+*install and try* without waiting for the release freeze. This branch therefore carries an annotated trial tag
+
+```
+v0.3.0-trial.1
+```
+
+installable as `pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team#v0.3.0-trial.1`.
+The trial is **explicitly split from release semantics** (owner ruling recorded in `OWNER-DECISIONS.md`,
+round 128; procedure in `docs/TRIAL-GUIDE.md`):
+
+- **What the trial is measured to do** (evidence `dev/agent-workflow/evidence/r128-trial/`, isolated
+  `DSH_HOME`, rc.5 host 0.2.2-rc.5): install from the tag with no build-at-install; profile dependency +
+  `dsh.profile.bundles` registration; `--dump-config` shows both bundle rows; host boots on a non-3080
+  port with the two bundled skills registered and `/team-remote` mounted; `SIGTERM` exits 0; the governed
+  profile layer + v4 Leader/Worker/Officer blueprint boots and `catalog.list` serves `trial-team` (v4);
+  `plugin remove` rolls the profile back to the prior bundle set and the host still boots.
+- **What the trial is NOT**: not `PRODUCT-PROVEN`, not a release candidate, no grade / `V@B` / matrix
+  movement. None of the trial's runs is candidate-acceptance evidence. The **release protection rule is
+  unchanged**: a release claim still needs a frozen candidate SHA, the version gate Required and green at
+  that SHA, and a verified `version-gate-receipt.json` (§1.1 + `VERSION-GATE.md`).
+- **Compatibility claim of the trial**: `engines.dsh` and all 18 `@deepseek-ai/dsh*` peers enumerate exactly
+  `0.2.0-rc.2 || 0.2.2-rc.5` — the two hosts this branch has actually measured. No `allow-version` escape
+  hatch and no fabricated range: an unmeasured host is refused, not admitted.
+
 ---
 
 ## 1. Identity
