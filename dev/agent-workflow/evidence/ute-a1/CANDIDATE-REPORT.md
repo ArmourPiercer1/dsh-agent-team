@@ -942,6 +942,7 @@ the settlement comment carries the final SHA.
 | `eb3-run-manifest --new-since a19d1df0…` | `pass records=765 strict=393 incomplete=11 findings=0` |
 | `eb3-evidence-guard --new-since a19d1df0…` | `pass added=10253 bound=1048576 exempted=6 verbatim=0 findings=0`; grandfather cutoff `8c5fcb505` |
 
+| `tinf-instruments` (third masked red) | four stale pins, all re-recorded with measurements: census population **599 → 601** (two collected suites added by rounds 122/123), dispatched union **78 → 80** (`tests/next-host/host-resolution-consistency.test.mjs` round 118; `scripts/version-gate-verify.test.mjs` round 117); `dev/ci/census-population-baseline.json` regenerated with `--accept-population-change` (growth only, no row removed); leg **exit 0 / 816 tests / 810 pass / 0 fail / 6 skip** (`round127/gate-tinf-census-parity.log`) |
 | `devex-diag` (hosted re-run exposed it) | `integration-order` BOUND HIT at 12,883 tracked evidence `.json` > `maxCandidates` 12000; raised to **16000 with that measurement** (never a lowered assertion), local leg **exit 0** (`round127/gate-devex-diag.log`) |
 
 **The hosted red this round answers:** `EB3-RUN-MANIFEST refused could-not-grade: spawnSync git ENOBUFS`

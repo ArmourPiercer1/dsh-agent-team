@@ -5,7 +5,7 @@
  * thing the milestone exists to make impossible — producing a plan that is not the census population.
  * So the laws pinned here are:
  *   - the root set is DERIVED from the root `vitest.config.ts` through the collection authority
- *     (`test-catalog.mjs`) and named with M3's `rootOf`, and it equals the 11 roots / 599 files this
+ *     (`test-catalog.mjs`) and named with M3's `rootOf`, and it equals the 11 roots / 601 files this
  *     population reports after the A0/A1 cut (a PIN on the population: a new census root reds this
  *     test on purpose, the same way `--max-uncollected 41` refuses growth). Round 80 removed the
  *     `packages/tools/a5p5-tools` root: every file under it was retired by the cut, so the root has
@@ -106,9 +106,15 @@ test('deriveRoots: the root set is the 11 roots the current census population re
     'packages/testkit',
     'packages/tools',
   ])
-  // 599 = the population the A0/A1 cut leaves: the retired families' files are gone, so the
+  // 601 = the population the A0/A1 cut leaves: the retired families' files are gone, so the
   // derivation, the population baseline and the census plan must all name the same count.
-  assert.equal(derived.file_count, 599)
+  // 599 -> 601 on 2026-11-27 (round 127): the pin was stale, not wrong when written — rounds 122/123
+  // added two collected suites under `packages/*/test/**/*.test.ts`
+  // (`packages/runtime/test/vnext-tool-dispatch-shape.test.ts` @ 507623eef and
+  // `packages/tools/test/p6t6-tool-route-errors.test.ts` @ fe09d0dba) and no round re-recorded this
+  // checkpoint, so the hosted `tinf-instruments` leg had been red behind the earlier EB3 failures.
+  // The count is still DERIVED (nothing here carries a list); the review act is naming the two files.
+  assert.equal(derived.file_count, 601)
   assert.match(derived.catalog_digest, /^sha256:[0-9a-f]{64}$/)
 })
 
@@ -688,7 +694,7 @@ test('cli: --self-test stays green', () => {
 test('F-02: each plan root carries a sorted file list, its count and a recomputable digest', () => {
   const roots = deriveRoots()
   assert.equal(roots.ok, true)
-  assert.equal(roots.file_count, 599)
+  assert.equal(roots.file_count, 601)
   for (const r of roots.roots) {
     assert.equal(r.files_expected.length, r.file_count)
     assert.equal(r.files, r.file_count)
@@ -732,11 +738,11 @@ test('F-02 CLI: --write-population-baseline writes a reviewed artifact and a tok
     assert.match(noReason.stderr, /POPULATION_BASELINE_REASON_MISSING/)
     const r = cli(['--write-population-baseline', '--accept-population-change', 'test: population unchanged; record review metadata', '--accepted-by', 'test-owner', '--out', out])
     assert.equal(r.status, 0, r.out)
-    assert.match(r.stdout, /DSH-CENSUS-POPULATION-BASELINE written=ok roots=11 files=599/)
+    assert.match(r.stdout, /DSH-CENSUS-POPULATION-BASELINE written=ok roots=11 files=601/)
     const body = JSON.parse(readFileSync(out, 'utf8'))
     assert.equal(body.schema, 'census-population-baseline/1')
     assert.equal(body.rows.length, 11)
-    assert.equal(body.file_count, 599)
+    assert.equal(body.file_count, 601)
     assert.equal(body.accepted_reason, 'test: population unchanged; record review metadata')
     assert.equal(body.accepted_by, 'test-owner')
     assert.match(body.generated_at, /^\d{4}-\d{2}-\d{2}T/)

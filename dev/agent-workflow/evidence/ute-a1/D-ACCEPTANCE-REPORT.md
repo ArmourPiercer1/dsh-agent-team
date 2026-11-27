@@ -2989,6 +2989,14 @@ budget (`12883` evidence `.json` > `maxCandidates` 12000). Raised to 16000 with 
 `scripts/integration-order.mjs`'s header; `E5`/`E7`/`E8` unchanged and green locally
 (`round127/gate-devex-diag.log`). The failure had been masked by the manifest red on every earlier run.
 
+**A third masked red, same class.** The `tinf-instruments` step behind devex was red on four stale
+checkpoints: the census population pin (599 → 601: two collected suites added by rounds 122/123), the two
+`F-02` arms that share that pin, and the dispatch-parity union digest (78 → 80: one suite added to the
+`ute-vnext-a1` step in round 118, one to a non-required leg in round 117). Re-recorded with the
+measurements — derivation still derived, population baseline regenerated as GROWTH ONLY
+(`dev/ci/census-population-baseline.json`, no row removed), parity evidence re-recorded with a dated
+paragraph and unchanged old-side rows — and the leg is green: 816 tests / 810 pass / 0 fail / 6 skip.
+
 **No capability level moves:** no row becomes PRODUCT-PROVEN (the candidate gate is a VERSION gate and no
 version is frozen). Trail: `RC5-TEST-MATRIX.md` §13, `CANDIDATE-REPORT.md` §8 items 3–5,
 `ADR-ptc-unsupported.md` §9, `round127/`.

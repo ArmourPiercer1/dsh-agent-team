@@ -366,6 +366,13 @@ test('dispatch: the committed parity evidence still describes the resolved set',
     'scripts/dispatch-tests.test.mjs',
     'scripts/eb3-ci-required.test.mjs',
     'scripts/tinf-trust-closeout.test.mjs',
+    // ROUND 127 (2026-11-27): the same UTE step gained ONE more suite in round 118 (ce34b974c) —
+    // `tests/next-host/host-resolution-consistency.test.mjs` (it needs BOTH the rc.2 install and the
+    // provisioned rc.5 tree, so it rides the census job). The addition was never re-recorded, so this
+    // pin and the parity evidence were stale behind the earlier hosted EB3 failure; both are
+    // regenerated together and the union digest moved 78 -> 80 (`scripts/version-gate-verify.test.mjs`
+    // is the other addition, a non-required leg whose workflow does not exist at the parity base).
+    'tests/next-host/host-resolution-consistency.test.mjs',
     // B2 (2026-11-16): EIGHT of the ten host-free `tests/s2-authority/` suites ride the
     // SAME tinf-instruments leg (explicit `suites[]`), for the SAME reason as M7-A: a new
     // dispatch step has no old-side `node --test` argv and would be a permanent UNCONVERTED

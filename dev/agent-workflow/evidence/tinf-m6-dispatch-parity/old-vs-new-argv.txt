@@ -108,7 +108,7 @@ with an empty old side, and a step that is not declared there is still a problem
 moves from 70 to 77 files; nothing was missing and no suite was dropped.
 dispatch-parity mode=inspect old=e5bf05670 new=worktree workflows=.github/workflows/census-runtime.yml,.github/workflows/ci-integration.yml,.github/workflows/pr-gate.yml
   .github/workflows/census-runtime.yml
-    UTE vNext A1 — realm mount + real FS slice + admission (pinned host, absence is RED): old=0 new=7 missing=none added=packages/runtime/test/vnext-admission.test.mjs,packages/runtime/test/vnext-b-probe-ladder.test.mjs,packages/runtime/test/vnext-fs-slice.test.mjs,packages/runtime/test/vnext-os-probe.test.mjs,packages/runtime/test/vnext-realm-lane.test.mjs,packages/runtime/test/vnext-template-binding.test.mjs,packages/runtime/test/vnext-work-turn-reader.test.mjs
+    UTE vNext A1 — realm mount + real FS slice + admission (pinned host, absence is RED): old=0 new=8 missing=none added=packages/runtime/test/vnext-admission.test.mjs,packages/runtime/test/vnext-b-probe-ladder.test.mjs,packages/runtime/test/vnext-fs-slice.test.mjs,packages/runtime/test/vnext-os-probe.test.mjs,packages/runtime/test/vnext-realm-lane.test.mjs,packages/runtime/test/vnext-template-binding.test.mjs,packages/runtime/test/vnext-work-turn-reader.test.mjs,tests/next-host/host-resolution-consistency.test.mjs
       new packages/runtime/test/vnext-admission.test.mjs
       new packages/runtime/test/vnext-b-probe-ladder.test.mjs
       new packages/runtime/test/vnext-fs-slice.test.mjs
@@ -231,7 +231,22 @@ dispatch-parity mode=inspect old=e5bf05670 new=worktree workflows=.github/workfl
     Unit tests (node --test, scripts convention): old=1 new=1 missing=none added=none
       old scripts/pr-settlement-gate.test.mjs
       new scripts/pr-settlement-gate.test.mjs
-  union old=25 new=78 set=sha256:b5b992944b59753bf4afb1f4ddff0e872bd1e5bf4c520b7bd25bd49caae92da2
+  REGENERATED 2026-11-27 (round 127). The union grew 78 -> 80 with NO removal, and both additions are
+  leg `suites[]` declarations, not edits to any step's argv:
+    - `tests/next-host/host-resolution-consistency.test.mjs` (round 118, ce34b974c) joined the
+      `ute-vnext-a1` step above: it needs BOTH the repo's rc.2 install and the provisioned rc.5 tree,
+      so it rides the census job. The step's row is regenerated here (old=0, new=7 -> 8).
+    - `scripts/version-gate-verify.test.mjs` (round 117, 0b96a1fa8) joined the non-required
+      `version-gate-verify-unit` leg in `.github/workflows/candidate-acceptance.yml`. That workflow does
+      not exist at the parity base, so this suite has no row here by construction; it is visible only in
+      the union, exactly like the other post-base declarations.
+  Consequence for a reader: the old-side argv and every `missing=`/`problems=` verdict above are
+  unchanged (nothing was removed or weakened); `union new` and its digest are re-recorded from the
+  CURRENT manifest (`dispatch-tests.mjs --parity` cannot re-derive the row set because the base predates
+  `candidate-acceptance.yml` and refuses with PARITY_OLD_UNREADABLE — the digest itself is the
+  mechanical check, and `scripts/test-catalog.test.mjs` pins it). This staleness was introduced by
+  rounds 117/118 and had been masked on the hosted run by the earlier EB3-RUN-MANIFEST failure.
+  union old=25 new=80 set=sha256:28989ca1091a0807b7c8b11557d4883a5c1ed48a56d49fad62e5650850f8ec45
 DISPATCH-PARITY mode=inspect DIFFERS steps=19 old_files=25 new_files=78 problems=0
 
 EXIT CODE

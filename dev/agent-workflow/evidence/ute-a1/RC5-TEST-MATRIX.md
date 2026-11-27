@@ -752,6 +752,24 @@ the buffer fix (a capacity budget, never an assertion): measured 12,883 tracked 
 green (`round127/gate-devex-diag.log`). This red had been MASKED by the manifest failure on every
 earlier run — which is exactly why "the manifest is green" must not be read as "the layer is green".
 
+**A THIRD masked red: two census/population pins had been stale since rounds 117/118/122/123.**
+Behind the devex bound sat the `tinf-instruments` leg, which was red on four arms, all stale
+checkpoints, none caused by this round:
+`deriveRoots … 601 !== 599`, the two `F-02` arms (same 599), and
+`dispatch: the committed parity evidence still describes the resolved set` (union digest
+`28989ca1… !== b5b99294…`). Measured: the census population grew **599 → 601** because rounds 122/123
+added two collected suites (`packages/runtime/test/vnext-tool-dispatch-shape.test.ts` @ `507623eef`,
+`packages/tools/test/p6t6-tool-route-errors.test.ts` @ `fe09d0dba`); the dispatched-set union grew
+**78 → 80** because `tests/next-host/host-resolution-consistency.test.mjs` joined the `ute-vnext-a1`
+step (round 118) and `scripts/version-gate-verify.test.mjs` joined a non-required leg (round 117).
+Every fix is a re-record with the measurement, never a loosened check: the derivation stays DERIVED
+(no list in the test), `dev/ci/census-population-baseline.json` is regenerated with
+`--accept-population-change` (growth only, no row removed), the parity union digest is re-recorded with
+a dated paragraph naming both additions and stating that old-side argv/`missing=`/`problems=` are
+unchanged, and `scripts/test-catalog.test.mjs`'s pinned `added` array gains the one step-side suite.
+Measured after: `tinf-instruments` **exit 0 / 816 tests / 810 pass / 0 fail / 6 skip**
+(`round127/gate-tinf-census-parity.log`).
+
 **What does NOT move:** no row becomes PRODUCT-PROVEN (the candidate gate is a VERSION gate, no version
-frozen); the 40 rc.2-only Vite suites of §11.7 are untouched; no test file was added or removed, so the
-catalog population is unchanged.
+frozen); the 40 rc.2-only Vite suites of §11.7 are untouched; no test file was added or removed by this
+round, so the catalog population is unchanged by it (the 599 → 601 growth predates the round).
