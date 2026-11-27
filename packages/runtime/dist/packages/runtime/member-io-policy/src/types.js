@@ -16,6 +16,8 @@
  *
  * @module @dsh-agent-team/runtime/member-io-policy/types
  */
+/** The v4 execution boundaries (the declared executor), carried through unchanged. */
+export const TOOL_EXECUTION_BOUNDARIES = ['trusted-host', 'confined-subprocess', 'delegated-remote'];
 /** Closed refusal vocabulary (no string-matched error messages by consumers). */
 export const POLICY_REFUSAL_CODES = [
     'MEMBER_IDENTITY_UNTRUSTED',

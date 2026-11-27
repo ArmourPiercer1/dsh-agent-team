@@ -39,7 +39,7 @@
  */
 import type { Context, Fiber, Plugin } from '@deepseek-ai/cordis';
 import type { CompileResult, EffectiveIoPolicy, MemberPolicy, TrustedMemberIdentity } from '../../member-io-policy/src/types.js';
-import type { FsProviderConstructor } from './fs.js';
+import type { ApprovedAskProviderAuthority, FsProviderConstructor } from './fs.js';
 import type { GuardConsultObserver } from './guard-observability.js';
 import { type MemberServiceSpec, type ToolBindingRealm } from './install.js';
 import type { ConfinedSubprocessRealmSpec, ConfinedTerminalRealmSpec, ConfinedWebRealmSpec } from './install.js';
@@ -54,7 +54,19 @@ export interface A5sfRealmMember {
 export interface A5sfRealmBinding {
     readonly identity: TrustedMemberIdentity;
     readonly toolBindingIdentity: string;
+    /** The bare tool name this binding narrows (additive, C 2026-11-21; absent on legacy bindings). */
+    readonly toolName?: string;
     readonly effective: EffectiveIoPolicy;
+    /**
+     * The v4 tool-level authorization and execution block, carried through from the SAME declaration
+     * the lanes came from. They are EXECUTION authority (may this tool start a process, on which
+     * executor), never an I/O lane; a process-class admission consults them, the fs/net lanes do not.
+     */
+    readonly authorization?: 'allow' | 'ask' | 'deny';
+    readonly execution?: {
+        readonly implementationOrigin: string;
+        readonly executionBoundary: 'trusted-host' | 'confined-subprocess' | 'delegated-remote';
+    };
     readonly config?: Record<string, unknown>;
 }
 /**
@@ -408,6 +420,14 @@ export interface MountA5sfRealmInput {
      * by the inherited, legacy-generation PTY service.
      */
     readonly terminal?: ConfinedTerminalRealmSpec;
+    /**
+     * R3 PRODUCTION WIRING (round 95). The SAME invocation binder the centre
+     * spends one-shot grants through, handed to every realm guard this mount
+     * builds so a Provider can prove a minted receipt is still live. Omitted =
+     * default-preserving fail-closed asks. It is a liveness reader, NEVER an
+     * allow source: it cannot mint, widen a lane or override `deny`.
+     */
+    readonly approvedAskAuthority?: ApprovedAskProviderAuthority;
 }
 export interface MountedA5sfRealm {
     readonly members: readonly MemberServiceSpec[];

@@ -1,0 +1,21 @@
+{
+ "files": [
+  "packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts",
+  "packages/runtime/test/a3p5-permission-read-wiring.test.ts",
+  "packages/runtime/test/a3p5-permission-splice.test.ts",
+  "packages/runtime/test/a4f1-row-version-not-document-version.test.ts",
+  "packages/runtime/test/a4p6-start-gate-entrances.test.ts",
+  "packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts",
+  "packages/runtime/test/a4p7-live-descendant-authority.test.ts",
+  "packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts",
+  "packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts",
+  "packages/runtime/test/a6-boot-settlement-lanes.test.ts",
+  "packages/runtime/test/a6-root-wiring.test.ts",
+  "packages/runtime/test/bound-blueprint-persona-root.test.ts",
+  "packages/runtime/test/d2-s6-ensure-root-live.test.ts",
+  "packages/runtime/test/f15-mcp-live-loss.test.ts",
+  "packages/runtime/test/t12a-live-bridge.mjs",
+  "packages/runtime/test/team-session-activation-glue.test.ts"
+ ],
+ "missing": []
+}

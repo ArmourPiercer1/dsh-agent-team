@@ -1,0 +1,1 @@
+pid=7 port=3180 dsh_home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/trial-home

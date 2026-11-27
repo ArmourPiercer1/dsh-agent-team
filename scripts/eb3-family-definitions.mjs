@@ -50,6 +50,15 @@
  * `retirement-ledger-unreadable` — fail closed, because an unreadable ledger
  * must not silently license deletion.
  *
+ * THE CUT'S FROZEN SET IS A LICENCE, NOT A SILENCE (Round 72, hosted-CI repair). When a declared
+ * old-path file is missing AND it is in the A0 frozen delete set
+ * (`dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json`), the deletion was performed by the
+ * NAMED cut, whose own instrument (`scripts/ute-cut-closure.mjs`, `ute-p0-assets --check`) grades it
+ * on every PR: the UTE-4 per-family licence is not the authority for that act, so asking it for one
+ * is asking the wrong question. Those files are reported on a `DEF_RETIRED_BY_CUT` line and are NOT
+ * findings. The discharge is narrow by construction: a file that is missing but NOT in the frozen set
+ * keeps the finding, and an unreadable frozen set discharges nothing (fail closed).
+ *
  * WHAT THIS ADDS — THE INVENTORY ARM (UTE-3, 2026-11-20). UTE-4 may only
  * delete a family's old path against an `oldPath.files` declaration, and that
  * declaration is only auditable if the files on it are the family's real
@@ -179,7 +188,9 @@ export function checkRetirementLicences({ files, retirement = {}, root = ROOT })
     if (retirement[key] !== undefined) gateOptions[key] = retirement[key]
   }
 
+  const frozen = frozenDeleteSet({ retirement, root })
   const findings = []
+  const retiredByCut = []
   for (const row of ledger.families) {
     const declared = row?.oldPath?.files
     if (!Array.isArray(declared) || declared.length === 0) continue
@@ -189,6 +200,9 @@ export function checkRetirementLicences({ files, retirement = {}, root = ROOT })
     if (verdict.allowed) continue // retirement is the licensed act: absence is expected
     const gateCodes = [...new Set((verdict.findings ?? []).map((f) => f.code))]
     for (const rel of missing) {
+      // The A0/A1 cut deleted this file on purpose and its own instrument grades that act on every PR;
+      // the UTE-4 per-family licence is not the authority for a cut deletion (see the module doc).
+      if (frozen.has(rel)) { retiredByCut.push({ family: row.family, path: rel }); continue }
       findings.push({
         code: 'DEF_RETIREMENT_UNLICENSED',
         path: rel,
@@ -196,7 +210,32 @@ export function checkRetirementLicences({ files, retirement = {}, root = ROOT })
       })
     }
   }
-  return { findings }
+  return { findings, retiredByCut }
+}
+
+/**
+ * The A0 frozen delete set, read from the cut's own ledger. Empty when the ledger is absent or
+ * unreadable — a discharge that cannot be read discharges nothing (fail closed), which is why this
+ * returns an empty Set rather than throwing: the caller's findings are then exactly what they were.
+ *
+ * @param {{retirement?: object, root?: string}} p
+ * @returns {Set<string>} repo-relative paths the cut froze for deletion
+ */
+function frozenDeleteSet({ retirement = {}, root = ROOT }) {
+  const rel = 'dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json'
+  try {
+    const raw = retirement.frozen !== undefined
+      ? (typeof retirement.frozen === 'string' ? JSON.parse(retirement.frozen) : retirement.frozen)
+      : JSON.parse(readFileSync(join(root, rel), 'utf8'))
+    // The ledger's own law (scripts/ute-cut-closure.mjs#loadFrozen): a module is in the delete set
+    // when its verdict is `delete` or `replace`; the SNAPSHOT is the attestation and wins.
+    return new Set((raw?.modules ?? [])
+      .filter((m) => m?.verdict === 'delete' || m?.verdict === 'replace')
+      .flatMap((m) => (Array.isArray(m?.files) ? m.files : []))
+      .filter((x) => typeof x === 'string'))
+  } catch {
+    return new Set()
+  }
 }
 
 /** Parse a JSON input from an injected map, else from `root`. Throws on absence. */
@@ -297,8 +336,9 @@ export function checkFamilyDefinitions({ files, ledger, retirement = {}, root = 
   }
   // The deletion half of UTE-4: required CI refuses a removed old path unless
   // the retirement gate allows that family's row (RETIREMENT.md §5.1).
-  findings.push(...checkRetirementLicences({ files, retirement, root }).findings)
-  return { findings }
+  const licences = checkRetirementLicences({ files, retirement, root })
+  findings.push(...licences.findings)
+  return { findings, retiredByCut: licences.retiredByCut ?? [] }
 }
 
 function checkExecuteMembers(path, text, findings) {
@@ -341,6 +381,8 @@ export function checkInventoryArm({ root = ROOT, trackedPaths } = {}) {
   return {
     families: result.families.map((f) => f.familyId),
     universe: result.universe,
+    retired: result.retired ?? [],
+    retiredSharedFiles: result.retiredSharedFiles ?? [],
     findings: result.findings.map((f) => ({ code: f.code, path: f.familyId ?? 'dev/agent-workflow/ledgers/ute-family-inventory.json', detail: f.detail })),
   }
 }
@@ -369,11 +411,39 @@ if (invokedDirectly) {
     // argv, same manifest leg — the inventory's refusals are this leg's findings.
     const inventory = checkInventoryArm({ root: ROOT, trackedPaths: defaultTrackedPaths(ROOT) })
     const definitions = checkFamilyDefinitions({ files })
+    // THE A0 SUBJECT DISCHARGE (round 80). A census row is stale because A0 deleted the
+    // family's contribution files. When the same family is booked `retired-by-a0-cut` (with
+    // frozen modules + tracked citations + named successors, validated by ute-cut-closure)
+    // AND every file it booked is absent, the finding is replaced by one disposition naming
+    // the family and its frozen evidence. A path that is NOT covered, or that reappears,
+    // keeps the finding: a resurrection is graded, never retired.
+    const a0Retired = new Map(inventory.retired.map((r) => [r.familyId, r]))
+    const censusLedger = JSON.parse(readFileSync(join(ROOT, CENSUS_LEDGER_REL), 'utf8'))
+    const contributionFamily = new Map()
+    for (const fam of censusLedger.families ?? []) {
+      for (const rel of fam.contributionPaths ?? []) contributionFamily.set(rel, fam.familyId)
+      for (const rel of fam.contribution ?? []) contributionFamily.set(rel, fam.familyId)
+    }
+    const retiredA0 = []
+    const kept = []
+    for (const finding of definitions.findings) {
+      const familyId = contributionFamily.get(finding.path)
+      const subject = familyId === undefined ? undefined : a0Retired.get(familyId)
+      const absent = !files.has(finding.path) && !existsSync(join(ROOT, finding.path))
+      if (finding.code === 'DEF_CENSUS_DRIFT' && subject !== undefined && absent) {
+        retiredA0.push({ familyId, path: finding.path, frozenModules: subject.frozenModules, detail: finding.detail })
+      } else {
+        kept.push(finding)
+      }
+    }
     out = {
       files: files.size,
       ...definitions,
-      inventory: { families: inventory.families, universe: inventory.universe },
-      findings: [...definitions.findings, ...inventory.findings],
+      findings: [...kept, ...inventory.findings],
+      retiredByA0: retiredA0,
+      retiredFamilies: inventory.retired.map((r) => ({ familyId: r.familyId, kind: r.kind, files: r.files, frozenModules: r.frozenModules, successors: r.successors })),
+      retiredSharedFiles: inventory.retiredSharedFiles,
+      inventory: { families: inventory.families, universe: inventory.universe, retiredFamilies: inventory.retired.length },
     }
   } catch (e) {
     console.error(`EB3-FAMILY-DEFINITIONS refused could-not-grade: ${String(e?.message ?? e)}`)
@@ -382,7 +452,19 @@ if (invokedDirectly) {
   if (json) console.log(JSON.stringify(out, null, 2))
   else {
     for (const f of out.findings) console.log(`  ${f.code} ${f.detail}`)
-    console.log(`EB3-FAMILY-DEFINITIONS ${out.findings.length === 0 ? 'pass' : 'fail'} files=${String(out.files)} findings=${String(out.findings.length)}`)
+    if ((out.retiredByCut ?? []).length > 0) {
+      console.log(`  DEF_RETIRED_BY_CUT ${String(out.retiredByCut.length)} declared old-path file(s) are in the A0 frozen delete set — the cut, not a UTE-4 per-family retirement, licensed their deletion (graded by ute-cut-closure on every PR)`)
+    }
+    for (const subject of out.retiredFamilies ?? []) {
+      console.log(`  DEF_RETIRED_BY_A0 family=${subject.familyId} kind=${subject.kind} files=${String(subject.files)} frozen=${subject.frozenModules.join(',')} successors=${subject.successors.filter((x) => !x.startsWith('node ')).join('|')}`)
+    }
+    for (const row of out.retiredByA0 ?? []) {
+      console.log(`  DEF_RETIRED_BY_A0 census-row=${row.path} family=${row.familyId} frozen=${row.frozenModules.join(',')}`)
+    }
+    if ((out.retiredSharedFiles ?? []).length > 0) {
+      console.log(`  DEF_RETIRED_BY_A0 shared=${out.retiredSharedFiles.join('|')}`)
+    }
+    console.log(`EB3-FAMILY-DEFINITIONS ${out.findings.length === 0 ? 'pass' : 'fail'} files=${String(out.files)} findings=${String(out.findings.length)} retiredFamilies=${String((out.retiredFamilies ?? []).length)} retiredCensusRows=${String((out.retiredByA0 ?? []).length)} retiredByCut=${String((out.retiredByCut ?? []).length)}`)
   }
   process.exit(out.findings.length === 0 ? 0 : 1)
 }

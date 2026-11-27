@@ -5,9 +5,11 @@
  * thing the milestone exists to make impossible — producing a plan that is not the census population.
  * So the laws pinned here are:
  *   - the root set is DERIVED from the root `vitest.config.ts` through the collection authority
- *     (`test-catalog.mjs`) and named with M3's `rootOf`, and it equals the 12 roots / 712 files the
- *     last real census reported (a PIN on the population: a new census root reds this test on
- *     purpose, the same way `--max-uncollected 91` refuses growth);
+ *     (`test-catalog.mjs`) and named with M3's `rootOf`, and it equals the 11 roots / 601 files this
+ *     population reports after the A0/A1 cut (a PIN on the population: a new census root reds this
+ *     test on purpose, the same way `--max-uncollected 41` refuses growth). Round 80 removed the
+ *     `packages/tools/a5p5-tools` root: every file under it was retired by the cut, so the root has
+ *     no population left and the review checkpoint moves with it;
  *   - when the root set cannot be derived the planner REFUSES with a named code — there is no
  *     fallback to a recorded count, and no "nine";
  *   - the plan is one task per (root, capture), each carrying the runner's own argv, and the two
@@ -86,7 +88,7 @@ const GOOD_CONFIG = "export default { test: { include: ['packages/*/test/**/*.te
 
 // ────────────────────────────────────────────────────────── the real population ──
 
-test('deriveRoots: the root set is the 12 roots the current census population reports, from the config', () => {
+test('deriveRoots: the root set is the 11 roots the current census population reports, from the config', () => {
   const derived = deriveRoots({ cwd: REPO_ROOT })
   assert.equal(derived.ok, true, JSON.stringify(derived))
   // PIN, not a constant the tool carries: the planner must derive this, and when the census
@@ -103,12 +105,16 @@ test('deriveRoots: the root set is the 12 roots the current census population re
     'packages/storage',
     'packages/testkit',
     'packages/tools',
-    'packages/tools/a5p5-tools',
   ])
-  // 712 = the 705 files the last real census reported plus the 7 T5 compatibility
-  // suites collected by the batch B1 include[] glob; the derivation is the same
-  // authority the run uses, so the two numbers must agree.
-  assert.equal(derived.file_count, 712)
+  // 601 = the population the A0/A1 cut leaves: the retired families' files are gone, so the
+  // derivation, the population baseline and the census plan must all name the same count.
+  // 599 -> 601 on 2026-11-27 (round 127): the pin was stale, not wrong when written — rounds 122/123
+  // added two collected suites under `packages/*/test/**/*.test.ts`
+  // (`packages/runtime/test/vnext-tool-dispatch-shape.test.ts` @ 507623eef and
+  // `packages/tools/test/p6t6-tool-route-errors.test.ts` @ fe09d0dba) and no round re-recorded this
+  // checkpoint, so the hosted `tinf-instruments` leg had been red behind the earlier EB3 failures.
+  // The count is still DERIVED (nothing here carries a list); the review act is naming the two files.
+  assert.equal(derived.file_count, 601)
   assert.match(derived.catalog_digest, /^sha256:[0-9a-f]{64}$/)
 })
 
@@ -664,15 +670,15 @@ test('cli: --balance prints the shard assignment; unknown estimates refuse', () 
   assert.match(unknown.stderr, /REFUSED ESTIMATES_UNKNOWN/)
 })
 
-test('cli: the real repository plans 24 tasks for 12 roots and two captures', () => {
+test('cli: the real repository plans 22 tasks for 11 roots and two captures', () => {
   const r = cli(['--plan', '--test-timeout', '90000'])
   assert.equal(r.status, 0, r.out)
   const plan = JSON.parse(r.stdout)
-  assert.equal(plan.roots.length, 12)
-  assert.equal(plan.tasks.length, 24)
+  assert.equal(plan.roots.length, 11)
+  assert.equal(plan.tasks.length, 22)
   assert.equal(plan.captures, 2)
   assert.equal(plan.test_timeout_ms, 90000)
-  assert.equal(plan.tasks.filter((t) => t.capture === 2).length, 12)
+  assert.equal(plan.tasks.filter((t) => t.capture === 2).length, 11)
   // The plan's tree is the tree of the commit it was planned on — recorded, not recomputed.
   assert.equal(plan.identity.merge_tree_sha.length, 40)
 })
@@ -688,7 +694,7 @@ test('cli: --self-test stays green', () => {
 test('F-02: each plan root carries a sorted file list, its count and a recomputable digest', () => {
   const roots = deriveRoots()
   assert.equal(roots.ok, true)
-  assert.equal(roots.file_count, 712)
+  assert.equal(roots.file_count, 601)
   for (const r of roots.roots) {
     assert.equal(r.files_expected.length, r.file_count)
     assert.equal(r.files, r.file_count)
@@ -732,11 +738,11 @@ test('F-02 CLI: --write-population-baseline writes a reviewed artifact and a tok
     assert.match(noReason.stderr, /POPULATION_BASELINE_REASON_MISSING/)
     const r = cli(['--write-population-baseline', '--accept-population-change', 'test: population unchanged; record review metadata', '--accepted-by', 'test-owner', '--out', out])
     assert.equal(r.status, 0, r.out)
-    assert.match(r.stdout, /DSH-CENSUS-POPULATION-BASELINE written=ok roots=12 files=712/)
+    assert.match(r.stdout, /DSH-CENSUS-POPULATION-BASELINE written=ok roots=11 files=601/)
     const body = JSON.parse(readFileSync(out, 'utf8'))
     assert.equal(body.schema, 'census-population-baseline/1')
-    assert.equal(body.rows.length, 12)
-    assert.equal(body.file_count, 712)
+    assert.equal(body.rows.length, 11)
+    assert.equal(body.file_count, 601)
     assert.equal(body.accepted_reason, 'test: population unchanged; record review metadata')
     assert.equal(body.accepted_by, 'test-owner')
     assert.match(body.generated_at, /^\d{4}-\d{2}-\d{2}T/)

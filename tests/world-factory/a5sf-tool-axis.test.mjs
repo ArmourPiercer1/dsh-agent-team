@@ -636,8 +636,10 @@ test('TA5 structural pin: a binding-targeted mount routes into the binding realm
   assert.doesNotMatch(rowSource, /AsyncLocalStorage/, 'S-2 is not used in the row either')
   assert.doesNotMatch(rowSource, /compileEffectiveIo/, 'the row does not compile a lane')
 
-  const glueSource = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs'), 'utf8')
-  assert.match(glueSource, /attachA5sfNativeToolModules\(a5sfRealm, agentCtx/, 'the native attach is the ONE execution binding call')
+  // ROUND 80: the A1 cut replaced `live/agent-bindings.mjs` with the vnext assembly; the attach call
+  // moved with the assembly and now reads the HOISTED realm (the post-deny attach site).
+  const glueSource = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'vnext', 'agent-bindings.mjs'), 'utf8')
+  assert.match(glueSource, /attachA5sfNativeToolModules\(a5sfMountedRealm, agentCtx/, 'the native attach is the ONE execution binding call')
 })
 
 // ===========================================================================
@@ -986,7 +988,15 @@ test('TA12 DEFERRED FAILED: a deferred child that throws is REFUSED, typed, and 
       (error) => {
         assert.equal(error.code, 'SERVICE_MOUNT_FAILED', `the refusal must be typed: ${JSON.stringify({ name: error.name, code: error.code })}`)
         assert.match(error.message, /DEFERRED registration that failed/, `the refusal must say the deferred registration failed: ${error.message}`)
-        assert.match(error.message, /deferred registration failed, waiting on \[attachments,tools,systemPrompt\]/, 'the refusal must name the public fiber state and its inject names')
+        // The seam names PUBLIC state only: the fiber state plus its `inject` names — never the
+        // upstream error text (CORE PATCH BUDGET = 0 forbids reading it). The exact key SET is a host
+        // detail (an rc.2 fiber keeps the already-resolved `fs` in `inject`; a later generation prunes
+        // it), so the law is asserted per name instead of by the whole bracketed string.
+        assert.match(error.message, /deferred registration failed, waiting on \[[^\]]*\]/, `the refusal names the public fiber state and its inject names: ${error.message}`)
+        for (const name of ['attachments', 'tools', 'systemPrompt']) {
+          assert.match(error.message, new RegExp(`waiting on \\[[^\\]]*\\b${name}\\b`), `the inject set names ${name}`)
+        }
+        assert.equal(error.message.includes('TA12 deferred boom'), false, 'the seam never quotes the upstream error text')
         return true
       },
       'a FAILED deferred registration must refuse the mount',

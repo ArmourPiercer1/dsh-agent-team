@@ -1,0 +1,39 @@
+UTE3-ROUTE-C-ALLOW entry=read_image storeBytes=70 storeSha256=c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77 facts=2
+✔ the product route serves read_image inside the declared read lane: one digested attachment on the CONFINED provider (370.943812ms)
+UTE3-ROUTE-C-DENY entry=read_image committed=0 providerCalls=0 facts=1
+✔ read_image outside the declared lane is REFUSED: zero attachment bytes, outside file unchanged, zero provider reads (22.128604ms)
+✔ a text-only model route refuses the image modality before any read (15.945285ms)
+✔ an aborted-before-dispatch read_image is still refused and materialises nothing (14.834944ms)
+UTE3-ROUTE-C-SCOPE continuedOnlyWhenDeclared=true noFsMapUnchanged=true
+✖ MUTATION unconfined-fs: the same module on the base provider allows the same out-of-lane read (19.351723ms)
+✔ the continuation is scoped to services the module ITSELF declares: a module without fs gets a shape-identical inject map (1.538798ms)
+UTE3-ROUTE-C-CONFINED childResolved=true inside=file outside=refused guardRealm=member
+✔ the deferred child's fs is the MEMBER's confined provider: in-lane served, out-of-lane refused, guard realm=member (20.965091ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 6
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 531.239774
+
+✖ failing tests:
+
+test at tests/ute-g1-fs/product-route-image.test.mjs:268:1
+✖ MUTATION unconfined-fs: the same module on the base provider allows the same out-of-lane read (19.351723ms)
+  Error [ToolBatchExecutionError]: Tool batch execution failed
+      at executeToolBatch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/packages/core/tools/lib/pipeline.js:60:9)
+      at NativeToolExecutor.execute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/packages/core/tool-executor-native/lib/index.js:16:10)
+      ... 4 lines matching cause stack trace ...
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    partial: { results: [], additionalContexts: [], concluded: false },
+    [cause]: TypeError: Cannot read properties of undefined (reading 'map')
+        at executeToolBatch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/packages/core/tools/lib/pipeline.js:33:29)
+        at NativeToolExecutor.execute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/packages/core/tool-executor-native/lib/index.js:16:10)
+        at Proxy.execute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/packages/core/tools/lib/index.js:642:43)
+        at Object.apply (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:122:36)
+        at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/ute-g1-fs/product-route-image.test.mjs:300:51)
+        at async Test.run (node:internal/test_runner/test:1409:7)
+        at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  }

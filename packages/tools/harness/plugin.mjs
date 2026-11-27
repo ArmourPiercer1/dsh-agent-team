@@ -392,6 +392,18 @@ function registerSuccessRoutes(ctx, webServer, teamRoot) {
             sendJson(res, 500, { error: error.message })
             return
           }
+          // ROUND 122: the dispatch seam's typed refusals (wrong call shape,
+          // no executor mounted, no dispatch contract) travel with a
+          // greppable `code`. Without this branch they would fall into the
+          // generic 500 below and a caller could not tell "the host cannot
+          // dispatch this" from "the tool threw".
+          if (typeof error?.code === 'string' && error.code.startsWith('A5SF_')) {
+            sendJson(res, error.code === 'A5SF_TOOL_DISPATCH_SHAPE_UNSUPPORTED' ? 400 : 500, {
+              error: error.message,
+              code: error.code,
+            })
+            return
+          }
           sendJson(res, 500, { error: String(error?.message ?? error) })
           return
         }

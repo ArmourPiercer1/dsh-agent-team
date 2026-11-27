@@ -1,0 +1,1 @@
+RUN-SUMMARY run=a5sf-live-d4-2026-11-24T03-42-46-936Z-b1 suite=a5sf-live-d4-probe overall=FAIL cases=8 FAIL:8 worlds=none partial=true abortedAt=probe recordClass=DEV-LIVE (not candidate evidence)

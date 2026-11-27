@@ -53,7 +53,7 @@ import {
 } from '../src/plugin/s6-remote.js'
 import type { S6RemoteOptions } from '../src/plugin/s6-remote.js'
 import type { ServerPrincipalDerivation, TeamPluginConfig } from '../src/plugin/types.js'
-import { createTeamProductionRoot } from '../src/plugin/root.js'
+import { createTeamProductionRoot } from '../src/plugin/vnext/root.js'
 import { createTeamDomain } from '../../storage/repositories/index.js'
 import type { TeamDomainRepositories } from '../../storage/repositories/index.js'
 import {

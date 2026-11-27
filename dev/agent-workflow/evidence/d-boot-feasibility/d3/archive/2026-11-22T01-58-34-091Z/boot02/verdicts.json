@@ -1,0 +1,239 @@
+{
+  "persistent": {
+    "proposition": "a governed Member runs the product's subprocess tool as a PERSISTENT session: the first call is admitted, its shell state is durable, and a SECOND turn reuses the same shell and sees that state",
+    "verdict": "REFUTED",
+    "clauses": [
+      {
+        "id": "bash-on-member-surface",
+        "ok": true,
+        "detail": "member surface=[\"bash\",\"create_goal\",\"edit\",\"exit_plan_mode\",\"get_goal\",\"glob\",\"grep\",\"job_kill\",\"job_list\",\"job_output\",\"present\",\"read\",\"read_image\",\"skill\",\"team_archive_member\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_follow_up\",\"team_grant_permission\",\"team_inspect_config\",\"team_list_members\",\"team_list_pending_control\",\"team_list_templates\",\"team_report_progress\",\"team_request_control\",\"team_resolve_control\",\"team_revoke_permission\",\"team_send_message\",\"todo_write\",\"u5_canary\",\"u6fs_probe\",\"update_goal\",\"write\"]"
+      },
+      {
+        "id": "persistent-tool-mounted",
+        "ok": false,
+        "detail": "preset mounts tool-bash-persistent=false; mounted shell rows=[\"tool-bash\"]"
+      },
+      {
+        "id": "first-call-admitted",
+        "ok": false,
+        "detail": "isError=true text=Error: ADMISSION_AXIS_UNSUPPORTED: tool \"bash\" needs a subprocess lane, which this binding does not compile; a call the centre cannot judge is refused"
+      },
+      {
+        "id": "state-written-by-shell",
+        "ok": false,
+        "detail": "state file /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z/workspace/team-a/d3-persistent-state.txt exists=false"
+      },
+      {
+        "id": "second-turn-saw-state",
+        "ok": false,
+        "detail": "isError=true sawState=false text=Error: ADMISSION_AXIS_UNSUPPORTED: tool \"bash\" needs a subprocess lane, which this binding does not compile; a call the centre cannot judge is refused"
+      },
+      {
+        "id": "first-call-centre-fact",
+        "ok": false,
+        "detail": "fact={\"axis\":\"process.exec\",\"decision\":\"deny\",\"refusalCode\":\"ADMISSION_AXIS_UNSUPPORTED\"}"
+      },
+      {
+        "id": "second-call-centre-fact",
+        "ok": false,
+        "detail": "fact={\"axis\":\"process.exec\",\"decision\":\"deny\",\"refusalCode\":\"ADMISSION_AXIS_UNSUPPORTED\"}"
+      },
+      {
+        "id": "first-call-settled-completed",
+        "ok": false,
+        "detail": "settlement state=REFUSED transitions=[\"ADMITTED\",\"REFUSED\"]"
+      },
+      {
+        "id": "second-call-settled-completed",
+        "ok": false,
+        "detail": "settlement state=REFUSED transitions=[\"ADMITTED\",\"REFUSED\"]"
+      }
+    ],
+    "failing": [
+      "persistent-tool-mounted",
+      "first-call-admitted",
+      "state-written-by-shell",
+      "second-turn-saw-state",
+      "first-call-centre-fact",
+      "second-call-centre-fact",
+      "first-call-settled-completed",
+      "second-call-settled-completed"
+    ]
+  },
+  "crash": {
+    "proposition": "after a REAL SIGKILL of the host, the ledger and settlement survive a cold restart on the SAME DSH_HOME; a call in flight at the crash reads UNKNOWN (never silently COMPLETED and never replayed); a NEW call after recovery is admitted with a NEW fact",
+    "verdict": "PROVEN",
+    "clauses": [
+      {
+        "id": "kill-was-sigkill",
+        "ok": true,
+        "detail": "pid=718 signal=SIGKILL pidGone=true exit={\"code\":null,\"signal\":\"SIGKILL\"}"
+      },
+      {
+        "id": "restart-same-home",
+        "ok": true,
+        "detail": "firstHome=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z restartHome=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z booted=true bootPhase=create-or-open"
+      },
+      {
+        "id": "completed-ledger-survives",
+        "ok": true,
+        "detail": "factsBefore=1 factsAfter=1"
+      },
+      {
+        "id": "completed-settlement-survives",
+        "ok": true,
+        "detail": "before=COMPLETED after=COMPLETED transitions=[\"ADMITTED\",\"RUNNING\",\"COMPLETED\"]"
+      },
+      {
+        "id": "inflight-was-open-at-crash",
+        "ok": true,
+        "detail": "in-flight settlement state at SIGKILL=RUNNING transitions=[\"ADMITTED\",\"RUNNING\"]"
+      },
+      {
+        "id": "inflight-unknown-after-recovery",
+        "ok": true,
+        "detail": "after restart=UNKNOWN transitions=[\"ADMITTED\",\"RUNNING\",\"UNKNOWN\"]"
+      },
+      {
+        "id": "never-completed",
+        "ok": true,
+        "detail": "state=UNKNOWN execution facts=[]"
+      },
+      {
+        "id": "never-replayed",
+        "ok": true,
+        "detail": "admission facts before=1 after=1"
+      },
+      {
+        "id": "new-call-new-fact",
+        "ok": true,
+        "detail": "new facts=[{\"callId\":\"call-d3-a-after-recovery\",\"decision\":\"allow\",\"axis\":\"fs.read\"}]"
+      },
+      {
+        "id": "new-call-settled-completed",
+        "ok": true,
+        "detail": "new call settlement=COMPLETED transitions=[\"ADMITTED\",\"RUNNING\",\"COMPLETED\"]"
+      },
+      {
+        "id": "work-fact-survived",
+        "ok": true,
+        "detail": "fresh disk hits carrying the delivered unit=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z/storages/session_projcache/sessions/session-team-child-cdf16bb82ce585d862f447bf6cd8c80f.json\",\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z/storages/team_domain.json\"]"
+      },
+      {
+        "id": "state-file-never-written",
+        "ok": true,
+        "detail": "the persistent-shell probe never ran a shell: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z/workspace/team-a/d3-persistent-state.txt exists=false"
+      }
+    ],
+    "failing": []
+  },
+  "work": {
+    "proposition": "work delivery through the real product: the async delegation is admitted, the delivered unit arrives VERBATIM, the collected result is terminal and durable across a cold restart, and the delegated Member's own calls land in ITS ledger",
+    "verdict": "PROVEN",
+    "clauses": [
+      {
+        "id": "delegation-admitted",
+        "ok": true,
+        "detail": "delegate result={\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-dboot-d3-root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1vd6cy21kl6k\",\"templateId\":\"worker-a\",\"childSessionId\":\"session-team-child-cdf16bb82ce585d862f447bf6cd8c80f\",\"operationId\":\"op-0ommejc19wn18v035xjf607q\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":2,\"workSettled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"dboot-d3-work-a\"}"
+      },
+      {
+        "id": "member-created",
+        "ok": true,
+        "detail": "instance=inst-1vd6cy21kl6k childSession=session-team-child-cdf16bb82ce585d862f447bf6cd8c80f"
+      },
+      {
+        "id": "prompt-delivered-verbatim",
+        "ok": true,
+        "detail": "first member user message=[team-work requestToken=dboot-d3-work-a] dboot-d3-a-work You are worker-a in a D-stage acceptance run.\nDeliverable: read the in-lane file, then run the requested bash command, then reply with EXACTLY the line\nDBOOT_D3_DELIVERED_UNIT_ALPHA\nand nothing else. No prose, no quotes, no trailing text."
+      },
+      {
+        "id": "member-unit-verbatim",
+        "ok": true,
+        "detail": "member turn-1 final text=\"DBOOT_D3_DELIVERED_UNIT_ALPHA\""
+      },
+      {
+        "id": "collect-succeeded",
+        "ok": true,
+        "detail": "collect entry={\"requestToken\":\"dboot-d3-work-a\",\"status\":\"succeeded\",\"instanceId\":\"inst-1vd6cy21kl6k\",\"admittedSequence\":2,\"settledSequence\":5,\"memberResult\":{\"body\":\"DBOOT_D3_DELIVERED_UNIT_ALPHA\",\"requestToken\":\"dboot-d3-work-a\",\"status\":\"succeeded\"}}"
+      },
+      {
+        "id": "collect-body-verbatim",
+        "ok": true,
+        "detail": "memberResult.body=\"DBOOT_D3_DELIVERED_UNIT_ALPHA\""
+      },
+      {
+        "id": "collect-terminal-and-durable",
+        "ok": true,
+        "detail": "before={\"requestToken\":\"dboot-d3-work-a\",\"status\":\"succeeded\",\"instanceId\":\"inst-1vd6cy21kl6k\",\"admittedSequence\":2,\"settledSequence\":5,\"memberResult\":{\"body\":\"DBOOT_D3_DELIVERED_UNIT_ALPHA\",\"requestToken\":\"dboot-d3-work-a\",\"status\":\"succeeded\"}} after={\"requestToken\":\"dboot-d3-work-a\",\"status\":\"succeeded\",\"instanceId\":\"inst-1vd6cy21kl6k\",\"admittedSequence\":2,\"settledSequence\":5,\"memberResult\":{\"body\":\"DBOOT_D3_DELIVERED_UNIT_ALPHA\",\"requestToken\":\"dboot-d3-work-a\",\"status\":\"succeeded\"}}"
+      },
+      {
+        "id": "work-fact-durable-on-disk",
+        "ok": true,
+        "detail": "fresh disk hits carrying the unit=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z/storages/session_projcache/sessions/session-team-child-cdf16bb82ce585d862f447bf6cd8c80f.json\",\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z/storages/team_domain.json\"]"
+      },
+      {
+        "id": "member-calls-in-own-ledger",
+        "ok": true,
+        "detail": "A ledger fs.read admission facts=1 instances=[\"inst-1vd6cy21kl6k\"]"
+      },
+      {
+        "id": "member-calls-not-in-leader-ledger",
+        "ok": true,
+        "detail": "member callIds=4 stray member call facts in other ledgers=[]; other ledger files=[\"remote.host-surface.facts.jsonl\"]"
+      },
+      {
+        "id": "member-surface-measured",
+        "ok": true,
+        "detail": "member surface tools=[\"bash\",\"create_goal\",\"edit\",\"exit_plan_mode\",\"get_goal\",\"glob\",\"grep\",\"job_kill\",\"job_list\",\"job_output\",\"present\",\"read\",\"read_image\",\"skill\",\"team_archive_member\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_follow_up\",\"team_grant_permission\",\"team_inspect_config\",\"team_list_members\",\"team_list_pending_control\",\"team_list_templates\",\"team_report_progress\",\"team_request_control\",\"team_resolve_control\",\"team_revoke_permission\",\"team_send_message\",\"todo_write\",\"u5_canary\",\"u6fs_probe\",\"update_goal\",\"write\"]"
+      }
+    ],
+    "failing": []
+  },
+  "alpha6": {
+    "proposition": "the Alpha.6 review-routing configuration on a live host is in exactly ONE lawful shape: reachable and routed, or refused with the typed ADMISSION_ALPHA6_UNAVAILABLE path — never silently accepted and never a generic failure",
+    "verdict": "PROVEN",
+    "clauses": [
+      {
+        "id": "host-process-was-spawned",
+        "ok": true,
+        "detail": "spawned=true port=3187 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261122T01-43-29Z/instance-port3187.log"
+      },
+      {
+        "id": "row-refused-with-typed-code",
+        "ok": true,
+        "detail": "rowRefused=true threw=false reachable=true"
+      },
+      {
+        "id": "typed-code-present",
+        "ok": true,
+        "detail": "refusal text=\n[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)\n[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: ADMISSION_ALPHA6_UNAVAILABLE: alpha6ReviewRouting is explicitly unavailable in this cut. no review-routing axis exists: Alpha.6 decides who may review whom from the trusted review facts before any tool call, so there is no locator or lane for the centre to judge, and the decision would otherwise be made by a second governance authority. A row that enables it would run a second review authority beside the centre, so the row is refused rather than booted with an unrecorded governance claim\n    at fail (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/dist/packages/runtime/src/plugin/host.js:203:15)\n    at validateTeamPluginConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/dist/packages/runtime/src/plugin/host.js:229:9)\n    at bootstrap (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/pack"
+      },
+      {
+        "id": "missing-axis-named",
+        "ok": true,
+        "detail": "names the missing axis=true"
+      },
+      {
+        "id": "config-gate-is-product-rule",
+        "ok": true,
+        "detail": "centreConfigViolation=ADMISSION_ALPHA6_UNAVAILABLE: alpha6ReviewRouting is explicitly unavailable in this cut. no review-routing axis exists: Alpha.6 decides who may review whom from the trusted review facts before any tool call, so there is no locator or lane for the centre to judge, and the decision would otherwise be made by a second governance authority. A row that enables it would run a second review authority beside the centre, so the row is refused rather than booted with an unrecorded governance claim"
+      },
+      {
+        "id": "closed-refusal-table-entry",
+        "ok": true,
+        "detail": "HOST_SURFACE_REFUSALS.alpha6={\"code\":\"ADMISSION_ALPHA6_UNAVAILABLE\",\"axis\":\"host.service\",\"subject\":\"Alpha.6 review-routing decision\",\"missing\":\"no review-routing axis exists: Alpha.6 decides who may review whom from the trusted review facts before any tool call, so there is no locator or lane for the centre to judge, and the decision would otherwise be made by a second governance authority\"}"
+      },
+      {
+        "id": "no-team-row-live",
+        "ok": true,
+        "detail": "teamSession present=false liveMembers=0 stateHttp=404 stateError=null"
+      },
+      {
+        "id": "no-silent-route",
+        "ok": true,
+        "detail": "alpha6 decision in live state=null fact file present=false wake-intent files=0"
+      }
+    ],
+    "failing": []
+  }
+}

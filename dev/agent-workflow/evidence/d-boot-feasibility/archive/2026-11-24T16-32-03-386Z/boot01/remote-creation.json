@@ -1,0 +1,86 @@
+{
+  "at": "2026-11-24T16:26:34.673Z",
+  "rootsBefore": [
+    "session-dboot-read-root"
+  ],
+  "rootsBeforeStatus": 200,
+  "unauthenticated": {
+    "status": 401,
+    "bodyCode": null,
+    "mintedTeam": false
+  },
+  "crossTeam": {
+    "status": 200,
+    "code": "TEAM_REMOTE_FOREIGN_TEAM",
+    "ok": false,
+    "foreignRoot": "session-dboot-foreign-team"
+  },
+  "created": {
+    "status": 200,
+    "ok": true,
+    "path": "fresh-root",
+    "durable": {
+      "teamSession": {
+        "schemaVersion": 1,
+        "rootSessionId": "session-dboot-read-team",
+        "blueprint": {
+          "blueprintId": "team.dboot.read.main",
+          "revision": "1",
+          "contentHash": "sha256:2c4c7ad80f250801d79ecb8bb3adb7afabe3bd4090a179cf3b6c8c5ff470c6fb"
+        },
+        "createdAt": "2026-11-24T16:26:33.509Z",
+        "generation": 1,
+        "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-24-56Z-next/workspace"
+      },
+      "binding": {
+        "schemaVersion": 1,
+        "kind": "team-root",
+        "sessionId": "session-dboot-read-team"
+      },
+      "wrote": true,
+      "leaderRow": {
+        "schemaVersion": 2,
+        "rootSessionId": "session-dboot-read-team",
+        "instanceId": "inst-leader",
+        "templateId": "leader",
+        "label": "leader",
+        "createdAt": "2026-11-24T16:26:33.522Z",
+        "activityVersion": 1
+      }
+    }
+  },
+  "rootsAfterCreate": [
+    "session-dboot-read-root",
+    "session-dboot-read-team"
+  ],
+  "duplicate": {
+    "status": 200,
+    "ok": true,
+    "code": null,
+    "rootsAfter": 2,
+    "newRoots": [
+      "session-dboot-read-team"
+    ],
+    "mockRequestsAdded": 0
+  },
+  "executionRefusal": {
+    "rootWork": {
+      "status": 200,
+      "code": "ADMISSION_REMOTE_UNAVAILABLE",
+      "ok": false
+    },
+    "rootLive": {
+      "status": 200,
+      "code": "ADMISSION_REMOTE_UNAVAILABLE",
+      "ok": false
+    },
+    "delivery": {
+      "status": 200,
+      "code": "TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
+      "ok": false,
+      "servedNotRefused": true
+    },
+    "mockRequestsAdded": 0
+  },
+  "authority": "the created Team is `ACCEPTANCE_ROOT`; the Leader turn and the Member chain below run on it"
+}

@@ -46,7 +46,18 @@ describe('a6-pr1 lane hygiene', () => {
       const rel = relative(REPO_ROOT, file)
       if (rel.startsWith(join('runtime', 'review-router'))) continue
       if (rel.includes(join('runtime', 'test'))) continue
-      const text = readFileSync(file, 'utf8')
+      // The same concurrent-removal tolerance the walk already applies: another
+      // suite's temp workspace under `packages/` can vanish between the walk and
+      // this read (measured: `testkit/test/.tmp-fault/...` while the census runs
+      // the roots in parallel). A file that no longer exists cannot be an
+      // importer; the walk's ENOENT guard is the disclosed precedent.
+      let text
+      try {
+        text = readFileSync(file, 'utf8')
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT') continue
+        throw error
+      }
       if (/review-router|reviewRouter/.test(text) && !/review-router is dormant|Alpha\.6 PR1/.test(text)) offenders.push(rel)
     }
     // A6-PR2a is the first legitimate importer (the capability evaluator

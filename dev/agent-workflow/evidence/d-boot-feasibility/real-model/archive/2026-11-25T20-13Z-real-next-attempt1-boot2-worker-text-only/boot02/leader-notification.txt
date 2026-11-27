@@ -1,0 +1,16 @@
+[team-control requestId=ctrl-0ssyidn1y00cgw0o86nhd0iy]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-0ssyidn1y00cgw0o86nhd0iy
+requester: inst-0hvc2y01v51z
+subject: instance inst-0hvc2y01v51z
+target: inst-0hvc2y01v51z
+tool: bash
+summary: admission ask: bash (process.exec on "bash" requires approval under policy generation a5sf1:ca690f4b4fefb8af9380bfb137635439 (executionBoundary="confined-subprocess"))
+approvalCase: case-0cph28e1b0tkeh14e46540xi
+leg: 1
+reviewAuthority: leader
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+If you already decided or escalated an earlier leg of approvalCase case-0cph28e1b0tkeh14e46540xi, you cannot act on this case again.

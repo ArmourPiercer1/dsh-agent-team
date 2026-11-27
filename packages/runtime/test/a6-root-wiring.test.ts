@@ -177,7 +177,7 @@ describe('A6 root wiring — production entry opt-in', () => {
     const { FileStorageSeam, scratchDir, destroyDir } = await import('../../testkit/fault-injection/file-seam.mjs')
     const { parseChildSessionId, parseInstanceId, parseRootSessionId, parseTemplateId } = await import('../../contracts/src/index.js')
     const { createAgentBindings: createStubBindings } = await import('./p8s5a-stub-glue.mjs')
-    const { createTeamProductionRoot } = await import('../src/plugin/root.js')
+    const { createTeamProductionRoot } = await import('../src/plugin/vnext/root.js')
 
     const base = scratchDir(`a6rootwire-${Math.random().toString(36).slice(2, 8)}`)
     const seam = new FileStorageSeam(base)
@@ -198,6 +198,9 @@ describe('A6 root wiring — production entry opt-in', () => {
       rootSessionId: ROOT,
       generation: 1,
       defaultWorkspace: `${base}/workspace`,
+      // ROUND 84: a coherent Alpha.6 row needs the durable centre; the rule names it (and the root gate
+      // records a refusal through it), so the fixture states it explicitly.
+      centreStatePath: `${base}/centre`,
       seedMembers: [],
       staticModel: { provider: 'a6-root', model: 'a6-root-model' },
       deniedSelection: null,
@@ -253,7 +256,7 @@ describe('A6 root wiring — production entry opt-in', () => {
     const { FileStorageSeam, scratchDir, destroyDir } = await import('../../testkit/fault-injection/file-seam.mjs')
     const { parseChildSessionId, parseInstanceId, parseRootSessionId, parseTemplateId } = await import('../../contracts/src/index.js')
     const { createAgentBindings: createStubBindings } = await import('./p8s5a-stub-glue.mjs')
-    const { createTeamProductionRoot } = await import('../src/plugin/root.js')
+    const { createTeamProductionRoot } = await import('../src/plugin/vnext/root.js')
 
     const base = scratchDir(`a6rootwake-${Math.random().toString(36).slice(2, 8)}`)
     const seam = new FileStorageSeam(base)
@@ -278,6 +281,9 @@ describe('A6 root wiring — production entry opt-in', () => {
       rootSessionId: ROOT,
       generation: 1,
       defaultWorkspace: `${base}/workspace`,
+      // ROUND 84: a coherent Alpha.6 row needs the durable centre; the rule names it (and the root gate
+      // records a refusal through it), so the fixture states it explicitly.
+      centreStatePath: `${base}/centre`,
       seedMembers: [],
       staticModel: { provider: 'a6-root', model: 'a6-root-model' },
       deniedSelection: null,

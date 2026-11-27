@@ -1,3 +1,4 @@
+import { type CentreConfigRefusalHook } from './vnext/row-refusal-entry.js';
 import type { EnvelopeContains, GovernanceEnvelopeView, GovernanceWarningDocsPort } from '../../governance-warning/index.js';
 import type { PermissionAuthorityFacts } from './permission-plane.js';
 import type { BlueprintAnchorState } from './blueprint-authority.js';
@@ -66,14 +67,26 @@ export interface TeamPluginHostContext {
  *  never imported — the entry's independence discipline, guide §4.1). */
 type TeamApprovalOutcome = 'allowed-once' | 'rejected' | 'cancelled' | 'unavailable';
 /**
+ * Hooks the host ENTRY attaches to the row validator. They observe a refusal; they cannot grant one.
+ *
+ * `onCentreRefusal` runs at the exact point the centre rule refuses, BEFORE the unchanged typed throw.
+ * The entry uses it to write the refusal through the product's own host-surface point (round 68): the
+ * decision stays in `centreConfigViolation`, and a caller that passes no hooks behaves byte-identically
+ * to the pre-round validator.
+ */
+export interface TeamPluginConfigValidationHooks {
+    readonly onCentreRefusal?: CentreConfigRefusalHook;
+}
+/**
  * Validate the row `config` channel loudly (plan §19.2: the row config is
  * the entry's ONLY input channel — a malformed composition must reject
  * apply, not degrade).
  * @param raw - the unvalidated `config:` of the row.
+ * @param hooks - entry-side observers of a refusal (see {@link TeamPluginConfigValidationHooks}).
  * @returns the validated config.
  * @throws {TeamPluginError} TEAM_PLUGIN_CONFIG_INVALID with the failing field.
  */
-export declare function validateTeamPluginConfig(raw: unknown): TeamPluginConfig;
+export declare function validateTeamPluginConfig(raw: unknown, hooks?: TeamPluginConfigValidationHooks): TeamPluginConfig;
 /**
  * The default live-agent glue URL, derived from this host entry's own
  * module location: the dist layout carries the byte-copied mirror

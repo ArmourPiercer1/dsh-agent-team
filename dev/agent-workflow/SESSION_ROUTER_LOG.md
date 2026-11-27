@@ -9828,3 +9828,1899 @@ A1 不是小 PR 而是**单一窗口分支**（`vnext/a1-cut`），自带必绿�
 ### 门禁
 
 `UTE-P0-ASSETS pass … cut=pending(0/148) findings=0` · `UTE-CUT-CLOSURE pass references=192 prodRefs=13 distResiduals=52 cut=pending(148/148) dupNames=0 findings=0` · 变异臂 21（账本）+ 13（闭包，含 3 条在临时 git 仓库里运行的删除后负控）。hosted CI 在重跑前记 UNKNOWN，不宣称绿。
+
+## R24 — 2026-11-21 — UTE vNext C: MCP on the network axis, and the subprocess lane's missing declaration source
+
+- **MCP judged, not refused by prefix** (`ADM-33`): `mcp__<server>__<tool>` is axis `net.mcp`, locator =
+  SERVER name (recording a path nobody judged would be worse than no locator). Unset ≠ allow, deny is
+  deny, a per-tool restriction narrows it, and `mcp__` with no server (or no tool) is
+  `ADMISSION_TOOL_UNBOUND` — a prefix is not a permission. WHICH servers exist stays the mount gate's
+  decision (`filterMcpServers` / the template's mcp grant).
+- **`CONTRACT_CHANGE_REQUEST` opened** (not `CORE_SEAM_BLOCKER`: no upstream patch is wanted): there is
+  no single-source declaration for a PROCESS lane. v4 Blueprint ceiling is `{read, write, network}`
+  (frozen), the product realm declaration reuses that shape, `execution.executionBoundary` says WHO
+  executes and not WHAT the shell may touch, and `shellClass` is an install-spec field the composition
+  passes. Options A (add `process` to the v4 ceiling) / B (a v5 schema) / C (declare the family not
+  supported) are recorded in `evidence/ute-a1/CONTRACT-CHANGE-REQUEST-process-lane.md`; the three
+  workarounds (judge on the write lane, declare it only in the product realm, derive it from the
+  boundary) are each a breach of the invariant this round implements.
+- While the ruling is pending the families stay **explicitly refused** (`ADMISSION_AXIS_UNSUPPORTED`):
+  the refusal is the safe state, not a workaround. `C-subprocess` / `C-pty` / `C-ptc` rows in
+  `CAPABILITY-MATRIX-C.md` say exactly that.
+- Gates at this round: leg `ute-vnext-a1` suites=4 exit=0; catalog `tests=886 refused=0 findings=0`;
+  P0 assets / cut-closure / a1-window all pass. Arms now 78 (admission 33, slice 33, realm 9, os 3).
+
+## R25 — 2026-11-21 — UTE vNext C: revocation between the decision and the body is now a proven refusal
+
+- **`SLICE-34`** models what a real permission revoke looks like from inside one dispatch: the binding
+  resolves for the pre-execute decision, then the holder is revoked, so the guard's RECHECK sees no
+  binding. It asserts the refusal names `ADMISSION_RECHECK`, the provider was never touched, the
+  admission fact keeps the `allow` that was genuinely decided, and the execution fact is
+  `admission-refusal` with the guard's own code.
+- That exposed a real defect in `execution-facts.mjs`: a refusal at the GUARD was classified `failed`,
+  because the join only knew about `decision: 'deny'`. An operator's revoke would have been
+  indistinguishable from a broken tool in every report built on those facts. The fact now carries the
+  centre's stable `ADMISSION_*` code, read from the tool error (the only signal that survives to
+  `tools/result`), and the guard's code wins over the admission record's generic one.
+- Gates: leg suites=4 exit=0; catalog `tests=886 refused=0 findings=0`; arms now 79
+  (admission 33, slice 34, realm 9, os 3).
+
+## R26 — 2026-11-22 — external review received; production closure repaired; first real extraction
+
+Owner relayed an external review (`docs/reviews/20261122-0018.txt`) and ruled: **the two oversized
+centre files must be fixed before B/C continues**. This round did the review's blocking items and the
+first extraction.
+
+**The finding that mattered most was not in the review's list.** `place-dist-glue` — the step that puts
+the byte-identical .mjs files into the shipped dist face — still pointed at
+`packages/runtime/src/plugin/live/agent-bindings.mjs`, which the cut deleted. `pnpm build:composition`
+died before producing anything, and every source-tree test stayed green because none of them build the
+shipped face. 99 of 119 placement sources were files the cut had already deleted, and the entire
+`vnext/` centre was in NO placement.
+
+- GLUE_SRC retargeted; 98 dead entries and 14 dead placement documents removed; new
+  `240-ute-vnext-centre.json` places the six centre .mjs files; `admission-port.mjs` imports
+  `./admission.js` (the file tsc emits) instead of `./admission.ts`.
+- `ute-cut-closure --check` now refuses a placement whose src is missing and a GLUE_SRC that is not on
+  disk, and reports an unreadable list as a FINDING (negative control measured: pointing GLUE_SRC back
+  at the deleted path yields `UTE_CLOSURE_DIST_PLACEMENTS_UNREADABLE` + fail, not a stack trace).
+- `dist-placements.test.mjs` used a DELETED family document as its fixture; it now uses one that
+  survives.
+- `refuse()` typed with `AdmissionDenialCode` (the TS error the review named: NETWORK_DENY was not an
+  `AdmissionRefusalCode`). docs:sync dangling links fixed (2 -> 0).
+
+**Review P0s:**
+- native mount disposal: the product bind discarded `mountHostModules(...)`'s handle, so the
+  MEMBER_CLOSED tombstone never registered on member teardown — the SLICE-23 regression, live on the
+  product path. Now kept in `nativeMountDisposers` and awaited BEFORE realm disposal.
+- Alpha.6 review routing: the opt-in now requires `centreStatePath` (a review router whose decisions
+  have nowhere durable to live is a governance claim with no evidence). The rule lives in a new pure
+  module `vnext/centre-config.ts` + `ADM-34`, NOT inline in host.ts — an inline rule can only be
+  verified by a full build, which is exactly when it stops being verified.
+
+**First extraction toward the thin composition root:** `vnext/work-turn-reader.mjs` (199 lines out of
+the glue, zero shared state) + `vnext-work-turn-reader.test.mjs` (7 arms) — its defensive branches (no
+log seam, absent delivery, crash-closed turn) were previously only reachable through a live delivery.
+Leg now suites=5 files=5.
+
+### R26 addendum — next-host feasibility, PR body, and what the review did not catch
+
+- **rc.5 feasibility measured (read-only)**: `NEXT-HOST-RC5-FEASIBILITY.md`. Verdict RUNNABLE WITH
+  HARNESS WORK (~4–6 h), no missing core seam. The false-green risk is module resolution (repo
+  `@deepseek-ai/*` are 0.2.0-rc.2 symlinks; the world factory hard-codes the test-use tree), plus rc.5's
+  static `workingDirectory` inject (Cordis defers silently → no preset read/write/edit at all) and the
+  batch+executor dispatch (`TOOL_EXECUTOR_UNAVAILABLE` otherwise).
+- **A real gap the investigation exposed**: rc.5 adds `patchText`/`deleteFile`/`moveFile`; the Team
+  confined provider overrides ten methods ending at `editText` and none of the three. On rc.5 those
+  paths would reach the provider without the Member lane — invisible today because the slice never uses
+  them. Recorded as B5; NOT fixed; the feasibility doc says not to claim FS confinement on rc.5.
+- **PR #822 body refreshed** (it still described the pre-B state): status, evidence index, arm counts,
+  the gates actually run, the review response and the limits above.
+
+### R27 — the first structural cut the plan asked for: session identity leaves the glue
+
+The decomposition plan (`DECOMPOSITION-PLAN.md`, anchored at `4fd8f8e75`) recommends S1 =
+`vnext/session-identity.mjs`. Done, and it is the biggest single move so far.
+
+- **What moved**: the glue's A4 region (child session id derivation, durable existence, instance and
+  owner resolution, the durable lifecycle gate, the admission close) **plus the two maps it kept
+  beside it** (`newWorkClosed`, `terminalAtReopen`). The maps are the point: they are the state those
+  nine functions answer from, and leaving them in the closure would have been a split that shares
+  mutable state — exactly what the review said not to do.
+- **Interface**: `createSessionIdentity({ domain, bootRootSessionId, sessionPersistence,
+  leaderInstanceId })` — that is all it reads. The boot-publish marker now leaves through
+  `terminalMarkerOf`/`clearTerminalMarker` instead of the boot loop reaching into the map.
+- **Glue**: 5,042 → **4,767** lines (in total 5,301 → 4,767 this session). The nine functions keep
+  their names via destructuring, so every call site is untouched.
+- **ADM-36** proves the component on its own: idempotent child id, root-owns-itself + member ownership
+  + `undefined` for unowned (never the boot root as a fallback), the frozen per-state refusal codes,
+  the root never refused, close/reopen semantics including the marker, `exists` failing closed when the
+  seam is absent and a backend fault NOT flattened into "not durable", and construction refused when
+  the domain cannot answer.
+- **Not verified here**: the plan's four pinned vitest suites (`a5sf-pd20-admission-close`,
+  `t12a-b2-child-identity`, `bp1-dual-team-gate`, `d3-member-identity-context`) cannot run in this
+  worktree (no vitest). They are the acceptance for the move's behaviour, and they remain unrun — the
+  module's own arms do not substitute for them.
+
+### R27 addendum — the rc.5 gap became an invariant, and a duplicated rule was deleted
+
+- **SLICE-35 / SLICE-36** (slice now 36 arms): the rc.5 confinement gap cannot be written as an
+  override against the pinned baseline (the rc.2 type has no `patchText`/`deleteFile`/`moveFile`), so
+  it became an invariant instead — SLICE-35 DERIVES every path-touching entry point from the real base
+  provider and refuses any the confined class does not override; SLICE-36 is the positive control
+  (a subclass with the three rc.5 names must be named by the derivation). Nothing about rc.5 is baked
+  in, and the nine-name non-IO set carries a stated reason each.
+- **`freshCreateHintAdmits` de-duplicated**: the glue's copy claimed it had "moved out of the retired
+  realm row" while the realm row still had its own. One exported source now; a rule adjacent to
+  authorization should exist once.
+
+### R28 — M4 extracted, and the adversarial review's P1s are now the work queue
+
+- **`template-binding.mjs` (plan M4)**: the per-team-root bound-blueprint cache, the fail-closed template
+  locator and the static projection left the glue **with the cache they answer from** (the BP-F custom is
+  that one row carries many roots, each bound to its own snapshot). Glue 4,769 → **4,499**. TB-1..TB-6
+  pin: one parse per root, per-root isolation, the hint bridging only `fresh-member`, the four typed
+  refusal reasons with no legacy degradation, and the legacy anchor's null contract.
+- **The parser and the projection are injected**, not imported: `template-binding` is policy, not a
+  parser, and it must be unit-testable under plain `node:test` (the domain packages are TS that only the
+  build resolves). `bind-path.mjs` now holds `freshCreateHintAdmits` so three importers share ONE rule
+  without dragging each other's dependency graphs.
+- **Adversarial review received (no P0, seven P1s).** Accepted as the queue, and two of them will change
+  what this branch claims: **P1-1** the product's post-approval recheck is vacuous (`resolveBinding` is a
+  constant frozen binding, so the second answer can never differ — SLICE-34 proves the mechanism only
+  through a custom resolver, not through `installMemberCentre`); **P1-2** the settlement records the
+  pre-execute `admit()` result rather than the port's final verdict, so an ask-unwired refusal is durably
+  stored as `allow`/`ask` and then recovered as UNKNOWN, never REFUSED; **P1-3** every member bind runs
+  `recoverUnsettled` over a SHARED settlement directory, so binding member B marks member A's live
+  execution UNKNOWN and A's terminal write then conflicts. Also P1-4 (close ordering contradicts its own
+  comment: the realm disposer is pushed into `toolDisposers` too, so it starts before the native-mount
+  tombstone is awaited), P1-5 (a throwing ledger/settlement path is not a refusal), P1-6 (memo before the
+  durable replay check).
+
+### R28 addendum — the review's P1s: three fixed, one escalated, and a fact that now says what happened
+
+The adversarial review (`d3ddd45d`) found **no P0 and seven P1s**, two of which the existing tests could
+not see because they test the mechanism rather than the product composition. Acted on:
+
+- **P1-2 fixed.** The port settled the lane's RAW answer, then possibly overruled it (ask → ask-unwired
+  deny), so a refused call was durably `allow`/`ask` and recovered as UNKNOWN. It now settles the
+  decision it ENFORCED, and the authority fact carries `decision: 'deny'` + `refusalCode:
+  ADMISSION_ASK_UNWIRED` while keeping `laneDecision: 'ask'` — losing that would make "who refused"
+  unanswerable. SLICE-16 was asserting the old behaviour and was corrected, not deleted.
+- **P1-3 fixed.** Every member bind ran `recoverUnsettled` over ONE shared settlement directory, so
+  binding member B turned member A's LIVE execution into UNKNOWN and A's real terminal write then
+  conflicted. Settlement is now per member (`<centreStatePath>/settlement/<instanceId>`), and the
+  instance id is validated as a file stem before it names a file.
+- **P1-1 fixed.** `resolveBinding` was `() => binding` (frozen at bind), so the post-approval recheck
+  could only ever agree with itself. `installMemberCentre` now takes a live resolver; `member-execution`
+  rebuilds the binding from the CURRENT compiled answer and returns `undefined` once the member is
+  closed, so the recheck can refuse (ADMISSION_NO_BINDING) for a real reason.
+- **P2-14 fixed with it**: `installMemberCentre` rolls back a half-install and its `dispose()` is
+  idempotent (it used to reverse the disposer array in place and re-run everything).
+- **P1-4 not yet**: the realm disposer is still pushed into BOTH `a5sfRealmDisposers` and
+  `toolDisposers`, so close starts the realm disposal before the native-mount tombstone is awaited —
+  the comment above it claims the opposite. Not fixed in this round, and now on the queue as the next
+  item rather than a note.
+- **ESCALATED, not worked around**: a call admitted as `allow` and then refused by the recheck has NO
+  legal settlement state (REFUSED is forbidden against an allow; CANCELLED needs a recorded Stop;
+  FAILED is unreachable from ADMITTED; UNKNOWN would claim the effect was merely unobserved when the
+  body provably never ran). The centre reports `SETTLEMENT_CONTRACT_GAP` and leaves the record rather
+  than writing a lie. `CONTRACT-CHANGE-REQUEST-settlement-recheck.md` lays out four options.
+
+### R28 addendum 2 — close ordering (P1-4) fixed; what remains from the review
+
+- **P1-4 fixed, ordering only.** The realm disposer was registered in two lists, so `close()` STARTED it
+  during the tool-disposer pass — before the native-mount pass whose own comment says it must run first
+  because installing the MEMBER_CLOSED tombstone needs a living realm. Now: realm disposer registered
+  once (in the waitable list), native mounts drained FIRST, then the tool/centre disposers, then the
+  realm. The invariant the comment described is now the code.
+  Not claimed: a dispatch racing a close is still unmeasured (SLICE-23 tests after close).
+- **Still open from the review** and next: P1-5 (a throwing ledger/settlement path escapes as an
+  exception rather than an explicit deny), P1-6 (the memo is consulted before the durable replay check),
+  and the P2 batch — `definitionSource` hardcoded to the fs package for every tool, per-tool key
+  fallbacks that widen to the ceiling, the third grant-id scheme, execution-id join by convention,
+  ledger duplicate/kind-override, unbounded maps, the identity fields (agentId vs sessionId,
+  instanceGeneration defaulting to 0), and `await import()` before the `@deepseek-ai/*` check.
+
+### R28 addendum 3 — the ledger was the fourth place a permission could be invented
+
+The review's P2 batch was "small things that widen". Three more, all in the durable ledger, which is the
+half that a reviewer reads AFTER the fact and therefore cannot afford to be generous:
+
+- **A gap in a compiled answer was a permission.** `perTool?.read ?? binding.read` treated a missing field
+  on a compiled tool answer as "no restriction here" and fell back to the CEILING — the widest lane in the
+  binding. A compiler that had something to say about a tool and said nothing about one axis now gets a
+  refusal (`ADMISSION_AXIS_UNSUPPORTED`); the documented ceiling fallback is narrowed to what it always
+  meant (a tool with NO compiled entry at all). ADM-39 keeps both halves.
+- **`definitionSource` was `'@deepseek-ai/dsh-tool-fs'` for every tool in every binding** — a provenance
+  claim that was wrong for every non-fs tool and could not be right for all of them. It now comes from the
+  compiled member; `''` means "several sources", not a guess.
+- **`instanceGeneration` defaulted to 0.** The generation is what the recheck compares a live answer
+  against, so a fabricated 0 makes every revocation look like a match. A member that cannot name its
+  generation now fails the bind.
+- **The ledger let the caller rename the record kind** (`{kind, at, ...facts}` spread the facts last), kept
+  TWO lists of kinds (the exported one named a `playback-refusal` the writer never emits and omitted
+  `execution`), and accepted a second execution fact for the same callId. All three are fixed: the ledger
+  owns `kind`/`at`, there is ONE exported `LEDGER_KINDS`, and a call ends once — enforced both at append
+  time and when a file already on disk carries two (ADM-41).
+- **`await import(spec.url)` ran before the `@deepseek-ai/*` check.** A check after the import has already
+  executed the code it exists to refuse. The specifier is now judged as a string (ADM-42).
+
+Still open from the review, and now the largest remaining items rather than small ones: the third grant-id
+scheme, unbounded in-memory maps, `agentId: sessionId` in the binding (two identities in one field), and
+`executionIdOf`'s synthetic `{callId, name: ''}` join. Those are contract questions, not widenings, and the
+first has to be answered together with the Settlement identity so there is not a fourth scheme.
+
+### R28 close — branch state
+
+HEAD `7ee5216f7` on `vnext/a1-cut`, draft PR #822 updated (body refreshed; still DRAFT, not for merge).
+Round 28 produced: M4 decomposition (`template-binding.mjs`, 6 arms), the review's P1-1/2/3/4/5/6 fixed,
+one P1 escalated (`CONTRACT-CHANGE-REQUEST-settlement-recheck.md`), three P2 widenings closed plus the
+ledger and specifier hardening (ADM-37…42), and the capability matrix now carries the review outcome.
+
+Gate sweep at this HEAD: leg `suites=6 files=6 exit=0` (42 admission arms among them), catalog
+`tests=888 refused=0 findings=0`, P0 assets pass, cut-closure `prodRefs=0 distResiduals=0`, a1-window
+pass, ci-required pass, docs-sync `findings=0`, place-dist-glue 26 placements.
+
+Next round's queue, in the order I intend to take it: (1) the identity contract question (`agentId:
+sessionId`, `executionIdOf`'s synthetic join, and the grant-id scheme) as ONE decision, because fixing
+them separately would create a fourth scheme; (2) S6 decomposition (`live-residency.mjs`: `liveAgents`,
+`closing`, the disposer lists); (3) the process-lane contract ruling if the owner has ruled. The host
+boot work (step D) still needs either the rc.2 harness path to be rebuilt or rc.5 provisioning.
+
+### R29 — the identity question, taken as one decision
+
+The review's remaining P2s were three identity defects that would each tempt a different local fix. Taking
+them together, one is settled and two are deliberately left alone:
+
+- **SETTLED: `agentId: sessionId`.** The `Binding` interface says `agentId` is the runtime Agent "never a
+  session id", and the product wiring passed the session id into it — so a durable fact carried the host's
+  identity in the field reserved for the member's, and could not be joined to a member registry once the
+  session was gone. `Binding.instanceId` now comes from the compiled member identity, the facts record it
+  next to `agentId`/`sessionId`, `member-execution` binds `agentId` to the MEMBER, and a binding with no
+  member omits the field instead of inventing one (ADM-43).
+- **LEFT ALONE: the grant-id scheme.** There is nothing to reconcile: the product wires NO approval binder,
+  so every ask lane is already a hard refusal. Inventing a grant id now would create the fourth scheme the
+  review warned about; the id belongs with the ControlService adapter in step C.
+- **LEFT ALONE: `executionIdOf`'s synthetic `{callId, name: ''}`.** It is a join by convention, and the
+  honest join needs the settlement identity to be defined once — which is the same decision as the
+  contract-change request above. Doing it here would fix the shape and not the question.
+
+Round-29 gates at `42ab56be1`: leg `suites=6 files=6 exit=0` (43 admission arms), catalog
+`tests=888 refused=0 findings=0`, cut-closure `prodRefs=0 distResiduals=0`.
+
+### R30 — the migrated suites were never RUN, and running them found a live ReferenceError
+
+The A1 clause "16 个保留能力历史测试迁移到新入口" was recorded as done because
+`migrated-entry-imports.json` said `missing: []` — every file imports `vnext/root.js` or
+`vnext/agent-bindings.mjs`. That is an IMPORT migration. None of them had ever executed: this worktree's
+`node_modules/.bin/vitest` is a symlink into a deleted sibling worktree, so the suite read as
+un-runnable. It runs from the MAIN worktree's vitest install, and the first execution produced
+**230/238**, not 238/238.
+
+The first fix was a genuine production bug: **`ReferenceError: resolvePaMount is not defined`** on any
+path that published an authority generation (F15 L4/L7). The cut retired `pa-mount-registry.mjs` — the
+publish/revoke/resolve mount index — but `publishAuthorityGeneration` kept calling it. It is now an
+optional seam `resolveMemberMount(teamRoot, instanceId)`: wired, the refresh behaves as before; unwired,
+it is skipped with an explicit observation and `reason: 'no-mount-seam'`. **The product wires no such
+seam today, so the authority-generation refresh cannot fire in the assembled product** — a C-stage
+wiring item that is now visible instead of fatal.
+
+After the fix: **233/238**. The five remaining are classified in `MIGRATED-SUITE-STATUS.md` — two
+BEHAVIOUR (the glue installs no pre-execute leg on the decision side; remote-ensure ∥ work-delivery lazy
+ensure does not fulfil both paths on one cold member) and three LAYOUT PINS on the retired root/route
+(a source-text pin on `from './s6-remote.js'`, a projection-scope walk, an ENOENT on a moved path, a
+pre-execute-adapter walk). None may be "fixed" by editing the expectation first — that is the SLICE-16
+lesson in the other direction.
+
+**Next, and now top of the queue:** put these 16 files into CI as a vitest `suiteList` leg (the
+`ute-vnext-a1` leg is node:test and cannot carry them). The reason this rotted is that nothing ran them;
+a leg that names them is the only durable fix. Also next: the five classified failures above.
+
+Gates at `f6ceacc2a`: leg `suites=6 files=6 exit=0`, cut-closure `prodRefs=0 distResiduals=0`,
+P0 assets pass, catalog `tests=888 refused=0 findings=0`.
+
+### R31 — 233 → 237/238, and the one that will not move is the interesting one
+
+Four of the five remaining failures were pins on the retired route. Each was re-expressed against the new
+assembly **without weakening what it asserts**, and the descendant-authority walk came out STRONGER: it
+now walks `src/plugin/vnext` and names `admission.ts`/`centre-config.ts` where it named the retired
+`pre-execute-adapter.ts`, so "authority is never a resource census" covers the centre itself.
+
+The fifth does not re-anchor, because it is not a pin. **E3: the durable Alpha.4 permission overlay has no
+decision-side effect.** The retired entry installed a pre-execute adapter that consulted the overlay per
+call; the cut retired the adapter with the execution route, and the centre judges only the COMPILED
+binding lanes. A `grantInstance` deny persisted after the member was bound therefore changes nothing at
+execution time. That is the objective's own stated risk ("入口整体替换后的 Team 功能损失") arriving on
+schedule, and it is a capability the 06 contract preserves. Recorded as RED in the matrix.
+
+The fix is a design decision, and it belongs with the Control allow/ask/deny wiring because both ask the
+same question — *what is the ONE place a durable restriction becomes a verdict?* Two shapes:
+(a) the centre consults an injected overlay-decision port per call, next to the lane verdict (the retired
+adapter's semantics, moved under the centre's authority); (b) overlay mutations compile INTO the binding
+and the generation recheck recompiles it. (a) keeps one decision function and is closer to the retired
+behaviour; (b) keeps admission synchronous but makes every mutation a recompile. I have NOT picked one
+unilaterally: it changes what the centre is.
+
+**Also recorded:** G8 failed once under parallel load and passed in three further full runs plus
+isolation. That is a flake, not a pass — the arm must be made deterministic before D.
+
+**Next:** (1) the overlay decision above, with E3 as its acceptance test; (2) put the 16 files into CI as
+a vitest `suiteList` leg — they rotted because nothing ran them; (3) make G8 deterministic.
+
+Gates at `a74a646e8`: leg `suites=6 files=6 exit=0`, catalog `tests=888 refused=0 findings=0`,
+cut-closure `prodRefs=0 distResiduals=0`, P0 assets pass, ci-required pass, docs-sync `findings=0`.
+Migrated suite: **237/238** (`dev/agent-workflow/evidence/ute-a1/migrated-suite.json`).
+
+### R32 — the census told the truth about its own shape, and I did not ship a red leg
+
+Built the CI binding for the migrated suites and measured it in full: the token runner
+(`scripts/eb3-security-run.mjs --list-file`) is the repo's vitest vehicle, the manifest splits `cmd` from
+`check` (the workflow line is `cmd + check`), and both gates fired and cleared against the new entry
+(`CI_LAYER_LEG_UNPROVEN` while the leg sat in the wrong layer; `CI_LAYER_LEG_ARGUMENT_MISSING` until the
+argv was split). The end-to-end reading is now:
+
+```
+EB3-LAYER layer=ci-integration verdict=FAIL suites=15 files=15 describes=76 passed=237 failed=1
+```
+
+Two things that measurement taught, both worth more than the leg:
+
+1. **Fifteen, not sixteen.** The sixteenth entry in `migrated-entry-imports.json` is
+   `t12a-live-bridge.mjs`, a live-bridge HELPER with no tests of its own — the token runner refuses a list
+   longer than its own report, which is how the census found that out about itself. The A1 clause counts
+   16 BOOKKEEPING entries; the executable population is 15 suites.
+2. **The leg is not bound to a Required layer, deliberately.** Its population is red on E3. Binding it
+   would either redden Required or require the exemption/expected-fail this project forbids, so the
+   binding was built, measured, and REVERTED. `tests/checks/eb3-ute-migrated-suites.txt` is committed as
+   the population declaration with the command in its header and the state recorded.
+
+Order from here: **fix E3 → the list goes green → bind the leg.** Nothing else in A1 depends on that
+sequence.
+
+Gates at `a686f1180`: leg `suites=6 files=6 exit=0`, catalog `tests=888 refused=0 findings=0`,
+cut-closure `prodRefs=0 distResiduals=0`, P0 assets pass, docs-sync `findings=0`, ci-required pass (the
+revert restored it).
+
+### R33 — E3 is two defects, and the second one was not in the failure message
+
+Read the call site rather than the assertion text: the centre (admission leg + ledger + settlement) is
+installed inside `if (a5sfRowConfig !== undefined && a5sfRealmProvider !== undefined)`. A member without a
+confined-provider realm therefore gets **no centre at all** — native tools run under the host's mediation
+with no admission decision, no ledger, no settlement. The A1 law says an unwired controlled call must be
+refused; here it is simply **not covered**, which is worse. E3's world is such a world, which is exactly
+why it counts zero pre-execute legs.
+
+Repair order, recorded in `MIGRATED-SUITE-STATUS.md` + the capability matrix:
+
+1. **admission must not be realm-conditional** (security gap). Small in shape but NOT a one-line move: the
+   binding is built from `compiledAnswerOfRealm(realm)`, so a realm-less member needs a second, legitimate
+   compiled answer — that is a design question about where the ceiling comes from, not a code edit.
+2. **the overlay decision** (injected port per call vs compile-into-binding + generation recheck).
+
+I did not start either half this round: (1) is not the small change its call site suggests, and starting it
+late would have left the branch half-refactored. E3 stays red, the CI leg stays unbound, and both are
+stated in the matrix rather than narrated away.
+
+Gates at `acde9af5c`: leg `suites=6 files=6 exit=0`, catalog `tests=888 refused=0 findings=0`,
+cut-closure `prodRefs=0 distResiduals=0`, ci-required pass.
+
+### R34 — the design question has an answer; what is left is a product ruling
+
+Q: where does a realm-less member's ceiling come from? **A: the same compiler.**
+`createProductRealmProvider(plan).compiledFor(member) → { members, bindings? }` is what the realm mount
+itself calls (`a5sf-realm-row.mjs:858-905`), so compiling without mounting is that answer minus the
+provider substitution — not a second policy. That closes the design half in one measurement.
+
+What is left is not design: it is a product decision between
+**A** admission-only centre that records the provider as UNCONFINED (every call decided, but admits
+unconfined effects — and carries E3's plane semantics), and
+**B** a refusing centre (`ADMISSION_PROVIDER_UNCONFINED`; fail-closed, but every realm-less member stops
+working, including worlds the suite uses today).
+
+Escalated in `ESCALATION-realmless-admission.md` with the recommendation (A, with the limit stated on every
+fact) and with the point that makes it urgent rather than academic: the CURRENT state — no centre, no
+ledger, no settlement, nothing reported — is wrong under both options, and no row may describe it as
+"unwired calls are refused".
+
+Gates at `def820ca7`: leg `suites=6 files=6 exit=0`, docs-sync `findings=0`.
+
+Next: the ruling decides the shape; either way the work is the same two steps (compile through the ONE
+compiler; make the native mount the optional half), and E3 is the acceptance test for the plane half.
+
+### R35 — the half of the escalation that does not need a ruling, done
+
+The ruling question is about rows that did NOT ask for the centre. The rows that DID ask have an obvious
+answer, and it is fail-closed: a member whose row sets `centreStatePath` but got no confined-provider realm
+was running its native tools with no admission, no durable fact and no settlement. That is not "an unwired
+call is refused"; it is the call being outside the centre while the row believes it is governed.
+
+`memberCentreUnwiredViolation` (centre-config.ts) is the narrow rule: fires only when the row asked for
+governance AND no realm mounted, refusing the member with `MEMBER_CENTRE_UNWIRED` and naming it. Rows that
+never configured the centre are untouched — deliberately, so this closes a silent gap WITHOUT turning a
+wiring gap into a product-wide outage. ADM-44 carries both negative controls (realm present; centre never
+configured; non-string path left to R1).
+
+Still escalated, unchanged: rows that did not ask remain outside the centre, and whether the product admits
+them against a compiled ceiling (recording `provider: 'unconfined'`) or refuses them is the owner's ruling
+(`ESCALATION-realmless-admission.md`). E3 stays red for the other half — the durable overlay has no
+decision-side effect.
+
+Gates at `4c892adf8`: leg `suites=6 files=6 exit=0` (44 admission arms), catalog `tests=888 refused=0
+findings=0`, cut-closure `prodRefs=0 distResiduals=0`, place-dist-glue 26 placements.
+
+### R50-51 — A1 closes; the first B slice makes `ask` real
+
+R50: E3's world was rebuilt on v4 (it was pre-cut, not mis-wired), the centre got a durable-overlay provider
+(async prepare keyed on the overlay generation, sync decide over the frozen `resolveOperationPermission`),
+the migrated suites went 238/238 and were bound as a **required ci-integration leg**
+(`verdict=PASS suites=15 files=15 passed=238`). G8's "flake" was the retired `resolvePaMount`
+ReferenceError on the delivery path, reproduced deterministically and then fixed for real by awaiting the
+world's own `resumeGate` instead of polling a 3 s clock.
+
+R51: the B-stage gap was that **no approval binder was wired at all**, so every `ask` was
+`ADMISSION_ASK_UNWIRED`. It is now a durable Control request over the EXISTING
+`awaitControlDecision` bridge, with a recorded decision, a post-approval recheck (lane AND generation), a
+one-shot grant spent exactly once, and refusal codes that stay distinct (denied / expired / fault /
+revision mismatch / replay). Host-native asks preserved — a first attempt that made an approval authority
+mandatory broke SLICE-20/22, and the fix restored that path rather than editing those tests.
+
+NOT proven and stated as such: no host boot (leader-side pending-control surface unexercised); the durable
+allow is `inline`, so exactly-once rests on the grant binder + ledger replay refusal, not on
+`guardOperation`; stale-denied and abort/abandon are mapping-level; the grant does not bind the locator.
+
+Gates at `518109063`: leg `suites=6 files=6 exit=0` (119 pass), catalog `findings=0`, cut-closure
+`prodRefs=0 distResiduals=0`, P0 assets pass, docs-sync `findings=0`, place-dist-glue 27, ci-required pass,
+bound leg `PASS 238`.
+
+### R52 — Stop priority and lifecycle close, and the one cell the frozen contract still blocks
+
+Stop is the host's `exec.signal` (no second mechanism): it decides before the lane AND before any reviewer,
+records `ADMISSION_STOPPED` as the enforced deny with `REFUSED`/`not-started`, aborts a pending ask through
+the ControlService's existing inline-abort cascade, and is re-checked after the durable decision so a late
+approval cannot downgrade it.
+
+`close()` is a state, not a removal: the pre-execute and guard stay installed in closed mode, new calls are
+`ADMISSION_MEMBER_CLOSED` without ever consulting the live binding, in-flight calls still settle, and close
+is idempotent. ADM-56..62 (126 pass), each with positive + negative controls; seven mutation edits
+(reverted, `cmp`-verified) each turned exactly their own arm red.
+
+**Blocked and named, not worked around:** a Stop landing AFTER an `allow` was recorded cannot be `REFUSED`
+under the frozen settlement contract (`REFUSED` may not cite an `allow`, `execution-settlement.ts:932-955`;
+`CANCELLED` needs a `pre-dispatch` Stop, `:1019-1027`). That is exactly the open
+`CONTRACT-CHANGE-REQUEST-settlement-recheck.md` option A. The store's own Stop shape is asserted instead, and
+the literal shape stays unreachable until the contract is ruled on.
+
+Gates at `eb0726512`: leg `suites=6 files=6 exit=0` (126 pass), catalog `findings=0`, cut-closure, P0,
+docs-sync, place-dist-glue 27, ci-required pass, bound leg `PASS 238`.
+
+### R53 — the probe ladder runs the host's real tools, and two rungs are honestly not run
+
+Six rungs, unmodified native tools, through the ONE centre over a durable ledger (facts read back from disk)
+and the product settlement store; each rung has a positive and a negative control, and ORDER/IDENTITY are
+asserted rather than presence (every rung must resolve the host module's own body).
+
+read/write/grep/web_fetch are PROVEN both ways — including `grep` spawning a real confined subprocess (and
+zero spawns on the deny side) and `web_fetch` making exactly one transport call (zero on the deny side).
+
+persistent `bash` and `run_code` have NO positive control, and the reason is a CONTRACT fact, not the
+environment: they are `process.exec`, the v4 member ceiling's frozen `io` field set is
+`{read, write, network}`, so no compiled answer can carry `binding.process`. That is the standing
+`CONTRACT-CHANGE-REQUEST-process-lane.md`, which itself names this rung. The refusal halves ARE proven
+(`ADMISSION_AXIS_UNSUPPORTED`, zero spawns, zero `confine` calls), and ADM-78 pins the block in code so a
+future process lane flips the two skips loudly instead of leaving a stale waiver.
+
+Leg 126 → 140 (2 disclosed skips); vitest population still 238. Gates at `60fda771a`: leg `suites=7
+files=7 exit=0`, catalog `tests=889 findings=0`, cut-closure, P0, docs-sync, place-dist-glue 27,
+ci-required pass, bound leg `PASS 238`.
+
+### R54 — the durable half of B, proven against a real child-process death
+
+Crash is a CHILD PROCESS that admits a call and exits without a disposer; the parent opens fresh
+ledger/store/centre over the same directory and asserts only on disk read-backs. Six claims, each with
+positives and negatives (ADM-79..84): crash recovery to `UNKNOWN` with the right missing evidence; a
+completed call from the same dead process stays `COMPLETED` (no blanket rewrite); cross-process replay
+refusal that appends NOTHING on the fresh ledger's own check; duplicate execution fact, truncated/garbage
+line and unwritable directory each become an explicit refusal (`ADMISSION_LEDGER_UNREADABLE`/`_UNWRITABLE`)
+rather than "no opinion"; and cold recovery reconciles ONLY the open records, preserving the phase reached
+and deriving different missing evidence, with promotion to COMPLETED refused as `SETTLEMENT_CONFLICT`.
+
+Six mutation edits each red exactly their own arm. Leg 148 tests (146 pass, 2 disclosed skips); vitest stays
+238. No CCR was needed: the replayed callId is refused BEFORE any settlement decision, so the open `allow`
+record goes to recovery as UNKNOWN — option D of the open settlement-recheck CCR — and no terminal is
+invented.
+
+Gates at `ddbb87a8d`: leg `suites=7 files=7 exit=0`, catalog `tests=889 findings=0`, cut-closure, P0,
+docs-sync, place-dist-glue 27, ci-required pass, bound leg `PASS 238`.
+
+### R55 — C rows that were silently absent are now visibly refused, each with its own code
+
+C-remote, C-alpha6 and C-ptc were neither wired nor refused. All three are now (b) EXPLICITLY UNAVAILABLE
+with pairwise distinct codes on their existing axes, recorded as facts and settled REFUSED/not-started:
+`ADMISSION_REMOTE_UNAVAILABLE` (team.control, surface not built — dispatcher omitted after the refusal),
+`ADMISSION_ALPHA6_UNAVAILABLE` (host.service, config rule + recorded fact before any wake),
+`ADMISSION_PTC_UNAVAILABLE` (process.exec, in the ONE centre before the body).
+
+ADM-85..88 carry both directions: ungoverned remote still dispatches; a wake runs without the point and does
+not with it; an in-lane `read` completes in the same world where `run_code` never reaches the body; and
+`bash` keeps `ADMISSION_AXIS_UNSUPPORTED` so the two absences are distinguishable from the durable record.
+ADM-88 pins the closed refusal table (three capabilities, distinct codes, each naming its missing axis).
+
+Disclosed cost, recorded in the row rather than hidden: a centre-configured row loses its remote API. The
+PTC ROUTER-side refusal is not built — it needs the open process-lane ruling — and is written down as such.
+
+Gates at `ac8758305`: leg `suites=7 files=7 exit=0` (150 pass + 2 disclosed skips), catalog `tests=889
+findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg `PASS 238`.
+
+### R56 — the 15 team tools, create/archive and delegate/collect are end-to-end over the product surface
+
+Nine arms (ADM-89..95) over `createTeamTools` on a real TeamRuntime/TeamDomain/ControlService, every
+assertion read back from disk with fresh ledgers:
+
+- all 15 centre-owned tools dispatched in declared order, each allow-before-body with a `team.control` fact
+  and a COMPLETED settlement;
+- binding removed ⇒ all 15 `ADMISSION_NO_BINDING` with zero surface effects, and a non-product tool is
+  `ADMISSION_TOOL_UNBOUND` while `read` is still admitted (the refusal is not a blanket);
+- `team_create_member` installs the MEMBER's own centre (its ledger, its generation, its lane — the Leader
+  allows the locator the member denies); `team_archive_member` runs `close()`, after which the member's call
+  is `ADMISSION_MEMBER_CLOSED` with `['ADMITTED','REFUSED']`, never UNKNOWN;
+- `team_delegate`/`team_collect` deliver and collect one unit with a durable `settledSequence`, and the
+  collected work's calls land in THAT member's ledger, never the Leader's.
+
+The seam was NOT missing: install at the member bind, archive's release-residency → handle dispose →
+`onDispose` → `close()`. No new authority, no fake tool, no CORE_SEAM_BLOCKER.
+
+Gates at `1682e51da`: leg `suites=7 files=7 exit=0` (157 pass + 2 disclosed skips, 79 admission cases),
+catalog `tests=889 findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg
+`PASS 238`.
+
+### R57 — MCP's mount reaches the centre; Alpha.6 needs an axis, not a wire
+
+C-mcp: a real HTTP MCP endpoint from the product harness, mounted through the exact production
+`mcpClient.apply(...)` call, is admitted by the ONE centre on `net.mcp` with the SERVER as locator, facts read
+back from disk, and the real server answering `pong:mounted`. Negatives show mounting is not permission (the
+same server's sibling tool runs while a denied one gets zero body), and `mcp__`/`mcp__<server>` are
+`ADMISSION_TOOL_UNBOUND` — no prefix matching.
+
+New LIMIT recorded instead of papered over: the centre is NOT mount-aware, so a well-formed name for a
+never-mounted server is judged on the network axis alone; the product excludes it at the tool registry.
+
+C-alpha6: the config rule refuses the opt-in on every row, so no product-config path reaches it. The
+machinery works when composed directly (a real recipient decision off a durable control row, a persisted
+wake-intent row a FRESH reader sees naming exactly that reviewer). What is missing is a review-routing AXIS
+in the centre; driving one today only fabricates a fallback-axis record. Two lawful shapes recorded, no
+policy invented.
+
+Gates at `e309128bd`: leg `suites=7 files=7 exit=0` (161 pass + 2 disclosed skips), catalog `tests=889
+findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg `PASS 238`.
+
+### R61 — the Provider-OS boundary holds: governed members mount native modules into their realm by default
+
+Round 60 refuted the owner's named risk on a live host (native `read` on the base provider, zero guard
+consults). This round fixes it as shape A and re-measures with the SAME unmodified driver, two agreeing boots:
+
+- `d:guard-facts` REFUTED → **PROVEN** (2 allow facts `stat`/`readText`, member identity, `decidedBy=[ALLOW]`,
+  zero out-of-lane provider facts);
+- `d:member-read-admitted` PASS, `d:centre-facts` PASS (allow + LANE_DENY + executions);
+- `d:member-read-denied` still reports the centre's LANE_DENY because the centre decides BEFORE execution —
+  the provider-side `IO_READ_DENIED` is proven in-process (ADM-100), which is the honest division;
+- `d:native-read-surface` still reads the top-level description while its marker lives in the `file_path`
+  parameter description: an instrument defect, to be re-anchored, not deleted.
+
+Mechanism: candidate modules come from the preset's OWN rows (`compositionInventory()`), each kept only if it
+declares a realm face and registers a centre-adjudicated name, then mounted through the existing host-module
+path (ONE definition per name, no shadow). Unresolvable/invalid/empty/ambiguous/conflicting ⇒ typed
+GOVERNED_NATIVE_MODULE_* refusals, never a base-provider fallback. Ungoverned rows unchanged.
+
+ADM-100/101/102 pin the behaviour. Gates at `26dde9dab`: leg `suites=7 files=7 exit=0` (164 pass + 2 disclosed
+skips), catalog `tests=889 findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required pass,
+bound leg `PASS 238`.
+
+### R63 — cold recovery and work delivery PROVEN live; subprocess, search face and Alpha.6's fact half escalated
+
+D3 driver, two agreeing boots. PROVEN: a real SIGKILL crash with cold recovery on the same home (in-flight
+`RUNNING → UNKNOWN`, no execution fact, never replayed, completed facts byte-identical, a post-recovery call
+admitted with a NEW fact); work delivery (delegate → collect, prompt verbatim, terminal and durable, identical
+when re-collected after the restart, member calls in the MEMBER's ledger); Alpha.6's typed row refusal with
+nothing live behind it.
+
+REFUTED and escalated rather than worked around:
+- `bash` on a governed Member is `ADMISSION_AXIS_UNSUPPORTED` (`process.exec` deny) and v4's closed io shape
+  rejects `io.process` outright — the process-lane CCR, now measured live instead of argued;
+- an IN-LANE `grep` is refused as `ADMISSION_OVERLAY_FAULT` (`tool-unsupported`) because the closed permission
+  vocabulary has no search face (new CCR: `CONTRACT-CHANGE-REQUEST-search-face.md`);
+- Alpha.6's recorded-fact half cannot be reached at a host entry (the config gate runs at row validation,
+  before the refusal point exists).
+
+Gates at `aa05de669`: leg `suites=7 files=7 exit=0` (164 pass + 2 disclosed skips), catalog `tests=889
+findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg `PASS 238`.
+
+### R64 — search face restored: the overlay abstains instead of faulting, and faults on covered faces still deny
+
+Shape B of the search-face CCR, implemented at the overlay decision: classify by vocabulary membership BEFORE
+canonicalizing; out-of-vocabulary ⇒ `no-opinion` (lane alone judges), covered faults ⇒ still
+`ADMISSION_OVERLAY_FAULT`, stored denies ⇒ still deny. The durable fact now carries
+`overlayOutcome: deny | no-opinion | fault`.
+
+Live (two agreeing boots): in-lane `grep` goes from refused-as-fault to `decision=allow`,
+`overlayOutcome=no-opinion`, execution `completed`, a real match returned, fact byte-identical after the SIGKILL
+cold restart. ADM-103..106 pin all four directions.
+
+Residual, disclosed: the durable overlay cannot DENY a search (lane-only governance there); shape A (subtree
+search face) stays open. Also disclosed: one intermediate run flagged work-delivery REFUTED because the driver
+picked a tools-less auxiliary request; the probe now selects a tool-carrying request, the clause is unchanged.
+
+Gates at `186d2c5c4`: leg `suites=7 files=7 exit=0` (168 pass + 2 disclosed skips), catalog `tests=889
+findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg `PASS 238`.
+
+### R65 — the owner-facing D acceptance report exists, with the frozen C1–C18 list quoted verbatim
+
+`dev/agent-workflow/evidence/ute-a1/D-ACCEPTANCE-REPORT.md` is now the single reviewable document. It uses the
+FROZEN list from `docs/plans/memo/ute-p0-20261121/06-CAPABILITY-CONTRACT.md:30-52` (19 rows: C1..C18 plus the
+owner's C14b split of C14), quotes each row's capability and disposition verbatim, and adds status/evidence
+columns.
+
+Fresh facts pasted in the report: HEAD, 132 commits since A0, `deleted=148` / `delete=146 replace=2 keep=32`,
+28 dist placements, leg 168 pass + 2 disclosed skips, catalog `tests=889` with UNCOLLECTED=41 exactly at the
+ceiling, migrated population 238, host pristine at the pinned SHA with porcelain empty (CORE PATCH BUDGET = 0
+honoured).
+
+Honest outcomes it states rather than smooths: no row is PRODUCT-PROVEN; `d3:persistent-subprocess` and
+`d2:revocation` are REFUTED; `d:member-read-denied` sees only the centre's LANE_DENY; runtime team creation is
+405 on a centre row; Alpha.6 is unreachable at a host entry; the search face is lane-only; the overlay cannot
+widen authority by design; the model is the product's scripted mock; and C11 (state projections) has NO arm at
+all — marked UNPROVEN with what would prove it.
+
+Two discrepancies recorded instead of papered over: the brief's `tests/checks/ute-migrated-suites.txt` does not
+exist (the real file is `eb3-ute-migrated-suites.txt`; the report pastes both the REFUSED line and the PASS
+line), and `place-dist-glue` is 28 placements, not the 26/27 older notes claim.
+
+Verdict wording: "A1+B+C implemented and measured, with D live evidence for the named, listed items — not a
+completed product acceptance."
+
+Gates: docs-sync `findings=0 blocking=0`, catalog `tests=889 findings=0`, leg `suites=7 files=7 exit=0`
+(168 pass + 2 disclosed skips, digest unchanged).
+
+### R66 — C11 stops being an unevidenced row: projections proven to derive from TeamDomain facts only
+
+The D report's biggest hole was C11 ("state projections — preserve — projection suite") with NO arm at all. Now
+ADM-107..109 ride the `ute-vnext-a1` leg, over the real durable TeamDomain, the real catalog-backed template
+resolver, the real committed-policy-state resolver and the real live overlay — built exactly as the entry wires
+them (`root.ts:4275-4279`), no mocked centre, no re-implemented body.
+
+- positive: identity core, every member row and the ledger summary match durable rows; a template is visible
+  while no member exists (nothing presaged); a real `team_create_member` is what a FRESH port+service sees; every
+  value survives a cold reopen;
+- negative (refusal): a create refused for an unbound agent and an out-of-lane call leave the projection
+  byte-identical and the durable store untouched, while the restored binding moves both;
+- negative (no second authority): a live handle with no durable row invents no member; dropping a handle moves
+  only `liveActivity`; an absent TeamSession fails closed; a projection pass writes nothing.
+
+Falsifiability measured: stamping schemaVersion 1 reds ADM-107; zero template rows reds all three. Both mutations
+reverted. Disclosed fixture adjustment: the leader row now seeds the production `childSessionId === root` shape
+(P6-T2's synthetic id is a shape production never writes).
+
+NOT proven, stated: the `stateOf` half of the row names the HOST's `sessionProjections` service, which neither
+the retired nor the new entry references (grep 0) — preserved by construction, needs a real boot to measure; and
+a projection read at a product entry is impossible on a centre row (C9). No row is PRODUCT-PROVEN.
+
+Gates at `e581cc205`: leg 173 cases / 171 pass + 2 disclosed skips, catalog `tests=889 findings=0`, cut-closure,
+P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg `PASS 238`.
+
+### R67 — C14b: no safety invariant was enforced only by a deleted component, and the status table now says what it means
+
+Six arms (ADM-110..115) each witness the dropped family body is GONE (`existsSync=false`) and then prove the
+invariant it used to enforce is still enforced elsewhere — positive executes and settles, negative is refused
+with its own code before the body with a closed settlement:
+
+- fs bodies -> centre + provider (`PATH_SYMLINK_ESCAPE`); search -> lane (overlay abstains); web -> network axis;
+  process -> typed refusal + OS profile; ui/inspect/agent-control/agent-state -> unbound or `host.service`
+  recording, with the child's own centre governing the child;
+- the retired PA bridge / pre-execute adapter / native-tool-admission / confined-* shadows -> one approval
+  authority in the centre (`admission-port.mjs`), and Stop-never-completion in the settlement;
+- crucially, the `confined-*` shadows were mounted by the REALM ROW at A0, so a realm-less member never had them
+  as enforcement; and an asked-but-realm-less member is REFUSED `MEMBER_CENTRE_UNWIRED` (ADM-44).
+
+Audit of the C1-C18 table found five real mismatches and fixed them: C1 cited the 405 line for the 15-tool
+surface; C5 said a Stop "resolved" a pending ask (it does not - a Stop is not an approval); C15 cited a file
+with no list; §6.9 (and the matrix + escalation) claimed a realm-less centre row "runs unmediated" when the code
+REFUSES it; §7 said "four" where nine judges are PROVEN. No row was upgraded; the lower status plus a dated note
+won each time.
+
+Gates at `a04ebb60d`: leg 179 cases / 177 pass + 2 disclosed skips (the bash/run_code process-lane positives,
+still never passes), catalog `tests=889 findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required
+pass, bound leg `PASS 238`.
+
+### R68 — Alpha.6 recorded refusal (shape A): the host entry now writes the refusal it already decides
+
+Round 63 left one honest gap: C-alpha6 is EXPLICITLY UNAVAILABLE, and the typed row refusal was measured
+live, but the recorded-fact half was unreachable at the host entry — the config gate ran at row validation
+before the root existed, so `createHostSurfaceRefusalPoint` was never built ("no fact file"). Shape A fixes
+the recording, not the refusal:
+
+- `vnext/row-refusal-entry.ts` (new) is the ONE point construction (`createCentreHostSurfacePoint`, shared
+  with `root.ts`), the recorder (`recordAlpha6RowRefusal`: only the Alpha.6 code + a `centreStatePath`), and
+  the hook `host.ts` passes to `validateTeamPluginConfig`;
+- `host.ts` runs the hook AT the unchanged `centreConfigViolation` decision, then the unchanged typed throw
+  refuses the row — same code, same boot outcome, no new capability/axis/grant, Alpha.6 still unreachable;
+- arms `ADM-116` (refused AND recorded: fact + settlement read from disk), `ADM-117` (positive control:
+  a row without the opt-in validates/binds and writes nothing), `ADM-118` (covered-face fault elsewhere
+  untouched: the shared point still records `remote`; a non-Alpha.6 violation writes nothing).
+
+Live (`run-boot-d3.mjs --boots 2`, probe adjusted, four judges unchanged): `d3:alpha6` PROVEN both boots
+with `refusalFactCount=1`, `nonRefusalFactCount=0`, settlement `REFUSED` / `not-started` /
+`ADMITTED → REFUSED` under the row centre dir, while `/__p6t6/state` is 404, `liveMembers=0`, no decision,
+no wake intent. The other three judges are unchanged (persistent REFUTED; crash/work PROVEN;
+`overall=FAIL evidence-complete=true allProven=false`). NOT proven: a row with the opt-in but no
+`centreStatePath` is refused but unwritten; the routed path is still unreachable; no row PRODUCT-PROVEN.
+
+Gates at `b5bbb0a90` + this change: leg 182 cases / 180 pass + 2 disclosed skips, catalog
+`tests=889 findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg
+`PASS 238`. Test-infra note: this worktree's test-use tree was a symlink whose realpath broke the sandbox
+launcher containment check; it is now a real pinned copy (gitignored, porcelain-empty).
+
+### R68 — the host entry now RECORDS the Alpha.6 refusal it already decided (shape A)
+
+C-alpha6's typed refusal existed at the row gate, but that gate runs at ROW VALIDATION, before the root and the
+refusal point exist, so the decision was never durable at a host entry. Shape A: the gate still decides (same
+`ADMISSION_ALPHA6_UNAVAILABLE`, same boot outcome), and the entry now records it through the product's ONE point
+constructor (`row-refusal-entry.ts:73`, shared with root.ts:1035). A hook fault is caught and warned — it can
+never soften or delay the refusal.
+
+Arms: ADM-116 (refused + exactly 1 deny fact on `host.service`/`alpha6.review-routing` + settlement
+`REFUSED`/`not-started` + `ADMITTED->REFUSED`), ADM-117 (row without the opt-in passes the rule, writes nothing,
+and still binds — the positive control), ADM-118 (the shared point still records the REMOTE refusal, and a
+non-Alpha.6 centre violation writes nothing).
+
+Live, two identical boots: `d3:alpha6` now sees `refusalFactCount=1`, `nonRefusalFactCount=0`, the raw
+settlement envelope `REFUSED/not-started`, while the boot outcome is unchanged (`/__p6t6/state` 404,
+`liveMembers=0`, no wake intent, no decision). The no-silent-route judge was made STRICTER, not weaker: the
+probe now feeds it a fact that claims a route.
+
+NOT proven: a row with the opt-in but no `centreStatePath` is refused but unwritten (no durable dir); the routed
+path is still unreachable; C-alpha6 stays REFUSED-BY-DESIGN (MECHANISM + DEV-LIVE), the centre/PA joins unproven.
+
+Disclosure: this worktree's `tests/deepseek-harness-test-use` symlink escaped the runtime tree
+(`LAUNCHER_PATH_OUTSIDE_TREE`), so it was replaced with a real gitignored copy at the pinned baseline — no tracked
+file and no shared baseline was written.
+
+Gates at `7aa98a6bd`: leg 182 cases / 180 pass + 2 disclosed skips, catalog `tests=889 findings=0`, cut-closure,
+P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg `PASS 238`.
+
+### R69 — six open rulings consolidated into one owner-facing decision memo
+
+`dev/agent-workflow/evidence/ute-a1/OWNER-DECISIONS.md` states, for each blocked item, what is MEASURED today,
+the lawful options, and the cost of each: the process lane (A/B/C with C = "declare unsupported", which is what
+ships), runtime creation on a centre row (the 405; C is what D already does, B is the product fix), the
+settlement recheck cell, realmless admission (code refuses today), search-face governance depth (shape B shipped,
+shape A open), and Alpha.6 routing (refusal recorded, routed path unreachable).
+
+Recommendations recorded: C for items 1-2 to make a reviewable candidate now, B for item 2 as the next product
+increment, A for item 1 as the contract decision that also unblocks B rungs 5-6, one sentence each for 3-5, and
+item 6 stays refused until a routed path can be governed. Explicitly forbidden: closing any item by re-enabling an
+ungoverned plane, inventing an axis, or widening an invariant for a green row.
+
+### R72 — the external review's CI findings were real: one genuine ReferenceError, five red jobs, and 252 deletions that needed auditing
+
+The review (docs/reviews/20261122-1225.txt) read PR #822 from GitHub and reported hosted CI red while our local
+legs were green — because local gates never ran typecheck/lint/build/the other layers. Measured and repaired:
+
+- REAL BUG: `a5sf-realm-row.mjs:1182` consumed `skillSpec`/`presentSpec` that an earlier commit had removed, so
+  every path into the realm row died with ReferenceError (`ci-product`). Restored by computing both from the
+  module's own helpers with their real inputs (post-deny surface, configured modules, declared skill catalog),
+  and the same defect in `agent-bindings.mjs` (four helpers) was restored the same way.
+- The five hosted jobs now pass locally with the SAME commands the workflows run: pr-gate 10/10, ci-product
+  contracts 6/8 files + build, ci-integration (trusted sources booked, 238 vitest), ci-security 216, ci-fast, and
+  ci-required (the census leg had been absent).
+
+Because turning those jobs green required disposing of tests whose subjects the A0 cut deleted, a second,
+adversarial round audited all 108 deleted test files against the frozen inventory: 102 RETIRED-SUBJECT
+(justified, each cited), 1 PRESERVED restored green (`a3p3-governance-lane-hygiene`, re-anchored on vnext/root.ts
+and with a stale allow-list entry REMOVED), 5 AMBIGUOUS recorded as needing a ruling, 0 left restored-but-red.
+One negative control had fully lost its only proof (pwsh shell-class laws) and was MIGRATED as 8 arms.
+
+Audit findings that must not be buried: `retiredSubjects` had listed 3 LIVE files as retired (now forbidden) and
+the key is record-only, so it can never turn a gate red; the p4t6 ledger lost 142 real lane bookings to one
+snapshot; the a2c2 permission-coverage gate is kept, exported, and wired nowhere; and the two boundary raises are
+measured (6834 evidence files, 461 records) with headroom recorded as headroom.
+
+Gates: leg 180 + 2 disclosed skips, catalog 785 tests / 38 uncollected, cut-closure cut(0/148), P0 cut(148/148),
+docs-sync 0, 28 placements, ci-required 10 workflows, bound vitest 238.
+
+### R73 — the owner-approved Settlement ruling is implemented: an append-only recheck deny makes ADMITTED -> REFUSED legal
+
+Review 20261122-1536 §2 (Option A), now in the store rather than in a workaround:
+
+- `execution-settlement.ts` gained `recordRecheckDecision` (append-only, same callId/executionId, its OWN
+  policyGeneration, reason code from the existing `ADMISSION_RECHECK_*` composition) and `assertAdmissionCoherence`
+  now permits `REFUSED` against a cited `allow` ONLY when the store itself holds a durable recheck deny and the
+  record is still ADMITTED. The original allow reference is never touched; `terminalDecision` names the deny.
+- Abuse is closed by construction: no durable deny ⇒ the original `SETTLEMENT_ADMISSION_MISMATCH` still fires
+  (ADM-120); once RUNNING a pre-execution refusal cannot be back-filled (`RECHECK_NOT_BEFORE_BODY`, ADM-121), and
+  an existing deny blocks dispatch; Stop stays `CANCELLED` + stop fact and a refusal is never laundered into it
+  (ADM-122).
+- Crash window (ADM-123): deny written, record still ADMITTED, fresh store over the same directory ⇒ recovery
+  settles `REFUSED`/`not-started` citing that deny; a fresh ledger refuses the same callId as `ADMISSION_REPLAY`,
+  body counter 0, nothing rewritten. Fail-closed (ADM-124): a throwing deny write still refuses the call and
+  surfaces the fault.
+
+Gates: leg 188 cases / 186 pass + 2 disclosed skips, catalog 785 tests, cut-closure `cut(0/148)`, P0, docs-sync,
+28 placements, ci-required, bound vitest 238, artifact verdict ok/1935.
+
+### R74 — S6 Remote returns as a GOVERNED MANAGEMENT plane: creation works at runtime, tool dispatch still cannot bypass UTE
+
+Review 20261122-1536 §3 implemented with its boundary intact. New `s6-command-classification.ts` is the ONE closed
+effect table over all 36 catalog methods with NO default-allow, applied after method recognition and BEFORE
+envelope/params/handlers (`s6-remote.ts:4791`). On a centre row the S6 surfaces are built and installed again
+(`root.ts:4341`); `admission.ts` was NOT touched — no new axis, no admission duty, no member binding on the
+management route.
+
+Classes: creation (`team.create`, `handoff.create`) -> S6 principal + TeamDomain ownership + createAndStartTeam
+gates; reads -> principal + domain read authority; management -> principal + lifecycle/govemance gates;
+**agent-execution (`member.create`, `member.send`, `member.followup`, `team.admitInitialWork`,
+`team.ensureRootLive`) -> REFUSED** with `ADMISSION_REMOTE_UNAVAILABLE` on `team.control`, durable fact +
+REFUSED/not-started, because this plane has no member binding and serving it would be a second execution authority.
+
+Live, two agreeing boots, 6/6 judges PASS including the new `d:remote-creation`: unauthenticated create 401 and
+`minted=false`; cross-team read `TEAM_REMOTE_FOREIGN_TEAM`; legitimate create 200 `path=fresh-root` with durable
+teamSession/binding/leaderRow; the runtime-created team's Member chain admitted on ITS OWN binding (2 admission
+facts, 2 execution facts, 2 guard facts naming that member) while the management request carried no binding;
+`member.send` refused with 0 provider requests; duplicate create added no root and made 0 provider requests.
+
+ADM-86 was REWRITTEN stronger (table equality both ways against REMOTE_METHOD_NAMES + served command + refused
+five + durable fact/settlement + unauthenticated refusal + an unclassified command refused rather than
+default-allowed). The round-60 boot-bound workaround was removed: the driver creates its Team over the real API now.
+
+Gates at `b151fe95c`: leg 188/186+2, catalog 785, cut-closure cut(0/148), P0, docs-sync, 28 placements,
+ci-required, bound vitest 238, and the full ci-pr-gate pass=10 fail=0 legs=10.
+
+Disclosed: settlement reason kept under the 512-char cap (E3 verified no SETTLEMENT_INPUT_INVALID); p4t6 booking
+also closed a pre-existing round-72 omission; blueprint-fence re-recorded one literal moved L4324->L4401.
+NOT proven: no PRODUCT-PROVEN row, scripted mock model, per-DSH_HOME operator model is NOT multi-user RBAC,
+`handoff.create` not exercised live, crash/Stop duplicate-safety cited from the earlier d2/d3 judges.
+
+### R75 — process execution authority: the v4 grammar was sufficient all along; the chain was broken in CARRIAGE
+
+Fitness check (the ruling's step 0): v4 already carries `toolBindings[].authorization` (allow/ask/deny) and
+`execution.executionBoundary` at the grammar (`blueprint-v4.ts:100-204`), the authoring map projects them
+(`v4-authoring-map.ts:146-210`), and then TWO links silently dropped them: the restriction projection
+(`member-io-policy/src/compile.ts:237-283`) and the centre binding (`centre-install.mjs:55-73`), which mapped only
+effective lanes. So admission was judging a `Binding.process` PATH lane that NO surface ever declared. No schema
+change is needed — this is a carriage bug, and `io.process` stays rejected (a cwd never bounds what a shell opens).
+
+Admission now keys on `ToolAuthorized ∧ MemberValid ∧ SandboxReady ∧ BindingValid`
+(`admission.ts:409-452`): no authorization -> `ADMISSION_EXECUTION_UNAUTHORIZED`; tool-level deny wins over
+everything; boundary outside the closed vocabulary -> unauthorized; executor not `ready` -> `ADMISSION_EXECUTOR_
+UNAVAILABLE` (UNKNOWN is not ready); ask -> the existing durable Control + one-shot grant + post-approval recheck;
+else allow. The cwd is recorded as CONTEXT (`judgedLocator`) and never consulted. Resource bounds remain the three
+lanes + the OS sandbox (declared-read-intent admission, then Landlock). `grep` stays `fs.read` (ADM-129), PTC
+stays refused for its four-part missing proof.
+
+Arms ADM-125..130 (leg 194 cases / 192 pass + 2 disclosed skips). Live `d3:persistent-subprocess` stays REFUTED,
+now deterministically and for a NEW, honest reason: the composition declares no `toolBindings[]` for `bash`
+(authorizing the one-shot shell row would run the host's base, unconfined `ctx.shell`), and mounting
+`dsh-tool-bash-persistent` changes the model-visible `bash` parameter surface for every governed deployment —
+a composition change that needs its own live verification, not a smuggled ruling.
+
+Gates at `9989c3289`: leg 194/192+2, catalog 785/38 uncollected, cut-closure, P0, docs-sync, 28 placements,
+ci-required, bound vitest 238, artifacts ok/1939, and full ci-pr-gate pass=10 fail=0 (census identity set identical
+across two captures). Two gate defects were repaired rather than waived: SLICE-33 and u6-pr3-bl01 asserted the
+DELETED process lane and now assert the real authorization; the blueprint fence re-recorded a LINE SHIFT only.
+
+### R76 — the governed persistent shell is LIVE and PROVEN: state survives turns, and the OS refuses the escape
+
+`d3:persistent-subprocess` goes REFUTED -> **PROVEN** in two agreeing DEV-LIVE boots. The composition now mounts
+the HOST's own `@deepseek-ai/dsh-tool-bash-persistent` (no shadow, no Team copy) with
+`backendType: a5sf-governed-shell`, and the acceptance blueprint declares the execution authorization in the
+closed v4 grammar (`authorization: allow`, `executionBoundary: confined-subprocess`, `io` adding no narrowing on
+purpose — process authority is NOT a path lane).
+
+Confinement is kernel-level and measured, both directions: the in-lane state file is written (32 bytes), the
+out-of-lane write is refused (`Read-only file system` from the shell itself, file absent and 0 bytes read by a
+driver process outside the sandbox). The chain is the PTY spawn wrapped by the HOST sandbox provider with the
+member's narrow policy; on Linux bubblewrap 0.11.1 (verified usable) with the Landlock launcher as fallback.
+
+Turn persistence: first call `DBOOT_D3_STATE_WRITTEN`, second turn `DBOOT_D3_PERSISTENT_SHELL_STATE` ->
+`DBOOT_D3_STATE_READ`; both facts `{axis: process.exec, decision: allow}` and both settlements
+`ADMITTED->RUNNING->COMPLETED`.
+
+THREE runtime defects the real path exposed, all fixed inside CORE PATCH BUDGET = 0: (1) product-assembly refused
+a `confined-subprocess` answer that DID report `availableFaces.process` (and still refuses a narrower
+process-class lane, which nothing would enforce); (2) the compiled answer kept for admission dropped the mounted
+faces, so readiness said `unavailable` for a realm that had mounted the face; (3) a process-class binding claimed
+`bash` for an fs-only realm.
+
+Every surface-assertion update is listed in the round record (persistent `bash` takes `{command}` only; the crash
+judge's absence-as-evidence clause became `state-file-survives-restart`; both other drivers' rows grew the inert
+terminal half). Two cross-world probes FAILED before the fixes and PASS after — recorded, not hidden.
+
+Gates at `9b22541e6`: leg 198 cases / 196 pass + 2 disclosed skips, catalog 785/38, cut-closure, P0, docs-sync,
+28 placements, ci-required, bound vitest 238, ci-pr-gate 10/10. NOT proven: DEV-LIVE is not a gate, scripted mock
+model, shell `ask`/`deny` are in-process only, no Windows deployment, and a governed deployment without
+`@deepseek-ai/dsh-terminal` cannot bind the preset (stated in cordis.patch.yml).
+
+### R77 — the rc.5 FS additions are CONFINED: B5 closes, SLICE-35 is green on both hosts
+
+DSH `0.2.2-rc.5`'s `FileSystem` adds `patchText`, `deleteFile`, `moveFile` (`packages/fs/fs/src/index.ts:325,345,368`).
+The Team confined provider overrode ten methods ending at `editText`, so on rc.5 `apply_patch`, delete and move
+reached the backend with the Member's lane never consulted — the external review's #1 security item. SLICE-35 is
+the invariant that goes red exactly for this; it was RED on rc.5 at round 72b naming SEVEN un-overridden names.
+
+Three overrides now exist in the SAME shape as the ten (`packages/runtime/team-services/src/fs.ts`): `patchText`
+(`:365`) like `editText`; `deleteFile` (`:383`) like a write of the file it removes (write axis + `write => read`);
+`moveFile` (`:416`) judges BOTH paths (source as a removal of an existing file, destination as a write plus a read
+when it already exists) before either effect, so an out-of-lane destination refuses with `IO_WRITE_DENIED` and the
+source is NOT removed. `WRITE_METHODS` (`:120`) carries the three names.
+
+rc.2 compatibility is by construction: the three are extra methods on a separate `FsNewMethodSurface` (`:99`) plus
+ONE local, commented cast on `Base.prototype` (`:250-264`) — no `any`, no shim; a base that implements none of them
+refuses TYPED `IO_POLICY_UNSUPPORTED` (`:279`) with the Member identity both install sites now pass
+(`install.ts:510`, `:875`). `MANAGED_FS_METHODS` was deliberately not grown: growing it would refuse every rc.2
+install; capability is decided per call.
+
+SLICE-35 makes the exclusion decision round 72b deferred, and makes it WITNESSED: rc.5's four TS-`private` concrete
+helpers are not entry points, and each excluded name must be called from a base method the class overrides (plus a
+host-relative assertion that the three public names are derived AND covered whenever the base declares them).
+Mutation control: renaming the `patchText` override turns SLICE-35 RED on rc.5 naming `patchText`. SLICE-36 keeps
+its exact `deepEqual`; its fixture now adds `copyFile`/`truncateFile`/`renamePath` (names the product does NOT
+cover), because reusing the rc.5 names would have measured the new coverage instead of the derivation.
+
+Arms ADM-135..140: in-lane reaches the spy provider EXACTLY once with the same target(s); out-of-lane is a typed
+refusal with zero provider calls (source survives); cross-root follows the product's per-path rule (no invented
+cross-root ban — the lane has no root concept beyond `allow` subtree roots, and rc.5's move is publish-then-remove);
+an old backend is a typed refusal; the REAL pinned provider performs the three on rc.5 and refuses them typed on
+rc.2, and asserts the branch matches the selected host.
+
+Lanes: rc.2 leg 204 cases / 202 pass + 2 disclosed skips, exit 0 (was 182/180 at round 72b). rc.5 per suite
+(the leg cannot run as one invocation there — `vnext-b-probe-ladder` HANGS on rc.5, baseline-identical):
+realm-lane 12/12, fs-slice 34/36 (SLICE-21/30 remain red, genuine rc.5 drift), admission 124 tests / 119 pass /
+5 red, os-probe 3/3, work-turn-reader 7/7, template-binding 6/6. The five admission reds (ADM-96/97
+`signals[0] is not of type AbortSignal`; ADM-100/101/102 preset native-module default mount) and the b-ladder hang
+are pre-existing rc.5 drift, reproduced with this round's four product/test files reverted, and are recorded,
+not bent.
+
+Gates at this round's commit: leg 204/202+2, catalog 785/38 uncollected/14 excluded, cut-closure, P0, docs-sync,
+28 placements, ci-required, bound vitest 238, artifacts ok/1939, ci-pr-gate 10/10 (census 2 captures). NOT proven:
+in-process only (no booted apply_patch/delete/move, no model turn), no kernel boundary (the base provider's TOCTOU
+is inherited), moveFile's version-guarded/patched-on-move path unexercised, no matrix upgrade (C-fs stays
+MECHANISM).
+
+### R77 — rc.5's three new FS methods are CONFINED: the security gap the review named is closed and watched
+
+rc.5 adds `patchText`, `deleteFile`, `moveFile`; the Team confined provider overrode ten methods ending at
+`editText` and none of the three, so on rc.5 `apply_patch`/delete/move would have reached the provider WITHOUT the
+Member's lane. Closed by implementing all three in the SAME shape as the existing ten — each calls the identical
+`admitted(...)` helper (path canonicalization -> lane guard), so they are judged exactly like `editText`/`writeText`:
+
+- `deleteFile` = a write of the file it removes (and therefore also needs read, by the existing `write => read`
+  rule — no new rule invented; `WRITE_METHODS` now carries the three names);
+- `moveFile` judges BOTH paths before any effect (source as removal, destination as publication); an out-of-lane
+  destination refuses and the source SURVIVES; no invented cross-root ban (`ADM-138` pins the product's own
+  per-path rule instead);
+- a base provider lacking a method refuses typed `IO_POLICY_UNSUPPORTED` naming the method — no fallthrough, no
+  no-op shim.
+
+Types: rc.2 compiles, rc.5 runs — one local, commented cast on the base prototype and a declared (non-`override`)
+surface; `MANAGED_FS_METHODS` deliberately not grown (that would refuse every rc.2 install); capability decided per
+call.
+
+Arms ADM-135..140 (`ute-vnext-a1` leg), including a REAL pinned-provider arm that runs against whichever host the
+lane selects: rc.5 performs patch/delete/move with real effects; rc.2 refuses them typed with nothing moved.
+SLICE-35 (the invariant that derives every path-touching entry point from the real base provider) is GREEN on rc.5
+and stays green on rc.2; SLICE-36 still passes.
+
+NOT proven, stated: no kernel boundary (this is a trusted-code lane guard over a model-controlled path, so the
+base provider's own canonicalize-to-syscall TOCTOU is inherited); no live `apply_patch`/delete/move through a
+booted Member; rc.2's provider is exercised through the typed-refusal branch, not a real move.
+
+Remaining rc.5 drift reds are unchanged and recorded: the admission/pre-execute tool call `{input:"bash"}` form
+and the batch-dispatch probe. C-fs stays MECHANISM — lane evidence is not a booted measurement.
+
+### R80 — the A0/A1 cut is CLOSED on the hosted path: the instruments were cut with the surface, and the census baseline re-earned
+
+Review `docs/reviews/20261122-2305.txt` §3 (second P0): at `5cf7cba8a3` the REQUIRED path was
+`pr-gate` PASS / `ci-security` PASS / `ci-product` PASS / `ci-fast` PASS, **`ci-integration` FAIL**
+(`eb3-family-definitions` 473 findings), **`ci-census` never executed**, **`ci-required` FAIL**,
+**`pr-settlement-gate` FAIL`. The product was cut and green; the gates that graded the retired plane
+were not. This round cuts them with it — per subject, with a licence, and with named successors
+(evidence: `dev/agent-workflow/evidence/ute-a1/ROUND80-CI-CLOSURE.md`).
+
+**The 473, decomposed and discharged (no finding was silenced).** 10 `DEF_CENSUS_DRIFT` (9 booked
+Family Contribution files + the ARC-A probe contribution); 180 `INVENTORY_PATH_MISSING` + 129
+`INVENTORY_PATH_UNTRACKED` + 83 `INVENTORY_RUNTIME_PATH_BROKEN` + 44 `INVENTORY_AUTHORITY_INVALID` +
+27 `INVENTORY_DEPENDENCY_UNKNOWN` = 463 inventory findings over 9 families + 11 `shared` entries.
+Every path named is in the A0 frozen delete/replace set (`ute-p0-assets.snapshot.json`, frozen tree
+`a19d1df018e772f20602f93bc726694524bdeb2f`), so the licence is
+`ute-cut-closure.allow.json#retiredSurfaces` — schema `ute-a0-retired-surfaces/1`, **12 subjects**,
+each with frozen modules, citations and successors. The ledger is VALIDATED, not trusted:
+`--check` refuses an untracked citation, a module that is not delete/replace in the snapshot, an
+unknown kind, or a successor that does not exist (`A0_RETIRED_*`), and a family whose declared
+surface is not wholly frozen is graded as LIVE (`INVENTORY_RETIREMENT_UNEARNED`). Result:
+`EB3-FAMILY-DEFINITIONS pass files=0 findings=0 retiredFamilies=9 retiredCensusRows=10
+retiredByCut=87`. `eb3-family-definitions` was KEPT (it still grades set/member/lane/mount/definition
+parity, the census booking, `DEF_RETIREMENT_UNLICENSED` and the cut discharge, and its C7 control
+still fires); it is no longer a claim about a surface that does not exist.
+
+**The claim set and the controls re-pointed, not deleted.** `eb3-tool-acceptance` now reads the
+claims from the frozen A0 blob (`git show <frozenTree>:<path>`) and discharges a cited suite only
+when the suite is already booked in the round-72 `retiredSubjects` record: `pass tools=31
+L4-proven=19 L4-disclosed=11 L4-unverified=1 retiredSuites=31`. `eb3-ci-negative-controls` C3/C3c/C4
+stage their mutations on A0 blobs (same laws), C3b is re-expressed (the frozen `families/fs.mjs` is
+now a CUT deletion, so the unlicensed-deletion law is staged on a non-frozen declared file and the
+frozen branch asserted as discharged), C20 takes the leg's own `retiredSuitePaths`; **35/35**.
+
+**The census-lane fixtures re-based on the frozen twin (option (a) of MIGRATED-SUITE-STATUS §6.2).**
+`ute-p0-assets.test` derives the boundary from A0 and grades it in a materialised throwaway repo;
+`ute-family-inventory.test`, `ute-cut-closure.test` and `ute-retirement-gate.test` read the frozen
+tree by object id; the LIVE arms restate what the live tree now says (`retiredFiles=0`,
+`UTE_OLD_PATH_PARTIALLY_REMOVED` for the seeded rows — the cut, not a retirement). Mutation
+batteries intact: inventory 32/32, p0-assets 21, cut-closure 13, retirement-gate 45.
+`ute-cut-closure` also gained a REAL fix: its build-face arm graded a foreign `--root` fixture with
+THIS repo's placements; now `placements=self|fixture`.
+
+**Two successors are now REQUIRED** (they ran in no CI layer before): `ute-cut-closure --check`
+(dependency closure of the 148 deleted sources + the retirement record) and `ute-p0-assets --check`
+(the frozen 37-module/180-file boundary: 146 delete, 2 replace, 32 keep, `cut(148/148)`), declared
+as legs in `dev/ci/eb3-ci-manifest.json#ci-integration` and as steps in
+`.github/workflows/ci-integration.yml`. The manifest is graded by `eb3-ci-required` (workflows=10
+findings=0), so the steps cannot be decorative.
+
+**The census baseline was re-earned, not loosened.** `ci-census` refused `POPULATION_SHRANK`
+(`packages/runtime` −102 files, `packages/tools` −1, the `packages/tools/a5p5-tools` root absent) —
+correctly, since a population that shrank silently is how a deleted suite disappears. The baseline
+was regenerated through the instrument's own attributed path
+(`--write-population-baseline --accept-population-change … --accepted-by round80-a1-cut`): 712 → 599
+files, 11 roots, catalog digest `sha256:da8a452d…`, with the reason naming the A0/A1 cut. The
+population did not shrink by omission; it shrank by the licensed deletion, and the record says so.
+
+**Settlement.** The `pr-settlement-gate` requires a dated settlement comment whose first line carries
+the CURRENT head sha; it will be posted after this round's final commit, with the sha the gate will
+grade (owner action if the gate needs a repo variable/label is reported, never faked).
+
+NOT proven, stated: nothing here was observed on hosted runners in this session. Every job below was
+run with the hosted command locally; the `hosted` column says UNPROVEN until the workflow logs exist.
+
+**Second pass (same round) — the stop-at-first-red layer hid a regression.** `ci-integration` halts
+at its first failing step, so the 473 family-definitions red concealed six more failures downstream.
+Replaying the layer's extracted step list found them; one was not a test problem: the A1 successor
+mounted a row's `nativeToolModules` inside `installMemberExecution`, i.e. BEFORE `agentPresets.mount`
+and BEFORE `applyBuiltInToolDeny`, so an own-scope native shadow could be created outside
+`tools.restrict` before the deny lane and survive it — the exact fail-open route-C pins. The deleted
+legacy file had made that pin vacuous. Fixed in the composition (post-deny
+`attachA5sfNativeToolModules`, realm reference hoisted, disclosure restored); route-C N5 now measures
+the real order. The other five (structural pins reading the deleted glue, the hint-gate move, the
+host-dependent inject key set, the retired appended shell shadow, and PA15 stale since round 75) are
+disposed per subject in `ROUND80-CI-CLOSURE.md` §2.1. The layer then ran end to end locally, step by
+step, in the workflow's own order.
+
+## Round 82 (2026-11-23) — `ute-vnext-a1`: one measured capability, five named ENV-LIMITED arms, hosted green
+
+**The hosted red was one absence, not five defects.** `OS-2`, `OS-3`, `ADM-66`, `SLICE-28` and cascade
+`ADM-70` all ride the confined process lane's `network: deny` profile, which the product admits only on
+its own `--net-leg` proof of an unprivileged `CLONE_NEWUSER|CLONE_NEWNET` per child. The hosted runner
+refuses that proof at `writing /proc/self/uid_map refused` (the deny child never leaves the host
+network: tcp connects, udp delivers), so the provider correctly refuses every `network=deny` spawn. The
+confined subprocess face that `grep` runs through carries the same profile, which is why the reported
+"ripgrep provider failure" was a fail-closed refusal, not a ripgrep regression.
+
+**Measured, then decided per arm.** `tests/world-factory/lib/a5sf-env-capability.mjs` reuses the
+product's own probe (`runNetworkLeg`, ABI, preflight, enforcement legs) once per process and prints
+`A5SF-CAPABILITY network-deny=present|absent …`. `OS-2`/`OS-3` assert the provider's typed
+`IO_POLICY_UNSUPPORTED` refusal (no plan, no payload) and report `FAIL-CLOSED-CONTROL`; `ADM-66`/
+`SLICE-28` assert the admission fact + refused spawn + settlement `FAILED` + zero spawns and keep their
+lane-refusal controls; `ADM-70` asserts the runnable-rung and durable-admission order but does not claim
+the 4-rung positive ladder. All five print `UTE-VNEXT-A1-ENV-LIMITED … code=NETWORK_DENY_UNPROVEN`,
+`t.skip` only AFTER their assertions, and increment no proven counter. Dispatcher aggregate:
+`DSH-TEST-DISPATCH-ENV-LIMITED count=5 proven=0 env_blocks=3 fail_closed_controls=2`.
+
+**Both directions verified.** On this host (`NET-DENY-CONFIRMED`, real kernel controls) the leg is
+206 tests / 204 pass / 2 declared skips / 0 env-limited. With the documented probe override
+`A5SF_FORCE_NETWORK_DENY_ABSENT=1` (only the net VERDICT at `deps.probeFacts`; ABI + enforcement legs
+stay real; `forced=true` on every line) the whole leg is 206 / 199 / 7 / 5 env-limited. On the hosted
+`ci-census` runner (`fd5fb9e62`, run 45087501430, job 137415027784, ubuntu-26.04) the leg is
+206 / 199 / 7 with the same five records, and `EB3-LAYER layer=ci-census verdict=PASS`; the job's
+census plan is 22/22 and `ci-required` is green. Exact probe lines, per-arm assertions and the runner
+diagnosis: `dev/agent-workflow/evidence/ute-a1/ENV-LIMITED-CAPABILITY-20261123.md` (+ JSON).
+
+**Product gap or runner limit?** Runner limit. The launcher already performs the only mechanism that can
+enforce the profile; no product switch can make a kernel/container that refuses the uid_map write
+enforce a namespace, and patching around it would be absence-as-pass. A capable runner gets the real
+controls automatically, no code change. The five guarantees are UNPROVEN on an incapable runner and are
+recorded as ENV-LIMITED (never PROVEN) in `CAPABILITY-MATRIX-C.md`; `D-ACCEPTANCE-REPORT.md` §3.1,
+`MIGRATED-SUITE-STATUS.md` and `ROUND80-CI-CLOSURE.md` carry the same qualification.
+
+### R79-R82 — the 23:05 review's two P0s: rc.5 pre-dispatch abort, and the last hosted reds
+
+Review 20261122-2305 named the new bottleneck: rc.5 announces a pre-dispatch cancellation at a boundary we did not
+read, and hosted Required CI still had old-architecture gates.
+
+**rc.5 pre-dispatch abort (P0 #1).** rc.2's pipeline emits `tools/result` for a pre-execution cancel; rc.5's batch
+scheduler returns `ABORTED_BEFORE_DISPATCH` (`.../core/tools/src/batch.ts:225-280`) and NEVER enters the pipeline, so
+that event never fires. The centre now observes the host's OWN returned batch value at the executor completion
+boundary (`pre-dispatch-abort.mjs`, wired from `a5sf-fs-contract-world.mjs` into the composition) and writes ONE
+canonical execution fact per ExecutionId: with an admission record it records a pre-dispatch Stop + settlement
+`CANCELLED` (legal only with that Stop, never UNKNOWN); with no record it writes the fact and reports
+`SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` rather than inventing a settlement. Dedupe lives in the fact ledger's single
+`written` map, pinned by SLICE-37/38. SLICE-21/30 are GREEN on rc.5 **without changing their bodies**, and the
+slice file is 38/38 on both hosts. No scheduler was replaced and no host event was fabricated. CORE gap disclosed:
+the production call site is the host agent loop's `tools.execute`, which the product does not own — the observer is
+exported and driven in the slice composition, and the booted-member wiring is NOT claimed.
+
+**Hosted CI (P0 #2).** The 473 `eb3-family-definitions` findings were decomposed per subject and retired against the
+A0 ledger with named successors; `ci-integration` went green. Then the census job revealed, layer by layer, that
+several instruments were pinned on populations the cut moved (census roots 712->599, dispatch parity, contract tiers)
+and that five UTE G1 lane suites' goldens had been RECORDED WITH the appended confined shadow that `5d1349767`
+deleted — 18 hosted reds. Each arm was disposed per subject with the deleting commit, the frozen-licence row and a
+named successor, and every unit keeps a real post-cut `NC-MEMBER <member>` control. UTE G1 argv 89/89 locally AND
+hosted.
+
+**Then the last red was an ENVIRONMENT absence, not a product regression**: the hosted runner refuses the uid_map
+write, so the network-deny profile cannot be provisioned there (`NETWORK_DENY_UNPROVEN`). A capability probe
+(`a5sf-env-capability.mjs`) now decides per arm: where the capability is present the kernel denial is PROVEN; where
+it is absent the arm asserts the product's FAIL-CLOSED refusal and prints `UTE-VNEXT-A1-ENV-LIMITED` — no proven
+counter moves, the matrix shows those cells ENV-LIMITED. Local 206/204+2, hosted 206/199+7 (2 declared + 5
+env-limited), forced-absence override reproduces the same leg locally.
+
+Result: **hosted `ci-required` SUCCESS for the first time** (census 22/22 x2, next-host 184/184, UTE G1 89/89, leg
+206), `pr-gate` SUCCESS, five dated settlement comments. HEAD `2349f2e7b`, PR #822 restored to DRAFT (it had been
+flipped ready by an earlier writer; the candidate is not finished, so draft is the honest state) and never merged.
+
+### R83 — the management plane may DELIVER work; it may never EXECUTE a tool
+
+Round 74 restored S6 Remote as a governed management plane but refused five commands as `agent-execution`.
+Three of them were real product operations. Round 83 keeps the boundary and makes them reachable by
+HANDOVER, adding the third served effect class `work-delivery` in the SAME closed table
+(`s6-command-classification.ts`, no default-allow):
+
+- `member.create` -> the S6 admission port -> `performAction({action:'create-member'})` -> the ONE
+  ActivationProvider (`member-activated`; creation only, no work chain, no turn);
+- `member.send` -> the P6-T3 coordinator: durable intent fact -> input ACCEPTANCE into the recipient's own
+  session inbox -> confirmation fact (`SendTeamMessageOutcome`; the ACK is the answer);
+- `member.followup` -> `performAction({action:'follow-up', execution:'async'})`: Phase A commits the
+  durable `team-work-admitted` receipt and returns it; Phase B/C run DETACHED inside the Team runtime.
+- `team.admitInitialWork` / `team.ensureRootLive` STAY REFUSED: the first's only seam awaits the root turn
+  to idle (root-scoped, not a Member delivery), the second starts an executor with nothing to acknowledge.
+  Neither can be expressed as a delivery. The refusal reason was shortened to fit the 512-char settlement
+  cap and now says exactly that.
+
+Fail closed: a delivery command on a row with no delivery port answers the EXISTING wire code
+`ADMISSION_REMOTE_UNAVAILABLE` naming the unwired seam, typed, before any claim/param/durable write.
+
+Arms: ADM-86 rewritten (literal delivery/refusal sets; the dispatcher's three handovers; the refusal hook
+never consulted for a delivery; the plane has NO tool/provider port; the ACK carries no tool result; the
+two root commands keep the durable `team.control` refusal + REFUSED/not-started settlement; seam-unwired
+typed; unauthenticated first; 512-char reason cap). E3 updated (production root: only the two root
+refusals leave deny facts; at `createS6RemotePorts` follow-up asks `execution:'async'`, creation carries
+no execution mode, `member.send` reaches the coordinator).
+
+Live, D2 `--boots 2`, two agreeing boots, `d2:remote-delivery` PROVEN (4/4 judges PASS, overall PASS):
+`member.send` HTTP 200 + `delivered` ACK (intent 39 / confirmation 40) with **0 admissions and 0
+executions at the acknowledgement**; the delivered prompt then ran in Member B's OWN turn and the centre
+wrote its `allow` (`fs.read`, B's instanceId+agentId, B's in-lane locator) into B's OWN ledger ~113 ms
+AFTER the ack (18 -> 20 facts), one `completed` execution, B's in-lane bytes in B's transcript. Error
+paths on the same row: unknown member `TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED`; archived member
+`TEAM_RUNTIME_WORK_STATE_REJECTED`; duplicate send = a SECOND durable coordination (at-least-once, no
+operator-side execution); restore re-enables delivery; Stop during a DELIVERED turn =
+`ADMISSION_STOPPED`, REFUSED/not-started.
+
+Gates at this HEAD: leg 206/204+2, catalog 785/38, cut-closure cut(0/148), P0 37/180/69,512, docs-sync 0
+findings, 29 placements, ci-required 10/0, bound vitest 216, migrated population 238/238, UTE G1 89/89,
+`ci-pr-gate --full --census-captures 2` pass=10 fail=0 legs=10 (see the round-83 settlement comment for
+the verbatim block and the hosted `ci-required` verdict).
+
+NOT proven: no live `member.create`/`member.followup` (production-port + router-detach arms only); the two
+root commands stay unavailable (no async root-work seam exists and none was invented); the model is the
+scripted mock; the operator is a per-DSH_HOME authenticated human with an owned-root claim, NOT multi-user
+RBAC; no cell moves to PRODUCT-PROVEN.
+
+
+### R85 — PTC's four parts were measured BEFORE coding: three HOLD, the WORKER's OS profile is a `CORE_SEAM_BLOCKER`, so the refusal is narrowed and stays a refusal
+
+Round 75 refused `run_code` on a four-part missing proof. Review `20261122-2305 §4.3` required PTC to be
+validated as a SEPARATE mechanism, in order, before any implementation: (a) the worker's OS confinement,
+(b) nested calls re-entering the host pipeline/admission, (c) escalation through ControlService with a
+durable ask + one-shot grant, (d) Stop reaching the worker and its nested calls. The finding was written
+FIRST (`dev/agent-workflow/evidence/ute-a1/PTC-FOUR-PART-FINDING.md`) and each part was read in the pinned
+host at `639ed01539`.
+
+Measured:
+- **(a) FAILS.** `core/tools/src/index.ts:948-951` resolves PTC's policy from
+  `ctx.get('sandboxPolicy').resolve({session: exec.agent.session})`; `sandbox-policy/src/index.ts:164-169`
+  returns only `{mode, session.header.cwd}`; `sandbox/src/index.ts:40-53` has no per-path rules; and
+  `ptc-runtime-node/src/index.ts:224` skips `confine` under `danger-full-access`. The worker IS a real
+  confined Node child, but under the HOST session's policy — the member's compiled read/write ruleset
+  cannot be expressed, and the declared `confined-subprocess` executor (the realm face) is never used by
+  PTC. No public seam supplies a per-execution member policy → `CORE_SEAM_BLOCKER`.
+- **(b) HOLDS.** `ptc.ts:538-625` builds `${callId}:ptc:${n}` with `agent: exec.agent` and calls the
+  registry scheduler; `core/tools/src/index.ts:1504-1508` dispatches `tools/pre-execute` on
+  `scopeTarget(exec.agent)` — the same scope `installAdmissionPoint` listens on.
+- **(c) HOLDS.** `escalation.ts:171-226` asks `ctx.approval.request` with the exact
+  `escalate sandbox to <mode>: …` reason; `user-approval/src/index.ts:270-285` runs the waterfall; and
+  `ptc-escalation-row.mjs:334-465` opens a durable ControlService request, awaits the decision, mints
+  exactly ONE one-shot grant on `allow` and consumes it once.
+- **(d) HOLDS.** `ptc.ts:412-414` maps `exec.signal` to the run controller; `:553-554`/`:697-705` pass it
+  to nested calls and the runtime; `ptc-runtime-node:153-201` terminates the child; facts settle
+  `aborted` → `CANCELLED`.
+
+Decision: refuse, because (a) fails the security bar. `host-surface-refusal.mjs` and `admission.ts` now
+name ONLY the worker OS profile and the per-execution policy seam it needs; the old "all four missing"
+text is gone. No product behaviour changed: `run_code` is still refused before the body with
+`ADMISSION_PTC_UNAVAILABLE` on `process.exec`, fact `deny`, settlement `REFUSED`/`not-started`, zero
+worker spawn/confine. `ADM-76/87/88` were re-stated to the narrowed reason (not weakened), and the B
+ladder's four-part comment/title now records the measurement.
+
+Evidence/docs updated: `PTC-FOUR-PART-FINDING.md` (new), `CAPABILITY-MATRIX-C.md` C-ptc, `D-ACCEPTANCE-REPORT.md`
+(C13, §4.1, §4.3), `MIGRATED-SUITE-STATUS.md` (new round-85 section), `CONTRACT-CHANGE-REQUEST-process-lane.md`,
+and the PTC escalation doc (`evidence/alpha5/ptc-fs-impl/README.md`). Gate outputs are in the round-85
+MIGRATED section and the PR settlement comment: leg 211 cases / 209 pass + 2 disclosed skips, catalog 785,
+cut-closure, P0, docs-sync, 30 placements, ci-required, bound vitest 238/238, UTE G1 89/89, typecheck
+clean. The first full `ci-pr-gate` red was `blueprint-fence` only (the one pre-existing v5 literal moved
+4 lines with the added assertions); re-recorded from the verifier's own report in the open.
+
+NOT proven: no live governed `run_code` run (so no live nested/Stop arm), durable facts do not project
+`rootCallId`/`parentCallId`, and the worker's kernel enforcement was not measured — the finding is that
+it is governed by the WRONG policy, not that the sandbox is broken. No upstream patch was attempted.
+
+## Round 88 (2026-11-23) — `vnext/a1-cut`: BL-30 STOPPED on a MEASURED invariant (the ask consumer cannot be wired without bending the Control plane)
+
+Task (from round 87's D4 evidence, gap 1): wire the `ask`-disposition approval consumer
+(`resolveAskClassCall`) so a call the Control plane granted actually executes, instead of being refused
+by `provider-capabilities.ts:315`.
+
+**Outcome: STOP under the round's rule 5 — the seam's contract cannot be satisfied by the only
+production ask producer without changing a product invariant, and the blocker is now MEASURED, not
+argued.** No product source file changed; no coupling flipped; no second authority, ledger, registry or
+observer added; no assertion weakened; no timeout widened; no upstream patch; no boot spent.
+
+Measurement (two new arms, real `ControlService`, same admission-shaped scope, only the durable row's
+coupling differs — `packages/runtime/test/a5sf-approval-takeover.test.ts`, suite 23 → 25 tests, all
+pass): guarded ⇒ `resolveAskClassCall` ok + exactly ONE durable consumption; **inline ⇒
+`guardOperation` `no-request`, adapter `APPROVAL_DENIED`, ZERO consumptions**.
+
+The invariant: B2/§D.4 Control-plane lane disjointness — an INLINE allow is the frozen invocation's own
+continuation and is never a guard token (`control/service.ts:4155-4165`, `:4289-4291`;
+`admission-port.mjs:76-79`). The only production ask producer hard-codes `executionCoupling: 'inline'`
+(`admission-port.mjs:163`; confirmed on the round-87 live row `d4/runs/boot01/control-ask.json`), and the
+one-shot grant that DOES authorize the call is spent by the host tool guard
+(`admission-port.mjs:770-784`) before the body reaches the refusing Provider plane — so a Provider-level
+consumer would be a second consumption of one approval (or a second authority over the same one-shot
+bit), and `team-services/**` holds no Control reference, no TeamSession root, no compile tuple and no
+call id (its only per-call channel is the attribution-only ambient store, whose contract forbids this
+use).
+
+Lawful routes (owner decisions, named not chosen): (a) flip the ask to `guarded` — loses the
+Stop-cancels-a-pending-ask law (`ADM-57`, round-62 live stop) and gives one approval two one-shot paths;
+(b) give the OS plane a read port onto the centre's already-enforced per-call decision (the OS plane
+stops being an independent refusal). Both are shape changes, not wiring.
+
+Live: the granted ask still refuses on a booted host; the round-87 D4 probe was NOT re-run (no product
+byte changed — a boot could only re-measure the same refusal). `d4:routed-wake` stays REFUTED; BL-30
+stays open; BL-33's consumption half stays blocked on it.
+
+Docs/evidence: new `dev/agent-workflow/evidence/bl-30-ask-consumer/` (README + `gates.log` +
+`ci-pr-gate.log`); `d-boot-feasibility/d4/README.md` §4.2 round-88 status; `ute-a1/CAPABILITY-MATRIX-C.md`
+(C-fs + C-tools (Control) rows); `ute-a1/D-ACCEPTANCE-REPORT.md` (C5 + §6.5); `ute-a1/MIGRATED-SUITE-STATUS.md`
+(new round-88 section). `docs/plans/active/**` was NOT edited (worker read-only per AGENTS.md) — BL-30's
+own status line still needs the integrator's edit.
+
+Gates (verbatim in `bl-30-ask-consumer/gates.log` + `ci-pr-gate.log`): leg `ute-vnext-a1` 211 cases /
+209 pass + 2 pre-existing skips exit 0; catalog 785 / uncollected 38 / excluded 14 (bounds 41/7);
+ute-cut-closure, ute-p0-assets, docs-sync, place-dist-glue (30), eb3-ci-required (10/0) all pass; bound
+vitest leg 238/238; UTE G1 argv 89/89; full `ci-pr-gate --full --census-captures 2` per its log.
+
+### R87-R88 — the last live gap is OURS, not upstream: Alpha.6's wake has no case-forming ask, and a granted ask cannot execute
+
+The D4 probe (v5 authored blueprint, coherent Alpha.6 enablement, Officer member, scripted model) measured FIVE live
+judges on rc.2, two agreeing boots: enablement PROVEN, Officer up PROVEN, Officer binding PROVEN (its own
+`fs.read` allow fact + settlement in ITS ledger), refusal side PROVEN (incoherent row -> typed code + recorded deny
+fact + zero intent files) — and `d4:routed-wake` **REFUTED** by the product itself: the router returns `null` with
+`memberListCalls: 0` because the durable `leader-approval` control row carries NO `approvalCaseId`/`legOrdinal`.
+
+Two in-repo seams, neither upstream:
+1. no Alpha.6-aware ordinary ask-case producer (`requestApprovalLeg` is called only for `envelope-mutation`;
+   `isDelegableOrdinaryToolAsk` excludes it; both ordinary ask producers are case-less by construction);
+2. **BL-30**: an `ask`-disposition call is refused at execution because `resolveAskClassCall` has no production
+   caller. Round 88 measured WHY it cannot simply be wired: the only production ask producer hard-codes
+   `executionCoupling:'inline'` (`admission-port.mjs:163`), an inline durable allow is never a guard token
+   (`control/service.ts:4155-4165`), and the one-shot grant is ALREADY consumed at the host tool guard
+   (`admission-port.mjs:770-784`) before the provider plane is reached. Measured both couplings side by side: row
+   `guarded` -> guard allows + one consumption + `resolveAskClassCall` ok; row `inline` (production) ->
+   `no-request` + `APPROVAL_DENIED` + zero consumption rows.
+
+So a Member can ASK, be GRANTED, and still not run the granted call in production. Two lawful designs, both owner
+decisions: (a) flip the ask to `guarded` (loses the Stop-cancels-a-pending-ask law as currently pinned), or (b) give
+the OS/provider plane a read port onto the centre's already-enforced per-call decision. Nothing was auto-approved,
+no invariant was bent, and the level stays MECHANISM.
+
+## Round 89 (2026-11-23) — documentation integrity at `97d7d7c8d`: the newest gaps are now IN the candidate report
+
+Rounds 87/88 landed measured facts that the round-86 report and PR body did not carry. This round re-measured
+every asserted number at `97d7d7c8d` (5 commits after `c29da52d3`) and corrected 19 claims; no product source,
+test assertion, skip, negative control or evidence file was edited to fit a claim.
+
+Folded in, with `file:line` evidence: (1) **`d4:routed-wake` REFUTED** on two agreeing D4 boots — the durable
+ordinary ask carries no `approvalCaseId`/`legOrdinal`, `alpha6/root-router.ts:209` returns `null`; the two seams
+are Team-side (no case-bearing ask producer; BL-30 has no ask consumer), NOT upstream. (2) **BL-30's live
+consequence** — a Member can ASK, be GRANTED, and still not run the granted call (inline allow is never a guard
+token, `control/service.ts:4155-4165`/`:4289`; grant spent at `admission-port.mjs:770-784`; provider refuses
+`IO_ASK_REQUIRES_APPROVAL`). (3) Rounds 83/84/85 levels re-verified unchanged (S6 `work-delivery`; Alpha.6 formal
+routing MECHANISM; PTC `CORE_SEAM_BLOCKER` on the worker OS profile).
+
+New **§10 open-gap register** (G1–G10) in `D-ACCEPTANCE-REPORT.md`, reflected in `PR-BODY-draft.md`, with the four
+owner rulings the new seams need (R1 ask producer; R2 guarded coupling; R3 OS-plane decision read port; R4 keep the
+refusal). `CAPABILITY-MATRIX-C.md` annotates C-tools / C-subprocess / C-alpha6 — **no upgrade anywhere**.
+
+Worst five corrections: refuted routed wake was written "unproven"; a grant was implicitly assumed executable;
+scope block 5 commits stale (205→210 commits, 3,377→3,476 files, +241,087→+249,967); hosted CI was called "green
+except the census skip" while **`ci-integration` FAILED** at `97d7d7c8d`; `ci-pr-gate`/census numbers stale
+(274.7→275.7 s, 7,414→7,416 lines).
+
+Gates at `97d7d7c8d` (verbatim in the `ute-a1` evidence set and this session's logs): leg `ute-vnext-a1` 211 cases
+/ 209 pass + 2 pre-existing skips, exit 0; catalog 785 / collected 733 / excluded 14 / uncollected 38 (bounds
+41/7); ute-cut-closure, ute-p0-assets, docs-sync (193 docs, 0 findings), place-dist-glue (30), eb3-ci-required
+(10/0), bound vitest 216, migrated 238/238, UTE G1 89/89, `ci-pr-gate --full --census-captures 2` PASS 10/10
+(275.7 s; census 2 captures, identical identity sets, 599 files / 7,416 lines vs 626 / 7,936), negative controls
+35/35. Hosted at this HEAD: six layers green, `ci-integration` FAILURE on `tinf-instruments` (no named failing
+assertion; **same leg green locally**), `ci-census` skipped (draft), `ci-required` red for both — carried as G10,
+not explained away. PR #822 stays DRAFT/OPEN/unmerged.
+
+## Round 90 (2026-11-23) — behaviour-preserving decomposition of `agent-bindings.mjs` (reviewability, ZERO behaviour change)
+
+The A1 cut left the two entry files at 4,967 lines (`packages/runtime/src/plugin/vnext/agent-bindings.mjs`) and
+5,239 (`root.ts`). The review risk is size, not behaviour, so this round moves four cohesive spans out of the glue
+**verbatim** into sibling modules and imports them back. No logic edit, no rename beyond what the move forces, no
+new abstraction, no test/assertion/skip/timeout change, no upstream patch, no compatibility layer.
+
+Moved (old lines → new module → module size): governed preset row module specifiers + declared row configs
+(127 lines → `governed-preset-modules.mjs`, 156); the MCP capability witness — telemetry, F15 public tool-surface
+readers, fiber retirement (158 → `mcp-witness-lane.mjs`, 205); the Root input delivery ports — the ONE shared
+real-input path + B6/TCM-M3/C1 callers (208 → `root-delivery.mjs`, 248); the Member stop lane — interrupt + PD-29
+goal disarm, recursive drain, residency (205 in 3 chunks → `stop-drain-lane.mjs`, 249). `agent-bindings.mjs`
+**4,967 → 4,302**; `root.ts` untouched. Correction (append, §8.5.5): the final `wc -l` on the pushed head is **4,301** — the lint follow-up (`ea9104d5b`) removed one unused destructure line and one unused import name; the elsewhere-quoted 4,302 is the pre-fix count, and the substantive claim (698 moved lines, 4,967 → ~4,301) is unchanged.
+
+Proof: every moved range was copied by line range from `git show HEAD:` and the receipt
+(`evidence/ute-a1/round90/byte-identity.txt`) is a TWO-WAY substring test — each of the six ranges is present in its
+module AND absent from the rewritten glue (698 lines, all True). The exported surface of the glue is unchanged.
+
+Same counts, same digest, before and after: `dispatch-tests --run --leg ute-vnext-a1` `suites=7 files=7 exit=0
+set=sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975` (identical); bound vitest
+`verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0` (identical); D drivers on rc.2 `--boots 1`
+identical verdicts (`run-boot` FAIL 5P/1F `d:remote-creation`; `run-boot-d2` PASS 4/4; `run-boot-d3` allProven
+4/4). Gates: catalog 785 / collected 733 / excluded 14 / uncollected 38 (bounds 41/7, digest unchanged),
+ute-cut-closure and ute-p0-assets lines unchanged, docs-sync 0 findings, place-dist-glue **30 → 34**
+(all byte-identical; `scripts/dist-placements/260-ute-a1-decomposition.json`), eb3-ci-required 10/0, UTE G1
+**89/89**. p4t6 scannable ledger: ONE new booking (`round90decomposition.json`) with the MEASURED delta
+**1313 → 1317** (the scanner printed `scanner counts 1317, ledger derives 0 + 1313 = 1313` with the four files
+unbooked). No arm relaxed.
+
+Three spans deliberately did NOT move: `observeMcpOperationalWitness`, `deliverRootWorkCompletionNotification` and
+`deliverReviewWake` read the row's `closing` primitive (`let closing`) — a primitive cannot be passed by reference,
+so a move would have forced an edit to the moved condition. `reconcileMcpSet` + the reconnect/cooldown constants
+stay because `f15-mcp-live-loss.test.ts` §9.2 is a STATIC witness over `agent-bindings.mjs` pinning the one mount
+call site and the literal policy constants; moving it would have needed a test edit. That span is reported as NOT
+taken, not worked around.
+
+Docs: `D-ACCEPTANCE-REPORT.md` gains §6.16 (the decomposition, the proof table, the limits) and re-measures the
+entry-file row (§1) and the placement count (§1.2/§7); `MIGRATED-SUITE-STATUS.md` gains the round-90 section.
+No level, matrix row or capability claim moves; `root.ts` remains 5,239 lines; the `d:remote-creation` red is
+untouched and still open. PR #822 stays DRAFT/unmerged; :3080 and its DSH_HOME were never touched.
+
+## Round 91 (2026-11-23) — `d:remote-creation` red diagnosed to a STALE DRIVER JUDGE; repaired, all four live drivers re-measured
+
+The round-90 live re-run left `run-boot.mjs --boots 1` at `overall=FAIL`, `5 PASS / 1 FAIL`,
+`d:remote-creation` FAIL. This round reproduced it with the real driver on the unmodified tree
+(`RESULT FAIL (2/2 boots; agreeing pair=true)`, both boots on port 3194) and read the failing clause out of
+the case's own record: `no-execution-without-admission: member.send ok=undefined code=undefined provider
+requests added=0`. The product answer in that same boot was round 83's contract: two ROOT commands refused
+with `ADMISSION_REMOTE_UNAVAILABLE`, `member.send` served as a typed `TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED`
+with zero provider requests, `team.create` 200 + runtime root, duplicate no-second-Team.
+
+Cause, proved: `5c09cbd82` (round 83) reclassified `member.send` as work-delivery and changed the driver's
+refusal sample from `{status, code, ok, mockRequestsAdded}` to `{rootWork, rootLive, delivery,
+mockRequestsAdded}`, but `judgeRemoteCreation`'s last clause still read `execution.ok`/`execution.code`.
+Both are `undefined` on the new shape, so `undefined === false` made the clause REFUTED unconditionally —
+the red could not pass regardless of the product. Pre-round-83 archive PASS (flat sample), this head
+pre-fix FAIL (`undefined`), this head post-fix PASS (nested sample): same clause, three runs. Round 90's
+decomposition touched no driver source; its before/after pair recorded the same FAIL both times.
+
+The four suspects are settled with evidence, not assertion: (a) D4 port/home collision REFUTED — one
+global `HOST_PORT_BANDS` band `3181-3199`, the probe declares none, the same port 3194 failed pre-fix and
+passed post-fix, the created Team's `defaultWorkspace` is this boot's own home, and homes are stamp-bumped
+on collision; (b) round-90 decomposition REFUTED — no driver source in `bde902939`; (c) product regression
+REFUTED — identical product answer in the FAIL and PASS runs; (d) sequencing flake REFUTED — deterministic
+2/2 boots before and after, failing value is a shape lookup.
+
+Fix (instrument layer only): `judgeRemoteCreation()` now judges the measured shape — both ROOT commands
+`ok:false` + `ADMISSION_REMOTE_UNAVAILABLE`, delivery HTTP 200 served with a typed non-empty code that is
+not the execution refusal, `mockRequestsAdded === 0`. Strictly stronger than the old single-command clause.
+No timeout, retry, skip, weakened assertion, compatibility shim, upstream patch or product edit.
+
+All four live drivers on rc.2 at this head: `run-boot` **PASS 6/6** (`d:remote-creation` PASS on 2/2
+agreeing boots, port 3194), `run-boot-d2` **PASS 4/4** (2/2 agreeing), `run-boot-d3`
+`evidence-complete=true allProven=true` **4/4** (2/2 agreeing), `probe-d4-routed-wake --boots 1`
+**BLOCKED** with enablement/officer-up/officer-binding/refusal PASS and `d4:routed-wake` **REFUTED** (the
+known open gap, unchanged). Logs: `evidence/ute-a1/round91/drivers.log`.
+
+Gates at this head: catalog `785 / 38 uncollected / 14 excluded` (bounds 41/7) findings=0; cut-closure
+`cut(0/148)` findings=0; p0-assets `37/180/69512` findings=0; docs-sync `193 docs / 0 findings`;
+place-dist-glue 34 placements all byte-identical; eb3-ci-required 10/0; bound vitest `suites=15 files=15
+describes=76 passed=238 failed=0`; `dispatch-tests --run --leg ute-vnext-a1` `tests 211 / pass 209 /
+fail 0 / skipped 2`, digest unchanged; UTE G1 argv 89/89; `ci-pr-gate --full --census-captures 2`
+`DSH-CI-VERDICT pass pass=10 fail=0 legs=10 seconds=282.9`, census 2 identical captures
+(599f/7416l vs baseline-declared 626/7936, identity set unchanged).
+
+Docs: `D-ACCEPTANCE-REPORT.md` §12 (mechanism, four-suspect disposition, repair, driver table, gates,
+limits) and the `d:remote-creation` judge row re-cited; `MIGRATED-SUITE-STATUS.md` gains the round-91
+section. No capability row moves, `d4:routed-wake` stays REFUTED, no row is PRODUCT-PROVEN. PR #822 stays
+DRAFT/unmerged; :3080 and its DSH_HOME were never touched.
+
+### R83-R84 — single-authority proven by an independent audit; scope boundaries written down; three owner decisions remain
+
+The 20261124-1341 review asked for something the static closure cannot give: an independent responsibility audit of
+the two assembly entries. Done over 53 execution-adjacent surfaces (root.ts 25, agent-bindings.mjs 26, 2 cross-cut):
+17 CENTRE, 3 CENTRE-INPUT, 7 LAWFUL-DELIVERY, 3 LAWFUL-HOST, 12 LAWFUL-NOEXEC, 9 LAWFUL-CONTAIN/REFUSAL, 1
+CONFIG-UNGOVERNED (the owner-ruled absent-centre row, reported loudly), 1 NOT-REACHED, and ZERO findings. Verified
+from code: one native-mount lane pair inside compiledAnswer, admit() as the only allow decision with a monotonic
+guard, no absent-centre fallback, and the attribution ALS has zero readers repo-wide. Responsibility maps recorded
+(39 + 27 ranges) without splitting the files this round.
+
+Scope written the way the review required: SCOPE-subprocess-ask.md declares that this generation promises
+allow/deny for Subprocess/PTY and that per-call process `ask` is NOT supported and stays fail-closed (the refusal
+evidence is the promise: no governed PTY backend on the binding realm, 0 bytes, settlement FAILED, identical on rc.2
+and rc.5); Shape B's usability cost (a nested deny refuses the whole confined process face for that realm) is stated
+in the matrix; and the status table now carries "P0-2 OPEN TARGET-HOST ACCEPTANCE BLOCKER - pre-dispatch Stop
+observation not production-wired" with its two lawful closers.
+
+Still owner-decided, unchanged: (1) confirm the Subprocess/PTY ask scope statement; (2) choose the P0-2 closer - an
+upstream batch-completion seam or a ruled lawful "no settlement" boundary; (3) authorise a temporary ready flip so
+the hosted census can run once (never merged). Everything else is green: leg 248/245+3, catalog 785, closure
+cut(0/148), p0-assets, docs-sync 0, 35 placements, ci-required 10, vitest 238, G1 89/89, manifest findings=0,
+ci-pr-gate 10/10; hosted ci-integration green, ci-required red only by the draft's census skip.
+
+### R109 — Stage-A closure: full typed replies, the DUAL-HOST candidate gate, and HEAD binding (review 20261125-0058)
+
+Worktree `.worktrees/vnext-a1-cut` only, branch `vnext/a1-cut`, HEAD `41d579119` + this round's arm; PR #822 stays
+DRAFT; `:3080`/its DSH_HOME untouched; no history rewrite, no merge, no non-topic push.
+
+1. **`d2:remote-delivery` now records the FULL typed replies** of `member.archive` / `member.send` /
+   `member.restore` (answered `rpcId`, `result.ok`, verbatim `result.error` incl. `details.cause`);
+   observation-only: 58 inserted / 0 changed lines, judge untouched, no clause relaxed, no skip, no timeout
+   widened, driver bytes = the gate's `driver-digest` (`sha256 389b3343…`). rc.5 both boots: archive accepted
+   (`ARCHIVED`, 6 steps) → send to ARCHIVED typed `TEAM_RUNTIME_WORK_STATE_REJECTED` / `requestsAdded=0` →
+   restore accepted (`SETTLED`) → send accepted.
+2. **Dual-host candidate gate PASS in one run** (`--hosts both`, measured **83 m 48 s**): rc.2 31/30/1/0,
+   rc.5 31/30/1/0, totals 62/60/2/0; the only non-PROVEN id is the single enumerated `d4:ask-execute-process`.
+   `KNOWN_REFUTED` not edited.
+3. **Workflow HEAD binding** (review §4.2): `pull_request: [labeled, synchronize, reopened]`, job gated on the
+   label being PRESENT, check name/artifact carry `github.sha`, and a `Bind the graded head` step asserts the
+   checkout + the verdict's own `head` both equal `github.sha` on a fresh artifact. Still `knownNonRequired`;
+   `ci-required`'s layer list untouched.
+4. **Cost disclosed** (review §4.3): ~84 min measured dual-host vs a few minutes for the whole daily Required set;
+   stated in the workflow header, manifest reason, D report and C matrix.
+5. Docs updated (single acceptance table + `CAPABILITY-MATRIX-C.md`: gate green on both hosts, stays
+   NON-REQUIRED by owner ruling, no row PRODUCT-PROVEN until required AND green); PR body refreshed from the
+   round-95 text to the round-108/109 state incl. the hosted all-green set with census (`a4a00fc81`).
+
+Gates: leg `ute-vnext-a1` 251/248/0/3 (`sha256:edd4f1c4…` unchanged); catalog `785 / 38 uncollected / 14
+excluded` findings=0 (no new scannable file, delta 0); cut-closure `cut(0/148)`; p0-assets `37/180/69512`;
+docs-sync `193 docs / 0 findings`; place-dist-glue 35 placements byte-identical; eb3-ci-required `11/0`; bound
+vitest `15 suites / 76 describes / 238 passed / 0 failed`; UTE G1 argv 89/89; `eb3-run-manifest` records=568
+findings=0; `ci-pr-gate --full --census-captures 2` `pass=10 fail=0` (285.7 s, census `599f/7424l`, identical
+identity sets). No capability row moves; no row is PRODUCT-PROVEN.
+
+### R112 — the B LADDER closes on rc.5: host-selectable, not host-doubled (round 112, 2026-11-25)
+
+Worktree `.worktrees/vnext-a1-cut` only, branch `vnext/a1-cut`, HEAD `ba3b3b436` + this round's commit; PR
+#822 stays DRAFT; `:3080`/its DSH_HOME untouched; no history rewrite, no merge, no non-topic push.
+
+1. **Diagnosis (the replacement API, read from the pin).** rc.5 removed `ToolRuntime`'s `mode` config
+   (`tests/deepseek-harness-next/packages/core/tools/lib/index.js:406-409`, `z.never()`: "Removed. Mount a
+   native or PTC tool executor instead."). Dispatch is now `tools.execute` → `selectExecutor(agent).execute`
+   (`:641-643`; `setExecutor` one-per-scope `:577-620`), a call is a BATCH
+   (`{calls:[{type:'tool-call', id, name, arguments:<JSON string>}], signal, agent}` →
+   `batch.results[].result`, `…/core/tools/lib/pipeline.js:28-52`), the reserved `run_code` transport
+   moved into `PtcExecutor.requirePtcTransport()` (`…/core/tool-executor-ptc/lib/index.js:1867-1870`), and
+   each executor is a plugin object `{name, inject, apply}` (`…/tool-executor-native/lib/index.js:13-30`).
+2. **The world rewrite (host-SELECTABLE, no fork).** One arm set, one expectation set. rc.2 keeps its
+   byte-for-byte mount (`mode:'both'`/`'native'`, repo install, single-call dispatch). rc.5 mounts
+   `ToolRuntime` with NO config, the exported executor PLUGIN at the deployment scope (PTC presenting) plus
+   a nested member-scope `NativeToolExecutor` (the host's one-executor-per-scope contract), resolves every
+   entry via `resolveSelectedHostModule`, dispatches via the existing `executeToolDispatch` batch shape,
+   resolves `run_code` via `requirePtcTransport()`, and supplies rc.5's `workingDirectory` inject.
+3. **Measured, same 18 arms both hosts.** rc.2 **18/18** (16 pass + 2 declared non-runs), rc.5 **18/18**
+   (16 pass + 2 declared non-runs, 0 fail); the `ute-vnext-a1` leg is **251 / 248 pass / 0 fail / 3 skip on
+   BOTH hosts**, digest `sha256:edd4f1c4…` unchanged. The non-runs are the arms' own declared states
+   (`ADM-68` bash positive; `ADM-69` PTC positive, product ruling), unchanged from rc.2. Full per-arm
+   table + API reading: `RC5-TEST-MATRIX.md` §9.
+4. **No product change, no shim.** Only `packages/runtime/test/vnext-b-probe-ladder.test.mjs` changed (the
+   world's mounting code); no `packages/*/src` file, no `mode` polyfill, no widened timeout, no retry, no
+   skipped arm, no weakened assertion; both host pins porcelain-empty.
+
+Gates at the new head (postcommit logs in `dev/agent-workflow/evidence/ute-a1/round112/`): leg ute-vnext-a1
+251/248/0/3 both hosts digest unchanged; catalog 785 / 38 uncollected / 14 excluded / findings=0 (digest
+unchanged, no new scannable file, delta 0); cut-closure `cut(0/148)`; p0-assets `37/180/69512`
+`cut(148/148)`; docs-sync 193/0; place-dist-glue 35 placements; eb3-ci-required 11/0; bound vitest 15
+suites / 238 passed / 0 failed; UTE G1 argv 89/89; run-manifest records=602 findings=0; `ci-pr-gate --full
+--census-captures 2` PASS 10/10 (census `599f/7424l` ×2, identical identity sets). No capability row
+moves; no row is PRODUCT-PROVEN.
+
+### R115 — ONE reviewable candidate report, and the one hosted Required-CI red fixed with a measurement (round 115, 2026-11-24)
+
+Worktree `.worktrees/vnext-a1-cut` only, branch `vnext/a1-cut`, HEAD `974c643de` + this round's commits; PR
+#822 stays **DRAFT**; `:3080`/its DSH_HOME untouched; no history rewrite, no merge, no non-topic push, no
+upstream patch, no widened skip/timeout/retry.
+
+1. **The deliverable is one document.** `dev/agent-workflow/evidence/ute-a1/CANDIDATE-REPORT.md` is now the
+   entry point a reviewer reads first: identity (branch/HEAD/base/PR-draft state/the A0 contract it
+   implements/the one-paragraph claim), static closure with **what the numbers do not prove**, the
+   single-authority verdict (`SINGLE-AUTHORITY`, 53 surfaces, 0 findings) with its counts and map pointers,
+   the P1–P5 ladder + the six rungs (mechanism arm / live judge / OS negative control / exception), Required CI
+   (last fully green hosted set with census = run `45429461306` @ `a4a00fc816`, plus why `ci-census` skips on a
+   draft), the C1–C18 summary (21 rows: 7 MECHANISM / 8 DEV-LIVE / 1 ENV-LIMITED / 5 UNSUPPORTED BY PRODUCT
+   RULING / 0 NOT PROVEN / 0 PRODUCT-PROVEN) with every UNSUPPORTED and the ENV-LIMITED row named,
+   host-modification authority (`CORE PATCH BUDGET = 0`; both pins 639ed01539/9c2670d3bc pristine; the two rc.5
+   shape differences resolved by public capability), the candid limits list (real model ENV-LIMITED, no
+   PRODUCT-PROVEN row, 40 rc.2-only vitest suites, SEC-03/SEC-04, unmeasured power-cut durability, unbound
+   `apply_patch`, `caseId:null`, per-DSH_HOME operators, latch-scoped sticky Stop, no durable duplicate-route
+   fact, Alpha.6 DEV-LIVE), the reviewer's exact commands with expected verdict lines, and the boundaries in
+   force. `D-ACCEPTANCE-REPORT.md` keeps every round section byte-for-byte and gains only an entry-point header;
+   `PR-BODY-draft.md`/the live PR body now point at the candidate report and keep the round-113 content intact
+   and secondary; `docs/STATUS.md` gains a dated CURRENT block scoped to the candidate branch; `graph.yaml`
+   gains one appended block `ute_vnext_a1_candidate_20261124` (state_pointers untouched — the legacy round
+   pointer is not a phase counter).
+2. **The standing hosted red is diagnosed and fixed.** `ci-integration`'s `EB4-B/D/E tooling suites` step failed
+   at `974c643de` on `tests/u7-3-devex/devex-integration.test.mjs` E4/E5: `BOUND HIT: more than maxRecords 600
+   committed run records … REFUSED, no partial report is produced` (run `45508260944`, job `138849199239`, step
+   19; reproduces locally, so not a runner defect). Measured cause: 602 committed `u5-run-record/1` records.
+   `scripts/integration-order.mjs` `BOUNDS.maxRecords` 600 → **900** with the measurement in the BOUNDS header
+   and at the declaration (10,440 tracked evidence `.json`, 12 over the 512 KiB cap, 623 mention the schema, 602
+   parse; maxCandidates 12,000 vs 10,440 left unchanged). This is the script's own declared procedure (raised
+   the same way 2026-11-13 and 2026-11-22/24); **no assertion weakened** (E4 still requires `--strict` to fail on
+   an unbound head; E7 still builds `maxRecords + 1` fixture records and still requires BOUND HIT; E8 still
+   requires a late record to be graded) and **no committed evidence trimmed**.
+3. **Required CI position stated honestly.** At `974c643de` the hosted set is red for exactly two reasons:
+   `ci-census: skipped` (draft — `.github/workflows/ci-required.yml:150`, so `ci-required` cannot be green until
+   the owner flips ready) and the devex bound (fixed locally this round). **The final head must re-earn the whole
+   set in the coordinator's hosted run; no hosted green is claimed at this head.**
+
+Gates at this head (`dev/agent-workflow/evidence/ute-a1/round115/`): leg `ute-vnext-a1` **255/252/0/3**
+(`sha256:edd4f1c4…` unchanged); `devex-diag` **44/44/0** after the fix; catalog **786 tests / 734 collected / 38
+uncollected / 14 excluded**, digest `sha256:8982e6e9…` unchanged (**delta 0 new scannable files**, node=147);
+cut-closure `cut(0/148)`; p0-assets `37/180/69512` `cut(148/148)`; docs-sync `193 docs / 0 findings`; place-dist-glue
+35 placements byte-identical; eb3-ci-required `11/0`; bound vitest `15 suites / 76 describes / 238 passed / 0
+failed`; UTE G1 argv 89/89; `eb3-run-manifest` records=602 findings=0; `ci-pr-gate --full --census-captures 2`
+`pass=10 fail=0` (294.9 s, census `599f/7424l` ×2, identical identity sets). No capability row moves; no row is
+PRODUCT-PROVEN; the draft stays draft.
+
+## 2026-11-25 — round 117 (vnext/a1-cut, PR #822 DRAFT): the Candidate Acceptance Gate becomes a VERSION gate
+
+**Owner ruling (2026-11-25), implemented.** The Candidate Acceptance Gate is a **VERSION gate, not a per-PR
+gate**: NOT required on ordinary PRs (one dual-host run is a measured `83 m 48 s` / 16 real host boots — a 10x
+slowdown of the daily loop for no value on docs/script PRs), and the formal gate for a candidate/release
+**version** — it must run, be green, and be **Required** at the **frozen candidate SHA** before a version is
+declared deliverable. The rejected alternative is **"required on every PR"**, recorded as rejected for that
+exact trade-off (`OWNER-DECISIONS.md` §"ROUND 117").
+
+**`PRODUCT-PROVEN` redefined (the single truth in force).** *Gate-backed at the frozen candidate SHA of a
+version, with the version gate Required and green at that SHA and its `version-gate-receipt.json` verified
+there* — **NOT** "covered by every PR's Required CI". **No row is PRODUCT-PROVEN today**, and none becomes so
+until such a gate is frozen. The gate grades **31 judges per host** (62 dual-host) and covers only **C2, C3,
+C5, C6, C8, C9, C12 and C13's fs/subprocess base**; it **never** covers C1, C4, C7's cold half, C10, C11,
+C13's PTC/web/terminals/userQuestions faces, C14, C14b, C15, C16, C17, C18. Updated to that one definition:
+`CANDIDATE-REPORT.md` (§1.1), `D-ACCEPTANCE-REPORT.md` (§"ROUND 117" + status table + the ladder-defining
+round), `CAPABILITY-MATRIX-C.md`, `C1-C18-SIGNOFF.md` (row-by-row `VG` column + §3.1 never-covered table),
+`MIGRATED-SUITE-STATUS.md`, `OWNER-DECISIONS.md`, `PR-BODY-draft.md` and the posted PR #822 body, plus the new
+operational `VERSION-GATE.md`.
+
+**Mechanism.** `.github/workflows/candidate-acceptance.yml` now triggers on `push` tags `v*` / branches
+`release/**`, `candidate/**`, on `workflow_dispatch` with an optional full-40-hex `head` input, and keeps
+`pull_request: [labeled, synchronize, reopened]` **only as the non-required opt-in** (label PRESENT). Strict
+binding: `graded head == checked-out head == requested SHA`, artifact newer than the start marker. A green run
+publishes `version-gate-receipt.json` (schemaVersion/head/verdict/judges/knownRefutedIds/hosts/startedAt/
+finishedAt/gateVersion/verdictFile{path,digest}) at
+`dev/agent-workflow/evidence/candidate-acceptance-gate/`; it references the gate's OWN `verdict.json` by path +
+sha256 — no second driver evidence format. The stable `version-gate (Required at frozen candidate SHA)` job
+re-verifies with `scripts/version-gate-verify.mjs` (`if: always()` on the version path, so a red grading job
+REFUSES instead of being skipped green). `dev/ci/eb3-ci-manifest.json` carries the explicit classification
+(`requiredPerPR:false`, `requiredAtFrozenCandidateSha:true`) and `scripts/eb3-ci-required.mjs` **asserts** it:
+`CI_VERSION_GATE_CLASSIFICATION_MISSING`, `_CONTEXT_MISSING`, `_PROMOTED_TO_REQUIRED` (as a layer, a layer leg,
+an aggregate call, or `workflow_call`), `_TRIGGER_MISSING`, `_FREEZE_MECHANICS_MISSING`, `_PR_PATH_UNGATED`.
+`ci-required`'s layer set is untouched and `workflows=` stays **11**.
+
+**Verifier (fail closed).** `scripts/version-gate-verify.mjs` exits 0 only on: receipt exists, exact schema,
+`head` == requested, `verdict == pass`, `envLimited == 0`, known-refuted set exactly the enumeration
+(`scripts/candidate-acceptance-known-refuted.mjs`, the one id `d4:ask-execute-process`), and the digest-bound
+verdict agreeing on head/hosts/judges/REFUTED ids. 20 named `VERSION_GATE_*` refusal codes, never a generic
+error. Controls: `scripts/version-gate-verify.test.mjs` **22 tests**, collected via the new
+`version-gate-verify-unit` dispatch leg (booked catalog delta: tests 786 → 787, collected 734 → 735, uncollected
+38 and excluded 14 unchanged).
+
+**Gates at this round (`dev/agent-workflow/evidence/ute-a1/round117/`):** `ute-vnext-a1` **255/252/0/3**
+(`sha256:edd4f1c4…` unchanged); `version-gate-verify-unit` **22/22**; catalog **787 tests / 735 collected / 38
+uncollected / 14 excluded**, digest `sha256:5f94024c…`, findings=0; `ute-cut-closure cut(0/148)`; `ute-p0-assets
+37/180/69512 cut(148/148)`; `docs-sync 193 docs / 0 findings`; place-dist-glue 35 byte-identical;
+`eb3-ci-required pass workflows=11 findings=0`; bound vitest 238/0; UTE G1 argv 89/89; `eb3-run-manifest
+records=634 findings=0`; `ci-pr-gate --full --census-captures 2` **PASS 10/10**. No capability row moves; no row
+is PRODUCT-PROVEN; the PR stays DRAFT.
+
+**Not exercised (disclosed).** The version gate has NOT run end-to-end as a version gate (no tag/push/dispatch
+with `head`, hosted artifact→verifier path unmeasured) and NO branch/tag protection rule has been applied — the
+exact ruleset (`version-gate (Required at frozen candidate SHA)` on a `release/**` ruleset, never on the
+default-branch PR rules; tag protection by a tag ruleset, which cannot carry required checks) and the freeze
+procedure are in `VERSION-GATE.md` §5–§6. Local evidence: the receipt writer/verifier against the repo's own
+`92be91dfb` verdict (`62/60/2/0`, exit 0) with wrong-head/missing-receipt refusals, `round117/version-gate-dryrun.log`.
+
+---
+
+## Round 118 — 2026-11-25 (P0 review `20261125-2258`) — credential hygiene, D4 correction, and the vitest population measured on rc.5
+
+**Lane.** `.worktrees/vnext-a1-cut`, branch `vnext/a1-cut`, base `0b96a1fa8`; sole writer; no history rewrite,
+no merge, no non-topic push; PR #822 stays DRAFT; `:3080` and its DSH_HOME untouched; CORE PATCH BUDGET = 0.
+
+**A — `.env` control.** Committed the `.gitignore` lines and added a collected negative-control section to
+`tests/checks/dist-placements.test.mjs` (13/13): `.env`/`.env.*` ignored via the tracked `.gitignore` with a
+positive control (`README.md` not ignored, exit 1), no tracked `.env` path, and `git ls-files` carries no
+`.env`-like credential file. The owner key (repo-root `../../.env`, mode 600) was never read, printed, copied or
+referenced in any committed file. Zero catalog delta from this control (existing suite).
+
+**B — D4 README head.** Reproduced the Hosted `ci-integration` red with
+`node --test tests/checks/d4-evidence-consistency.test.mjs` (README bound `41d579…`, probe digest binds
+`5cb5c606…`), transcribed the digest with a dated `## CORRECTION` note that keeps the old head as history, and
+re-ran green **5/5**. The check was not relaxed.
+
+**C — shared-resolution Vite adapter (one authority, two adapters).** `tests/next-host/host-select.mjs` stays
+the only holder of pin/tree/specifier mapping; `tests/next-host/host-vite-adapter.mjs` is a `resolveId` plugin
+that calls the SAME exported `createHostResolver` and owns no pin/tree/table; `scripts/run-tests-hooks.mjs` is
+the Node adapter and consults the selector per specifier (per-generation cache); both vitest configs install the
+plugin, the client config keeps its source-preference path, and `tests/next-host/host-version-guard.mjs` runs in
+every worker's `setupFiles` and throws unless `resolved == selectedHostPin().version`. Typed refusals:
+`HOST_SELECTOR_UNKNOWN`, `HOST_MODULE_UNRESOLVED`, `HOST_RESOLUTION_ESCAPED`; a legacy miss declines to the
+runner's own (same rc.2) resolution, never a silent rc.2 redirect under `next`. Importers inside either pinned
+tree are declined so a host module resolves from its own generation. **No second mapping table exists.** New
+mechanical suite `tests/next-host/host-resolution-consistency.test.mjs` (12/12) measures the real Node hook and
+a real Vite server per selector; it joins the post-build `ute-vnext-a1` leg (the only per-PR lane with both the
+repo install and the rc.5 tree).
+
+**D — the vitest population on rc.5: measured, not counted.** Population rule: collected vitest entries with a
+value `@deepseek-ai/*` import → **44** files (26 client + 18 runtime/testkit; the round-110 "40" is superseded).
+All 44 run on both hosts, one invocation per runner per host, with a guard line per worker
+(`HOST-VERSION-GUARD ok host=… resolved=… pin=…`, 26 client + 18 runtime). Result: rc.2 **42/44 files, 529/532
+tests**; rc.5 **39/44 files, 505/519 tests**. Classification: 1 **rc.2-shaped test** (`team-timeline` tooltip —
+rc.2 `Tooltip` uses mouse enter/leave, rc.5 pointer enter/leave; the test now fires both families, assertions
+unchanged, green on both); 3 **pre-existing host-independent** client failures (reproduced identically on rc.2
+with the UNMODIFIED HEAD config); **11 tests / 3 suites = a real rc.5 product gap** (rc.5
+`ToolsService.selectExecutor` requires an executor in the composition, `tests/deepseek-harness-next/packages/
+core/tools/lib/index.js:632`; the managed attach then forwards `[]`, refused by name at
+`packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1312`). That gap is recorded as open, not excused. No skip,
+no widened timeout, no weakened assertion.
+
+**Docs.** `RC5-TEST-MATRIX.md` §11 supersedes §4.3 row 5 / §6 item 2 / §10 (0/40 → measured); the
+`CANDIDATE-ACCEPTED` (dual-host deterministic, per-run guard) vs `PRODUCT-PROVEN` (frozen-version gate) ruling
+is in `OWNER-DECISIONS.md` §ROUND 118 and echoed in `D-ACCEPTANCE-REPORT.md`, `C1-C18-SIGNOFF.md`,
+`CANDIDATE-REPORT.md`, `VERSION-GATE.md`. **No row is PRODUCT-PROVEN**; no row is claimed CANDIDATE-ACCEPTED;
+the real-model run is a later round and was not started.
+
+**Booked scannable-surface delta.** One collected node:test suite (`host-resolution-consistency.test.mjs`,
++12 tests) and its declaration files; `ute-vnext-a1` leg 7 → 8 suites. Catalog: tests **787 → 788**, collected
+**735 → 736**, uncollected **38** (unchanged), excluded **14** (unchanged), digest
+`sha256:5f94024c… → sha256:15451525…`. Dispatch leg: **267 tests / 264 pass / 0 fail / 3 skipped**, set
+`sha256:edd4f1c4… → sha256:0b087a6a…` (the set changed by declared population, not by a weakened suite).
+
+**Gates at this round (`dev/agent-workflow/evidence/ute-a1/round118/`).** `ute-vnext-a1` 267/264/0/3 (exit 0);
+catalog 788/736/14/38 digest `sha256:15451525…` findings=0; `ute-cut-closure cut(0/148)`; `ute-p0-assets
+modules=37 files=180 lines=69512 cut(148/148)`; `docs-sync docs=193 findings=0 blocking=0`; place-dist-glue 35
+byte-identical; `eb3-ci-required pass workflows=11 findings=0`; bound vitest `ci-integration` PASS 15 suites /
+238 passed / 0 failed; UTE G1 argv **89/89**; `eb3-run-manifest records=634 findings=0`; `ci-pr-gate --full
+--census-captures 2` **PASS 10/10** (322.6 s; census 599f/7424l twice, identical identity sets, same as the
+published baseline); D4 5/5.
+
+**Not done.** The 11 rc.5 product-gap tests are not fixed (product migration: load the rc.5 executor provider /
+re-bind the managed attach); no real-model run; PR stays DRAFT; no settlement merge.
+
+## ROUND 120 (2026-11-26) — REAL-MODEL acceptance achieved at `DEV-LIVE`: 20/20 PROVEN on both pinned hosts
+
+**The driver's real branch was rebuilt, not the judges.** Round 119 proved the route answered but the
+driver could not see it. This round (worktree `.worktrees/vnext-a1-cut`, branch `vnext/a1-cut` @
+`1a3a79c4c`, sole writer, PR #822 DRAFT, `:3080` untouched, CORE PATCH BUDGET = 0): real request capture
+through the public `DEEPSEEK_BASE_URL` seam with an in-process pass-through recorder
+(`tests/world-factory/lib/model-call-recorder.mjs` — forwards `req.url` verbatim, forces
+`accept-encoding: identity`, records each `tool_use` name+input and every tool result, never headers);
+non-vacuous turn gates (`sawReply` real = an observed assistant turn with ≥1 tool-use block after the
+prompt; zero turns throws `REAL-TURN-MISS`); discovery of every judged call by predicate over the
+observed transcript (`tests/world-factory/lib/model-transcript.mjs`, `matchToolUse({name,argPath,
+argValue,nth,…})`, `DISCOVERY-MISS(<slot>)` on a miss) instead of mock-only ids. **No judge assertion,
+timeout or retry changed**; the only literal ids left are `requestToken`s the scenario itself names.
+
+**Two required runs, both exit 0.** legacy (rc.2 `639ed01539`, `deepseek-v4-flash`) **892 s**; next (rc.5
+`9c2670d3bc`, `deepseek-flash`) **180 s**; each 2/2 boots, `RESULT evidence-complete=true allBooted=true
+blocked=false runRecordsValid=true (2/2 boots; agreeing pair=true)`, **20/20 judges PROVEN on every boot**,
+RUN records `recordClass: DEV-LIVE` / `overall: PASS`, `agreeing=true differing=[]` (identical measured rows
+including approved-file sha256, `routedWakes=4`, `managementExecutions=0`, `stickyStopMarkerCount=1`).
+The four negative controls are OBSERVED with the model's own replies: deny (`team_resolve_control
+decision:"deny"` → `ADMISSION_APPROVAL_DENIED`, zero bytes, `REFUSED`/`not-started`); Stop (`session/cancel`
+200 → `ADMISSION_STOPPED`, zero bytes); duplicate approval (second decision rejected
+`CONTROL_REQUEST_DECIDED`, one execution); restart-no-replay (`before === after`: same sha, 1 decision,
+1 execution). Scripted control still 20/20 on 2/2 boots; discovery self-test 6/6 with three
+`DISCOVERY-MISS` negatives.
+
+**Six red attempts preserved** under `d-boot-feasibility/real-model/archive/`, each named by the defect it
+exposed (over-strict ledger census vs a legitimate fifth real ask; wake-marker self-taint from the driver's
+own prompt; raw scripted marker in a negative arm; queued deny prompt starved by the model's exploration —
+fixed by cancelling the in-flight Leader turn as a human's next prompt would; delegation tool result read
+one turn early; one next-boot worker answering with text instead of calling `write`). The last was fixed by
+a dated **prompt** amendment (`PROMPT-AMENDMENT.md` §Amendment 2, old text retained); no judge was weakened.
+
+**Level.** `D-ACCEPTANCE-REPORT.md` row 34 moves to **`DEV-LIVE-real-model`** (level vocabulary extended);
+`C1-C18-SIGNOFF.md` ROUND 120 and `CANDIDATE-REPORT.md` §8.1 updated. **Still not `CANDIDATE-ACCEPTED`**
+(the version gate has not run with a real model at a frozen version) and **no row is PRODUCT-PROVEN**;
+`d4:ask-execute-process` remains the single enumerated `knownRefuted` (REFUTED on both hosts, not one of the 20).
+
+**Gates at this round (`dev/agent-workflow/evidence/ute-a1/round120/gates/`).** `ute-vnext-a1` dispatch
+8 suites / 264 pass / 0 fail / 3 skipped (exit 0, same set digest `sha256:0b087a6a…`); catalog **788/736/14/38**
+digest `sha256:15451525…` unchanged (no new collected suite; the two new libs are not test suites); `ute-cut-closure
+cut(0/148)`; `ute-p0-assets modules=37 files=180 lines=69512 cut(148/148)`; `docs-sync docs=193 findings=0
+blocking=0`; place-dist-glue 35 byte-identical; `eb3-ci-required pass workflows=11`; bound vitest
+`ci-integration PASS 15 suites / 238 passed / 0 failed`; UTE G1 argv **89/89** (default host; the same argv
+under `TEAM_TEST_HOST=next` fails the retired-shadow control — recorded, not the bound lane); `eb3-run-manifest
+records=640 strict=0 findings=0`; `ci-pr-gate --full --census-captures 2` **10/10 legs PASS** (588.9 s; census
+599f/7424l twice, identical identity sets to the published baseline). Leakage self-check clean.
+
+**Not done.** No candidate/version-gate run with a real model at a frozen SHA; agreement is two boots per
+host, not independent sessions across time; the real model stays non-deterministic (one flaky negative-arm
+boot preserved, not retried away); `d4:ask-execute-process` (no PTY backend in the governed-shell world).
+PR stays DRAFT; no merge.
+
+## ROUND 124 (2026-11-26) — the version gate's legacy host gets its pinned assets; the Required red at the frozen SHA is diagnosed as four MECHANICAL failures, not the ready-flip/merge-ref
+
+**A. Version gate, first frozen-SHA dispatch (`45727813248`, `head=0d66cf8eb`).** Head binding passed and
+the rc.5 host passed 31/31, but **all four legacy drivers refused pre-boot**:
+`host-sandbox-assets: DESTINATION_DIGEST_MISMATCH: bin/glibc/system.node … dfa6d586… vs pin 54a9c25c…`.
+The workflow built the rc.2 host but never ran the native-asset provisioning leg, so the gate saw the
+runner's own build. Fix: `.github/workflows/candidate-acceptance.yml` now runs the canonical census command
+after the rc.2 build and before the gate —
+`node scripts/provision-host-assets.mjs --from-package @deepseek-ai/node-addon-system-linux-x64@0.1.2` —
+which verifies registry `dist.integrity` + committed tarball sha256 + per-file sha256/length/mode and
+replaces only mismatched build bytes. The sha256 pin did not move; no local tree is copied. Local proof:
+`ute-a1/round124/asset-provision.log` (second run receipt: `preExistingSha256 == sha256` for both files).
+
+**B. `ci-required` at `0d66cf8e` — exact truth.** Run `45727883993` (event `pull_request`,
+`ready_for_review`, 00:19:14Z) checked out `refs/pull/822/merge` = `23df45eb` (first parent master
+`a19d1df0`, head `0d66cf8e`); **the `EVENT_NAME=pull_request` and two-parent-merge guards PASSED**. The
+`event ${EVENT_NAME} is not supported` string in a raw log is the step's echoed command. The reds were
+identical in the preceding draft run `45727536793`: `ci-fast` `spawnSync git ENOBUFS` (name-only diff
+1,105,461 B > Node 1 MiB), `ci-integration` evidence guard 6 oversized preserved round-120 model transcripts,
+`ci-security`/`ci-product` vitest config-load ENOENT on the gitignored pristine legacy tree (round-118 eager
+realpath). Fixed mechanically this round: `eb3-impact.mjs` git buffer 64 MiB; six reasoned size exemptions
+under the unchanged 1 MiB bound; `host-select.mjs` treats a missing legacy tree as "nothing to decline"
+(a missing **next** tree still refuses) with a regression test. **No layer guard weakened; no event declared
+unsupported.** Supported full-Required path: mark ready / synchronize while ready → the run grades the merge
+commit `M = merge(master tip, event head)` (here `23df45eb`, not the head) and includes census; draft
+re-evaluation is red because census skips by design. The frozen SHA is graded only by the
+`candidate-acceptance` dispatch and its separate `version-gate` context. Documented in `VERSION-GATE.md` §9,
+`ci-required.yml` header, `D-ACCEPTANCE-REPORT.md` ROUND 124, `CANDIDATE-REPORT.md` §5.6.
+
+**Gates at this round (`ute-a1/round124/gates/`).** `ute-vnext-a1` dispatch 8 suites / 268 tests /
+265 pass / 0 fail / 3 skipped (set `sha256:0b087a6a…`); catalog tests=790 collected=738 excluded=14
+uncollected=38 findings=0; cut closure `cut(0/148)`; P0 assets modules=37 files=180 lines=69512; docs-sync
+docs=193 findings=0 blocking=0; place-dist-glue 36 byte-identical; eb3-ci-required workflows=11 findings=0;
+bound vitest PASS 15 suites / 238 passed / 0 failed; UTE G1 argv 89/89; run manifest records=662 strict=0
+incomplete=11 findings=0; version-gate verifier 22/22; `ci-pr-gate --full --census-captures 2` **10/10 legs
+PASS** (289.4 s; census 601f/7446l twice, identical identity sets).
+
+**Not done.** The four hosted Required layers were not re-run this round. The one re-dispatch at the new
+frozen SHA `cd08f90c2` (run `45733175085`) reached both host builds, both asset-provisioning steps and the
+`next` host 31/31, then went **RED** on the legacy `d3` crash judge: boot 2's in-flight `edit` settled
+`FAILED` before SIGKILL (`no genuine in-flight call at crash time … settlement state="FAILED"`), the boots
+disagreed, the host row failed (27 judges), and overall was
+`fail hosts=legacy,next judges=58 proven=56 known-refuted=2`. No receipt was written; `version-gate`
+concluded failure with `REFUSED VERSION_GATE_RECEIPT_MISSING`. Not re-dispatched to chase green. No row is
+PRODUCT-PROVEN; PR restored to DRAFT; no merge.
+
+## ROUND 125 (2026-11-26) — the `d3` crash arm's in-flight window is a KERNEL-BLOCKED FIFO write; six runs per host green, fast-provider control refuses to kill; the frozen-SHA gate PASSES but the workflow dies on a binding-step path bug (no row moves)
+
+**The defect.** Round 124's frozen-SHA red was a window defect: the in-flight record was an ADMITTED `edit`
+of a 256 MiB file, and on boot 2 it settled `FAILED` before the SIGKILL, so the boots disagreed on
+`inflightBefore` and the crash judge refused with `no genuine in-flight call at crash time` — correct
+behaviour; the window was a timing hope.
+
+**The change (driver only, `tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs`).** Member B's
+in-flight call is a governed `bash` writing a FINITE **58,720,256**-byte stream into a FIFO whose ONLY read
+end the driver holds (`O_RDONLY|O_NONBLOCK`). The 65,536 B kernel pipe fills, the writer parks in
+`pipe_write`, the driver reads exactly one buffer (proof bytes flowed), stops reading, waits 400 ms and
+re-reads the settlement — it must still be `RUNNING` — and only then SIGKILLs the host pid; it then closes
+the read end (`pipeClosedAfterKill`), so a survivor would get `EPIPE`/`SIGPIPE`. The command is finite on
+purpose (an infinite loop would prove nothing). `bash` carries the block because `edit`/`write` accept only
+regular files (`post-consume-edit.ts` `O_RDWR|O_NOFOLLOW`; `post-consume-write.ts` pre-open `isFile`), so a
+FIFO is refused there. Fail-closed: `waitInFlight` returns only on `RUNNING`; the kill gate is
+`state !== 'RUNNING'` (ADMITTED no longer counts); a refusal writes `inflight-refusal.json`
+(`sigkillIssued:false`, host alive) and throws the SAME named reason with no `crash.json`; `mkfifo` failure
+refuses with `A5SF_D3_INFLIGHT_BLOCK_UNAVAILABLE`. The judge got STRICTER: `inflight-was-open-at-crash`
+requires `RUNNING` (the old `'open'` normalization is gone) plus a new clause
+`inflight-window-blocked-in-kernel` (measured bytes, `stateAfterSettle==='RUNNING'`, drained < intended). No
+judge relaxed, no timeout widened.
+
+**Measured before freezing** (`ute-a1/round125/runs/`): six runs, three per host, two boots each — all 12
+boots `inflightBefore=RUNNING`, `blocked=true`, writer `wchan=anon_pipe_write`, SIGKILL, `UNKNOWN` after
+restart, `agreeing=true`; no run omitted, and the deliberately aborted first attempt is kept in
+`d3/archive/`. Negative control (`A5SF_D3_INFLIGHT_MODE=fast --expect-inflight-refusal`) PASSES on both hosts
+with the same named reason, settlement `COMPLETED`, no SIGKILL, host alive, no `crash.json`.
+
+**Gates at this round** (`ute-a1/round125/gates/`): dispatch leg 8 suites / 268 tests / 265 pass / 3 skipped
+(`sha256:0b087a6a…`); catalog tests=790 collected=738 excluded=14 uncollected=38 findings=0; cut closure
+`cut(0/148)`; P0 assets modules=37 files=180 lines=69512; docs-sync docs=193 findings=0 blocking=0; dist glue
+36 byte-identical; `EB3-CI-REQUIRED pass workflows=11 findings=0`; bound vitest 15 suites / 238 passed;
+UTE G1 argv 89/89; manifest records=662 strict=0 incomplete=11 findings=0; verifier unit 22/22;
+`ci-pr-gate --full --census-captures 2` **10/10 legs PASS** (305.9 s).
+
+**The ONE frozen-SHA dispatch (`e07f431e9c599eaa73ede15996ae36808b8a3750`, run `45746665143`) — machine
+verdict PASS, job RED on a binding-step defect.** `CANDIDATE-GATE pass hosts=legacy,next judges=62 proven=60
+known-refuted=2 env-limited=0`, `d3` 4/4 PROVEN on both hosts with `inflightBefore=RUNNING` on all four
+hosted boots. The next step, `Bind the graded head to the requested SHA`, died with
+`Cannot find module 'dev/…/2026-11-26T03-15-42-275Z/verdict.json'` because `require()` was given the
+RELATIVE path that `find dev/…` emitted; the receipt step was skipped and the `version-gate` job concluded
+failure with `REFUSED VERSION_GATE_RECEIPT_MISSING`. The artifact's `verdict.json` carries
+`"head":"e07f431e9…"`/`"verdict":"pass"`, so this is a workflow path bug, not a stale head and not a judge.
+Not re-dispatched; the fix (`path.resolve` / absolute `find` root / `fs.readFileSync`+`JSON.parse`) and the
+next dispatch belong to the next round. Evidence `ute-a1/round125/hosted/`.
+
+**Not done / not claimed.** No capability row moves; nothing PRODUCT-PROVEN; the Required `version-gate`
+context is NOT green (no receipt); PR #822 stays DRAFT; no merge; `:3080` untouched; `CORE PATCH BUDGET = 0`.
+
+---
+
+**Round 128 — 2026-11-27 — TRIAL CANDIDATE: an installable, rollback-able trial tag split from release
+semantics.** The owner asked for something they can *install and try* without waiting for the version freeze.
+This round delivers `v0.3.0-trial.1` (annotated, on the round's documentation commit), installable as
+`pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team#v0.3.0-trial.1`, plus
+`docs/TRIAL-GUIDE.md` and `docs/trial/` (v4 Leader+Worker+Officer blueprint + profile-layer installer). Owner
+ruling recorded in `ute-a1/OWNER-DECISIONS.md` (round 128): a trial tag may be published/installed/rolled back
+without the freeze, but `PRODUCT-PROVEN` is untouched by it and the release protection rule (frozen candidate
+SHA + version gate Required and green + verified receipt) stands unchanged. `CANDIDATE-REPORT.md` states the
+same split.
+
+**The manifest change (the reason rc.5 installs).** `version` = `0.3.0-trial.1`; `engines.dsh` =
+`0.2.0-rc.2 || 0.2.2-rc.5`; all 18 `@deepseek-ai/dsh*` peers carry that BYTE-IDENTICAL enumeration (the only
+two hosts this branch has MEASURED). No comparator, no wildcard, no `allow-version` exemption, no peer left on
+an exact pin. The 18 exact `0.2.0-rc.2` pins moved from `peerDependencies` to `devDependencies` — they are the
+checkout's build/test host selection, not a compatibility claim; the lock still resolves all 18 to `0.2.0-rc.2`
+(0 occurrences of `0.2.2-rc.5`). `@deepseek-ai/dsh-web-search-exa` remains the only `@deepseek-ai/*` regular
+dependency (host-absent, exact pin, PD-37 intact). Truth table against the REAL evaluators of both hosts
+(`003`): shipped ACCEPTs exactly rc.2 and rc.5 on both evaluators, REFUSEs 0.1.7-rc.1 / 0.2.0 /
+0.2.3-alpha.2 with `exempted=false`; the exact-pin control accepts only rc.2 — the relaxation is load-bearing.
+`check-install-manifest` now requires exact-or-enumeration on the peer surface, demands `engines.dsh` enumerate
+the SAME set, and (fixed this round) enforces peer byte-identity **unconditionally** — the first version only
+ran it when `engines.dsh` was absent, which a negative control (`e-peer-drift`) caught.
+
+**Measured in isolation** (`dev/agent-workflow/evidence/r128-trial/`, `DSH_HOME=.artifacts/trial-home`, rc.5
+host 0.2.2-rc.5, port 3180, never `:3080`, never `~/.dsh`): local-spec install exit 0 → profile dep +
+`dsh.profile.bundles` + `--dump-config` both rows + profile `node_modules/@deepseek-ai` = only the web-search
+dep; pack 1976 files with every required install-face target and 0 missing `exports`; boot smoke (ungoverned)
+and governed-profile boot (v4 blueprint served by `catalog.list`) each SIGTERM→exit 0 with the process gone;
+then the tag install after wiping the profile (see the tag-phase logs). Negative control on the relaxed
+checker: six mutated manifests (comparator peer, engine comparator, engine subset, engine extra, peer drift,
+no-engine) — five are named refusals, and "no-engine" is legal by design (peers alone then decide and still
+enumerate exactly two hosts).
+
+**Gates (this tree).** `dispatch-tests --leg ute-vnext-a1 --run` 268 tests / 267 pass / 1 skip / exit 0;
+`test-catalog --max-uncollected 41 --max-excluded 7` findings=0 (790 tests, 38 uncollected, 14 excluded);
+`ute-cut-closure --check` pass; `ute-p0-assets --check` pass; `docs-sync --check` 194 docs findings=0;
+`place-dist-glue` 36 byte-identical; `eb3-ci-required` pass workflows=11; bound vitest
+`plugin-dsh-compat` 14/14; UTE G1 argv 89/89; `eb3-run-manifest` pass records=765 findings=0;
+`ci-pr-gate --full --census-captures 2` **PASS 10/10** (`refused=0 refusedlegs=none`), census twice with
+identical identity sets. `check-install-manifest` stays at **11 issues, base-equal** (same 11 against the
+pre-change manifest; all computed-specifier rejections in committed dist; lock leg PASS) — reported red, not
+claimed green.
+
+**Disclosed, not hidden.** (1) A helper script defaulted to `${DSH_HOME:-…}` and the tool environment exports
+`DSH_HOME=$HOME/.dsh`: one boot attempt therefore targeted the stable home and the host aborted at
+`prepareProfile` with `EROFS … /home/armourpiercer/.dsh/profiles/web/cordis.yml`. It READ the stable home and
+its first WRITE was refused by the read-only mount; no file changed, no process stayed up, `:3080` was never
+contacted. The script now refuses any home under `$HOME/.dsh` before starting the host
+(`r128-trial/README.md` disclosure 2). (2) The `ci-pr-gate` install leg needed `CI=true` + the tree's own
+writable pnpm store (read-only `HOME` here); the two failed attempts are kept as `10a`/`10b`, and the green
+verdict is `pass=10 fail=0 skip=0`. (3) Not measured: a full Member turn with a real model credential, MCP and
+subagent end-to-end, macOS/Windows governed tier — the trial guide says so to the owner.
+
+**Not done / not claimed.** No capability row moves; nothing is PRODUCT-PROVEN; no release/tag of the release
+line; PR #822 stays DRAFT; no merge; `CORE PATCH BUDGET = 0`; `:3080` and `~/.dsh` untouched; no existing tag
+moved.

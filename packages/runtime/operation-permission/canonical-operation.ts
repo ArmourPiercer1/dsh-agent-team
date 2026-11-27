@@ -157,24 +157,6 @@
 
 import { canonicalJsonStringify, toRemoteSafeDetail } from '../../contracts/src/index.js'
 import { sha256Hex } from '../../domain/blueprint/src/index.js'
-// U6 PR2 (center-interface change, disclosed in the PR body): the `read`
-// projection is the FS family's PURE normalizer. The edge is CENTER →
-// family-pure-module (`read-normalizer.ts` has zero imports — no cycle is
-// expressable); the lane's TypeScript face rides the runtime build include,
-// so the relative `.js` specifier resolves identically in `src` and in the
-// committed dist mirror.
-import { normalizeReadProjection } from '../../tools/fs-family/src/read-normalizer.js'
-// U6 PR3 (center-interface change, disclosed in the PR body): the
-// shell-class (`bash` / `pwsh`) projection is the PROCESS family's PURE
-// normalizer (`packages/tools/process-family/src/bash-normalizer.ts` — the
-// moved `extractShellCommand` + `extractShellEffects` law verbatim, closed
-// reasons and detail shapes included); the authority computes the
-// fingerprint from the returned fields exactly as before, and the workdir
-// path authority stays with the injected resolver seam below. The
-// golden-vector gate (`u6-pr3-shell-golden-vectors.test.ts`) pins the whole
-// corpus byte-identical against master's output recorded BEFORE the move —
-// durable grants/rules keyed by this fingerprint survive.
-import { normalizeShellProjection } from '../../tools/process-family/src/bash-normalizer.js'
 import { canonicalizationFailed } from './errors.js'
 import type { CanonicalizationFailureReason } from './errors.js'
 import {
@@ -706,5 +688,179 @@ function operation(
     tool,
     resource: { kind: 'file', key: target.key, display: target.display },
     fingerprint,
+  }
+}
+
+// --- the moved PURE normalizers (fs read / shell class) --------------------
+// U6 PR2/PR3 laws, moved in-file when the family packages retired.
+
+/** The closed failure reasons of this normalizer — the two read-window
+ *  reasons of the authority's closed canonicalization vocabulary. */
+type ReadProjectionFailureReason = 'read-offset-invalid' | 'read-limit-invalid'
+
+type ReadProjectionResult =
+  | { readonly ok: true; readonly projection: Record<string, unknown> }
+  | { readonly ok: false; readonly reason: ReadProjectionFailureReason; readonly value: unknown }
+
+/** Positive-integer check — verbatim mirror of the authority's (the upstream
+ *  tools' `oneBased`/`parsePositiveInteger`). */
+function readProjectionPositiveInteger(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value) && Number.isInteger(value) && value >= 1
+}
+
+/**
+ * Project one `read` call's window arguments into the security projection.
+ * `resourceKey` is left EMPTY: the authority fills it from the injected
+ * resolver seam (path semantics are never the Family's), exactly as master's
+ * `case 'read'` did (`projection['resourceKey'] = target.key` after the
+ * switch).
+ *
+ * @param tool - the exact tool name (carried into the projection verbatim;
+ *   the type pins this normalizer to 'read' — every other tool's projection
+ *   law stays the authority's own).
+ * @param args - the losslessly-parsed arguments record.
+ * @returns the projection, or the closed failure (reason + raw value).
+ */
+function normalizeReadProjection(
+  tool: 'read',
+  args: Record<string, unknown>,
+): ReadProjectionResult {
+  const offset = args['offset']
+  const limit = args['limit']
+  if (offset !== undefined && !readProjectionPositiveInteger(offset)) {
+    return { ok: false, reason: 'read-offset-invalid', value: offset }
+  }
+  if (limit !== undefined && !readProjectionPositiveInteger(limit)) {
+    return { ok: false, reason: 'read-limit-invalid', value: limit }
+  }
+  return {
+    ok: true,
+    projection: {
+      tool,
+      resourceKey: '',
+      offset: offset ?? READ_OFFSET_DEFAULT,
+      // A2C-5: the omission is an IDENTITY — null, never a deployment constant.
+      limit: limit ?? null,
+    },
+  }
+}
+
+/** The closed failure surface. `details` is ABSENT exactly where master's
+ *  `canonicalizationFailed(tool, reason)` carried no extra details
+ *  (`${tool}-command-missing`, `${tool}-command-empty`); where master did,
+ *  `details.key` is `'valueType'` for the `typeof value` reports and
+ *  `'value'` for the value-itself reports, and `details.raw` is the RAW
+ *  value the authority passes through `toRemoteSafeDetail`. The split is
+ *  carried so the error DETAILS stay byte-identical, not just the reason.
+ *  (The record gate — arguments not a plain object — stays the AUTHORITY'S
+ *  own `asArgumentRecord`, shared across every tool class; it answers the
+ *  same `${tool}-command-missing` reason with its own `valueType` detail.) */
+type ShellProjectionFailure = {
+  readonly ok: false
+  readonly reason:
+    | 'bash-command-missing' | 'pwsh-command-missing'
+    | 'bash-command-not-a-string' | 'pwsh-command-not-a-string'
+    | 'bash-command-empty' | 'pwsh-command-empty'
+    | 'bash-workdir-not-a-string' | 'pwsh-workdir-not-a-string'
+    | 'bash-run-in-background-not-boolean' | 'pwsh-run-in-background-not-boolean'
+    | 'bash-timeout-ms-invalid' | 'pwsh-timeout-ms-invalid'
+    | 'bash-sandbox-permissions-not-a-string' | 'pwsh-sandbox-permissions-not-a-string'
+  readonly details?: { readonly key: 'value' | 'valueType'; readonly raw: unknown }
+}
+
+/** The shell-class security fields, pre-hash. `command` rides VERBATIM
+ *  (the authority hashes it into `commandHash`); `workdirInput` is the
+ *  resolver INPUT (the authority resolves it; identity is the resolver's). */
+type ShellProjectionFields = {
+  readonly command: string
+  readonly workdirInput: string
+  readonly runInBackground: boolean
+  readonly timeoutMs: number | null
+  readonly sandboxPermissions: string | null
+}
+
+type ShellProjectionResult =
+  | { readonly ok: true; readonly fields: ShellProjectionFields }
+  | ShellProjectionFailure
+
+/**
+ * Project one shell-class argument record into its security fields.
+ * Mirrors master's extraction ORDER exactly (command, then the effect fields
+ * in workdir / run_in_background / timeoutMs / sandbox_permissions order —
+ * a call with two malformed fields refuses on the FIRST one, and the golden
+ * corpus pins which reason wins where).
+ *
+ * @param tool - the exact shell-class tool name (`'bash'` | `'pwsh'`); the
+ *   closed reason strings carry it verbatim (A2C-1: ONE canonicalizer for
+ *   the class, the tool name the only separator).
+ * @param args - the losslessly-parsed arguments record (the authority has
+ *   already established it is a plain object).
+ */
+function normalizeShellProjection(
+  tool: 'bash' | 'pwsh',
+  args: Record<string, unknown>,
+): ShellProjectionResult {
+  // ── command (the class's security-relevant field) ───────────────────────
+  const command = args['command']
+  if (command === undefined) {
+    return { ok: false, reason: `${tool}-command-missing` }
+  }
+  if (typeof command !== 'string') {
+    return { ok: false, reason: `${tool}-command-not-a-string`, details: { key: 'valueType', raw: typeof command } }
+  }
+  if (command.trim().length === 0) {
+    return { ok: false, reason: `${tool}-command-empty` }
+  }
+
+  // ── workdir — the input normalization (the tool's own defaulting); a
+  //    non-string fails closed BEFORE the resolver call. ───────────────────
+  const workdir = args['workdir']
+  let workdirInput: string
+  if (workdir === undefined) {
+    workdirInput = '.'
+  } else if (typeof workdir === 'string') {
+    workdirInput = workdir.trim().length === 0 ? '.' : workdir
+  } else {
+    return { ok: false, reason: `${tool}-workdir-not-a-string`, details: { key: 'valueType', raw: typeof workdir } }
+  }
+
+  // ── run_in_background — omitted ⇒ false (foreground: the tool's own
+  //    background gate is `args.run_in_background === true`); present but
+  //    not a boolean ⇒ fail closed (the tool would reject it). ─────────────
+  const runInBackground = args['run_in_background']
+  if (runInBackground !== undefined && typeof runInBackground !== 'boolean') {
+    return { ok: false, reason: `${tool}-run-in-background-not-boolean`, details: { key: 'value', raw: runInBackground } }
+  }
+
+  // ── timeoutMs — the EXPLICIT value only (plan §4.4: never a deployment
+  //    default or the executor cap is substituted into the fingerprint);
+  //    present ⇒ finite number > 0 (mirrors the upstream `validateBashArgs`
+  //    L61–63 @ a66e470204). ───────────────────────────────────────────────
+  const timeoutMs = args['timeoutMs']
+  if (
+    timeoutMs !== undefined &&
+    !(typeof timeoutMs === 'number' && Number.isFinite(timeoutMs) && timeoutMs > 0)
+  ) {
+    return { ok: false, reason: `${tool}-timeout-ms-invalid`, details: { key: 'value', raw: timeoutMs } }
+  }
+
+  // ── sandbox_permissions — the requested mode string only; any string
+  //    (including '') is its own value — mode legality is the upstream
+  //    authority at execution (the Team layer does not mint authority for
+  //    anything that will never execute). ─────────────────────────────────
+  const sandboxPermissions = args['sandbox_permissions']
+  if (sandboxPermissions !== undefined && typeof sandboxPermissions !== 'string') {
+    return { ok: false, reason: `${tool}-sandbox-permissions-not-a-string`, details: { key: 'valueType', raw: typeof sandboxPermissions } }
+  }
+
+  return {
+    ok: true,
+    fields: {
+      command,
+      workdirInput,
+      runInBackground: runInBackground ?? false,
+      timeoutMs: timeoutMs ?? null,
+      sandboxPermissions: sandboxPermissions ?? null,
+    },
   }
 }

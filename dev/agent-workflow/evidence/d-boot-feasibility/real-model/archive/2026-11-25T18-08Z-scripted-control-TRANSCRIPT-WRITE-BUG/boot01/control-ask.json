@@ -1,0 +1,49 @@
+{
+  "askAppeared": true,
+  "ids": {
+    "officer": "inst-0hvc2y01v51z",
+    "worker": "inst-1q9ehvo0zb4o",
+    "pendingRequestId": "ctrl-1fb7rh21v4y6yt08v5stw00v",
+    "pendingRequestId2": null,
+    "pendingRequestId3": null,
+    "pendingProcessRequestId": null
+  },
+  "askRow": {
+    "requestId": "ctrl-1fb7rh21v4y6yt08v5stw00v",
+    "kind": "leader-approval",
+    "targetInstanceId": "inst-1q9ehvo0zb4o",
+    "actionName": "admission-ask",
+    "toolName": "write",
+    "correlation": "admission:call-d4-worker-write",
+    "status": "pending",
+    "createdAt": "2026-11-25T17:56:46.461Z",
+    "subject": {
+      "kind": "instance",
+      "instanceId": "inst-1q9ehvo0zb4o"
+    },
+    "executionCoupling": "inline",
+    "requestSequence": 9,
+    "operationFingerprint": "sha256:3358b460504a2d8ac00073489e459492c91e61508334d11f3884af82df011c98",
+    "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T17-53-25Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:8c48bb00196d34d0feb144f5a8ee7a84)"
+  },
+  "requests": [
+    {
+      "requestId": "ctrl-1fb7rh21v4y6yt08v5stw00v",
+      "kind": "leader-approval",
+      "targetInstanceId": "inst-1q9ehvo0zb4o",
+      "actionName": "admission-ask",
+      "toolName": "write",
+      "correlation": "admission:call-d4-worker-write",
+      "status": "pending",
+      "createdAt": "2026-11-25T17:56:46.461Z",
+      "subject": {
+        "kind": "instance",
+        "instanceId": "inst-1q9ehvo0zb4o"
+      },
+      "executionCoupling": "inline",
+      "requestSequence": 9,
+      "operationFingerprint": "sha256:3358b460504a2d8ac00073489e459492c91e61508334d11f3884af82df011c98",
+      "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T17-53-25Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:8c48bb00196d34d0feb144f5a8ee7a84)"
+    }
+  ]
+}

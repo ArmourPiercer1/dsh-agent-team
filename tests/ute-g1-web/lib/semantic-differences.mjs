@@ -195,6 +195,42 @@ export async function measureRefusalSurface() {
   }
 }
 
+/**
+ * THE DECLARED DIFFERENCES (round 81). Measurement lived on the deleted legacy
+ * family (`packages/tools/families/web.mjs` + `web-family/src/*`, cut by
+ * `93ba0a1d1`), so the MEASURED cells below are the values the B1 instrument
+ * recorded in `dev/agent-workflow/evidence/ute3-web-b1-20261120/semantic-differences.txt`
+ * and are asserted as the HISTORICAL record. What must stay live is the
+ * declaration: all three remain blocking and UNAPPROVED, so this family can
+ * never be retired on the strength of them.
+ */
+export const SEMANTIC_DIFFERENCES = Object.freeze([
+  Object.freeze({
+    id: 'SD-WEB-1-native-name-claim-collision',
+    blocking: true,
+    approval: null,
+    retiredMeasurement: '93ba0a1d1 (packages/tools/families/web.mjs)',
+    historical: Object.freeze({ collision: 'both planes claim the native web_fetch/web_search names' }),
+  }),
+  Object.freeze({
+    id: 'SD-WEB-2-redirect-ownership',
+    blocking: true,
+    approval: null,
+    retiredMeasurement: '5d1349767+93ba0a1d1',
+    historical: Object.freeze({
+      legacy: Object.freeze({ requests: 1 }),
+      routeC: Object.freeze({ requests: 3, residual: Object.freeze(['WEB_REDIRECT_UNMEDIATED_ON_ALLOW']) }),
+    }),
+  }),
+  Object.freeze({
+    id: 'SD-WEB-3-refusal-surface',
+    blocking: true,
+    approval: null,
+    retiredMeasurement: '5d1349767+93ba0a1d1',
+    historical: Object.freeze({ typedCodeInText: null, factDecision: 'ALLOW' }),
+  }),
+])
+
 /** Measure every difference (each one boots its own world; serial by design). */
 export async function measureAll() {
   const differences = []

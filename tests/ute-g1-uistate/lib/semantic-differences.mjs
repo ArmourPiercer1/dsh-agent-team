@@ -18,7 +18,25 @@ import { PRISTINE_ROOT, REPO_ROOT } from './paths.mjs'
 const read = (rel) => readFileSync(join(REPO_ROOT, rel), 'utf8')
 const readHost = (rel) => readFileSync(join(PRISTINE_ROOT, rel), 'utf8')
 
-/** The differences, each with the measurement that keeps it honest. */
+/**
+ * ROUND 81: the MEASUREMENT below lived on the governed family bodies
+ * (`packages/tools/{ui,agent-state}-family`), deleted by the A0 frozen cut
+ * (`5d1349767`/`93ba0a1d1`). The declaration stays binding — every difference is
+ * still blocking and unapproved — but `assertMeasured` can no longer be derived
+ * from those sources. The historical measurement is the B1 composition probe
+ * (`dev/agent-workflow/evidence/ute3-uistate-b1-20261121/composition-probe.txt`).
+ */
+export const SEMANTIC_MEASUREMENT_RETIRED = Object.freeze({
+  by: '5d1349767+93ba0a1d1',
+  sources: Object.freeze([
+    'packages/tools/families/ui.mjs',
+    'packages/tools/families/agent-state.mjs',
+    'packages/tools/agent-state-family/src/executors.mjs',
+  ]),
+  historicalEvidence: 'dev/agent-workflow/evidence/ute3-uistate-b1-20261121/composition-probe.txt',
+})
+
+/** The differences, each with the measurement that kept it honest. */
 export const SEMANTIC_DIFFERENCES = Object.freeze([
   {
     id: 'two-implementations',

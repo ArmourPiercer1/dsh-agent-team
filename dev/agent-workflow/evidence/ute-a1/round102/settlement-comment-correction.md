@@ -1,0 +1,11 @@
+[dated settlement, 2026-11-24T10:48:00Z]
+
+Correction to the round-102 settlement, for head `f880370d234bfa2f831edfd753e2ee59005770d2` (branch `vnext/a1-cut`, PR #822 **DRAFT**, unmerged). Base `a19d1df018e772f20602f93bc726694524bdeb2f`. The substantive settlement is the round-102 comment at `a3bcac542` (same measurements, same verdicts, same open items); this head only corrects a **count** in the four documents written for it.
+
+**What was wrong:** the round-102 text said "18 D4 judges / 17 PROVEN". The probe declares **17** judges (`D4_JUDGES`), and the measured rc.5 set is **16 PROVEN + 1 REFUTED** (`d4:ask-execute-process`), identical to rc.2. The four places now read "16 of the 17 judges PROVEN / 16 PROVEN + 1 REFUTED": `D-ACCEPTANCE-REPORT.md` (current-status section), `RC5-ACCEPTANCE.md` §8 table, `CAPABILITY-MATRIX-C.md` ROUND 102 heading, `MIGRATED-SUITE-STATUS.md` Round 102 result line, and the PR body's round-102 bullet. No verdict, level, counter, byte, gate number or open item changed; `d4-rc5/results.json` carries exactly 17 verdict objects and was not touched.
+
+**The counts that did not change** (re-verified against `round102/d4-rc5/`): 16 PROVEN with clause-ok vectors identical to rc.2, 1 REFUTED with the same three failing clause ids (`bash-tool-result-not-an-error`, `in-lane-write-lands`, `settlement-completed`), `agreement.txt` byte-identical across hosts, counters differing in nothing, both runs `evidence-complete=true allBooted=true blocked=true runRecordsValid=true (2/2; agreeing pair=true)`.
+
+**Gates re-run after the edit:** `docs-sync --check` findings=0 blocking=0. The full block from the prior comment was measured at `a3bcac542` and is unchanged by a text-only count fix (dispatch 248/245/0/3, catalog 785, cut(0/148), p0-assets 37/180/69512, place-dist-glue 35, ci-required 10/0, bound vitest 238/0, UTE G1 89/89, `ci-pr-gate --full` pass=10 fail=0, manifest records=520 findings=0, window red=0/0).
+
+**Still open, unchanged:** `d4:ask-execute-process` (product assembly gap, owner decision); P0-2 **OPEN TARGET-HOST ACCEPTANCE BLOCKER**; rc.5 column of `d:remote-creation` and `d2:remote-delivery` not recorded; wider vitest/node:test population not re-run on rc.5; scripted mock on both hosts. **PR #822 stays DRAFT and unmerged.**

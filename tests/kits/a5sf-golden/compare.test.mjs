@@ -18,7 +18,8 @@
  */
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -38,6 +39,32 @@ import {
 import { REPO_ROOT, observeLaneDecision, observeLocator, observeRunnerArgv } from './observations.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
+
+/**
+ * A SOURCE MAY BE RETIRED — and then the reviewer reads the retirement, not a missing file.
+ * Round 80: five corpus sources are gone with the A0/A1 cut. Four are booked per-file in
+ * `ute-cut-closure.allow.json#retiredSubjects` (round 72 deleted them with their subject); one
+ * (`a5p5-parity.test.ts`) is a frozen A0 module. The vector's DISPOSITION is unchanged —
+ * RETIRE/UNUSABLE vectors were already NOT_APPLICABLE and can never MATCH — only the
+ * "the source is inspectable" law is satisfied by the record that removed it.
+ */
+const CLOSURE_LEDGER = JSON.parse(readFileSync(join(REPO_ROOT, 'dev/agent-workflow/ledgers/ute-cut-closure.allow.json'), 'utf8'))
+const RETIRED_SOURCES = new Map((CLOSURE_LEDGER.retiredSubjects?.entries ?? []).map((entry) => [entry.path, entry]))
+const FROZEN_TREE = CLOSURE_LEDGER.retiredSurfaces?.frozenTree
+const FROZEN_SOURCES = new Set(FROZEN_TREE === undefined ? [] : execFileSync('git', ['-C', REPO_ROOT, 'ls-tree', '-r', '--name-only', FROZEN_TREE], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 }).split('\n').filter(Boolean))
+
+/** How a vector's source can be inspected: on disk, in the per-file retirement record, or at the frozen tree. */
+function sourceInspectable(rel) {
+  if (existsSync(join(REPO_ROOT, rel))) return 'working-tree'
+  const retired = RETIRED_SOURCES.get(rel)
+  if (retired !== undefined) {
+    assert.ok(typeof retired.reason === 'string' && retired.reason.length > 0, `${rel}: a retired source must record WHY it was retired`)
+    return `retired:${String(retired.cut)}:round${String(retired.round)}`
+  }
+  if (FROZEN_SOURCES.has(rel)) return `frozen-tree:${String(FROZEN_TREE)}`
+  return null
+}
+
 const CORPUS_PATH = join(HERE, 'vectors.json')
 const { corpus, vectors } = loadCorpus(CORPUS_PATH)
 
@@ -66,10 +93,12 @@ test('the corpus is well-formed: every vector is regression-only and names a new
     assert.equal(vector.regressionOnly, true, vector.id)
     assert.ok(DISPOSITIONS.includes(vector.disposition), vector.id)
     counts[vector.disposition] += 1
-    // The source must exist in this checkout, so a reviewer can go read it.
-    assert.doesNotThrow(
-      () => readFileSync(join(REPO_ROOT, vector.source.path), 'utf8'),
-      `${vector.id}: source ${vector.source.path} must be tracked and readable`,
+    // The source must be inspectable, so a reviewer can go read it: on disk, or through the
+    // per-subject retirement record / the frozen tree that removed it.
+    assert.notEqual(
+      sourceInspectable(vector.source.path),
+      null,
+      `${vector.id}: source ${vector.source.path} must be on disk, booked in retiredSubjects, or present at the A0 frozen tree`,
     )
   }
   assert.deepEqual(counts, {

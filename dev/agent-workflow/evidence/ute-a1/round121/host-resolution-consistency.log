@@ -1,0 +1,20 @@
+✔ [legacy] Node and Vite agree on the package mapping, the subpath and containment (42.631431ms)
+✔ [legacy] the module the shared answer loads is inside the selected host tree (17.413926ms)
+✔ [legacy] an unexported subpath refuses on both paths (no source fallback, no rc.2 fallback) (13.09934ms)
+✔ [legacy] the client source-preference path resolves into the SAME selected tree (27.532179ms)
+✔ [legacy] a host-internal importer: the resolver declines, the Vite adapter unifies ONE realpath (11.229916ms)
+✔ [next] Node and Vite agree on the package mapping, the subpath and containment (65.915203ms)
+✔ [next] the module the shared answer loads is inside the selected host tree (35.365246ms)
+✔ [next] an unexported subpath refuses on both paths (no source fallback, no rc.2 fallback) (25.566186ms)
+✔ [next] the client source-preference path resolves into the SAME selected tree (30.410901ms)
+✔ [next] a host-internal importer: the resolver declines, the Vite adapter unifies ONE realpath (34.296359ms)
+✔ an unknown selector is a TYPED refusal on both adapters, never a silent rc.2 fallback (0.389948ms)
+✔ the two selectors pin DIFFERENT host generations (the matrix cannot be green by one host) (4.717931ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 472.863206

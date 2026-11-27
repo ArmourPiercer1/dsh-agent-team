@@ -357,8 +357,11 @@ export async function mountRouteCWorld({ label, fixtureRoot, cwd, readRoots, wri
   assert.ok(mounted !== undefined, 'the configured row must mount a realm')
 
   const definitionBeforeAttach = root.tools.get('bash', agentKey)
+  // POST-CUT LAW (round 81): the A1 seam appends NO Team-authored shadow. With no
+  // composition-declared native module the attach answers `undefined` and the
+  // preset definition is unchanged — the retirement pin measures exactly that.
   const fibers = await row.attachA5sfNativeToolModules(mounted, agent.ctx, row.a5sfRealmConfigOf({}))
-  assert.ok(Array.isArray(fibers), 'the attach must answer the fibers it created')
+  const attachAppendedNothing = fibers === undefined
   const definitionAfterAttach = root.tools.get('bash', agentKey)
   if (overrides.dropBashShadow === true) {
     assert.equal(typeof mounted.disposeNativeToolModules, 'function', 'the realm must expose the native-module disposal the control uses')
@@ -400,6 +403,7 @@ export async function mountRouteCWorld({ label, fixtureRoot, cwd, readRoots, wri
     baseCalls,
     definitionBeforeAttach,
     definitionAfterAttach,
+    attachAppendedNothing,
     shadowReplaced: definitionBeforeAttach !== undefined && definitionAfterAttach !== definitionBeforeAttach,
     providerCalls: () => [...confined.calls],
     async dispose() {

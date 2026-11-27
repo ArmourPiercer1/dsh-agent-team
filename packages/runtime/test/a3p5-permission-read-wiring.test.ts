@@ -40,7 +40,7 @@ import {
   scratchDir,
 } from '../../testkit/fault-injection/file-seam.mjs'
 import { createPermissionOverlayRepositoryPort } from '../permission-governance/index.js'
-import { createTeamProductionRoot } from '../src/plugin/root.js'
+import { createTeamProductionRoot } from '../src/plugin/vnext/root.js'
 import { createS6RemoteDispatcher, createS6RemotePorts } from '../src/plugin/s6-remote.js'
 import type { TeamPluginConfig } from '../src/plugin/types.js'
 import type { TeamPermissionPlane } from '../src/plugin/permission-plane.js'
@@ -372,13 +372,18 @@ describe('a3p5 read wiring group A — the ROOT-ASSEMBLED router on the real dur
         hits.every(
           (f) =>
             f.endsWith('plugin/root.ts') ||
+            // the A1 cut moved the production root to plugin/vnext/root.ts
+            f.endsWith('plugin/vnext/root.ts') ||
             f.endsWith('plugin/types.ts') ||
             f.endsWith('permission-notification/projection.ts') ||
             f.endsWith('permission-notification/index.ts'),
         ),
         `projection referenced outside lane+wire seam: ${hits.join(',')}`,
       ).toBe(true)
-      expect(hits.some((f) => f.endsWith('plugin/root.ts')), 'the wire seam is the ONE production consumer').toBe(true)
+      expect(
+        hits.some((f) => f.endsWith('plugin/root.ts') || f.endsWith('plugin/vnext/root.ts')),
+        'the wire seam is the ONE production consumer',
+      ).toBe(true)
       // (b) The decision lane authority input (the SAME overlay `latest`
       // read the lane performs per types.ts:398-400) is byte-stable across
       // the whole read battery: the read surface alters nothing the

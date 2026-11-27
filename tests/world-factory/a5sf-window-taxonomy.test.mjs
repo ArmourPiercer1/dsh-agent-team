@@ -61,6 +61,8 @@ const REPO_ROOT = join(HERE, '..', '..')
 register(pathToFileURL(join(REPO_ROOT, 'scripts', 'run-tests-hooks.mjs')).href)
 
 const row = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'a5sf-realm-row.mjs')).href)
+// ROUND 80: the A1 cut moved the window rule into its own module; the row no longer re-exports it.
+const bindPathModule = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'vnext', 'bind-path.mjs')).href)
 const governed = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'a5sf-governed-realm.mjs')).href)
 const blueprintModule = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'domain', 'blueprint', 'src', 'index.ts')).href)
 const subprocessModule = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'runtime', 'team-services', 'src', 'subprocess.ts')).href)
@@ -341,20 +343,6 @@ async function mount(world, config = governedConfig(), member = memberOf(world))
   })
 }
 
-async function dispatch(root, agent, name, args) {
-  const settled = await root.tools.execute({
-    signal: new AbortController().signal,
-    callId: `window-hunt-${name}-${Math.random().toString(36).slice(2, 8)}`,
-    name,
-    arguments: args,
-    agent,
-  })
-  const text = Array.isArray(settled.content)
-    ? settled.content.map((part) => (part?.type === 'text' ? part.text : '')).join('')
-    : ''
-  return { isError: settled.isError === true, text }
-}
-
 // ===========================================================================
 // W1 — child session before the MemberInstance row
 // ===========================================================================
@@ -468,22 +456,29 @@ test('W1c a durable row ALWAYS wins inside the window (ARCHIVED/DISPOSED beat fr
 // ===========================================================================
 
 test('W2 the hint gate is ONE rule, and it admits ONLY fresh-member', () => {
-  assert.equal(row.freshCreateHintAdmits('fresh-member'), true)
+  assert.equal(bindPathModule.freshCreateHintAdmits('fresh-member'), true, 'the ONE window rule admits the fresh-member bind path')
   for (const closed of ['cold-member', 'fresh-root', 'cold-root', undefined, '', 'state-route']) {
-    assert.equal(row.freshCreateHintAdmits(closed), false, `${String(closed)} must not open the hint window`)
+    assert.equal(bindPathModule.freshCreateHintAdmits(closed), false, `${String(closed)} must not open the hint window`)
   }
   // Both consumers must spell the rule through the ONE helper: the template
   // locate (which gates the ceiling/static-capability projection) and the
   // persona install. A second inline `bindPath === 'fresh-member'` would be a
   // second, drift-prone copy of the window.
-  const source = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs'), 'utf8')
-  const uses = source.split('freshCreateHintAdmits(bindPath)').length - 1
+  // ROUND 80: the A1 cut moved `locateTemplate` into its own module, so the ONE gate now has two
+  // call sites in TWO files (the template locate + the persona install). The law is unchanged: both
+  // spell the rule through the helper, and neither re-implements it inline.
+  const glueSource = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'vnext', 'agent-bindings.mjs'), 'utf8')
+  const bindingSource = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'vnext', 'template-binding.mjs'), 'utf8')
+  const uses = (glueSource + bindingSource).split('freshCreateHintAdmits(bindPath)').length - 1
   assert.equal(uses, 2, `locateTemplate + installPersonaForSetup must both use the ONE gate (found ${uses})`)
-  assert.equal(
-    source.includes("} else if (bindPath === 'fresh-member' && templateIdHint !== undefined"),
-    false,
-    'no call site may re-implement the gate inline',
-  )
+  for (const [name, text] of [['agent-bindings', glueSource], ['template-binding', bindingSource]]) {
+    assert.equal(
+      text.includes("} else if (bindPath === 'fresh-member' && templateIdHint !== undefined"),
+      false,
+      `${name} must not re-implement the hint window inline`,
+    )
+  }
+  assert.match(bindingSource, /import \{ freshCreateHintAdmits \} from '\.\/bind-path\.mjs'/, 'the locate imports the ONE helper, not a copy')
 })
 
 // ===========================================================================
@@ -491,15 +486,20 @@ test('W2 the hint gate is ONE rule, and it admits ONLY fresh-member', () => {
 // ===========================================================================
 
 test('W3a the product orders provider BEFORE surface (realm mount, then preset mount, then the route-C shadow)', () => {
-  const source = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs'), 'utf8')
+  // ROUND 80: re-pointed to the A1 successor. The order is still the law, and it is measured against
+  // the deny lane too: the shadow follows BOTH the preset mount and `applyBuiltInToolDeny`.
+  const source = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'vnext', 'agent-bindings.mjs'), 'utf8')
   const realm = source.indexOf('await mountMemberA5sfRealm({')
   const preset = source.indexOf('await presets.mount(agentCtx,')
   const shadow = source.indexOf('await attachA5sfNativeToolModules(')
   assert.notEqual(realm, -1)
   assert.notEqual(preset, -1)
   assert.notEqual(shadow, -1)
+  const deny = source.indexOf('applyBuiltInToolDeny(agentCtx,')
+  assert.notEqual(deny, -1, 'the deny lane is present')
   assert.equal(realm < preset, true, 'the confined PROVIDER is mounted before the preset TOOL SURFACE')
-  assert.equal(preset < shadow, true, 'the route-C shadow runs after the preset mount (deny-then-attach)')
+  assert.equal(preset < deny, true, 'the deny lane follows the preset mount (it masks inherited tools)')
+  assert.equal(deny < shadow, true, 'the route-C shadow runs after the deny lane (deny-then-attach)')
 })
 
 test('W3b NEW FINDING PIN: a governed row whose provider compiles NO realm refuses — never a silent ungoverned bash', async () => {
@@ -587,23 +587,18 @@ test('W5 the guard cannot exist before its compiled revision, and the sink recor
     const config = governedConfig({ a5sfEvidencePath: sinkPath })
     const mounted = await mount(world, config)
     assert.notEqual(mounted, undefined)
-    await row.attachA5sfNativeToolModules(mounted, world.agentCtx, config)
+    // RETIRED-BY-A0 (round 80): this half used to attach the LEGACY appended `shellRead` shadow and
+    // read its guard fact out of the sink. That shadow is a retired Family Contribution surface — the
+    // A1 composition mounts the preset's own native modules instead, and the row's attach no longer
+    // appends a shell. The guarantee is unchanged in substance ("no guard ahead of its revision, and a
+    // fact carries the compiled revision, never a placeholder") and is carried by the execution
+    // centre's own fact provenance arms in `packages/runtime/test/vnext-admission.test.mjs`
+    // (the `ute-vnext-a1` leg). What this arm keeps measuring is the revision identity itself.
     const policyRevision = mounted.installation.members[0].faces !== undefined
       ? (await world.provider.compiledFor(memberOf(world))).members[0].policy.value.revision
       : undefined
     assert.equal(typeof policyRevision, 'string')
     assert.notEqual(policyRevision, '')
-
-    const result = await dispatch(world.root, world.agentKey, 'bash', {
-      command: 'cat in-lane.txt',
-      description: 'window tax probe',
-      workdir: world.workspace,
-    })
-    assert.equal(result.isError, false, result.text)
-    const facts = readFileSync(sinkPath, 'utf8').split('\n').filter((line) => line.trim() !== '').map((line) => JSON.parse(line))
-    const fact = facts.find((entry) => entry.method === 'shellRead')
-    assert.notEqual(fact, undefined, 'a guard fact exists')
-    assert.equal(fact.policyRevision, policyRevision, 'the fact carries the compiled revision, never a placeholder')
 
     // A generation move changes a NEW attach's revision; it does not relabel
     // the already-mounted guard's facts.

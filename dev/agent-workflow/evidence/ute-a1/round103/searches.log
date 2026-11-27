@@ -1,0 +1,76 @@
+### S1 process/OS spawn (expect none)
+
+### S2 tool registration
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:2056:          toolDisposers.push(agentCtx.tools.register(def))
+
+### S3 tool execution
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:4047:   * tools.execute with the row-owned budget). Faults surface as an Error
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:4052:   * @returns {Promise<object>} the tools.execute result ({isError, value, error}).
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:4079:    // checked as late as it can be without splitting tools.execute.
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:4085:      return await handle.agent.ctx.tools.execute({
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:4093:      throw toolRouteError('TOOLS_EXECUTE', `tools.execute failed: ${error instanceof Error ? `${error.message}${error.stack ? `\n${error.stack}` : ''}` : String(error)}`)
+
+### S4 native module mount / probe
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:374:  attachA5sfNativeToolModules,
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:385:import { mountGovernedNativeToolModules } from './realm-lane.mjs'
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:753:   * NATIVE MOUNT DISPOSERS (async). `mountHostModules` returns `{ dispose }` whose job is to release
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:2003:        await attachA5sfNativeToolModules(a5sfMountedRealm, agentCtx, a5sfRowConfig, runtimeAgent)
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:2018:        const governedNative = await mountGovernedNativeToolModules({
+
+### S5 realm/provider construction
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:377:  mountMemberA5sfRealm,
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:1771:        const a5sfRealm = await mountMemberA5sfRealm({
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:1994:      // installs the confined Provider through the installer's `root.isolate('fs', …)`. Cordis
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:1995:      // `isolate()` creates a SIBLING scope, so THIS agent ctx keeps the BASE provider — a fact about
+
+### S6 centre composition / install
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:382:import { installMemberExecution } from './member-execution.mjs'
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:390:import { createControlApprovalPort } from './admission-port.mjs'
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:580:  // plane through the EXISTING wait bridge (`createControlApprovalPort` → `requestControl` →
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:651:    : createControlApprovalPort({
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:1839:          await installMemberExecution({
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:1871:      // `installMemberExecution`, the preset mount, the deny lane and every tool body — so the refusal
+
+### S7 admission decisions consumed at a boundary
+packages/runtime/src/plugin/vnext/root.ts:1030:  // A row that configured `centreStatePath` asked the centre to be the ONE admission authority. Two
+packages/runtime/src/plugin/vnext/root.ts:1036:  const centreStatePath: string | undefined =
+packages/runtime/src/plugin/vnext/root.ts:1037:    typeof config.centreStatePath === 'string' && config.centreStatePath !== '' ? config.centreStatePath : undefined
+packages/runtime/src/plugin/vnext/root.ts:1041:      centreStatePath,
+packages/runtime/src/plugin/vnext/root.ts:2510:      centreStatePath: config.centreStatePath,
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:380:import { memberAdmissionGate } from './centre-config.js'
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:766:  const admissionModes = new Map()
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:1876:      // `centreStatePath` is allowed to keep DSH's own permission model, and the live bindings expose
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:1880:        const admission = memberAdmissionGate(config, { instanceId, mountedRealm: a5sfMountedRealm !== undefined })
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:1881:        admissionModes.set(sessionId, Object.freeze({ mode: admission.mode, uteProtected: admission.uteProtected }))
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:1885:            `UTE-GOVERNANCE ungoverned: member ${JSON.stringify(instanceId)} runs under DSH's own permission model (the row sets no centreStatePath) — uteProtected=false; this member produces no UTE admission fact or settlement and must never be reported as UTE-protected`,
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:4303:    admissionModeOf: (sessionId) => admissionModes.get(String(sessionId)),
+
+### S8 async context / attribution
+packages/runtime/src/plugin/vnext/root.ts:3974:  // attribution), at most one attempt, drops terminal, host durable-inbox
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:366:// (durable intent + confirmation facts, correlation token, requirement verdict, machine attribution).
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:726:   * `kind: 'user'` attribution — upstream `create_goal` authority is decided
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:730:   * consequence is that attribution alone cannot tell the Sticky Stop arbour
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:735:  const machineInputs = createMachineInputLedger()
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:3391:        // sender (the closed attribution's fromHumanId) is a human
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:3398:        // base `{kind:'user'}` attribution and a relay-started Member turn
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:3402:          && input.attribution.fromHumanId === undefined
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:3407:      // human attribution precisely so it may clear a human Sticky Stop, and
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:3409:      if (input.attribution.fromHumanId === undefined) {
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:3410:        machineInputs.note(String(input.sessionId), message)
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:3497:        // attribution for AUTHORITY and is registered with the machine-input
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:3502:      machineInputs.note(String(args.childSessionId), message)
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:3643:  } = createRootDelivery({ ensureLiveAgent, prepareAgentForRequest, sessionPersistence, machineInputs })
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:3741:    // Distinct from the `kind: 'user'` human-input attribution the
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:3842:   * machine-attribution ledger (a machine input must never clear a human Sticky Stop), and the
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:4377:    // necessarily carries the human `kind: 'user'` attribution that the
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:4381:      isHumanInteractionClaim(message, machineInputs, String(sessionId)) === false,
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:4384:    // glue has no Team deliveries, so non-human attribution is the whole law).
+
+### S9 try/catch inventory
+### S9 try/catch inventory
+packages/runtime/src/plugin/vnext/root.ts:17
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:25
+packages/runtime/src/plugin/vnext/root.ts:17
+packages/runtime/src/plugin/vnext/agent-bindings.mjs:25
+
+

@@ -1,0 +1,109 @@
+{
+  "schema": "census-evidence/1",
+  "capture": 2,
+  "source": {
+    "path": ".artifacts/census/census-20261125T003534Z-14620-2.json",
+    "digest": "sha256:820337ac65c59531f1cca41c9e515eac8a20ea3405a0279722c7003711b3d5ae"
+  },
+  "roots": [
+    {
+      "root": "packages/client",
+      "task_id": "census:packages/client#2",
+      "state": "PASS",
+      "files": 29,
+      "assertions": 512,
+      "skipped": 0,
+      "digest": "sha256:7d8a342a35efcc72203fa1e5c3133433ec9e26a21735996d85c94d0a9c641283"
+    },
+    {
+      "root": "packages/contracts",
+      "task_id": "census:packages/contracts#2",
+      "state": "PASS",
+      "files": 13,
+      "assertions": 150,
+      "skipped": 0,
+      "digest": "sha256:053069e3758c6527fd2109d22a740c4ddf9a4171a2058ea4449ff0bcd8ce31a2"
+    },
+    {
+      "root": "packages/domain",
+      "task_id": "census:packages/domain#2",
+      "state": "PASS",
+      "files": 43,
+      "assertions": 805,
+      "skipped": 0,
+      "digest": "sha256:1b254b1fd8abeac540cd48d13f83fc03c04baf8df8e5792a8c34883226c20b57"
+    },
+    {
+      "root": "packages/domain/compatibility",
+      "task_id": "census:packages/domain/compatibility#2",
+      "state": "PASS",
+      "files": 7,
+      "assertions": 76,
+      "skipped": 0,
+      "digest": "sha256:f7158d9e5223bf84717872e3918794ea267155652fc750b1af079f78e4393042"
+    },
+    {
+      "root": "packages/legacy",
+      "task_id": "census:packages/legacy#2",
+      "state": "PASS",
+      "files": 7,
+      "assertions": 101,
+      "skipped": 0,
+      "digest": "sha256:e79de5acada49930b8f004febbdeb53a1ffe5f6cdac8220bd71444fc432314be"
+    },
+    {
+      "root": "packages/remote",
+      "task_id": "census:packages/remote#2",
+      "state": "PASS",
+      "files": 16,
+      "assertions": 244,
+      "skipped": 0,
+      "digest": "sha256:e9c9dcbd33b3366619a86ab0ea06a9879ba8f9c8e735bcefee3d9fa6582224bd"
+    },
+    {
+      "root": "packages/runtime",
+      "task_id": "census:packages/runtime#2",
+      "state": "PASS",
+      "files": 409,
+      "assertions": 4514,
+      "skipped": 0,
+      "digest": "sha256:7d42e0da8ddf0796d9c9e39e71a50173e49b798df60570a611b04d14e5590cd2"
+    },
+    {
+      "root": "packages/runtime/controlled-fs",
+      "task_id": "census:packages/runtime/controlled-fs#2",
+      "state": "PASS",
+      "files": 4,
+      "assertions": 42,
+      "skipped": 0,
+      "digest": "sha256:0289b04808f6c30329fa87b99fbdbd8e6fe761c28e3ce6b62fa6446fcab90b32"
+    },
+    {
+      "root": "packages/storage",
+      "task_id": "census:packages/storage#2",
+      "state": "PASS",
+      "files": 23,
+      "assertions": 287,
+      "skipped": 0,
+      "digest": "sha256:0a02c24cd4f16fb2ef28399abdebc65349e800be22473714de751763224707b7"
+    },
+    {
+      "root": "packages/testkit",
+      "task_id": "census:packages/testkit#2",
+      "state": "PASS",
+      "files": 34,
+      "assertions": 527,
+      "skipped": 0,
+      "digest": "sha256:caa4f3e1815362dddb6a6b6320915a63cfe522072e4346831bf47a7bf216aeda"
+    },
+    {
+      "root": "packages/tools",
+      "task_id": "census:packages/tools#2",
+      "state": "PASS",
+      "files": 14,
+      "assertions": 166,
+      "skipped": 0,
+      "digest": "sha256:67cf7fefaaa962a2fc54dbfb3615c9fa8ff4f8b948ca7d55f09e3413043d6a09"
+    }
+  ]
+}

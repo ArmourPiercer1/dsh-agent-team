@@ -1,0 +1,7 @@
+test-catalog (test-catalog/1) — discovery + the node:test predicate the dispatcher resolves legs against
+  tests=789 instruments=3 digest=sha256:9511feca859ebc7727ffdef6ac5216d4561f7922c267570b2fd45e5fa159bb4a
+  DISCOVERED_AND_COLLECTED 737
+  EXCLUDED_WITH_REASON     14
+  UNCOLLECTED              38
+  by runner: node=149 none=7 vitest=633
+DSH-TEST-CATALOG tests=789 digest=sha256:9511feca859ebc7727ffdef6ac5216d4561f7922c267570b2fd45e5fa159bb4a refused=0 findings=0

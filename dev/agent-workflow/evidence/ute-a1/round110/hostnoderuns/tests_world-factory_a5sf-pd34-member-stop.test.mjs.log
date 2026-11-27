@@ -1,0 +1,16 @@
+✔ PD34-MODEL-SEQUENCE: the model issues get -> pause -> cancel -> get, and owns no archive (0.764638ms)
+✔ PD34-INJECT: the mount injects the public goals/session namespaces, no private endpoint (0.384598ms)
+✔ PD34-VIEW-ENTRY: a per-Member control and a DISTINCT Leader-turn control (0.873964ms)
+✔ PD34-DRIVER-WIRE: the live driver issues the same four calls in the same order (0.890576ms)
+✔ PD34-NO-SIMULATION: the stop handler patches nothing locally (0.253109ms)
+✔ PD34-EVIDENCE: the evidence README names the source id and the honest UI limit (0.526893ms)
+✔ PD34-MUTATION: deleting the pause call reddens the sequence pin (0.650021ms)
+✔ PD34-PIN: the entry did not exist at the lane base (14.354274ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 69.360534

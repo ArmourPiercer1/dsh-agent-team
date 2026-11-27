@@ -11,7 +11,7 @@
  */
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import process from 'node:process'
@@ -48,42 +48,90 @@ test('S3 a drifted line hint is reported as moved, a vanished token as a problem
   const { cpSync, mkdirSync, writeFileSync: wf, readFileSync: rf } = await import('node:fs')
   const root = join(scratch, 'drift-tree')
   const repo = resolve(HERE, '..', '..')
-  for (const rel of ['packages/tools/a5p5-tools/src', 'packages/runtime/tool-admission', 'packages/runtime/tool-dispatch', 'packages/runtime/governance-center', 'packages/runtime/operation-permission', 'packages/runtime/sandbox-provider', 'packages/runtime/src/plugin/live', 'packages/domain/tool-governance/src', 'packages/tools/fs-family/src', 'packages/tools/families']) {
+  // ONLY the sources that still exist are copied: the Alpha.5 pipeline, tool-dispatch,
+  // governance-center and the family dirs were retired by the UTE A0/A1 cut, and `selfTest` reports a
+  // citation into them as RETIRED-BY-CUT rather than as a missing file (see RETIRED_BY_CUT).
+  const dirs = ['packages/tools/a5p5-tools/src', 'packages/runtime/tool-admission', 'packages/runtime/tool-dispatch', 'packages/runtime/governance-center', 'packages/runtime/operation-permission', 'packages/runtime/sandbox-provider', 'packages/runtime/src/plugin/live', 'packages/domain/tool-governance/src', 'packages/tools/fs-family/src', 'packages/tools/families']
+  for (const rel of dirs) {
+    if (!existsSync(join(repo, rel))) continue
     mkdirSync(join(root, rel), { recursive: true })
     cpSync(join(repo, rel), join(root, rel), { recursive: true })
   }
-  const pipe = join(root, 'packages/tools/a5p5-tools/src/pipeline.ts')
-  wf(pipe, `// shifted\n// shifted\n${rf(pipe, 'utf8')}`)
+  // The drift is planted in a citation whose source SURVIVES the cut: pick the first FACE_TABLE row
+  // whose file exists at this tree, so the control keeps testing the "moved hint / vanished token"
+  // law instead of testing a file nobody ships. When no row survives, the leg says so out loud.
+  const live = []
+  for (const [code, rows] of Object.entries(mod.FACE_TABLE)) {
+    for (const [face, file, token] of rows) {
+      if (!existsSync(join(repo, file))) continue
+      const text = rf(join(repo, file), 'utf8')
+      if (!text.includes(`'${code}'`) && !text.includes(`"${code}"`)) continue
+      live.push({ code, face, file, token })
+    }
+  }
+  assert.ok(live.length > 0, 'no FACE_TABLE citation survives the cut — the drift control would be vacuous, so it must be rebuilt, not skipped')
+  const pick = live[0]
+  const planted = join(root, pick.file)
+  mkdirSync(dirname(planted), { recursive: true })
+  cpSync(join(repo, pick.file), planted)
+  wf(planted, `// shifted\n// shifted\n${rf(planted, 'utf8')}`)
   const moved = []
-  const problems = mod.selfTest(root, moved)
+  const retired = []
+  const problems = mod.selfTest(root, moved, retired)
   assert.deepEqual(problems, [], JSON.stringify(problems))
-  assert.ok(moved.some((m) => m.includes('pipeline.ts')), JSON.stringify(moved))
-  wf(pipe, rf(pipe, 'utf8').replaceAll("kind: 'refused-spill'", "kind: 'refused-SPILL-RENAMED'"))
+  // KIND_STAGES is the only arm that reports a MOVED hint, and every stage cite points into the Alpha.5
+  // route the UTE A0/A1 cut retired — so after the cut there is no live hint to move, and this control
+  // says so out loud instead of asserting a fact it can no longer produce. The retirement of those
+  // sources is disclosed by name; the vanished-token law is exercised below on a LIVE FACE_TABLE row.
+  assert.deepEqual(moved, [], 'no live KIND_STAGES cite survives the cut — a moved hint is impossible here')
+  assert.ok(retired.length > 0, 'the retired stage citations must be disclosed, not silently skipped')
+  // Remove BOTH quote forms of the code literal, so the finding cannot depend on which one the source
+  // happened to use: the table's claim is "this file carries this code", and the fact must contradict it.
+  const before = rf(planted, 'utf8')
+  const afterText = before.split(`'${pick.code}'`).join("'RETIRED-CODE'").split(`"${pick.code}"`).join('"RETIRED-CODE"')
+  assert.notEqual(afterText, before, 'the control could not stage its mutation')
+  wf(planted, afterText)
   const after = mod.selfTest(root, [])
-  assert.ok(after.some((p) => p.includes('refused-spill') && p.includes('anywhere')), JSON.stringify(after))
+  assert.ok(after.some((p) => p.includes('no longer carries') || p.includes('no longer contains the literal')), `a vanished code literal must be a finding: ${JSON.stringify(after)}`)
 })
 
 // ── family registration refusals: resolved from the descriptors, not listed (#399/#400 drift) ──
 
-/** A temp tree carrying only the family descriptor dir (and whatever else `extra` copies). */
-async function familyTree(name) {
-  const { cpSync, mkdirSync } = await import('node:fs')
+/**
+ * A temp tree carrying a SYNTHETIC family descriptor dir: a manifest listing three families and the
+ * descriptors it lists. The repo's own `packages/tools/families` was retired by the UTE A0/A1 cut, so
+ * copying it is no longer possible — and copying the product's current data was never what these legs
+ * test: they test the RESOLUTION LAW (only a listed module mounts, so only a listed module is an
+ * emitter; a descriptor on disk the manifest does not list attributes nothing).
+ */
+async function syntheticFamilyTree(name) {
+  const { mkdirSync, writeFileSync: wf } = await import('node:fs')
   const root = join(scratch, name)
-  const repo = resolve(HERE, '..', '..')
-  mkdirSync(join(root, 'packages/tools'), { recursive: true })
-  cpSync(join(repo, 'packages/tools/families'), join(root, 'packages/tools/families'), { recursive: true })
+  const fam = join(root, 'packages/tools/families')
+  mkdirSync(fam, { recursive: true })
+  const families = [
+    ['fs.mjs', 'dsh.fs-family', 'PLANE_READ_REGISTRATION_REFUSED'],
+    ['process.mjs', 'dsh.process-family', 'PLANE_PROCESS_REGISTRATION_REFUSED'],
+    ['search.mjs', 'dsh.search-family', 'PLANE_SEARCH_REGISTRATION_REFUSED'],
+  ]
+  for (const [file, familyId, refusalCode] of families) {
+    wf(join(fam, file), `export default Object.freeze({ familyId: '${familyId}', refusalCode: '${refusalCode}' })\n`)
+  }
+  wf(join(fam, 'manifest.json'), JSON.stringify({ families: families.map(([file, familyId]) => ({ module: file, familyId, sha256: '0'.repeat(64) })) }))
   return root
 }
 
 test('S4 family refusal codes resolve from the reviewed descriptors: the three at this tree, a new listed family without editing the tool', async () => {
   const { readFileSync: rf, writeFileSync: wf } = await import('node:fs')
-  for (const [code, descriptor] of [['PLANE_READ_REGISTRATION_REFUSED', 'fs.mjs'], ['PLANE_PROCESS_REGISTRATION_REFUSED', 'process.mjs'], ['PLANE_SEARCH_REGISTRATION_REFUSED', 'search.mjs']]) {
+  // The repo's own family descriptors were retired by the UTE A0/A1 cut, so the three plane-mount codes
+  // have no emitter on this tree any more: that is a TRUE answer, and it is asserted rather than
+  // skipped. The resolution law below then runs on a SYNTHETIC tree, where the tool has never had a
+  // hardcoded list — a listed descriptor attributes, an unlisted one never does.
+  for (const code of ['PLANE_READ_REGISTRATION_REFUSED', 'PLANE_PROCESS_REGISTRATION_REFUSED', 'PLANE_SEARCH_REGISTRATION_REFUSED']) {
     const got = mod.attribute(null, code)
-    assert.equal(got.verdict, 'ATTRIBUTED', `${code}: ${JSON.stringify(got)}`)
-    assert.deepEqual(got.candidates.map((c) => c.face), ['plane-mount'])
-    assert.deepEqual(got.candidates[0].emitters, [`packages/tools/families/${descriptor} (refusalCode:)`])
+    assert.notEqual(got.verdict, 'ATTRIBUTED', `${code}: the retired descriptors must not attribute anything: ${JSON.stringify(got)}`)
   }
-  const root = await familyTree('family-new')
+  const root = await syntheticFamilyTree('family-new')
   const fam = join(root, 'packages/tools/families')
   wf(join(fam, 'widget.mjs'), "export default Object.freeze({ familyId: 'dsh.widget', refusalCode: 'PLANE_WIDGET_REGISTRATION_REFUSED' })\n")
   wf(join(fam, 'stray.mjs'), "export default Object.freeze({ familyId: 'dsh.stray', refusalCode: 'PLANE_STRAY_REGISTRATION_REFUSED' })\n")
@@ -100,15 +148,20 @@ test('S4 family refusal codes resolve from the reviewed descriptors: the three a
 
 test('S5 control: a listed descriptor that drops its refusalCode turns the self-test RED, naming the code and the file', async () => {
   const { readFileSync: rf, writeFileSync: wf } = await import('node:fs')
-  const root = await familyTree('family-drop')
-  const fs = join(root, 'packages/tools/families/fs.mjs')
-  const src = rf(fs, 'utf8')
-  const dropped = src.replace(/\n\s*refusalCode: 'PLANE_READ_REGISTRATION_REFUSED',/, '')
+  const root = await syntheticFamilyTree('family-drop')
+  const fs2 = join(root, 'packages/tools/families/fs.mjs')
+  const src = rf(fs2, 'utf8')
+  const dropped = src.replace(/, refusalCode: 'PLANE_READ_REGISTRATION_REFUSED'/, '')
   assert.notEqual(dropped, src, 'the control could not stage its mutation')
   assert.deepEqual(mod.familyRefusalRows(root).problems, [], 'honest copy must be clean before the mutation')
-  wf(fs, dropped)
-  const problems = mod.selfTest(root)
-  assert.ok(problems.some((p) => p.startsWith('PLANE_READ_REGISTRATION_REFUSED: packages/tools/families/fs.mjs no longer contains the literal')), JSON.stringify(problems))
+  wf(fs2, dropped)
+  // Filtered to the family descriptor arm on purpose: a fixture tree does not carry the live sources
+  // this diagnostic also cites, so their absence is not what this control is about (S1 grades those at
+  // the real root, where the retired ones are disclosed by RETIRED_BY_CUT).
+  const problems = mod.selfTest(root).filter((p) => p.includes('packages/tools/families/'))
+  // The dropped descriptor is no longer a row of the table at all (the table is RESOLVED from the
+  // descriptors), so the finding is the descriptor-level one below — the code simply stops being
+  // attributable, which is the law: an attribution that cannot point at a descriptor is not one.
   assert.ok(problems.some((p) => p.startsWith('packages/tools/families/fs.mjs: family descriptor carries no')), JSON.stringify(problems))
   // and the two untouched families are NOT reported (no collateral red)
   assert.ok(!problems.some((p) => /PLANE_(PROCESS|SEARCH)_REGISTRATION_REFUSED/.test(p)), JSON.stringify(problems))
@@ -163,9 +216,13 @@ test('F1 unknown code → UNKNOWN_CODE, exit 1, no nearest match', () => {
   assert.deepEqual(one.candidates, [])
 })
 
-test('F2 an invented spill-* code is UNKNOWN (the spill set is read from source, not a prefix)', () => {
+test('F2 the spill set is read from source, never guessed from the prefix: an invented code and a retired one are BOTH UNKNOWN', () => {
+  // `packages/tools/a5p5-tools/src/spill.ts` — the source of the closed spill set — was retired by the
+  // UTE A0/A1 cut, so no `spill-*` code is attributable on this tree. The law under test is unchanged:
+  // a prefix never makes a code real. Both directions are asserted so "everything is unknown" cannot
+  // quietly become the answer for a code that a live source DOES emit (F3 pins that direction).
   assert.equal(run(['--code', 'spill-invented-x']).status, 1)
-  assert.equal(run(['--code', 'spill-read-denied']).status, 0)
+  assert.equal(run(['--code', 'spill-read-denied']).status, 1)
 })
 
 test('F3 a vocabulary-only code (no production emitter) is not attributed: exit 1', () => {

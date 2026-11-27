@@ -1,0 +1,45 @@
+test-catalog (test-catalog/1) — discovery + the node:test predicate the dispatcher resolves legs against
+  tests=788 instruments=3 digest=sha256:15451525d12d233bce1c20fe96c0e2c81c4845b11c4a4631cc9c6381ebd9188e
+  DISCOVERED_AND_COLLECTED 736
+  EXCLUDED_WITH_REASON     14
+  UNCOLLECTED              38
+  by runner: node=149 none=7 vitest=632
+  REFUSED TEST_UNCOLLECTED packages/runtime/root-binding/harness/bounded-run.regression.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED scripts/sanitize-evidence.regression.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/evidence-store/evidence-store.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/kits/_shared/boot-preflight.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/kits/pr-e-requirement-recovery-smoke/ui-observe.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/kits/rc2-real-host-smoke/run-control.regression.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/kits/rc2-real-host-smoke/runner-wiring.regression.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/kits/team-view-sync-complete-e2e/carrier-import-preflight.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-orchestration.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-ownership.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/poc-web-native-reuse/poc-w4-e4-public-accept.test.ts discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-bl42-netdeny.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-debt-register.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-governed-preset.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-native-bash-preservation.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-pd14-sandbox-root.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-pd15-face-bound-proof.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-pd16-search-read-axis.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-pd18-web-ptc.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-pd19-fact-attribution.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-pd21-subagent.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-pd23-control-surface.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-pd24-surface-ledger.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-pd25-unbounded-turn.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-pd27-confined-web.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-pd29-service-seam.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-pd30-web-preview.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-tool-axis.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-web.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/host-sandbox-assets.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/poc/poc-native-present.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/registries.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/world-factory.test.mjs discovered but no lane collects it
+DSH-TEST-CATALOG tests=788 digest=sha256:15451525d12d233bce1c20fe96c0e2c81c4845b11c4a4631cc9c6381ebd9188e refused=38 findings=38

@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "ROUND123TOOLROUTEERRORS",
+  "paths": [
+    "packages/tools/test/p6t6-tool-route-errors.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1324,
+    "to": 1325
+  },
+  "reason": "Round 123 (UTE vNext A1, the two round-122 residues) adds ONE scannable file to packages/** and no legacy SessionEvent vocabulary: packages/tools/test/p6t6-tool-route-errors.test.ts — the ROUTE-LEVEL arms for the harness row's `POST /__p6t6/tool` error mapping (round 122 mapped every `A5SF_*` code but disclosed the mapping had no route-level arm). The arms drive ONE real `plugin.apply()` over a scratch DSH_HOME with the hostile-seam doubles (`h3-hostile-seam.test.ts` pattern) and a `teamRoot.live.executeTool` that answers per scenario: R1 `A5SF_TOOL_DISPATCH_SHAPE_UNSUPPORTED` ⇒ 400 with the typed code; R2a/R2b non-shape `A5SF_*` (`…_EXECUTOR_UNAVAILABLE`, `…_EXECUTOR_RESULT_MISSING`) ⇒ 500 with the typed code and not 400; R3a/R3b a governed call ⇒ 200 with the `{isError,value,error,content}` settlement carried through unchanged (`{ok:true,value}` / `{ok:false,error:{message,info}}`); R4a an untyped error ⇒ 500 with NO `code`; R4b a non-`A5SF_*` code ⇒ 500 echoing no `A5SF_*`; R4c an `A5SF_`-prefixed lookalike ⇒ 500 (exact-code equality, not a widened prefix). The file imports only `vitest`, node builtins and the repo's own relative `../harness/plugin.mjs` (no bare host specifier), so it carries no host pin and adds no host-import/host-tree/boot signal — it belongs to the ordinary nine-root census, not to the 44-file host-coupled population. No file is removed, no skip is added, no exclusion changes; dist mirrors, dev evidence and docs are outside the scanner's packages/** scope.",
+  "tieNote": "MEASURED on this tree with the file on disk and no booking: the scanner reports filesScanned 1325 while the ledger derived 1324 (base 0 + the sum of the booked lanes = 1324), i.e. `expected 1324 to be 1325` at p4t6-session-event-scan.test.ts:1837 and :1858 — RED-first, then this booking makes it exact. Arithmetic: 1324 + 1 = 1325. Same law, no tolerance; the round122 lane (1323 -> 1324) is untouched and still counted. The denylist hit set is measured unchanged (the new file carries no Team SessionEvent vocabulary). The round-123 Gap-1 arms extend an EXISTING scannable file (packages/runtime/test/vnext-tool-dispatch-shape.test.ts) and book no increment, so the round's scannable delta is exactly this one path."
+}

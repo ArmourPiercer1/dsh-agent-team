@@ -134,6 +134,7 @@ import { existsSync, statSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, resolve as resolvePath } from 'node:path';
 import { constants as osConstants } from 'node:os';
 import { NODE_PATH_IDENTITY_RESOLVER, evaluateLocatorAccess, } from '../../member-io-policy/src/provider-capabilities.js';
+import { authorizeProcessAskWithReceipt } from '../../member-io-policy/src/approved-ask-receipt.js';
 import { compileExecutionProfile } from '../../team-sandbox/src/profile.js';
 import { observeGuard } from './guard-observability.js';
 import { TeamIoDenial } from './types.js';
@@ -901,6 +902,10 @@ export const CONFINED_SUBPROCESS_REFUSAL_CODES = [
     'SUBPROCESS_PROVIDER_REFUSED',
     'SUBPROCESS_TERMINAL_UNSUPPORTED',
     'SUBPROCESS_EXIT_UNRECORDABLE',
+    /** ROUND 99: the compiled process authorization for the shell is `deny`; no receipt is read. */
+    'SUBPROCESS_PROCESS_DENIED',
+    /** ROUND 99: a shell-class `ask` had no valid receipt covering THIS execution. */
+    'SUBPROCESS_PROCESS_RECEIPT_REFUSED',
     /**
      * BL-17 — the lane requests `network: deny` and the backend's own capability
      * probe does NOT report `network-destination: enforced`. The existing
@@ -1098,6 +1103,42 @@ export function createConfinedSubprocessClass(Base, options) {
                             throw error;
                     }
                     throw new ConfinedSubprocessRefusal(shellRefusal.code, shellRefusal.detail);
+                }
+                // ROUND 99 — THE PROCESS-EXECUTION ADMISSION, at the governed spawn point and before any
+                // provider call. It applies to a DECLARED SHELL-CLASS spawn only (a `grep`/`glob` spawn is a
+                // process too, but it is not this face's authored shell tool and is not gated by the shell
+                // tool's authorization). `deny` wins here, before any receipt; `ask` requires an
+                // approved-ask receipt covering THIS execution; `allow` is the pre-round behaviour.
+                //
+                // THE RECEIPT ADDS NO CAPABILITY: it returns no policy, and the request below is built from
+                // `searchArgv`/`profile`/`allowPaths` exactly as before. It cannot widen a writable,
+                // executable or kernel bit.
+                if (shellInvocation !== undefined && options.processAuthority !== undefined) {
+                    if (options.processAuthority.authorization === 'deny') {
+                        throw new ConfinedSubprocessRefusal('SUBPROCESS_PROCESS_DENIED', 'the compiled process authorization for this shell is \'deny\'; no approval can turn a deny into a spawn');
+                    }
+                    if (options.processAuthority.authorization === 'ask') {
+                        const dashC = spec.argv.indexOf('-c');
+                        const command = dashC >= 0 ? spec.argv[dashC + 1] : undefined;
+                        const verified = authorizeProcessAskWithReceipt({
+                            memberIdentity: effective.memberIdentity,
+                            policyRevision: effective.policyRevision,
+                            ...(options.toolBindingIdentity === undefined || options.toolBindingIdentity === null
+                                ? {}
+                                : { toolBindingIdentity: options.toolBindingIdentity }),
+                            toolName: 'bash',
+                            executionBoundary: options.processAuthority.executionBoundary,
+                            processClass: {
+                                program: typeof spec.argv[0] === 'string' ? spec.argv[0] : '',
+                                programs: options.shellClass?.programs ?? [],
+                            },
+                            ...(command === undefined ? {} : { command }),
+                            ...(options.approvedAskAuthority === undefined ? {} : { authority: options.approvedAskAuthority }),
+                        });
+                        if (!verified.ok) {
+                            throw new ConfinedSubprocessRefusal('SUBPROCESS_PROCESS_RECEIPT_REFUSED', `${verified.code}: ${verified.detail}`);
+                        }
+                    }
                 }
                 // B3 (review round 3): the name allow-list cannot tell a shipped `rg`
                 // from a Member-writable script that happens to be named `rg`. A

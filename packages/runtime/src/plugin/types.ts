@@ -85,7 +85,7 @@ import type {
   ForkDescribeState,
   HandoffDescribeInput,
   HandoffDescribeState,
-} from './root.js'
+} from './vnext/root.js'
 
 // --- JSON-safe row config ---------------------------------------------------------
 
@@ -268,6 +268,21 @@ export interface TeamPluginConfig {
    * failure fails the guarded call closed.
    */
   readonly a5sfEvidencePath?: string
+  /**
+   * C-DIRECTORY (2026-11-21): where the CENTRE keeps this team's durable records.
+   *
+   * The centre writes three things that must outlive the process: the invocation-authority facts
+   * (one JSONL per member instance), the execution facts (same file, different record kind), and the
+   * product `ExecutionSettlementStore` records (one file per execution). They are not evidence and
+   * not telemetry: `recoverUnsettled` reads them back after a crash, and an UNKNOWN there is the
+   * difference between "nobody looked" and "nothing happened".
+   *
+   * LAW. When a row compiles Member realms, the centre is part of the enforcement, not an option:
+   * a governed world without this directory REFUSES the bind rather than running members whose
+   * controlled calls would be unrecorded. With no compiled realm there is nothing for the centre to
+   * record, and the key stays absent with the legacy path byte-for-byte unchanged.
+   */
+  readonly centreStatePath?: string
   /**
    * PRODUCT ASSEMBLY (2026-11-05; policy-source fix 2026-11-05, optional and
    * ADDITIVE): the PRODUCT-VISIBLE declaration that gives the Members it names
@@ -995,11 +1010,6 @@ export interface TeamProductionRoot {
    * glue) through its lazy ref.
    */
   readonly policyReader: PolicyReader
-  /** 9e-3 (PR358): the ONE call-level facts adapter (the same reader the
-   *  PA verifier consults), shared by ref so the plane's final edge awaits
-   *  the identical durable facts at consumption (the controlServiceRef
-   *  pattern; the glue threads it into every PA mount). */
-  readonly paReadCallFactsRef: { current: (input: Record<string, unknown>) => Promise<unknown> | undefined }
   /** A07 — the leader actor identity (contracts, invariant 14). */
   readonly leaderIdentity: MemberIdentity
   /** A04 — the TeamIntent/preflight catalog (the remote method catalog). */
@@ -1401,18 +1411,35 @@ export interface TeamAgentBindings {
     readonly text: string
   }) => Promise<void>
   /**
-   * Alpha.6 review-wake delivery: write ONE attributed review wake into the
-   * TARGET session's native Host inbox (the Officer's child session), through
-   * the same live-agent seam the PR7 E2E exercises. NON-AUTHORITY: the durable
-   * control row remains the authority; the wake is a hint. OPTIONAL at the
-   * type level, but an explicitly Alpha.6 root REFUSES to boot without it —
-   * never a silent Leader fallback.
+   * Alpha.6 review-wake delivery: DELIVER the routed review wake into the
+   * TARGET session (the Officer's child session).
+   *
+   * ROUND 84: this is no longer a bespoke message write. The production glue
+   * routes it through the SAME governed delivery mechanism round 83 built for
+   * `member.send` — a durable delivery intent fact, the P6-T3
+   * `SessionInputPort` (requirement verdict + machine attribution + inbox
+   * acceptance), and a confirmation fact — so the wake is durable, correlated
+   * and reconcilable. NON-AUTHORITY: the durable control row remains the
+   * authority and the wake executes no tool; the Officer's own turn then calls
+   * its own tools, admitted by the centre under the OFFICER's binding.
+   * OPTIONAL at the type level, but an explicitly Alpha.6 root REFUSES to boot
+   * without it — never a silent Leader fallback.
    */
   readonly deliverReviewWake?: (input: {
     readonly rootSessionId: string
     readonly targetSessionId: string
     readonly wakeId: string
     readonly text: string
+    /**
+     * The routed reviewer instance and the durable request the wake is about.
+     * The production notifier always passes them (so the delivery fact names
+     * exactly who was routed for which leg); a caller that omits them is still
+     * valid — the glue resolves the instance from the durable Member row bound
+     * to `targetSessionId` and never invents a recipient.
+     */
+    readonly recipientInstanceId?: string
+    readonly requestId?: string
+    readonly requesterInstanceId?: string
   }) => Promise<void>
   /**
    * A56-SEMANTICS — the input-provenance arbiter. `true` when the claimed
@@ -1460,6 +1487,23 @@ export interface TeamAgentBindings {
   readonly resolveConsumptionViews: (sessionId: string) => unknown
   /** The accumulated observation notes (diagnostics; route-visible). */
   readonly observations: readonly string[]
+  /**
+   * OWNER RULING 20261124-0151 §Realmless (round 98) — the per-member governance REPORT.
+   *
+   * `mode: 'governed'` means the row configured the centre and this member mounted the confined
+   * provider; `uteProtected` then says whether the admission point actually stands behind its calls.
+   * `mode: 'ungoverned'` means the row never asked: DSH's own permission model applies, and
+   * `uteProtected` is `false` — an ungoverned member must never be reported as UTE-protected.
+   * `undefined` means this session is not a bound UTE member (for example the root session), never
+   * that governance was inferred.
+   *
+   * OPTIONAL so a glue that predates this round (the stub glue, a factory world) still satisfies the
+   * type; a caller must treat absence as "not reported", never as "governed".
+   */
+  readonly admissionModeOf?: (sessionId: string) => {
+    readonly mode: 'governed' | 'ungoverned'
+    readonly uteProtected: boolean
+  } | undefined
   /** Drop one live residency (the residency/drop route). */
   readonly dropResidency: (sessionId: string) => Promise<{
     readonly dropped: boolean
@@ -1516,12 +1560,17 @@ export interface TeamAgentBindings {
  * T12-M3: the structural seam for the DSH subagents service
  * (SubagentRuntime) that the live glue consumes as the OPTIONAL dep
  * `deps.subagents`. Only the two methods the recursive drain
- * (agent-bindings.mjs `drainDescendants`) invokes are required:
+ * (agent-bindings.mjs `drainDescendants`) invokes are required. The upstream
+ * PUBLIC service renamed the drain method between the two supported host
+ * generations (0.2.2-rc.5 `drainDescendants`; 0.2.0-rc.2
+ * `drainContinuableDescendants`), with the same signature and the same
+ * aggregate-after-settle contract, so the seam accepts EITHER name:
  *
- *   - `drainContinuableDescendants` — closes admission below the exact live
- *     parent agents, stops their visible descendant Activations, and awaits
- *     them; it REJECTS with an aggregate AFTER ALL BRANCHES SETTLE when any
- *     failed (a drain failure, reported as `quiescent: false`);
+ *   - `drainDescendants` / `drainContinuableDescendants` — closes admission
+ *     below the exact live parent agents, stops their visible descendant
+ *     Activations, and awaits them; it REJECTS with an aggregate AFTER ALL
+ *     BRANCHES SETTLE when any failed (a drain failure, reported as
+ *     `quiescent: false`);
  *   - `listDescendants` — the complete descendant tree below one session id
  *     (the honest drained count).
  *
@@ -1532,8 +1581,15 @@ export interface TeamAgentBindings {
  * (additive; the glue reads `deps.subagents` defensively).
  */
 export interface SubagentsDrainPort {
-  /** Drain every continuable descendant below the exact live parent agents. */
-  drainContinuableDescendants(parents: readonly unknown[]): Promise<void>
+  /**
+   * 0.2.2-rc.5 public name: drain every instance below the exact live parent
+   * agents.
+   */
+  drainDescendants?(parents: readonly unknown[]): Promise<void>
+  /**
+   * 0.2.0-rc.2 public name for the same operation (the seam accepts either).
+   */
+  drainContinuableDescendants?(parents: readonly unknown[]): Promise<void>
   /** Enumerate the complete descendant tree below one session id. */
   listDescendants(rootSessionId: string): Promise<readonly unknown[]>
 }

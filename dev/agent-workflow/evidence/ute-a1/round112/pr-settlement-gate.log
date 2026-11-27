@@ -1,0 +1,58 @@
+pr-settlement-gate: marker present = false
+head sha at check time: 5ff70a0dc5d5c0b34c04d685b4f90ab4042f41c7
+settlement: candidates=52 valid=1 settled=true
+  settles: comment 7145701062 covers 5ff70a0dc5d5c0b34c04d685b4f90ab4042f41c7
+  rejected: comment 7082741220 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7083358970 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7083766586 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7084759870 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7084988288 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7085849427 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7086222844 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7086406572 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7086546444 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7087538528 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7088996228 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7089970273 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7090306213 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7090449174 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7091788531 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7092420554 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7092907724 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7095011475 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7095914691 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7097013575 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7098185547 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7110327784 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7113489582 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7113492999 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7114364140 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7116518183 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7117801314 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7119428671 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7120190251 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7120222982 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7123489000 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7123510279 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7124542146 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7124817454 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7125971006 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7128796701 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7128846331 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7129542381 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7129837220 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7134102880 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7134986634 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7135945833 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7136596337 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7137172014 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7138866961 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7141674510 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7141762750 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7141810840 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7143220273 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7144948588 → SHA_NOT_CURRENT_HEAD
+  rejected: comment 7145670087 → SHA_NOT_CURRENT_HEAD
+verdict: PASS — valid dated settlement covering the current head sha (§8.5.2); unresolved-review threads remain the merge agent’s own gate (§8.5.3, not duplicated here).
+DSH-SETTLEMENT-VERDICT PASS marker=none matches=1 candidates=52
+EXIT=0

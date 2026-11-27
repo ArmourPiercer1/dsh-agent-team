@@ -1,0 +1,19 @@
+{
+  "at": "2026-11-22T14:13:28.101Z",
+  "prompt": {
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "a5sflm-bt31nxga9u",
+      "result": {
+        "ok": true,
+        "value": {
+          "accepted": true
+        }
+      }
+    }
+  },
+  "scriptedReplyServed": false,
+  "requestCount": 0,
+  "requests": []
+}

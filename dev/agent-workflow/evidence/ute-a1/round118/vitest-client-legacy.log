@@ -1,0 +1,247 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/client
+
+stdout | test/team-creation-panel.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | test/new-team-entry.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | test/team-view.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | test/d3-ordinary-mode-entry.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | test/team-governance.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | test/team-d4-a1-ui-pull.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | test/d2-team-mode-entry.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | test/a4w4-corrupt-warning-ui.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | test/team-timeline.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | test/team-creation-handoff.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | test/team-roots-zero-state.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | test/team-ledger.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | test/team-members-actions.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | test/f9u-control-surface-probe.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | test/team-member-stop.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+ ✓ test/team-timeline.client.spec.tsx (18 tests) 232ms
+ ✓ test/team-member-stop.client.spec.tsx (8 tests) 349ms
+stderr | test/new-team-entry.client.spec.tsx > NewTeamEntry (sidebar.footer.action) > a successful two-stage create (with initial work) keeps the overlay open until the DEFERRED admit settles (plan §7 minimum UI constraint)
+Warning: The current testing environment is not configured to support act(...)
+
+ ✓ test/d2-team-mode-entry.client.spec.tsx (7 tests) 287ms
+ ✓ test/team-members-actions.client.spec.tsx (19 tests) 656ms
+stderr | test/new-team-entry.client.spec.tsx > NewTeamEntry (sidebar.footer.action) > a second-stage (admit) failure keeps the overlay on the opened Root with the work lane + retry; the retry re-sends ONLY the admit and the success closes (plan §7; never a New Session)
+Warning: The current testing environment is not configured to support act(...)
+
+ ✓ test/d3-ordinary-mode-entry.client.spec.tsx (12 tests) 409ms
+ ✓ test/f9u-control-surface-probe.client.spec.tsx (6 tests) 420ms
+ ✓ test/new-team-entry.client.spec.tsx (8 tests) 739ms
+ ✓ test/team-roots-zero-state.client.spec.tsx (11 tests) 464ms
+ ✓ test/a4w4-corrupt-warning-ui.client.spec.tsx (8 tests) 500ms
+stdout | test/team-legacy.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+ ✓ test/team-ledger.client.spec.tsx (20 tests) 729ms
+ ✓ test/team-view.client.spec.tsx (33 tests) 633ms
+stdout | test/pr56-control-panel-payload.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | test/team-dock.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+ ✓ test/team-creation-handoff.client.spec.tsx (15 tests) 1229ms
+stdout | test/f9u-control-panel.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | test/f9-resolve-control-ui.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | test/team-creation-panel-refresh.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | test/a4w6-corrupt-entry.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | test/team-members.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | test/team-activity.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | test/a4p6-interventions.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | test/a4p6-permission-administration.client.spec.tsx
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+ ✓ test/team-legacy.client.spec.tsx (8 tests) 239ms
+ ✓ test/pr56-control-panel-payload.client.spec.tsx (32 tests) 262ms
+ ✓ test/team-d4-a1-ui-pull.client.spec.tsx (14 tests) 2082ms
+ ✓ test/team-dock.client.spec.tsx (12 tests) 216ms
+ ❯ test/team-creation-panel.client.spec.tsx (19 tests | 2 failed) 2425ms
+     ✓ loads the catalog rows with the per-row display names and preselects the team preset (S0 seam, UI §6/§7.2) 83ms
+     ✓ shows the verbatim catalog failure note and keeps the picker disabled (loud, never silent) 58ms
+     × selecting a blueprint loads the detail block and fires the persona-fact probe (S5-A, UI §6/§7) 122ms
+     ✓ an OPEN verdict enables Create with the work-aware label (UI §9) 57ms
+     ✓ a BLOCKED_WARNING verdict lists the warnings and gates Create behind the explicit ack (UI §9.2) 59ms
+     ✓ a new probe verdict resets the local ack (the frozen engine drift semantics, UI §9.2) 60ms
+     ✓ a complete-persona preset FATAL disables Create with the §7.4 remedy and no Continue-anyway 56ms
+     × switching the runtime preset re-runs the probe with the new persona fact (UI §7.3) 1060ms
+     ✓ create happy path (TCM M4 two-stage v2): the workspace PATH enters the v2 create (CREATE-ONLY), the Root opens BEFORE the admit, and the admit reuses the same root + stable token + prompt (UI §4.3 order; plan §15.6) 69ms
+     ✓ empty initial work performs ONLY the v2 create + open (no admit RPC at all; onCreated after the open) 110ms
+     ✓ an unknown selected workspace sends NO RPC (a local typed refusal, no retry lane for a never-started attempt) 60ms
+     ✓ a typed v2 team.create failure keeps the verbatim error, the retained-root note, and a root-reusing retry (G5) 111ms
+     ✓ a failed creation-path open surfaces the native-error marker (stage open) with the retained root (D-3) 112ms
+     ✓ a typed second-stage (admit) failure keeps the REAL ROOT open: the work lane + retry re-send ONLY the admit with the SAME stable token + prompt (plan §7; never a re-create, never a New Session) 161ms
+     ✓ a changed draft cannot alter a started create: the admit uses the SNAPSHOT prompt (plan §7 必须测试) 60ms
+     ✓ the workspace picker renders only when the native feed has rows (UI §8) 11ms
+     ✓ a loud unknown probe verdict disables Create (never a silent ready) 57ms
+     ✓ create-cancel: closing the panel mutates nothing (no team.create, draft intact) 56ms
+     ✓ R119: a non-empty catalog with no explicit pick keeps a LOUD unselected state (the disabled placeholder owns the empty value; the probe never fires; an explicit pick flips to the live path) 60ms
+ ✓ test/f9u-control-panel.client.spec.tsx (15 tests) 179ms
+ ✓ test/team-creation-panel-refresh.client.spec.tsx (1 test) 151ms
+ ✓ test/team-activity.client.spec.tsx (7 tests) 75ms
+ ✓ test/team-members.client.spec.tsx (12 tests) 133ms
+ ✓ test/f9-resolve-control-ui.client.spec.tsx (9 tests) 174ms
+ ✓ test/a4p6-interventions.client.spec.tsx (11 tests) 69ms
+ ✓ test/a4w6-corrupt-entry.client.spec.tsx (7 tests) 129ms
+ ✓ test/a4p6-permission-administration.client.spec.tsx (4 tests) 38ms
+ ❯ test/team-governance.client.spec.tsx (30 tests | 1 failed) 2421ms
+     ✓ renders the Projection-driven compatibility badge (the §10.2 four admission states) 43ms
+     ✓ renders an unknown future compatibility status verbatim (loud, never silent) 3ms
+     ✓ renders the aggregate counts and generation from the Projection 4ms
+     ✓ keeps the ack control disabled with the explicit wire-gap reason (UI §38) 13ms
+     ✓ a compat review is a read: it never pulls the projection 14ms
+     ✓ renders a compat review typed failure verbatim as a local note (no projection pull) 59ms
+     ✓ renders the compat review fresh-read detail on success (labeled, not authority) 57ms
+     ✓ the human Recheck re-probes with the closed CAPABILITY_GENERATION_CHANGE trigger and pulls once on success 63ms
+     ✓ a Recheck typed failure renders verbatim (code + message + token echo) and never pulls 58ms
+     ✓ a Recheck transport loss (the only rejection kind) records the local transport-loss note 58ms
+     ✓ a policy review loads the cell view (a read: no projection pull) 60ms
+     ✓ a policy commit sends a PARTIAL cell map on the projection state id (never invented) and pulls once 120ms
+     ✓ keeps the policy commit inert (no command, no preview) when the only draft is an allow with no items 69ms
+     ✓ a policy commit typed failure renders verbatim and never pulls 117ms
+     ✓ an override set targets the member instance (scope instance) and pulls once on success 61ms
+     ✓ keeps the override set inert until an allow cell has items (no empty allow commit) 6ms
+     × an override reset targets the member instance (scope instance) and pulls once on success 1009ms
+     ✓ an override set typed failure renders verbatim and never pulls 59ms
+     ✓ an override show is a read (no projection pull) and renders the recorded override verbatim 60ms
+     ✓ an override show renders the no-override note when the record is null (a read) 59ms
+     ✓ renders the effective-config lanes (model/workspace/permissions-sorted/autonomy) with the §18.3 state words 5ms
+     ✓ renders the §19 hard-policy display for a denied lane (never pretend an override wins) 7ms
+     ✓ shows the effective-config empty note when no member carries a config DTO 4ms
+     ✓ a SUCCESSFUL recheck whose pull fails shows the split result on its own lane and never re-fires the mutation (S1-C2) 68ms
+     ✓ a SUCCESSFUL recheck whose pull returns a typed rpc-error shows the split result with the typed code (S1-C2) 57ms
+     ✓ a SUCCESSFUL command whose pull is a VALID round trip (apply / duplicate / stale) shows NO pull-error lane (S1-C2) 168ms
+     ✓ the pull-error lane is cleared by the NEXT dispatch on the same command key (the note is per-invocation, not sticky) (S1-C2) 107ms
+     ✓ pairs the zh and en dictionaries for the governance surface 4ms
+     ✓ renders the interventions section when the face carries the v8 slice 4ms
+     ✓ an older face (no v8 slice) keeps the section absent — the pre-v8 rendering is byte-identical 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/team-creation-panel.client.spec.tsx > TeamCreationPanel > selecting a blueprint loads the detail block and fires the persona-fact probe (S5-A, UI §6/§7)
+AssertionError: expected "vi.fn()" to be called with arguments: [ { blueprintId: 'bp-1', …(2) } ]
+
+Received:
+
+  1st vi.fn() call:
+
+@@ -2,11 +2,11 @@
+    {
+      "blueprintId": "bp-1",
+      "blueprintRevision": 2,
+      "environmentFacts": [
+        {
+-         "available": true,
++         "available": false,
+          "domain": "persona",
+          "generation": 0,
+          "subject": "team",
+        },
+      ],
+
+
+Number of calls: 1
+
+ ❯ test/team-creation-panel.client.spec.tsx:291:37
+    289|     // environment fact (the only frozen environment channel).
+    290|     expect(face.probeCompatibility).toHaveBeenCalledTimes(1)
+    291|     expect(face.probeCompatibility).toHaveBeenCalledWith({
+       |                                     ^
+    292|       blueprintId: BP,
+    293|       blueprintRevision: 2,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/team-creation-panel.client.spec.tsx > TeamCreationPanel > switching the runtime preset re-runs the probe with the new persona fact (UI §7.3)
+AssertionError: expected last "vi.fn()" call to have been called with [ { blueprintId: 'bp-1', …(2) } ]
+
+- Expected
++ Received
+
+@@ -2,11 +2,11 @@
+    {
+      "blueprintId": "bp-1",
+      "blueprintRevision": 2,
+      "environmentFacts": [
+        {
+-         "available": true,
++         "available": false,
+          "domain": "persona",
+          "generation": 0,
+          "subject": "solo",
+        },
+      ],
+
+ ❯ test/team-creation-panel.client.spec.tsx:389:39
+    387|     fireEvent.change(presetSelect(view.container), { target: { value: …
+    388|     await vi.waitFor(() => {
+    389|       expect(face.probeCompatibility).toHaveBeenLastCalledWith({
+       |                                       ^
+    390|         blueprintId: BP,
+    391|         blueprintRevision: 2,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/team-governance.client.spec.tsx > TeamGovernance > an override reset targets the member instance (scope instance) and pulls once on success
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ test/team-governance.client.spec.tsx:556:35
+    554|     } satisfies RemoteOverrideResetParams)
+    555|     await vi.waitFor(() => {
+    556|       expect(face.pullProjection).toHaveBeenCalledTimes(1)
+       |                                   ^
+    557|       expect(memberBlock.querySelector('[data-governance-override-rese…
+    558|     })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed | 24 passed (26)
+      Tests  3 failed | 343 passed (346)
+   Start at  23:40:18
+   Duration  6.21s (transform 21.45s, setup 1.98s, import 49.26s, tests 15.24s, environment 17.10s)
+

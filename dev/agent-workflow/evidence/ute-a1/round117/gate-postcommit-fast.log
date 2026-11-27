@@ -1,0 +1,9 @@
+DSH-CI-RUN head=0b96a1fa8 mode=default node=v24.21.0 cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut store-dir=default allow-refused=none available_parallelism=16 workers=4
+DSH-CI-LEG leg=append-only-log verdict=pass seconds=0 detail=log preserved: base a19d1df01 is a byte prefix; 11451 line(s), 1621 appended, 0 removed
+DSH-CI-LEG leg=install verdict=pass seconds=3.1 detail=pnpm install --frozen-lockfile ok
+  [typecheck] exit=0 packages/client typecheck$ tsc -p tsconfig.json | packages/client typecheck: Done | $ pnpm -r run typecheck
+DSH-CI-LEG leg=typecheck verdict=pass seconds=11.2 detail=pnpm typecheck clean (all packages, tests included — tsc is the only leg that sees a bad .test.ts)
+  [artifacts-at-head] exit=0 [check-artifacts-committed] OK: 1950 files — working tree equals the git INDEX for both install surfaces (incl. 35 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build. | DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1950 drift=0 | [check-artifacts-at-head] HEAD carries its own build: the committed surface IS a fresh build of itself (1950 compared file(s)).
+DSH-CI-LEG leg=artifacts-at-head verdict=pass seconds=23.3 detail=HEAD carries its own build (DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1950 drift=0)
+DSH-CI-VERDICT pass pass=4 fail=0 skip=0 skipped=none legs=4 refused=0 refusedlegs=none seconds=37.7
+EXIT=0

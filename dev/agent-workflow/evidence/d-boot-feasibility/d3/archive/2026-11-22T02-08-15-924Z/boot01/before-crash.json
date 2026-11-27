@@ -1,0 +1,92 @@
+{
+  "at": "2026-11-22T02:02:20.074Z",
+  "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T02-00-22Z",
+  "aRead": {
+    "executionId": "exec-dd89435a21b0e5d2052c725b301bda0fc1e88071",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T02-00-22Z/centre/settlement/inst-1vd6cy21kl6k/exec-dd89435a21b0e5d2052c725b301bda0fc1e88071.settlement.json",
+    "present": true,
+    "state": "COMPLETED",
+    "dispatch": "quiesced",
+    "bodyOutcome": "completed",
+    "stops": [],
+    "transitions": [
+      "ADMITTED",
+      "RUNNING",
+      "COMPLETED"
+    ]
+  },
+  "aReadFacts": [
+    {
+      "callId": "call-d3-a-inlane",
+      "agentId": "inst-1vd6cy21kl6k",
+      "instanceId": "inst-1vd6cy21kl6k",
+      "sessionId": "session-team-child-cdf16bb82ce585d862f447bf6cd8c80f",
+      "instanceGeneration": 0,
+      "toolName": "read",
+      "axis": "fs.read",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T02-00-22Z/workspace/team-a/in-lane-a.txt",
+      "definitionSource": "",
+      "policyGeneration": "a5sf1:c41e799447cd16f5e3858ef0205383e5",
+      "blueprintRevision": "",
+      "owner": "session-dboot-d3-root",
+      "decision": "allow",
+      "overlayOutcome": "no-opinion",
+      "kind": "invocation-authority",
+      "at": "2026-11-22T02:02:15.449Z"
+    }
+  ],
+  "bOpen": {
+    "executionId": "exec-c7761249d1064b23c36e5e4f76a48778dd895896",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T02-00-22Z/centre/settlement/inst-1v36r931jr7r/exec-c7761249d1064b23c36e5e4f76a48778dd895896.settlement.json",
+    "present": true,
+    "state": "ADMITTED",
+    "dispatch": "not-started",
+    "bodyOutcome": "not-started",
+    "stops": [],
+    "transitions": [
+      "ADMITTED"
+    ]
+  },
+  "bOpenAdmissions": [
+    {
+      "callId": "call-d3-b-inflight-edit",
+      "agentId": "inst-1v36r931jr7r",
+      "instanceId": "inst-1v36r931jr7r",
+      "sessionId": "session-team-child-6788a23a6d1be9784107fcb7631d08f9",
+      "instanceGeneration": 0,
+      "toolName": "edit",
+      "axis": "fs.write",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T02-00-22Z/workspace/team-b/big-edit.bin",
+      "definitionSource": "",
+      "policyGeneration": "a5sf1:4884e8fa1691cc6e4a6d8225ae7bb6ae",
+      "blueprintRevision": "",
+      "owner": "session-dboot-d3-root",
+      "decision": "allow",
+      "overlayOutcome": "no-opinion",
+      "kind": "invocation-authority",
+      "at": "2026-11-22T02:02:20.068Z"
+    }
+  ],
+  "bOpenExecutions": [],
+  "bGrepFacts": [
+    {
+      "callId": "call-d3-b-grep-probe",
+      "agentId": "inst-1v36r931jr7r",
+      "instanceId": "inst-1v36r931jr7r",
+      "sessionId": "session-team-child-6788a23a6d1be9784107fcb7631d08f9",
+      "instanceGeneration": 0,
+      "toolName": "grep",
+      "axis": "fs.read",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T02-00-22Z/workspace/team-b/corpus",
+      "definitionSource": "",
+      "policyGeneration": "a5sf1:4884e8fa1691cc6e4a6d8225ae7bb6ae",
+      "blueprintRevision": "",
+      "owner": "session-dboot-d3-root",
+      "decision": "allow",
+      "overlayOutcome": "no-opinion",
+      "kind": "invocation-authority",
+      "at": "2026-11-22T02:02:16.739Z"
+    }
+  ],
+  "aLedgerBytes": 3217
+}

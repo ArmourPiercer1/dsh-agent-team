@@ -1,0 +1,71 @@
+{
+  "officerUp": {
+    "proposition": "the Officer MemberTemplate comes up as its own Member instance with a bound child session, and the Officer session actually runs",
+    "verdict": "REFUTED",
+    "clauses": [
+      {
+        "id": "officer-member-row",
+        "ok": true,
+        "detail": "officer template row={\"instanceId\":\"inst-0hvc2y01v51z\",\"templateId\":\"officer\",\"label\":\"dboot-d4-officer\",\"childSessionId\":\"session-team-child-7e63fa40dcc75f1f9cf85433b7357426\",\"lifecycle\":\"CREATED\",\"activityVersion\":1}; members=[\"officer:inst-0hvc2y01v51z\",\"leader:inst-leader\"]"
+      },
+      {
+        "id": "officer-child-session",
+        "ok": true,
+        "detail": "childSessionId=session-team-child-7e63fa40dcc75f1f9cf85433b7357426"
+      },
+      {
+        "id": "officer-session-ran",
+        "ok": true,
+        "detail": "calls=[\"read\"]"
+      },
+      {
+        "id": "officer-turn-completed",
+        "ok": false,
+        "detail": "final=I'll start with my own task as the review Officer: read the specified file."
+      }
+    ],
+    "failing": [
+      "officer-turn-completed"
+    ]
+  },
+  "officerBinding": {
+    "proposition": "the Officer's OWN tool call is admitted by the ONE centre under the OFFICER's binding: an allow invocation-authority fact for ITS callId in the OFFICER's own ledger, settled COMPLETED",
+    "verdict": "PROVEN",
+    "clauses": [
+      {
+        "id": "officer-ledger-fact",
+        "ok": true,
+        "detail": "allow facts=[{\"axis\":\"fs.read\",\"callId\":\"call_00_ET_DOZw6UdYKmo4qxl5TdGI1691\",\"decision\":\"allow\"}]"
+      },
+      {
+        "id": "fact-names-officer-call",
+        "ok": true,
+        "detail": "callIds=[\"call_00_ET_DOZw6UdYKmo4qxl5TdGI1691\"]"
+      },
+      {
+        "id": "officer-settlement-completed",
+        "ok": true,
+        "detail": "settlement state=COMPLETED transitions=[\"ADMITTED\",\"RUNNING\",\"COMPLETED\"]"
+      },
+      {
+        "id": "officer-not-the-leader",
+        "ok": true,
+        "detail": "instanceId=inst-0hvc2y01v51z template=officer"
+      }
+    ],
+    "failing": [],
+    "discovery": {
+      "officer-read": {
+        "slot": "officer-read",
+        "predicate": "name=read && file_path=\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T18-54-17Z/workspace/lane/officer-read.txt\"",
+        "matched": {
+          "id": "call_00_ET_DOZw6UdYKmo4qxl5TdGI1691",
+          "name": "read",
+          "turnIndex": 5,
+          "input": "{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T18-54-17Z/workspace/lane/officer-read.txt\"}"
+        },
+        "at": "2026-11-25T18:55:45.345Z"
+      }
+    }
+  }
+}

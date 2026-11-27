@@ -1,0 +1,174 @@
+﹣ PD27-PIN: the branch point offers neither name and the host router answers typed `unknown tool` (0.63976ms) # SKIP
+✖ PD27-SURFACE: the name is restored through the Team module, never through the host package row (25.961123ms)
+✖ PD27-PARITY: the shadow registers the host package's own definitions, field for field (37.175179ms)
+✖ PD27-MARKER: the marker the shadow trusts is the symbol the confined class sets (0.268848ms)
+✖ PD27-REFUSE: on a non-confined scope both names refuse typed and enter no provider (0.21637ms)
+✖ PD27-E2E-ALLOW: a real fetch through the confined face reaches a local server and returns its body (354.085245ms)
+✖ PD27-DISPATCH: the REAL tool router dispatches `web_fetch` by NAME onto the shadow and reaches the face (7.155865ms)
+✖ PD27-E2E-DENY: with a REAL transport present the deny lane refuses typed and never connects (6.118783ms)
+✖ PD27-E2E-REDIRECT: an allow-lane cross-origin redirect is NOT followed (no second-host egress) (41.647348ms)
+✖ PD27-E2E-SEARCH: the audit locator names the singular query the host tool sends (1.182288ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 0
+ℹ fail 9
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 531.960373
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-pd27-confined-web.test.mjs:252:1
+✖ PD27-SURFACE: the name is restored through the Team module, never through the host package row (25.961123ms)
+  AssertionError [ERR_ASSERTION]: the governed preset must declare 'tool-web'
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-pd27-confined-web.test.mjs:255:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd27-confined-web.test.mjs:270:1
+✖ PD27-PARITY: the shadow registers the host package's own definitions, field for field (37.175179ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/confined-web-tool.mjs' imported from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-pd27-confined-web.test.mjs
+      at finalizeResolution (node:internal/modules/esm/resolve:272:11)
+      at moduleResolve (node:internal/modules/esm/resolve:879:10)
+      at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+      at #resolve (node:internal/modules/esm/loader:687:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+      at node:internal/modules/esm/loader:636:32
+      at TracingChannel.tracePromise (node:diagnostics_channel:362:14) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/confined-web-tool.mjs'
+  }
+
+test at tests/world-factory/a5sf-pd27-confined-web.test.mjs:316:1
+✖ PD27-MARKER: the marker the shadow trusts is the symbol the confined class sets (0.268848ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/confined-web-tool.mjs' imported from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-pd27-confined-web.test.mjs
+      at finalizeResolution (node:internal/modules/esm/resolve:272:11)
+      at moduleResolve (node:internal/modules/esm/resolve:879:10)
+      at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+      at #resolve (node:internal/modules/esm/loader:687:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+      at node:internal/modules/esm/loader:636:32
+      at TracingChannel.tracePromise (node:diagnostics_channel:362:14) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/confined-web-tool.mjs'
+  }
+
+test at tests/world-factory/a5sf-pd27-confined-web.test.mjs:329:1
+✖ PD27-REFUSE: on a non-confined scope both names refuse typed and enter no provider (0.21637ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/confined-web-tool.mjs' imported from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-pd27-confined-web.test.mjs
+      at finalizeResolution (node:internal/modules/esm/resolve:272:11)
+      at moduleResolve (node:internal/modules/esm/resolve:879:10)
+      at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+      at #resolve (node:internal/modules/esm/loader:687:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+      at node:internal/modules/esm/loader:636:32
+      at TracingChannel.tracePromise (node:diagnostics_channel:362:14) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/confined-web-tool.mjs'
+  }
+
+test at tests/world-factory/a5sf-pd27-confined-web.test.mjs:367:1
+✖ PD27-E2E-ALLOW: a real fetch through the confined face reaches a local server and returns its body (354.085245ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/confined-web-tool.mjs' imported from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-pd27-confined-web.test.mjs
+      at finalizeResolution (node:internal/modules/esm/resolve:272:11)
+      at moduleResolve (node:internal/modules/esm/resolve:879:10)
+      at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+      at nextResolve (node:internal/modules/esm/hooks:785:28)
+      at resolve (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/scripts/run-tests-hooks.mjs:90:10)
+      at nextResolve (node:internal/modules/esm/hooks:785:28)
+      at AsyncLoaderHooksOnLoaderHookWorker.resolve (node:internal/modules/esm/hooks:269:30)
+      at MessagePort.handleMessage (node:internal/modules/esm/worker:251:24)
+      at [nodejs.internal.kHybridDispatch] (node:internal/event_target:848:20)
+      at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/confined-web-tool.mjs'
+  }
+
+test at tests/world-factory/a5sf-pd27-confined-web.test.mjs:417:1
+✖ PD27-DISPATCH: the REAL tool router dispatches `web_fetch` by NAME onto the shadow and reaches the face (7.155865ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/confined-web-tool.mjs' imported from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-pd27-confined-web.test.mjs
+      at finalizeResolution (node:internal/modules/esm/resolve:272:11)
+      at moduleResolve (node:internal/modules/esm/resolve:879:10)
+      at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+      at nextResolve (node:internal/modules/esm/hooks:785:28)
+      at resolve (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/scripts/run-tests-hooks.mjs:90:10)
+      at nextResolve (node:internal/modules/esm/hooks:785:28)
+      at AsyncLoaderHooksOnLoaderHookWorker.resolve (node:internal/modules/esm/hooks:269:30)
+      at MessagePort.handleMessage (node:internal/modules/esm/worker:251:24)
+      at [nodejs.internal.kHybridDispatch] (node:internal/event_target:848:20)
+      at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/confined-web-tool.mjs'
+  }
+
+test at tests/world-factory/a5sf-pd27-confined-web.test.mjs:449:1
+✖ PD27-E2E-DENY: with a REAL transport present the deny lane refuses typed and never connects (6.118783ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/confined-web-tool.mjs' imported from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-pd27-confined-web.test.mjs
+      at finalizeResolution (node:internal/modules/esm/resolve:272:11)
+      at moduleResolve (node:internal/modules/esm/resolve:879:10)
+      at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+      at nextResolve (node:internal/modules/esm/hooks:785:28)
+      at resolve (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/scripts/run-tests-hooks.mjs:90:10)
+      at nextResolve (node:internal/modules/esm/hooks:785:28)
+      at AsyncLoaderHooksOnLoaderHookWorker.resolve (node:internal/modules/esm/hooks:269:30)
+      at MessagePort.handleMessage (node:internal/modules/esm/worker:251:24)
+      at [nodejs.internal.kHybridDispatch] (node:internal/event_target:848:20)
+      at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/confined-web-tool.mjs'
+  }
+
+test at tests/world-factory/a5sf-pd27-confined-web.test.mjs:494:1
+✖ PD27-E2E-REDIRECT: an allow-lane cross-origin redirect is NOT followed (no second-host egress) (41.647348ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/confined-web-tool.mjs' imported from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-pd27-confined-web.test.mjs
+      at finalizeResolution (node:internal/modules/esm/resolve:272:11)
+      at moduleResolve (node:internal/modules/esm/resolve:879:10)
+      at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+      at nextResolve (node:internal/modules/esm/hooks:785:28)
+      at resolve (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/scripts/run-tests-hooks.mjs:90:10)
+      at nextResolve (node:internal/modules/esm/hooks:785:28)
+      at AsyncLoaderHooksOnLoaderHookWorker.resolve (node:internal/modules/esm/hooks:269:30)
+      at MessagePort.handleMessage (node:internal/modules/esm/worker:251:24)
+      at [nodejs.internal.kHybridDispatch] (node:internal/event_target:848:20)
+      at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/confined-web-tool.mjs'
+  }
+
+test at tests/world-factory/a5sf-pd27-confined-web.test.mjs:534:1
+✖ PD27-E2E-SEARCH: the audit locator names the singular query the host tool sends (1.182288ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/confined-web-tool.mjs' imported from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/a5sf-pd27-confined-web.test.mjs
+      at finalizeResolution (node:internal/modules/esm/resolve:272:11)
+      at moduleResolve (node:internal/modules/esm/resolve:879:10)
+      at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+      at nextResolve (node:internal/modules/esm/hooks:785:28)
+      at resolve (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/scripts/run-tests-hooks.mjs:90:10)
+      at nextResolve (node:internal/modules/esm/hooks:785:28)
+      at AsyncLoaderHooksOnLoaderHookWorker.resolve (node:internal/modules/esm/hooks:269:30)
+      at MessagePort.handleMessage (node:internal/modules/esm/worker:251:24)
+      at [nodejs.internal.kHybridDispatch] (node:internal/event_target:848:20)
+      at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/src/plugin/live/confined-web-tool.mjs'
+  }

@@ -1,0 +1,368 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-live-d3-2026-11-26T02-32-36-273Z-b2",
+  "suite": "a5sf-live-d3",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-26T02:32:36.273Z",
+  "selectedCases": [
+    "d3:persistent-subprocess",
+    "d3:crash-cold-recovery",
+    "d3:work-delivery",
+    "d3:alpha6"
+  ],
+  "allCases": [
+    "d3:persistent-subprocess",
+    "d3:crash-cold-recovery",
+    "d3:work-delivery",
+    "d3:alpha6"
+  ],
+  "subset": false,
+  "selected": 4,
+  "totalCases": 4,
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3",
+        "snapshot_version": "as20261109r1"
+      },
+      "pointerSha256": "814b31f798a25fa963c5810d7733e73c127083bebd74641778ac33ad8c9a5351",
+      "snapshotDigest": "9e2a211ff34196c68fd8db5a0d0d19af124df8fd949190c9c6b990cf3600ede8"
+    },
+    "candidate": {
+      "head": "b1b6a047811a41422481cea2558f618406ec2ad6",
+      "hostSha": "9c2670d3bce5275e0d1610272958121af87787bb",
+      "baseline": "9c2670d3bce5275e0d1610272958121af87787bb"
+    },
+    "grant": {
+      "grantId": "devlive-fs-search-1",
+      "scope": "DEV-LIVE",
+      "face": "FS Provider",
+      "world": "u5a5sfdev1"
+    },
+    "recordClass": "DEV-LIVE",
+    "compositionDrops": [],
+    "layout": "centre",
+    "installGraph": "provisioned",
+    "teamSha": "b1b6a047811a41422481cea2558f618406ec2ad6",
+    "hostSha": "9c2670d3bce5275e0d1610272958121af87787bb",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
+    "driver": "run-boot-d3",
+    "worldIds": [
+      "u5u5a5sfdev1-20261126T02-32-53Z-next"
+    ]
+  },
+  "cases": [
+    {
+      "id": "d3:persistent-subprocess",
+      "verdict": "PASS",
+      "at": "2026-11-26T02:33:25.261Z",
+      "proposition": "a governed Member runs the product's subprocess tool as a PERSISTENT session: the first call is admitted, its shell state is durable, and a SECOND turn reuses the same shell and sees that state",
+      "clauses": [
+        {
+          "id": "bash-on-member-surface",
+          "ok": true,
+          "detail": "member surface=[\"bash\",\"create_goal\",\"edit\",\"get_goal\",\"glob\",\"grep\",\"job_kill\",\"job_list\",\"job_output\",\"present\",\"read\",\"read_image\",\"skill\",\"team_archive_member\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_follow_up\",\"team_grant_permission\",\"team_inspect_config\",\"team_list_members\",\"team_list_pending_control\",\"team_list_templates\",\"team_report_progress\",\"team_request_control\",\"team_resolve_control\",\"team_revoke_permission\",\"team_send_message\",\"todo_write\",\"u5_canary\",\"u6fs_probe\",\"update_goal\",\"working_directory\",\"write\"]"
+        },
+        {
+          "id": "persistent-tool-mounted",
+          "ok": true,
+          "detail": "preset mounts tool-bash-persistent=true; mounted shell rows=[\"tool-bash\",\"tool-bash-persistent\"]"
+        },
+        {
+          "id": "first-call-admitted",
+          "ok": true,
+          "detail": "isError=false text=DBOOT_D3_STATE_WRITTEN\nbash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-32-53Z-next/workspace/team-b/d3-escape.txt: Read-only file system\nDBOOT_D3_ESCAPE_REFUSED\n[Command finished with exit code 0]"
+        },
+        {
+          "id": "state-written-by-shell",
+          "ok": true,
+          "detail": "state file /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-32-53Z-next/workspace/team-a/d3-persistent-state.txt exists=true"
+        },
+        {
+          "id": "second-turn-saw-state",
+          "ok": true,
+          "detail": "isError=false sawState=true text=DBOOT_D3_PERSISTENT_SHELL_STATE\nDBOOT_D3_STATE_READ\n[Command finished with exit code 0]"
+        },
+        {
+          "id": "first-call-centre-fact",
+          "ok": true,
+          "detail": "fact={\"axis\":\"process.exec\",\"decision\":\"allow\",\"refusalCode\":null}"
+        },
+        {
+          "id": "second-call-centre-fact",
+          "ok": true,
+          "detail": "fact={\"axis\":\"process.exec\",\"decision\":\"allow\",\"refusalCode\":null}"
+        },
+        {
+          "id": "first-call-settled-completed",
+          "ok": true,
+          "detail": "settlement state=COMPLETED transitions=[\"ADMITTED\",\"RUNNING\",\"COMPLETED\"]"
+        },
+        {
+          "id": "second-call-settled-completed",
+          "ok": true,
+          "detail": "settlement state=COMPLETED transitions=[\"ADMITTED\",\"RUNNING\",\"COMPLETED\"]"
+        }
+      ],
+      "failing": []
+    },
+    {
+      "id": "d3:crash-cold-recovery",
+      "verdict": "PASS",
+      "at": "2026-11-26T02:33:25.262Z",
+      "proposition": "after a REAL SIGKILL of the host, the ledger and settlement survive a cold restart on the SAME DSH_HOME; a call in flight at the crash reads UNKNOWN (never silently COMPLETED and never replayed); a NEW call after recovery is admitted with a NEW fact",
+      "clauses": [
+        {
+          "id": "kill-was-sigkill",
+          "ok": true,
+          "detail": "pid=12136 signal=SIGKILL pidGone=true exit={\"code\":null,\"signal\":\"SIGKILL\"}"
+        },
+        {
+          "id": "restart-same-home",
+          "ok": true,
+          "detail": "firstHome=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-32-53Z-next restartHome=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-32-53Z-next booted=true bootPhase=create-or-open"
+        },
+        {
+          "id": "completed-ledger-survives",
+          "ok": true,
+          "detail": "factsBefore=1 factsAfter=1"
+        },
+        {
+          "id": "completed-settlement-survives",
+          "ok": true,
+          "detail": "before=COMPLETED after=COMPLETED transitions=[\"ADMITTED\",\"RUNNING\",\"COMPLETED\"]"
+        },
+        {
+          "id": "inflight-was-open-at-crash",
+          "ok": true,
+          "detail": "in-flight settlement state at SIGKILL=RUNNING transitions=[\"ADMITTED\",\"RUNNING\"]"
+        },
+        {
+          "id": "inflight-window-blocked-in-kernel",
+          "ok": true,
+          "detail": "mode=blocked bytesObservedInPipe=65408 stateOnObserve=RUNNING stateAfterSettle=RUNNING pipeCapacityBytes=65536 commandIntendedBytes=58720256 blockedWriter={\"pid\":12571,\"state\":\"S\",\"wchan\":\"anon_pipe_write\",\"matchedBy\":\"write-fd\",\"cmdline\":\"/bin/bash --noprofile --norc -i\"}"
+        },
+        {
+          "id": "inflight-unknown-after-recovery",
+          "ok": true,
+          "detail": "after restart=UNKNOWN transitions=[\"ADMITTED\",\"RUNNING\",\"UNKNOWN\"]"
+        },
+        {
+          "id": "never-completed",
+          "ok": true,
+          "detail": "state=UNKNOWN execution facts=[]"
+        },
+        {
+          "id": "never-replayed",
+          "ok": true,
+          "detail": "admission facts before=1 after=1"
+        },
+        {
+          "id": "new-call-new-fact",
+          "ok": true,
+          "detail": "new facts=[{\"callId\":\"call-d3-a-after-recovery\",\"decision\":\"allow\",\"axis\":\"fs.read\"}]"
+        },
+        {
+          "id": "new-call-settled-completed",
+          "ok": true,
+          "detail": "new call settlement=COMPLETED transitions=[\"ADMITTED\",\"RUNNING\",\"COMPLETED\"]"
+        },
+        {
+          "id": "work-fact-survived",
+          "ok": true,
+          "detail": "fresh disk hits carrying the delivered unit=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-32-53Z-next/storages/session_projcache/sessions/session-team-child-cdf16bb82ce585d862f447bf6cd8c80f.json\",\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-32-53Z-next/storages/team_domain.json\"]"
+        },
+        {
+          "id": "state-file-survives-restart",
+          "ok": true,
+          "detail": "the persistent-shell probe's state file /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-32-53Z-next/workspace/team-a/d3-persistent-state.txt exists=true bytes=32"
+        }
+      ],
+      "failing": []
+    },
+    {
+      "id": "d3:work-delivery",
+      "verdict": "PASS",
+      "at": "2026-11-26T02:33:25.262Z",
+      "proposition": "work delivery through the real product: the async delegation is admitted, the delivered unit arrives VERBATIM, the collected result is terminal and durable across a cold restart, and the delegated Member's own calls land in ITS ledger",
+      "clauses": [
+        {
+          "id": "delegation-admitted",
+          "ok": true,
+          "detail": "delegate result={\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-dboot-d3-root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1vd6cy21kl6k\",\"templateId\":\"worker-a\",\"childSessionId\":\"session-team-child-cdf16bb82ce585d862f447bf6cd8c80f\",\"operationId\":\"op-0ommejc19wn18v035xjf607q\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":2,\"workSettled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"dboot-d3-work-a\"}"
+        },
+        {
+          "id": "member-created",
+          "ok": true,
+          "detail": "instance=inst-1vd6cy21kl6k childSession=session-team-child-cdf16bb82ce585d862f447bf6cd8c80f"
+        },
+        {
+          "id": "prompt-delivered-verbatim",
+          "ok": true,
+          "detail": "first member user message=[team-work requestToken=dboot-d3-work-a] dboot-d3-a-work You are worker-a in a D-stage acceptance run.\nDeliverable: read the in-lane file, then run the requested bash command, then reply with EXACTLY the line\nDBOOT_D3_DELIVERED_UNIT_ALPHA\nand nothing else. No prose, no quotes, no trailing text."
+        },
+        {
+          "id": "member-unit-verbatim",
+          "ok": true,
+          "detail": "member turn-1 final text=\"DBOOT_D3_DELIVERED_UNIT_ALPHA\""
+        },
+        {
+          "id": "collect-succeeded",
+          "ok": true,
+          "detail": "collect entry={\"requestToken\":\"dboot-d3-work-a\",\"status\":\"succeeded\",\"instanceId\":\"inst-1vd6cy21kl6k\",\"admittedSequence\":2,\"settledSequence\":5,\"memberResult\":{\"body\":\"DBOOT_D3_DELIVERED_UNIT_ALPHA\",\"requestToken\":\"dboot-d3-work-a\",\"status\":\"succeeded\"}}"
+        },
+        {
+          "id": "collect-body-verbatim",
+          "ok": true,
+          "detail": "memberResult.body=\"DBOOT_D3_DELIVERED_UNIT_ALPHA\""
+        },
+        {
+          "id": "collect-terminal-and-durable",
+          "ok": true,
+          "detail": "before={\"requestToken\":\"dboot-d3-work-a\",\"status\":\"succeeded\",\"instanceId\":\"inst-1vd6cy21kl6k\",\"admittedSequence\":2,\"settledSequence\":5,\"memberResult\":{\"body\":\"DBOOT_D3_DELIVERED_UNIT_ALPHA\",\"requestToken\":\"dboot-d3-work-a\",\"status\":\"succeeded\"}} after={\"requestToken\":\"dboot-d3-work-a\",\"status\":\"succeeded\",\"instanceId\":\"inst-1vd6cy21kl6k\",\"admittedSequence\":2,\"settledSequence\":5,\"memberResult\":{\"body\":\"DBOOT_D3_DELIVERED_UNIT_ALPHA\",\"requestToken\":\"dboot-d3-work-a\",\"status\":\"succeeded\"}}"
+        },
+        {
+          "id": "work-fact-durable-on-disk",
+          "ok": true,
+          "detail": "fresh disk hits carrying the unit=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-32-53Z-next/storages/session_projcache/sessions/session-team-child-cdf16bb82ce585d862f447bf6cd8c80f.json\",\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-32-53Z-next/storages/team_domain.json\"]"
+        },
+        {
+          "id": "member-calls-in-own-ledger",
+          "ok": true,
+          "detail": "A ledger fs.read admission facts=1 instances=[\"inst-1vd6cy21kl6k\"]"
+        },
+        {
+          "id": "member-calls-not-in-leader-ledger",
+          "ok": true,
+          "detail": "member callIds=4 stray member call facts in other ledgers=[]; other ledger files=[]"
+        },
+        {
+          "id": "member-surface-measured",
+          "ok": true,
+          "detail": "member surface tools=[\"bash\",\"create_goal\",\"edit\",\"get_goal\",\"glob\",\"grep\",\"job_kill\",\"job_list\",\"job_output\",\"present\",\"read\",\"read_image\",\"skill\",\"team_archive_member\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_follow_up\",\"team_grant_permission\",\"team_inspect_config\",\"team_list_members\",\"team_list_pending_control\",\"team_list_templates\",\"team_report_progress\",\"team_request_control\",\"team_resolve_control\",\"team_revoke_permission\",\"team_send_message\",\"todo_write\",\"u5_canary\",\"u6fs_probe\",\"update_goal\",\"working_directory\",\"write\"]"
+        }
+      ],
+      "failing": []
+    },
+    {
+      "id": "d3:alpha6",
+      "verdict": "PASS",
+      "at": "2026-11-26T02:33:25.262Z",
+      "proposition": "the Alpha.6 review-routing configuration on a live host is in exactly ONE lawful shape: reachable and routed, or refused with the typed ADMISSION_ALPHA6_UNAVAILABLE path — never silently accepted and never a generic failure",
+      "clauses": [
+        {
+          "id": "host-process-was-spawned",
+          "ok": true,
+          "detail": "spawned=true port=13000 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261126T02-32-36Z-next/instance-port13000.log"
+        },
+        {
+          "id": "row-refused-with-typed-code",
+          "ok": true,
+          "detail": "rowRefused=true threw=false reachable=true"
+        },
+        {
+          "id": "typed-code-present",
+          "ok": true,
+          "detail": "refusal text=\n[dsh-agent-team] row refused at validation and RECORDED: code=ADMISSION_ALPHA6_UNAVAILABLE callId=alpha6:bf0a0dff-685f-4c94-a67d-1bcd211b3e54:0 fact=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-32-36Z-next/centre/alpha6.host-surface.facts.jsonl settlement=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-32-36Z-next/centre/settlement/host-surface/alpha6\n[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)\n[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: ADMISSION_ALPHA6_UNAVAILABLE: ADMISSION_ALPHA6_ROUTING_REQUIRED — alpha6ReviewRouting needs a v5 Blueprint whose authored `reviewRouting` block is enabled — with no authored policy there is no routing decision to take, and Alpha.6 has no implicit default. a coherent configuration (ADMISSION_ALPHA6_ROUTING_REQUIRED / _CENTRE_REQUIRED / _WAKE_INTENT_PATH_REQUIRED). A routing decision executes nothing, so no axis is invented: the wake is a gover"
+        },
+        {
+          "id": "missing-piece-named",
+          "ok": true,
+          "detail": "names the missing piece=true"
+        },
+        {
+          "id": "config-gate-is-product-rule",
+          "ok": true,
+          "detail": "centreConfigViolation=ADMISSION_ALPHA6_UNAVAILABLE: ADMISSION_ALPHA6_ROUTING_REQUIRED — alpha6ReviewRouting needs a v5 Blueprint whose authored `reviewRouting` block is enabled — with no authored policy there is no routing decision to take, and Alpha.6 has no implicit default. a coherent configuration (ADMISSION_ALPHA6_ROUTING_REQUIRED / _CENTRE_REQUIRED / _WAKE_INTENT_PATH_REQUIRED). A routing decision executes nothing, so no axis is invented: the wake is a governed DELIVERY with durable intent + confirmation facts, and the Officer's calls are admitted under the OFFICER's binding"
+        },
+        {
+          "id": "closed-refusal-table-entry",
+          "ok": true,
+          "detail": "HOST_SURFACE_REFUSALS.alpha6={\"code\":\"ADMISSION_ALPHA6_UNAVAILABLE\",\"axis\":\"host.service\",\"subject\":\"Alpha.6 review-routing decision\",\"missing\":\"a coherent configuration (ADMISSION_ALPHA6_ROUTING_REQUIRED / _CENTRE_REQUIRED / _WAKE_INTENT_PATH_REQUIRED). A routing decision executes nothing, so no axis is invented: the wake is a governed DELIVERY with durable intent + confirmation facts, and the Officer's calls are admitted under the OFFICER's binding\"}"
+        },
+        {
+          "id": "no-team-row-live",
+          "ok": true,
+          "detail": "teamSession present=false liveMembers=0 stateHttp=404 stateError=null"
+        },
+        {
+          "id": "no-silent-route",
+          "ok": true,
+          "detail": "alpha6 decision in live state=null non-refusal fact present=false wake-intent files=0"
+        }
+      ],
+      "failing": []
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/run-ledger.jsonl",
+    "thisRunCount": 4,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-26T02:32:36.334Z",
+        "runId": "a5sf-live-d3-2026-11-26T02-32-36-273Z-b2",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-fs-search-1",
+        "grantId": "devlive-fs-search-1",
+        "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the FS Provider face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+        "face": "FS Provider",
+        "worldLine": "u5a5sfdev1",
+        "headCommit": "b1b6a047811a41422481cea2558f618406ec2ad6",
+        "plannedStarts": 2
+      },
+      {
+        "at": "2026-11-26T02:32:49.067Z",
+        "runId": "a5sf-live-d3-2026-11-26T02-32-36-273Z-b2",
+        "suite": "a5sf-live-d3",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfdev1-20261126T02-32-36Z-next",
+        "phase": "a5sf-live-d3-boot2-alpha6"
+      },
+      {
+        "at": "2026-11-26T02:33:09.717Z",
+        "runId": "a5sf-live-d3-2026-11-26T02-32-36-273Z-b2",
+        "suite": "a5sf-live-d3",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfdev1-20261126T02-32-53Z-next",
+        "phase": "a5sf-live-d3-boot2"
+      },
+      {
+        "at": "2026-11-26T02:33:20.047Z",
+        "runId": "a5sf-live-d3-2026-11-26T02-32-36-273Z-b2",
+        "suite": "a5sf-live-d3",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfdev1-20261126T02-32-53Z-next",
+        "phase": "a5sf-live-d3-boot2-resume"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-live-d3-boot2",
+      "world": "u5u5a5sfdev1-20261126T02-32-53Z-next",
+      "port": 13000,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261126T02-32-53Z-next/instance-port13000.log",
+      "role": "main"
+    },
+    {
+      "phase": "a5sf-live-d3-boot2-resume",
+      "world": "u5u5a5sfdev1-20261126T02-32-53Z-next",
+      "port": 13000,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261126T02-32-53Z-next/instance-port13000.log",
+      "role": "resume-after-sigkill"
+    }
+  ],
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-live-d3-2026-11-26T02-32-36-273Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "PASS",
+  "partial": false,
+  "finishedAt": "2026-11-26T02:33:25.262Z"
+}

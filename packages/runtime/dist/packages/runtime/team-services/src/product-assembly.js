@@ -274,16 +274,30 @@ function projectedRestrictionOf(raw, where, faces = undefined) {
     const binding = closedRecord(raw, ['owner', 'name', 'authorization', 'io', 'execution'], where);
     const execution = closedRecord(binding['execution'], ['implementationOrigin', 'executionBoundary'], `${where}.execution`);
     const boundary = execution['executionBoundary'];
-    if (boundary === 'confined-subprocess') {
+    // ROUND 76 — the declaration's TWO gates, and the bug this fixes: the face
+    // check below used to run and then fall through to the generic
+    // `boundary !== 'trusted-host'` refusal, so a composition that DOES own the
+    // confined `subprocess` face (passing `availableFaces.process: true`) still
+    // refused the same declaration with `REALM_DECLARATION_INVALID`. The
+    // premise-changing branch above and this acceptance are ONE decision: a
+    // confined-process boundary is representable exactly when the realm owns the
+    // face. When it does not, the typed `SUBPROCESS_UNCONFINED_REALM` refusal
+    // below still fires FIRST, so nothing is widened.
+    const confinedProcessOwned = boundary === 'confined-subprocess' && faces?.process === true;
+    if (boundary === 'confined-subprocess' && !confinedProcessOwned) {
+        // The premise of this refusal is a FACT about the composition: a realm that installs no confined
+        // `subprocess` face cannot honour a confined-process declaration. A composition that DOES own the
+        // face (the governed realm: confined subprocess + governed PTY) says so with `availableFaces.process`
+        // and the SAME declaration is accepted — the refusal's premise changes, not its rule.
         refuse('SUBPROCESS_UNCONFINED_REALM', `${where} declares a binding-scoped PROCESS face (executionBoundary=confined-subprocess);`
-            + ' a tool-binding realm owns a confined `fs` and NO confined `subprocess` face, so the search/CLI'
-            + ' two-axis restriction is UNSUPPORTED — the declaration is refused instead of mounting a narrower answer', where);
+            + ' this realm installs NO confined `subprocess` face, so the search/CLI two-axis restriction is'
+            + ' UNSUPPORTED — the declaration is refused instead of mounting a narrower answer', where);
     }
     if (boundary === 'delegated-remote') {
         refuse('NETWORK_UNCONFINED_REALM', `${where} declares a delegated-remote execution boundary; the Member realm owns no remote/web face,`
             + ' so the restriction cannot be enforced locally', where);
     }
-    if (boundary !== 'trusted-host') {
+    if (boundary !== 'trusted-host' && !confinedProcessOwned) {
         refuse('REALM_DECLARATION_INVALID', `${where}.execution.executionBoundary=${JSON.stringify(boundary)} has no realm face in this lane`, where);
     }
     // B3 (review finding, 2026-11-05): `authorization` was ACCEPTED but neither
@@ -431,10 +445,20 @@ function derivedMembersOf(bound, instanceGenerations, templateIds) {
         refuse('REALM_DECLARATION_INVALID', `the bound blueprint for team '${bound.blueprintId}' declares no memberIoCeilings entry for the requested `
             + `template(s) ${JSON.stringify(templateIds ?? [])} (the leader template is never a Member)`, `${A5SF_MEMBER_POLICIES_KEY}.members`);
     }
+    // TEAM-SCOPED TOOL BINDINGS APPLY TO EVERY MEMBER. `toolBindings[]` carries no template
+    // association (it is a Team-level tool restriction), and the two-axis law intersects it with EACH
+    // Member's ceiling per call. Attaching the SAME declared entries to every derived Member is
+    // therefore not a new declaration source: it is the one place the derived declaration can carry
+    // them at all. Omitting them would silently drop execution authority (a process tool declared at
+    // Team level would compile to nothing).
+    const toolRestrictions = Array.isArray(bound.toolBindings)
+        ? bound.toolBindings
+        : undefined;
     return selected.map((entry) => Object.freeze({
         templateId: entry.templateId,
         instanceGeneration: instanceGenerations?.[entry.templateId] ?? 0,
         ceiling: entry.io,
+        ...(toolRestrictions === undefined || toolRestrictions.length === 0 ? {} : { toolRestrictions }),
     }));
 }
 /**
@@ -804,10 +828,47 @@ export function createProductRealmProvider(plan) {
                     refuse('MEMBER_POLICY_UNAVAILABLE', `ToolBinding '${restriction.bindingIdentity}' of Member '${identity.memberInstanceId}' could not compile`
                         + ` its effective lane (${effective.code}: ${effective.detail})`, effective.path);
                 }
+                // ROUND 76 — A PROCESS-CLASS BINDING HAS NO IO REALM, AND MUST NOT PRETEND TO ONE.
+                //
+                // `confined-subprocess` is executed by the Member's own confined process face (the PTY
+                // backend; its policy is the compiled CEILING, see `a5sf-governed-realm.mjs`). A ToolBinding
+                // realm in this composition isolates `fs` only — it cannot confine a shell, and
+                // `mountNativeToolModules` refuses a `terminals`/`subprocess`-consuming module on a binding
+                // realm by design (`ToolBindingRealm.faces`). Handing it the tool's name anyway would route
+                // the shell to a realm that cannot host it, which is a refusal with the wrong cause.
+                //
+                // So the declaration is judged by what it can actually SHRINK: a lane equal to the Member
+                // ceiling is the only representable one (the shell already runs on that lane) and it keeps
+                // its authorization/execution facts for admission, while `mountA5sfRealm` mounts no IO realm
+                // for it. A lane that would be NARROWER than the ceiling is refused here: nothing in this
+                // composition would enforce it on the shell, and mounting the binding as if it did is the
+                // silent widening this assembler exists to prevent.
+                const processClass = restriction.execution?.executionBoundary === 'confined-subprocess';
+                if (processClass) {
+                    const laneOf = (lane) => JSON.stringify([lane.mode, [...lane.allow], [...lane.ask], [...lane.deny]]);
+                    const effectiveLane = effective.value;
+                    const narrower = laneOf(effectiveLane.read) !== laneOf(compiledPolicy.read)
+                        || laneOf(effectiveLane.write) !== laneOf(compiledPolicy.write)
+                        || effectiveLane.network.access !== compiledPolicy.network.access;
+                    if (narrower) {
+                        refuse('REALM_DECLARATION_INVALID', `ToolBinding '${restriction.bindingIdentity}' of Member '${identity.memberInstanceId}' declares a`
+                            + ' process-class execution boundary AND an IO lane narrower than the Member ceiling; the shell'
+                            + ' executes on the confined process face, whose policy is the CEILING, so the narrower lane'
+                            + ' would be a claim no code path enforces — declare the ceiling lane (read/write all, network'
+                            + ' allow) or drop the binding instead of shipping an unenforced narrowing', `${restriction.bindingIdentity}.io`);
+                    }
+                }
                 return Object.freeze({
                     identity,
                     toolBindingIdentity: restriction.bindingIdentity,
+                    // The CENTRE joins a call to this binding by tool NAME; the identity string is
+                    // `<owner>/<name>` and splitting it would be parsing policy.
+                    ...(restriction.toolName === undefined ? {} : { toolName: restriction.toolName }),
                     effective: effective.value,
+                    // EXECUTION authority, carried from the SAME toolBindings entry the lanes came from. It is
+                    // not re-derived and not a lane: the admission point decides a process-class call on it.
+                    ...(restriction.authorization === undefined ? {} : { authorization: restriction.authorization }),
+                    ...(restriction.execution === undefined ? {} : { execution: restriction.execution }),
                 });
             });
             return Object.freeze({

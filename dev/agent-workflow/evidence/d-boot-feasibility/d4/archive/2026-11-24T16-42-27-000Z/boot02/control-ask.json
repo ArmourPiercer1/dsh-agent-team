@@ -1,0 +1,49 @@
+{
+  "askAppeared": true,
+  "ids": {
+    "officer": "inst-1crltnl0089j",
+    "worker": "inst-0ty67u70r99a",
+    "pendingRequestId": "ctrl-03fpj4p1mc2k2y0tggrtf0hm",
+    "pendingRequestId2": null,
+    "pendingRequestId3": null,
+    "pendingProcessRequestId": null
+  },
+  "askRow": {
+    "requestId": "ctrl-03fpj4p1mc2k2y0tggrtf0hm",
+    "kind": "leader-approval",
+    "targetInstanceId": "inst-0ty67u70r99a",
+    "actionName": "admission-ask",
+    "toolName": "write",
+    "correlation": "admission:call-d4-worker-write",
+    "status": "pending",
+    "createdAt": "2026-11-24T13:58:12.932Z",
+    "subject": {
+      "kind": "instance",
+      "instanceId": "inst-0ty67u70r99a"
+    },
+    "executionCoupling": "inline",
+    "requestSequence": 9,
+    "operationFingerprint": "sha256:660c0fc7f516cb0004aa172d10eaf08fd8c4abb7ff39ee6e3d664829042e59c2",
+    "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-56-34Z-next/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:609b42e478a0fbc4ee2aa4e4430e4b58)"
+  },
+  "requests": [
+    {
+      "requestId": "ctrl-03fpj4p1mc2k2y0tggrtf0hm",
+      "kind": "leader-approval",
+      "targetInstanceId": "inst-0ty67u70r99a",
+      "actionName": "admission-ask",
+      "toolName": "write",
+      "correlation": "admission:call-d4-worker-write",
+      "status": "pending",
+      "createdAt": "2026-11-24T13:58:12.932Z",
+      "subject": {
+        "kind": "instance",
+        "instanceId": "inst-0ty67u70r99a"
+      },
+      "executionCoupling": "inline",
+      "requestSequence": 9,
+      "operationFingerprint": "sha256:660c0fc7f516cb0004aa172d10eaf08fd8c4abb7ff39ee6e3d664829042e59c2",
+      "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T13-56-34Z-next/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:609b42e478a0fbc4ee2aa4e4430e4b58)"
+    }
+  ]
+}

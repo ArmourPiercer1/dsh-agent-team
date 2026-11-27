@@ -42,6 +42,7 @@
 import { type RemoteLedgerEntryValue } from '../../../remote/src/contracts/types.js';
 import type { RemoteSafeRecord } from '../../../remote/src/contracts/remote-safe.js';
 import type { ControlCorruptLegRecord } from '../../control/types.js';
+import type { HostSurfaceDenial } from './vnext/host-surface-refusal.mjs';
 import type { RemoteDispatcher } from '../../../remote/src/handlers/dispatch.js';
 import type { TeamRootWireRow } from '../team-ownership-index.js';
 import type { BlueprintVersionState } from './blueprint-authority.js';
@@ -76,6 +77,15 @@ import type { LegacyHomePort, LegacyInspectFn } from './legacy-surface.js';
 import type { ProjectionService } from '../../projection/index.js';
 import type { GovernanceWarningService, GovernanceStartOutcome } from '../../governance-warning/index.js';
 import type { InterventionControlSource, RequiredAuthorityFacts, RequiredAuthorityReaderInput } from '../../intervention/index.js';
+/**
+ * ROUND 83 — the EXISTING host-surface wire code, reused (NO new wire code) for the work-delivery
+ * seam's fail-closed absence. A row that does not wire the delivery port (`messaging` for
+ * `member.send`, `admission` for `member.create` / `member.followup`) cannot deliver work, and it
+ * must say so TYPED before the handler body — never crash out of a handler into `internal-error`.
+ * The wire semantics stay "this S6 command is not available through this row's management plane";
+ * the `details.reason` names the missing seam.
+ */
+export declare const S6_WORK_DELIVERY_SEAM_CODE = "ADMISSION_REMOTE_UNAVAILABLE";
 /** The stable error codes the S6 remote surfaces throw (CR-4/CR-12 boundary). */
 export declare const S6_REMOTE_ERROR_CODES: {
     /** A34 — the ledger-page tracker rejected the page (the 20.5/20.6 boundary). */
@@ -1010,6 +1020,23 @@ export interface S6RemoteOptions {
     /** The installed A32 principal derivation (the seam's `current()`). */
     readonly principal: ServerPrincipalDerivation;
     /**
+     * ROUND 74 (owner ruling `docs/reviews/20261122-1536.txt` §3) — the governed
+     * row's per-command refusal hook. Present ONLY on a centre-configured row
+     * (`root.ts` builds it from the SAME host-surface refusal point the other
+     * host-surface refusals use); absent on a row that never configured the
+     * centre, where the S6 plane keeps its pre-round behaviour byte-for-byte.
+     *
+     * The DISPATCHER — not the root, not a handler — classifies every endpoint
+     * against the ONE closed table (`s6-command-classification.ts`) and calls
+     * this hook for every command whose effect is agent execution BEFORE the
+     * contract envelope, the params or a handler are touched. The hook records
+     * the durable fact + settlement and returns the centre's admission denial;
+     * the dispatcher then answers the caller with that typed code. It is never
+     * consulted for a control-plane command, and it cannot widen: the surface
+     * rejects, it never forwards.
+     */
+    readonly refuseExecutionCommand?: (method: string) => HostSurfaceDenial;
+    /**
      * The P6-T3 messaging coordinator (the live send path: facade admission
      * + the durable intent fact, LIVE delivery of the attributed input, the
      * confirmation fact). The `member.send` remote method routes through it
@@ -1299,9 +1326,14 @@ export declare function createS6RemotePorts(options: S6RemoteOptions): S6RemoteP
  * @param principal - the installed A32 principal derivation.
  * @param principalContext - the trusted PrincipalContext of the mounting
  *   transport (defaults to the connection-gate basis).
+ * @param refuseExecutionCommand - ROUND 74: the governed row's per-command
+ *   refusal hook (absent = no governed row; every command keeps the pre-round
+ *   path). Called for EVERY endpoint whose effect class is `agent-execution`,
+ *   before the envelope/params/handler, and its denial becomes the typed wire
+ *   answer. Control-plane commands are never passed to it.
  * @returns the seam entry point: `(endpoint, payload) => Promise<RemoteResponse>`.
  */
-export declare function createS6RemoteDispatcher(ports: S6RemotePorts, principal: ServerPrincipalDerivation, principalContext?: ServerPrincipalContext): RemoteDispatcher;
+export declare function createS6RemoteDispatcher(ports: S6RemotePorts, principal: ServerPrincipalDerivation, principalContext?: ServerPrincipalContext, refuseExecutionCommand?: (method: string) => HostSurfaceDenial): RemoteDispatcher;
 /**
  * Register the production dispatcher on the public seam (the frozen
  * register semantics, mirrored: one channel, the idempotent disposer).
@@ -1309,9 +1341,12 @@ export declare function createS6RemoteDispatcher(ports: S6RemotePorts, principal
  * @param principal - the installed A32 principal derivation.
  * @param principalContext - the trusted PrincipalContext of the mounting
  *   transport (T12-B4; defaults to the connection-gate basis).
+ * @param readiness - the BP-G boot-readiness gate (absent = legacy).
+ * @param refuseExecutionCommand - ROUND 74: the governed row's per-command
+ *   refusal hook, threaded to the dispatcher this registration mounts.
  * @returns the `RemoteHandlerRegistration` the A31 seam installs.
  */
-export declare function createS6RemoteRegistration(ports: S6RemotePorts, principal: ServerPrincipalDerivation, principalContext?: ServerPrincipalContext, readiness?: () => RemoteReadiness): RemoteHandlerRegistration;
+export declare function createS6RemoteRegistration(ports: S6RemotePorts, principal: ServerPrincipalDerivation, principalContext?: ServerPrincipalContext, readiness?: () => RemoteReadiness, refuseExecutionCommand?: (method: string) => HostSurfaceDenial): RemoteHandlerRegistration;
 /**
  * The A34 remote query/command completion (the plan §20.5/§20.6 gate).
  *

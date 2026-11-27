@@ -1,0 +1,138 @@
+{
+  "note": "RUN records written by the pre-2026-11-24 emitter (P0 review 20261124-1341). Their bytes are UNCHANGED; they are renamed *.json.superseded so they are not graded as current RUN records, and EB3-RUN-MANIFEST is NOT relaxed. Superseded by the records in runs/boot0*/run-record.json, which the probe self-checks against the same validator before the run can pass.",
+  "retiredAt": "2026-11-24T06:12:24.716Z",
+  "records": [
+    {
+      "from": "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T03-19-03-566Z/boot01/run-record.json",
+      "to": "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T03-19-03-566Z/boot01/run-record.json.superseded",
+      "codes": [
+        "RUN_SCHEMA",
+        "RUN_SCHEMA"
+      ],
+      "findings": [
+        "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T03-19-03-566Z/boot01/run-record.json: cases[4].id is not a non-empty string",
+        "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T03-19-03-566Z/boot01/run-record.json: subset=true but arms is not a non-empty array — a subset must say which arms it ran"
+      ]
+    },
+    {
+      "from": "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T03-19-03-566Z/boot02/run-record.json",
+      "to": "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T03-19-03-566Z/boot02/run-record.json.superseded",
+      "codes": [
+        "RUN_SCHEMA",
+        "RUN_SCHEMA"
+      ],
+      "findings": [
+        "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T03-19-03-566Z/boot02/run-record.json: cases[4].id is not a non-empty string",
+        "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T03-19-03-566Z/boot02/run-record.json: subset=true but arms is not a non-empty array — a subset must say which arms it ran"
+      ]
+    },
+    {
+      "from": "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T04-20-08-392Z/boot01/run-record.json",
+      "to": "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T04-20-08-392Z/boot01/run-record.json.superseded",
+      "codes": [
+        "RUN_SCHEMA",
+        "RUN_SCHEMA"
+      ],
+      "findings": [
+        "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T04-20-08-392Z/boot01/run-record.json: cases[4].id is not a non-empty string",
+        "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T04-20-08-392Z/boot01/run-record.json: subset=true but arms is not a non-empty array — a subset must say which arms it ran"
+      ]
+    },
+    {
+      "from": "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T04-20-08-392Z/boot02/run-record.json",
+      "to": "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T04-20-08-392Z/boot02/run-record.json.superseded",
+      "codes": [
+        "RUN_SCHEMA",
+        "RUN_SCHEMA"
+      ],
+      "findings": [
+        "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T04-20-08-392Z/boot02/run-record.json: cases[4].id is not a non-empty string",
+        "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T04-20-08-392Z/boot02/run-record.json: subset=true but arms is not a non-empty array — a subset must say which arms it ran"
+      ]
+    },
+    {
+      "from": "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T04-36-25-360Z/boot01/run-record.json",
+      "to": "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T04-36-25-360Z/boot01/run-record.json.superseded",
+      "codes": [
+        "RUN_SCHEMA",
+        "RUN_SCHEMA"
+      ],
+      "findings": [
+        "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T04-36-25-360Z/boot01/run-record.json: cases[4].id is not a non-empty string",
+        "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T04-36-25-360Z/boot01/run-record.json: subset=true but arms is not a non-empty array — a subset must say which arms it ran"
+      ]
+    },
+    {
+      "from": "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T05-04-53-437Z/boot01/run-record.json",
+      "to": "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T05-04-53-437Z/boot01/run-record.json.superseded",
+      "codes": [
+        "RUN_SCHEMA",
+        "RUN_SCHEMA"
+      ],
+      "findings": [
+        "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T05-04-53-437Z/boot01/run-record.json: cases[4].id is not a non-empty string",
+        "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T05-04-53-437Z/boot01/run-record.json: subset=true but arms is not a non-empty array — a subset must say which arms it ran"
+      ]
+    },
+    {
+      "from": "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T05-04-53-437Z/boot02/run-record.json",
+      "to": "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T05-04-53-437Z/boot02/run-record.json.superseded",
+      "codes": [
+        "RUN_SCHEMA",
+        "RUN_SCHEMA"
+      ],
+      "findings": [
+        "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T05-04-53-437Z/boot02/run-record.json: cases[4].id is not a non-empty string",
+        "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T05-04-53-437Z/boot02/run-record.json: subset=true but arms is not a non-empty array — a subset must say which arms it ran"
+      ]
+    },
+    {
+      "from": "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T05-25-12-753Z/boot01/run-record.json",
+      "to": "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T05-25-12-753Z/boot01/run-record.json.superseded",
+      "codes": [
+        "RUN_SCHEMA",
+        "RUN_SCHEMA"
+      ],
+      "findings": [
+        "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T05-25-12-753Z/boot01/run-record.json: cases[4].id is not a non-empty string",
+        "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T05-25-12-753Z/boot01/run-record.json: subset=true but arms is not a non-empty array — a subset must say which arms it ran"
+      ]
+    },
+    {
+      "from": "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T05-25-12-753Z/boot02/run-record.json",
+      "to": "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T05-25-12-753Z/boot02/run-record.json.superseded",
+      "codes": [
+        "RUN_SCHEMA",
+        "RUN_SCHEMA"
+      ],
+      "findings": [
+        "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T05-25-12-753Z/boot02/run-record.json: cases[4].id is not a non-empty string",
+        "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T05-25-12-753Z/boot02/run-record.json: subset=true but arms is not a non-empty array — a subset must say which arms it ran"
+      ]
+    },
+    {
+      "from": "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T06-12-24-617Z/boot01/run-record.json",
+      "to": "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T06-12-24-617Z/boot01/run-record.json.superseded",
+      "codes": [
+        "RUN_SCHEMA",
+        "RUN_SCHEMA"
+      ],
+      "findings": [
+        "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T06-12-24-617Z/boot01/run-record.json: cases[4].id is not a non-empty string",
+        "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T06-12-24-617Z/boot01/run-record.json: subset=true but arms is not a non-empty array — a subset must say which arms it ran"
+      ]
+    },
+    {
+      "from": "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T06-12-24-617Z/boot02/run-record.json",
+      "to": "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T06-12-24-617Z/boot02/run-record.json.superseded",
+      "codes": [
+        "RUN_SCHEMA",
+        "RUN_SCHEMA"
+      ],
+      "findings": [
+        "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T06-12-24-617Z/boot02/run-record.json: cases[4].id is not a non-empty string",
+        "dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T06-12-24-617Z/boot02/run-record.json: subset=true but arms is not a non-empty array — a subset must say which arms it ran"
+      ]
+    }
+  ]
+}

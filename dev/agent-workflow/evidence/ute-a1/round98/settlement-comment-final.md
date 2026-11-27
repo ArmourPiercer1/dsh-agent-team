@@ -1,0 +1,3 @@
+[dated settlement, 2026-11-24T02:31:53Z]
+
+Round 98 final head 954835b717c6768c6208281f80545af445b164c9. Verified at this exact head: ute-vnext-a1 242/239 pass + 3 disclosed skips; catalog 785 refused=0; cut-closure cut(0/148); p0-assets 37/180/69512; docs-sync 0; 35 placements; ci-required 10; ci-security 222; bound vitest 238; UTE G1 89/89; ci-pr-gate pass=10 fail=0. PR #822 is DRAFT, not merged. Level claims: no row is PRODUCT-PROVEN; Realmless=Option B (MECHANISM), Search=Shape B with SLICE-39 parent-allow/child-deny control GREEN, Alpha.6 routed wake DEV-LIVE, ask receipt live for write/writeText and mechanism-level for edit/patch/delete/move; subprocess/PTY still R4.

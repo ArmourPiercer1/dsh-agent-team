@@ -1,0 +1,38 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut
+
+stdout | packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | packages/runtime/test/issue2-real-preset-restriction.test.ts
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+stdout | packages/runtime/test/a5sf-bl16-grep-realm.test.ts
+HOST-VERSION-GUARD ok host=legacy resolved=0.2.0-rc.2 pin=0.2.0-rc.2 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use
+
+ ✓ packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts (4 tests) 87ms
+ ✓ packages/runtime/test/issue2-real-preset-restriction.test.ts (13 tests) 4ms
+ ✓ packages/runtime/test/a5sf-bl16-grep-realm.test.ts (13 tests) 48761ms
+     ✓ R0/R1: the preset definition reaches the INHERITED service; the shadow reaches the confined one  3268ms
+     ✓ R3: an in-lane search with no match is NOT an error — exit code 1 survives the handle adaptation  3264ms
+     ✓ R4: an invalid pattern is a failure (rg exit 2) carrying the REAL rg stderr  3257ms
+     ✓ G1/G2: glob rides the SAME confined face — in-lane lists, out-of-lane is refused with a fact  3261ms
+     ✓ R5: a shell body is refused at ADMISSION (0 spawns, one fact), and the KERNEL allowance is measured directly  3258ms
+     ✓ R6: live row 1 through the REAL grep tool — an in-lane worktree search returns the match (one allow fact, disclosure recorded)  6482ms
+     ✓ R6m: MUTATION — stripping the two flags at the provider boundary reproduces the LIVE row-1 tool error verbatim  6496ms
+     ✓ R7: a lane that includes the worktree root keeps ordinary .gitignore semantics (no silent global change)  6465ms
+     ✓ R7m: MUTATION — forcing the flags onto that lane loses .gitignore semantics (why the change is conditional)  6438ms
+     ✓ C1a: a governed member call reaches the MOUNTED host executor, and the centre records the allow  3265ms
+     ✓ C2: with NO executor mounted the call is REFUSED by name (rc.5); rc.2 keeps dispatching  3259ms
+
+ Test Files  3 passed (3)
+      Tests  30 passed (30)
+   Start at  06:13:42
+   Duration  49.48s (transform 1.81s, setup 207ms, import 2.19s, tests 48.85s, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.3
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.3
+npm notice To update run: npm install -g npm@12.2.3
+npm notice

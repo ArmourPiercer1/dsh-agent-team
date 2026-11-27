@@ -1,5 +1,30 @@
 {
   "schema": "evidence-large-allowlist/1",
   "note": "Reviewed exemptions from the 1 MiB size bound of scripts/eb3-evidence-guard.mjs, for files ADDED under dev/agent-workflow/evidence/. Each entry needs {path, reason}; an entry without a reason is EVIDENCE_ALLOWLIST_INVALID. An entry exempts SIZE only: a raw census capture or resample name is refused regardless. Existing large tracked files (e.g. RELOCATED-MANIFEST.tsv) need no entry because the guard grades additions only. Editing this file selects every CI layer (dev/ci/** in eb3-impact-graph.json), so a new exemption is reviewed with the PR that needs it.",
-  "entries": []
+  "entries": [
+    {
+      "path": "dev/agent-workflow/evidence/d-boot-feasibility/real-model/archive/2026-11-25T18-59Z-real-legacy-attempt1-census-overstrict/boot02/model-calls-positive.jsonl",
+      "reason": "Round 120 REAL-MODEL evidence: the complete provider-boundary request/response transcript of the preserved attempt that measured the over-strict ledger census. It is the primary record the round-120 README and REAL-MODEL-ACCEPTANCE.md cite for the six preserved red attempts; a derived summary cannot reproduce the observed tool_use/tool_result sequence. Not a census capture/resample name, and the 1 MiB bound itself is unchanged."
+    },
+    {
+      "path": "dev/agent-workflow/evidence/d-boot-feasibility/real-model/archive/2026-11-25T18-59Z-real-legacy-attempt1-census-overstrict/boot02/model-calls.snapshot.json",
+      "reason": "Round 120 REAL-MODEL evidence: the derived snapshot of the same preserved attempt (turn table + tool-call sequence) used by the discovery predicates and the leakage self-check. Size comes from the full transcript snapshot; it is cited by round120/README.md and is not a raw census capture."
+    },
+    {
+      "path": "dev/agent-workflow/evidence/d-boot-feasibility/real-model/archive/2026-11-25T19-33Z-real-legacy-attempt4-deny-no-team-resolve/boot01/model-calls-ask-denied.snapshot.json",
+      "reason": "Round 120 REAL-MODEL evidence: the snapshot of the preserved deny-arm failure (the Leader never resolved the pending ask), kept so the negative control is auditable rather than retried away. Cited by round120/README.md and REAL-MODEL-ACCEPTANCE.md; not a raw census capture."
+    },
+    {
+      "path": "dev/agent-workflow/evidence/d-boot-feasibility/real-model/archive/2026-11-25T19-33Z-real-legacy-attempt4-deny-no-team-resolve/boot01/model-calls-negative-ask-denied.jsonl",
+      "reason": "Round 120 REAL-MODEL evidence: the complete provider transcript of the same preserved deny-arm attempt. The denial is judged from the model's own observed calls, so the raw transcript is the evidence the judge consumed; cited by round120/README.md; not a census capture/resample."
+    },
+    {
+      "path": "dev/agent-workflow/evidence/d-boot-feasibility/real-model/runs/boot01/model-calls.snapshot.json",
+      "reason": "Round 120 REAL-MODEL evidence: the canonical boot-01 snapshot of the accepted real-model run (the one the 20/20 judges and the leakage self-check read). It is referenced by round120/README.md and REAL-MODEL-ACCEPTANCE.md; the bound is unchanged and this is not a raw census capture."
+    },
+    {
+      "path": "dev/agent-workflow/evidence/ute-a1/round120/real-legacy/boot01/model-calls.snapshot.json",
+      "reason": "Round 120 REAL-MODEL evidence: the candidate-round copy of the same accepted legacy boot-01 snapshot, named in round120/README.md and round120/leakage-self-check.log as a verified sink. Kept for the round's own cross-reference; not a raw census capture and the 1 MiB bound itself is unchanged."
+    }
+  ]
 }

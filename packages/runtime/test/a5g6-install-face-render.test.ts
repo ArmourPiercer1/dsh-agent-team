@@ -113,69 +113,9 @@ describe('GLUE-6 LEG A — the shipped install face carries its own runtime .mjs
   })
 })
 
-describe('GLUE-6 LEG B — the plane renders ContentBlock[], not a String', () => {
-  /** The shipped plane module (same bytes as its source, per placement). */
-  const planeUrl = pathToFileURL(
-    join(DIST_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'team-tool-plane.mjs'),
-  ).href
-
-  const buildDefinitions = async (): Promise<readonly Record<string, never>[]> => {
-    const plane = (await import(planeUrl)) as {
-      createTeamToolPlaneAssembly: (row: unknown) => {
-        ok: boolean
-        code?: string
-        value?: { definitions: readonly Record<string, never>[] }
-      }
-    }
-    // U6 PR3 (disclosed interface update): the kernel is now mounted ALWAYS,
-    // so the dispatcher lifecycle port is MANDATORY (mount-wide
-    // PLANE_KERNEL_UNAVAILABLE, R-REM-2.2 generalized from read-only).
-    const built = plane.createTeamToolPlaneAssembly({
-      dispatcherLifecycle: { inflight: () => 0 },
-      teamSessionId: 'a5g6-unit-team-root',
-      permissionPolicy: { default: 'ask', allow: [], ask: [], deny: [{ tool: 'bash', resource: { kind: 'any' } }] },
-      realmId: 'a5g6-unit-realm',
-      templateId: 'a5g6-tpl',
-      role: 'member',
-      instanceId: 'a5g6-inst',
-    })
-    expect(built.ok, `plane assembly refused: ${String(built.code ?? '')}`).toBe(true)
-    return built.value?.definitions ?? []
-  }
-
-  it('the four definitions all carry a render that returns an array of typed text blocks', async () => {
-    const definitions = await buildDefinitions()
-    // U7-F: the process family's second row mounts at its fixed native
-    // spelling — the default world's face grows from the trio to the four.
-    expect(definitions.map((d) => (d as unknown as { name: string }).name).sort()).toEqual(
-      ['pwsh', 'team_bash', 'team_glob', 'team_grep'],
-    )
-    // The two lanes the lane's closed `{ text }` envelope can carry: a
-    // computed refusal (the only thing the default effect face answers today)
-    // and a presented effect result. Both must become legal model content.
-    const envelopes: readonly { readonly lane: string, readonly text: string }[] = [
-      { lane: 'refusal', text: 'team tool guard: kind=refused-admission code=template-deny-lane detail=x' },
-      { lane: 'presented', text: 'bash · exit=0\n> hello\na5p5-meta {"kind":"shell"}' },
-    ]
-    for (const definition of definitions) {
-      const def = definition as unknown as {
-        name: string
-        output: { render: (args: unknown, value: unknown) => unknown, schema: Record<string, unknown> }
-      }
-      for (const { lane, text } of envelopes) {
-        const rendered = def.output.render({}, { text })
-        expect(Array.isArray(rendered), `${def.name}/${lane}: render must return ContentBlock[], got ${typeof rendered}`).toBe(true)
-        const blocks = rendered as readonly { type: string, text: string }[]
-        expect(blocks, `${def.name}/${lane}: exactly one block`).toHaveLength(1)
-        expect(blocks[0]?.type, `${def.name}/${lane}: block type`).toBe('text')
-        // Verbatim, not re-shaped: the lane's control-byte law already made
-        // the text safe, and a presentation layer must not re-interpret it.
-        expect(blocks[0]?.text, `${def.name}/${lane}: block text`).toBe(text)
-      }
-      // The schema the value is validated against before render runs stays
-      // the closed `{ text }` envelope (the fix is the projection, not the
-      // wire shape).
-      expect(def.output.schema).toMatchObject({ type: 'object', required: ['text'] })
-    }
-  })
-})
+// ROUND 72 (2026-11-22): GLUE-6 LEG B graded the SHIPPED PLANE's render arms
+// (`createTeamToolPlaneAssembly` → four definitions rendering ContentBlock[]). That module was retired by
+// the UTE A0/A1 cut (1617d5839) and the centre assembles the team tool surface instead, so the arm has no
+// subject on this tree. LEG A above (the upstream-resolver face and its dist placement) is untouched and
+// still graded. Re-anchoring the render law on the centre's assembly is a design task: the centre does not
+// expose a `definitions` surface, it admits calls through `admit()`.

@@ -46,7 +46,7 @@
  * @module @dsh-agent-team/runtime/test/a3p4-pr4-production-entry-regression
  */
 
-import { mkdirSync, rmSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs'
 import { dirname, join, resolve, relative, sep, isAbsolute } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterAll, describe, expect, it } from 'vitest'
@@ -70,7 +70,8 @@ import { createPermissionOverlayRepositoryPort } from '../permission-governance/
 import type { PermissionOverlayRepositoryPort } from '../permission-governance/port.js'
 import * as hostEntry from '../src/plugin/host.js'
 import { TEAM_PLUGIN_ERROR_CODES } from '../src/plugin/types.js'
-import { createTeamProductionRoot } from '../src/plugin/root.js'
+import type { TeamPluginConfig } from '../src/plugin/types.js'
+import { createTeamProductionRoot } from '../src/plugin/vnext/root.js'
 import {
   createAuthorityCeilingReader,
   createPermissionAuthorityFacts,
@@ -78,6 +79,11 @@ import {
   type TeamPermissionPlane,
 } from '../src/plugin/permission-plane.js'
 import { PERMISSION_MUTATION_ERROR_CODES } from '../governance/permission-mutation.js'
+import {
+  A5SF_PRODUCT_REALM_SCHEMA,
+  type A5sfProductMemberDeclaration,
+  type A5sfProductRealmDeclaration,
+} from '../team-services/src/product-assembly.js'
 import { PERMISSION_LIFECYCLE_ERROR_CODES } from '../permission-lifecycle/types.js'
 import { createS6RemotePorts, createS6RemoteDispatcher } from '../src/plugin/s6-remote.js'
 import { parseBlueprint } from '../../domain/blueprint/src/index.js'
@@ -916,13 +922,15 @@ const GLUE_ROOT = 'session-a3p4e3root'
 const GLUE_CHILD = 'session-a3p4e3child-a'
 const GLUE_INST = 'inst-a3p4e3a'
 
-/** The E3 blueprint: tpl-a worker carries a static ALLOW (exact, ABSOLUTE
- *  target) which the persisted overlay deny must beat; without the allow
- *  lane the leg would deny for the wrong reason. */
+/** The E3 blueprint: a v4 document whose `memberIoCeilings` family is the ONE compiler's input. The
+ *  tpl-a worker's write lane ALLOWS the target's workspace — that compiled ALLOW is what the persisted
+ *  overlay deny must beat. The retired Alpha.4 `capabilities.permissions` lane is deliberately ABSENT:
+ *  this world is on the current contract, so the allow comes from the v4 ceiling and nothing else. */
 function glueBlueprintSource(targetKey: string): string {
+  const workspace = dirname(targetKey)
   return [
     '---',
-    'schemaVersion: 3',
+    'schemaVersion: 4',
     'blueprintId: team.a3p4e3',
     'revision: "1"',
     'leader:',
@@ -941,11 +949,6 @@ function glueBlueprintSource(targetKey: string): string {
     '    mcp:',
     '      kind: allow',
     '      items: []',
-    '    permissions:',
-    '      default: deny',
-    '      allow: []',
-    '      ask: []',
-    '      deny: []',
     'members:',
     '  - templateId: tpl-a',
     '    persona: "You are member A of the a3p4e3 test team."',
@@ -961,18 +964,27 @@ function glueBlueprintSource(targetKey: string): string {
     '      mcp:',
     '        kind: allow',
     '        items: []',
-    '      permissions:',
-    '        default: deny',
+    // THE v4 CEILING FAMILY (the ONE compiler's input). The write lane allows the member's workspace,
+    // so a `write` to the probe target is a compiled ALLOW before any overlay exists.
+    'memberIoCeilings:',
+    '  - templateId: tpl-a',
+    '    io:',
+    '      read:',
+    '        mode: restricted',
     '        allow:',
-    '          - tool: write',
-    '            resource:',
-    '              kind: exact',
-    `              path: "${targetKey}"`,
+    `          - "${workspace}"`,
     '        ask: []',
-    '        deny:',
-    '          - tool: bash',
-    '            resource:',
-    '              kind: any',
+    '        deny: []',
+    '      write:',
+    '        mode: restricted',
+    '        allow:',
+    `          - "${workspace}"`,
+    '        ask: []',
+    '        deny: []',
+    // E3 probes the fs write axis. A NARROWING network lane without the web face is refused by the
+    // product (NETWORK_UNCONFINED_REALM), so this axis is stated as allow and judges nothing here.
+    '      network:',
+    '        mode: allow',
     'policyStates: []',
     'quotas:',
     '  team:',
@@ -981,9 +993,8 @@ function glueBlueprintSource(targetKey: string): string {
     '  members:',
     '    maxInstances: 2',
     '    maxConcurrent: 2',
-    // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the honest
-    // zero `rules: []` — this document declares no expansion authority, and the
-    // alternative (a filler rule) would hand a fixture a grant no leg here asks for.
+    // The two authority documents every v3+ document declares; this fixture claims no expansion
+    // authority and no hard grant of its own.
     'permissionMutationEnvelope:',
     '  rules: []',
     'teamHardEnvelope:',
@@ -991,6 +1002,31 @@ function glueBlueprintSource(targetKey: string): string {
     'metadata: {}',
     '---',
   ].join('\n')
+}
+
+/** The row's product declaration for the SAME ceiling family the blueprint above declares. The
+ *  declaration is the EXCEPTION path the product parser reconciles against the derived ceiling — it
+ *  states the same lanes, so assembly owns one truth rather than a second one. */
+function glueMemberPolicies(workspace: string): A5sfProductRealmDeclaration {
+  type IoCeiling = A5sfProductMemberDeclaration['ceiling']
+  const lane = (): IoCeiling['read'] => ({ mode: 'restricted', allow: [workspace], ask: [], deny: [] })
+  return {
+    schema: A5SF_PRODUCT_REALM_SCHEMA,
+    teamId: 'team.a3p4e3',
+    blueprintRevision: '1',
+    authority: { revision: 'a4:e3', admitted: true },
+    members: [
+      {
+        templateId: 'tpl-a',
+        instanceGeneration: 1,
+        ceiling: {
+          read: lane(),
+          write: lane(),
+          network: { mode: 'allow' },
+        },
+      },
+    ],
+  }
 }
 
 /**
@@ -1018,7 +1054,7 @@ async function driveOnce(
   callId: string,
   targetKey: string,
 ): Promise<{ kind: string; reason?: string; nextCalls: number }> {
-  let nextCalls = 0
+  let reachedEnd = false
   const exec = {
     callId,
     name: 'write',
@@ -1027,12 +1063,18 @@ async function driveOnce(
   }
   const run = async (i: number): Promise<unknown> => {
     if (i >= chain.length) {
-      nextCalls += 1
+      reachedEnd = true
       return { kind: 'allow' }
     }
     return chain[i]!.listener(exec, () => run(i + 1))
   }
   const decision = (await run(0)) as { kind: string; reason?: string }
+  // THE BODY EDGE. The centre's listener is an OUTER waterfall leg: it calls `next()` so later/earlier
+  // listeners can speak, then applies its own verdict (admission-port's documented order). Reaching the
+  // end of the chain is therefore "the rest of the chain allowed", NOT "the tool executed": the host
+  // runs the body only when the WHOLE chain answers allow. `nextCalls` keeps its meaning — 1 == the
+  // tool executed — without counting a `next()` that a refusing centre already overruled.
+  const nextCalls = decision.kind === 'allow' && reachedEnd ? 1 : 0
   return { ...decision, nextCalls }
 }
 
@@ -1070,12 +1112,23 @@ describe('E3 — the REAL createAgentBindings consumes a FILLED plane ref (BLOCK
     })
     const overlayStore = await openPermissionOverlayStore(new FileStorageSeam(base))
     const overlay = createPermissionOverlayRepositoryPort({ repository: overlayStore.repository })
-    const config = {
+    // The centre a governed Member needs: `installMemberExecution` refuses to open admission/facts/
+    // settlement without a deployment-owned state directory (`member-execution.mjs:98-108`).
+    const centreStatePath = `${base}/centre`
+    mkdirSync(centreStatePath, { recursive: true })
+    // The a5sf deployment keys (`centreStatePath`, `a5sfMemberPolicies`) are part of the shipped row
+    // config type; this fixture states them explicitly so a drift in the centre's required inputs fails
+    // HERE rather than as a runtime refusal.
+    const config: TeamPluginConfig = {
       bootPhase: 'create' as const,
       rootSessionId: GLUE_ROOT,
       blueprintSource: glueBlueprintSource(targetKey),
       generation: 1,
       defaultWorkspace: `${base}/workspace`,
+      // THE CURRENT CONTRACT: the row declares the product Member policy, and the centre it opens
+      // writes to this deployment-owned directory. Without both there is no governed Member at all.
+      centreStatePath,
+      a5sfMemberPolicies: glueMemberPolicies(dirname(targetKey)),
       seedMembers: [],
       staticModel: { provider: 'a3p4e3', model: 'a3p4e3-model' },
       deniedSelection: null,
@@ -1104,7 +1157,122 @@ describe('E3 — the REAL createAgentBindings consumes a FILLED plane ref (BLOCK
       fsContainsKeys: makeContainKeys(),
       permissionPlaneRef,
     })
-    void planeRoot
+    // ROUND 74 (owner ruling `docs/reviews/20261122-1536.txt` §3) — ON A CENTRE-CONFIGURED ROW the S6
+    // command plane is BUILT and INSTALLED again (the blanket refusal is gone), and the dispatcher
+    // serves the CONTROL PLANE while refusing every AGENT-EXECUTION command with the existing typed
+    // code. This is the production root the host mounts; the assertions below are the root-level half
+    // of ADM-86 (which pins the closed classification and the durable refusal).
+    expect(
+      planeRoot.seams.remoteHandlerRegistration.installed,
+      'a centre-configured root must install the S6 remote registration seam (round 74)',
+    ).toBe(true)
+    const governedRemote = planeRoot.remoteDispatcher
+    if (governedRemote === undefined) throw new Error('a centre-configured root must expose the root-assembled remote dispatcher')
+    // CONTROL PLANE: a team read is served (no execution, no member binding needed).
+    const catalogRead = (await governedRemote('catalog.list', { version: 1, params: {} })) as { ok?: boolean }
+    expect(catalogRead.ok, `a control-plane read must be served on a governed row, got ${JSON.stringify(catalogRead)}`).toBe(true)
+    // AGENT EXECUTION: the two ROOT commands stay refused with the EXISTING host-surface code, and
+    // the refusal is durable. ROUND 83 — the three member commands are NO LONGER in this set: they are
+    // `work-delivery` and are served as a handover (asserted below at the production port, where the
+    // facade receives the async delivery receipt and NO tool can run).
+    for (const method of ['team.admitInitialWork', 'team.ensureRootLive']) {
+      const refused = (await governedRemote(method, { version: 1, params: {} })) as {
+        ok?: boolean
+        error?: { code?: string }
+      }
+      expect(refused.ok, `${method}: an agent-execution command must be refused on a governed row`).toBe(false)
+      expect(refused.error?.code, `${method}: the refusal carries the existing host-surface code`).toBe('ADMISSION_REMOTE_UNAVAILABLE')
+    }
+    const refusalFacts = `${centreStatePath}/remote.host-surface.facts.jsonl`
+    expect(existsSync(refusalFacts), 'the refusal must be on the durable record').toBe(true)
+    const recorded = readFileSync(refusalFacts, 'utf8').trim().split('\n').filter((line) => line !== '').map((line) => JSON.parse(line) as Record<string, unknown>)
+    for (const method of ['team.admitInitialWork', 'team.ensureRootLive']) {
+      const fact = recorded.find((row) => row.kind === 'invocation-authority' && row.toolName === `remote.command:${method}`)
+      expect(fact, `${method}: the refusal must leave an invocation-authority fact`).toBeDefined()
+      expect(fact?.decision).toBe('deny')
+      expect(fact?.axis).toBe('team.control')
+    }
+    // NO REFUSAL for a delivery command: the plane serves it, and the host-surface refusal ledger
+    // carries no deny row that would claim the centre judged a member's turn from the operator seat.
+    for (const method of ['member.send', 'member.create', 'member.followup']) {
+      expect(
+        recorded.find((row) => row.kind === 'invocation-authority' && row.toolName === `remote.command:${method}`),
+        `${method}: a work-delivery command must NOT be an agent-execution refusal`,
+      ).toBeUndefined()
+    }
+
+    // ROUND 83 — THE DELIVERY HANDOVER AT THE PRODUCTION PORT. `createS6RemotePorts` is the exact
+    // function the root calls; over a spy facade/coordinator it proves what the plane CAN reach:
+    // `member.followup` asks the facade for the ASYNC receipt (Phase B/C detach inside the Team
+    // runtime — the request must not await, and cannot observe, the Member's turn), `member.create`
+    // is the creation-only action, and `member.send` is the messaging coordinator's inbox acceptance.
+    // No spy here executes a tool, because the S6 plane has no tool/provider port at all.
+    const deliveryCalls: Array<Record<string, unknown>> = []
+    const deliveryPorts = createS6RemotePorts({
+      rootSessionId: GLUE_ROOT,
+      repositories: domain.repositories,
+      isOwnedRoot: (sid: string) => sid === GLUE_ROOT,
+      runtime: {
+        performAction: async (request: Record<string, unknown>) => {
+          deliveryCalls.push(request)
+          return request['action'] === 'create-member'
+            ? { kind: 'member-activated', instanceId: GLUE_INST, templateId: 'tpl-a', childSessionId: GLUE_CHILD, operationId: 'e3-create', replayed: false, admissionCode: 'ADMITTED' }
+            : { kind: 'work-admitted', instanceId: String(request['targetInstanceId']), fromLifecycle: 'RUNNING', lifecycleCommitted: false, sequence: 11, settled: false, workStatus: 'admitted' }
+        },
+      },
+      messaging: {
+        sendTeamMessage: async (request: Record<string, unknown>) => {
+          deliveryCalls.push({ action: 'send-message', ...request })
+          return {
+            status: 'delivered',
+            rootSessionId: GLUE_ROOT,
+            action: 'send-message',
+            callerRole: 'human',
+            recipientInstanceId: String(request['recipientInstanceId']),
+            deliveryMode: 'direct',
+            deliveredToInstanceId: String(request['recipientInstanceId']),
+            deliveredToSessionId: GLUE_CHILD,
+            factSequence: 12,
+            deliveredSequence: 13,
+            requestToken: String(request['requestToken']),
+          }
+        },
+      },
+    } as never)
+    const dispatchDelivery = createS6RemoteDispatcher(
+      deliveryPorts,
+      () => Promise.resolve({ kind: 'human', humanId: GLUE_ROOT } as never),
+    )
+    const deliverySession = GLUE_ROOT
+    const deliveryCaller = { kind: 'human', humanId: deliverySession }
+    const sent = (await dispatchDelivery('member.send', {
+      version: REMOTE_CONTRACT_VERSION_V7,
+      params: { teamSessionId: deliverySession, caller: deliveryCaller, recipientInstanceId: GLUE_INST, body: 'read the file, one tool call', requestToken: 'e3-delivery-send' },
+    })) as { ok?: boolean; value?: { data?: { outcome?: Record<string, unknown> } } }
+    expect(sent.ok, `member.send must be SERVED as a delivery, got ${JSON.stringify(sent)}`).toBe(true)
+    expect(sent.value?.data?.outcome?.status).toBe('delivered')
+    expect(sent.value?.data?.outcome?.deliveredSequence).toBe(13)
+    const created = (await dispatchDelivery('member.create', {
+      version: REMOTE_CONTRACT_VERSION_V7,
+      params: { teamSessionId: deliverySession, caller: deliveryCaller, requestToken: 'e3-delivery-create', delegationTemplateId: 'tpl-a', payload: { label: 'e3 worker' } },
+    })) as { ok?: boolean; value?: { data?: { outcome?: Record<string, unknown> } } }
+    expect(created.ok, `member.create must be SERVED through the governed creation path, got ${JSON.stringify(created)}`).toBe(true)
+    expect(created.value?.data?.outcome?.kind).toBe('member-activated')
+    const followed = (await dispatchDelivery('member.followup', {
+      version: REMOTE_CONTRACT_VERSION_V7,
+      params: { teamSessionId: deliverySession, caller: deliveryCaller, targetInstanceId: GLUE_INST, requestToken: 'e3-delivery-follow', payload: { prompt: 'read the file, one tool call' } },
+    })) as { ok?: boolean; value?: { data?: { outcome?: Record<string, unknown> } } }
+    expect(followed.ok, `member.followup must be SERVED as a delivery, got ${JSON.stringify(followed)}`).toBe(true)
+    expect(followed.value?.data?.outcome?.workStatus).toBe('admitted')
+    expect(followed.value?.data?.outcome?.settled).toBe(false)
+    // THE DELIVERY LAW: the facade request carries `execution: 'async'` (Phase A receipt only), and
+    // the creation request does NOT (creation is not a work action).
+    const followRequest = deliveryCalls.find((call) => call['action'] === 'follow-up')
+    expect(followRequest?.['execution'], 'follow-up must ask for the ASYNC delivery receipt').toBe('async')
+    const createRequest = deliveryCalls.find((call) => call['action'] === 'create-member')
+    expect(createRequest, 'member.create reaches the creation-only action').toBeDefined()
+    expect(Object.prototype.hasOwnProperty.call(createRequest ?? {}, 'execution')).toBe(false)
+    expect(deliveryCalls.some((call) => call['action'] === 'send-message')).toBe(true)
     const plane = permissionPlaneRef.current
     if (plane === undefined) throw new Error('the a3p4e3 root did not fill the plane reference')
 
@@ -1128,10 +1296,22 @@ describe('E3 — the REAL createAgentBindings consumes a FILLED plane ref (BLOCK
         // The NEW bridge pass-through (round-3): the host hands the glue
         // this same ref; a test fills it with the assembled plane.
         permissionPlaneRef,
+        // E3 (round 49): the SAME durable overlay port the mutation lane above appends through — never a
+        // second store. The glue reads it for the authority generation and for the admission-side deny.
+        permissionOverlay: overlay,
+        // The production host ALWAYS passes a lazy realm accessor; this composition provides no
+        // `teamA5sfRealm` service, so it answers undefined and the mount compiles from the row's own
+        // `a5sfMemberPolicies` declaration (exactly the product shape when the service is absent).
+        a5sfRealmProvider: () => undefined,
+        // The isolated Cordis service scope a real Member install mounts into.
+        realmMount: true,
         members: [{ childSessionId: GLUE_CHILD, instanceId: GLUE_INST, templateId: 'tpl-a' }],
         configOverrides: {
           bootPhase: 'create',
           blueprintSource: glueBlueprintSource(targetKey),
+          defaultWorkspace: `${base}/workspace`,
+          centreStatePath,
+          a5sfMemberPolicies: glueMemberPolicies(dirname(targetKey)),
           seedMembers: [
             { instanceId: GLUE_INST, templateId: 'tpl-a', label: 'Member A', childSessionId: GLUE_CHILD },
           ],
@@ -1142,17 +1322,17 @@ describe('E3 — the REAL createAgentBindings consumes a FILLED plane ref (BLOCK
       const chain = preExecuteChain(ctxA)
       expect(chain.length, 'the glue installed a pre-execute leg on tpl-a').toBeGreaterThan(0)
 
-      // CONTROL (key identity): with NO overlay row the template ALLOW
-      // executes through the real glue (proves the canonical key of the
-      // fake-fs target equals the granted key — the deny below then can
-      // only come from the plane).
+      // CONTROL (key identity): with NO overlay row the v4 ceiling's compiled
+      // write ALLOW executes through the real centre (proves the canonical key
+      // of the fake-fs target matches the lane's key — the deny below then can
+      // only come from the durable plane).
       const control = await driveOnce(chain, 'e3-call-control', targetKey)
       expect(
         control.nextCalls,
-        `the static allow must execute with no overlay present (control: ${JSON.stringify(control)})`,
+        `the compiled allow must execute with no overlay present (control: ${JSON.stringify(control)})`,
       ).toBe(1)
 
-      // Persist the overlay DENY over the worker's static allow (operator
+      // Persist the overlay DENY over the worker's compiled allow (operator
       // mutation through the production lane).
       const granted = await plane.mutation.grantInstance({
         authority: { kind: 'operator' },
@@ -1163,23 +1343,25 @@ describe('E3 — the REAL createAgentBindings consumes a FILLED plane ref (BLOCK
         rules: [
           // Overlay rules store CANONICAL keys — the glue world's fake fs
           // canonicalizes to `file://` URIs (the a6a key convention), so the
-          // granted matcher speaks the SAME canonical text the decision
-          // region carries (the CONTROL drive above proved this is the key
-          // the template ALLOW matches on).
+          // granted matcher speaks the SAME canonical text the admission
+          // operation carries (the CONTROL drive above proved this is the key
+          // the compiled ALLOW matches on).
           { operationClass: 'write', matcher: { kind: 'exact', resource: `file://${targetKey}` }, effect: 'deny' },
         ],
       })
       expect((granted as { changed?: boolean }).changed).toBe(true)
 
-      // The overlay grant above stands — the glue (with the plane ref
-      // FILLED) must beat the template allow with the persisted deny.
+      // The overlay grant above stands — the glue (with the SAME overlay port
+      // wired into the centre) must beat the compiled allow with the persisted
+      // deny.
       const denied = await driveOnce(chain, 'e3-call-deny', targetKey)
       expect(
         denied.nextCalls,
         `the glue executed despite the persisted overlay deny (decision: ${JSON.stringify(denied)})`,
       ).toBe(0)
       expect(denied.kind).toBe('deny')
-      expect(String(denied.reason)).toContain('permission denied')
+      // The port's OWN contract vocabulary (ADM-45): the overlay refusal is a typed code, not prose.
+      expect(String(denied.reason)).toContain('ADMISSION_OVERLAY_DENY')
       // The deny is the MERGED overlay answer (the explanation names the
       // plane), not the static lane answering for itself.
       expect(String(denied.reason).toLowerCase()).toContain('overlay')

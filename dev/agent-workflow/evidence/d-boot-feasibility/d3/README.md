@@ -1,0 +1,299 @@
+# D3 — four D items measured live (round 63; re-run round 68)
+
+Branch `vnext/a1-cut`, HEAD at run start `b779d9fab86be64154b8d9a2de81ea1a8c2baa4e` (round 63) and
+`b5bbb0a9087ec2678b014fc1e0453f752c12cd2f` (round 68 re-run), host pin
+`639ed015397290b3745d163aafe02ffee4aa3f84` (porcelain empty before and after every boot). Record class
+**DEV-LIVE**: development evidence only, never candidate evidence, and never a `V@B=yes` claim.
+
+> **Round 68 re-run (Alpha.6 recorded refusal, shape A).** The same driver and the same four judges were
+> re-run with the product change that records the Alpha.6 row refusal at the host entry. Round-63 run
+> evidence is preserved under `archive/`. The four verdicts are unchanged (`persistent-subprocess`
+> REFUTED, `crash-cold-recovery` PROVEN, `work-delivery` PROVEN, `alpha6` PROVEN) and the `d3:alpha6`
+> arm now also measures a durable fact + settlement — see the section below.
+
+Driver: `tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs` (a COPY of the D2 skeleton with
+its own probes; the round-61/round-62 drivers are untouched).
+
+```
+node tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs --boots 2
+```
+
+Two boots, identical (`agreeing=true`, `differing=[]`):
+
+| fact | boot1 | boot2 |
+| --- | --- | --- |
+| overall | FAIL (1 of 4 judges refutes) | FAIL |
+| `d3:persistent-subprocess` | **REFUTED** | **REFUTED** |
+| `d3:crash-cold-recovery` | **PROVEN** | **PROVEN** |
+| `d3:work-delivery` | **PROVEN** | **PROVEN** |
+| `d3:alpha6` | **PROVEN** | **PROVEN** |
+| aAdmissions / bAdmissions | 4 / 3 | 4 / 3 |
+| in-flight at SIGKILL | RUNNING | RUNNING |
+| in-flight after recovery | UNKNOWN | UNKNOWN |
+| collect status | succeeded | succeeded |
+| bash turn-1 / turn-2 settlement | REFUSED / REFUSED | REFUSED / REFUSED |
+
+`overall=FAIL` is the honest aggregate: the runner maps a REFUTED judge to case FAIL by design, so a run
+whose evidence collection COMPLETED still exits non-zero when any proposition is refuted. Both facts are
+logged separately (`RESULT evidence-complete=true allProven=false`).
+
+Every one of the four judges ran in BOTH boots — none is single-boot by nature. The Alpha.6 arm boots its
+own separate World inside the same budgeted lease thunk; its proposition is a CONFIG-EVALUATION, so its two
+runs are two independent evaluations of the same row.
+
+## `d3:persistent-subprocess` — REFUTED (the required direction is absent)
+
+A governed Member's model-visible surface DOES carry `bash`, and the Member DOES call it twice, in two
+different turns, in the same Member session. Both calls are refused at the ONE admission point:
+
+```
+Error: ADMISSION_AXIS_UNSUPPORTED: tool "bash" needs a subprocess lane, which this binding does not
+compile; a call the centre cannot judge is refused
+```
+
+Disk facts (`centre/inst-*.facts.jsonl`, fresh readers), identical in both turns:
+
+```
+{ "callId": "call-d3-a-bash1", "toolName": "bash", "axis": "process.exec",
+  "decision": "deny", "refusalCode": "ADMISSION_AXIS_UNSUPPORTED" }
+```
+
+Settlement, fresh reader: `ADMITTED → REFUSED` (a terminal refusal at birth, never `RUNNING`, never a
+body). The probe's state file `team-a/d3-persistent-state.txt` therefore does not exist, and the second
+turn's tool result carries the same typed refusal. The shipped governed preset mounts exactly ONE shell
+row, `tool-bash` (the ONE-SHOT confined terminal face), and NOT `dsh-tool-bash-persistent`
+(`preset mounts tool-bash-persistent=false; mounted shell rows=["tool-bash"]`); the host tree ships
+`packages/shell/tool-bash-persistent/package.json` but the profile never mounts it (`--plan`:
+`present=true mounted=false`).
+
+So the product's answer to "a Member runs a persistent subprocess whose session survives across turns" is
+a REFUSAL, not a session. **What the process lane would need** (`CONTRACT-CHANGE-REQUEST-process-lane.md`,
+unchanged): there is no declaration source for it. The v4 member ceiling is a CLOSED io shape —
+`packages/domain/blueprint/src/blueprint-v4.ts:187-197` — measured live by feeding a `process` member
+ceiling to the shipped parser:
+
+```
+{"accepted":false,"code":"MALFORMED_DTO",
+ "details":{"problems":[{"code":"unknown-field",
+   "path":"$.memberIoCeilings[0].io.process",
+   "detail":"field 'process' is outside the closed io shape (read | write | network)"}]}}
+```
+
+The two lawful shapes are unchanged: (A) add `process` to the v4 ceiling family (contract change) so the
+centre can compile a subprocess lane and the preset can mount `tool-bash-persistent` behind it; or (B) a
+v5 schema that declares the process lane; or (C) rule subprocess/PTY/PTC unsupported by ruling and keep
+the typed refusal as the shipped behaviour. No driver can pass this judge by faking a shell.
+
+## `d3:crash-cold-recovery` — PROVEN
+
+Sequence, both boots: Leader discovery → `team_delegate` worker A → A's turn (admitted `read`, refused
+`bash`, unit delivered) → `team_collect` A → `team_follow_up` A (second `bash` turn, refused) →
+`team_delegate` worker B → B's turn: admitted `read`, a `grep` probe (see the extra finding below), then
+an ADMITTED **`edit`** of a 256 MiB in-lane file (unique needle as its last line; a ~60-byte tool call,
+so the settlement stays open for a measurable window) → the driver polls the settlement file every 10 ms
+and, once open, **SIGKILLs the host pid** → cold restart on the SAME `DSH_HOME` and the SAME port lease,
+row `bootPhase: create-or-open`.
+
+Measured, from fresh disk readers on both sides of the kill:
+
+| fact | boot1 | boot2 |
+| --- | --- | --- |
+| kill | `pid=89`, `signal=SIGKILL`, `exit={code:null,signal:"SIGKILL"}`, pid gone, port free | same, `pid=89` |
+| in-flight settlement at kill | `RUNNING` (`ADMITTED,RUNNING`) | `RUNNING` |
+| in-flight settlement after recovery | `UNKNOWN` (`ADMITTED,UNKNOWN`) | `UNKNOWN` |
+| execution fact for the crashed call | none (never `COMPLETED`) | none |
+| admission facts for the crashed call | 1 before, 1 after (never replayed) | 1 / 1 |
+| A's completed `read` fact | 1 before, 1 after, byte-identical | 1 / 1 |
+| A's completed `read` settlement | `COMPLETED` before and after | `COMPLETED` |
+| new call after recovery (`call-d3-a-after-recovery`) | `allow`, `fs.read`, settlement `ADMITTED→RUNNING→COMPLETED` | same |
+| restart home | identical to the pre-crash home | identical |
+
+The recovery is the product's own `recoverUnsettled` at member bind
+(`packages/runtime/settlement/execution-settlement.ts:1846`,
+`packages/runtime/src/plugin/vnext/member-execution.mjs:171`): a non-terminal record becomes UNKNOWN and
+is never replayed. No driver code writes `UNKNOWN`; the driver only reads the file.
+
+## `d3:work-delivery` — PROVEN
+
+Through the product's real team tools on the governed Member:
+
+* `team_delegate` → `{"status":"executed","action":"delegate", … "effect":{"kind":"member-activated",
+  "instanceId":"inst-…","templateId":"worker-a","childSessionId":"session-team-child-…"}}`;
+* the delegated prompt arrives VERBATIM as the Member's first user message (`[team-work requestToken=
+  dboot-d3-work-a]` … `DBOOT_D3_DELIVERED_UNIT_ALPHA`);
+* the Member's turn-1 final text is exactly `DBOOT_D3_DELIVERED_UNIT_ALPHA`;
+* `team_collect` → `{"requestToken":"dboot-d3-work-a","status":"succeeded","instanceId":"inst-…",
+  "admittedSequence":2,"settledSequence":5,"memberResult":{"body":"DBOOT_D3_DELIVERED_UNIT_ALPHA",
+  "requestToken":"dboot-d3-work-a","status":"succeeded"}}` — terminal, and byte-identical when collected
+  AGAIN after the cold restart;
+* the unit is on disk in the team domain store (fresh scan finds it in `storages/…`);
+* the Member's own calls sit in ITS ledger: every admission fact for A's `read` names A's
+  `instanceId`/`childSessionId`, and NO admission fact for any of A's callIds appears in any other
+  centre ledger file. The only other ledger file, `remote.host-surface.facts.jsonl`, is the Leader-side
+  REMOTE-PLANE refusal fact (a host-surface refusal, not a member call) — recorded as evidence, not
+  counted as a violation.
+
+## `d3:alpha6` — PROVEN (the typed-refusal shape, recorded at the entry after round 68)
+
+The arm boots a SEPARATE World whose row sets `alpha6ReviewRouting: true`. MEASURED shape, both boots:
+the host PROCESS BOOTS (`reachable=true`) and the ROW is refused inside the plugin bootstrap:
+
+```
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config:
+ADMISSION_ALPHA6_UNAVAILABLE: alpha6ReviewRouting is explicitly unavailable in this cut.
+no review-routing axis exists: Alpha.6 decides who may review whom from the trusted review facts
+before any tool call, so there is no locator or lane for the centre to judge, and the decision would
+otherwise be made by a second governance authority. A row that enables it would run a second review
+authority beside the centre, so the row is refused rather than booted with an unrecorded governance claim
+```
+
+and NOTHING is live: `/__p6t6/state` answers **404** (no team root), `teamSession present=false`,
+`liveMembers=0`, no Alpha.6 decision, no wake-intent file. The typed refusal is a product rule, not a
+driver string: `centreConfigViolation` (`packages/runtime/src/plugin/vnext/centre-config.ts:73`) at row
+validation (`host.ts` `validateTeamPluginConfig`), over the closed refusal table
+(`host-surface-refusal.mjs:50`, `code=ADMISSION_ALPHA6_UNAVAILABLE, axis=host.service`).
+
+**Round 68 — the recorded-fact half is now REACHED at this entry.** Before the product change the config
+gate ran before any root existed, so `createHostSurfaceRefusalPoint` was never built and the refusal left
+no fact. Now `host.ts` passes `createAlpha6RowRefusalHook` (`row-refusal-entry.ts`) to the validator; the
+hook runs at the centre rule before the unchanged throw and records through the product's own point. Both
+boots measured (`runs/boot01|02/alpha6-arm.json`):
+
+| fact | boot1 | boot2 |
+| --- | --- | --- |
+| `rowRefused` (host log carries the typed refusal) | true | true |
+| `recordedLogLine` (entry's own "recorded" line) | true | true |
+| `refusalFactCount` (`centre/alpha6.host-surface.facts.jsonl`) | 1 | 1 |
+| fact shape | `deny` / `ADMISSION_ALPHA6_UNAVAILABLE` / `host.service` / `alpha6.review-routing` | same |
+| `nonRefusalFactCount` (a route-claiming fact) | 0 | 0 |
+| `refusalSettlement.state` | REFUSED | REFUSED |
+| settlement `dispatch` / `bodyOutcome` | `not-started` / `not-started` | same |
+| settlement transitions | `ADMITTED → REFUSED` | same |
+| `wakeIntentFiles` / `liveAlpha6Decision` | 0 / null | 0 / null |
+
+The settlement is read READ-ONLY from the raw envelope: at probe time the HOST still owns the settlement
+writer lock, so opening a second store would be a `SETTLEMENT_WRITER_CONFLICT`, not a missing record. The
+`no-silent-route` judge is unchanged; the probe now feeds it "a fact that claims a route"
+(`recordedFactPresent`), so the recorded refusal cannot be counted as a silent route. The row refusal
+text, the boot outcome and the no-team-row state are byte-identical in shape to round 63.
+
+**Remaining limit:** a row that opts in with NO `centreStatePath` has no durable directory and is refused
+but unwritten; the routed path stays unreachable. In-process shapes: `ADM-85` (point), `ADM-116/117/118`
+(entry ordering: recorded refusal, unaffected row, untouched covered face).
+
+## EXTRA measured finding (not a judge): a governed Member's `grep` is REFUSED by the durable overlay
+
+B's in-lane `grep` (search root inside B's own compiled lane) is refused even though the LANE allows it:
+
+```
+{ "callId": "call-d3-b-grep-probe", "toolName": "grep", "axis": "fs.read",
+  "decision": "deny", "laneDecision": "allow",
+  "refusalCode": "ADMISSION_OVERLAY_FAULT",
+  "reason": "the durable overlay could not be consulted (canonicalization failed for tool \"grep\":
+             tool-unsupported); a fault is a refusal, never an absence of opinion" }
+```
+
+The closed permission vocabulary is `read/read_image/write/edit` + `bash/pwsh`
+(`packages/runtime/operation-permission/types.ts:59-64`, `:90-93`), and
+`classifyPermissionTool` (`canonical-operation.ts:260-267`) returns `unsupported` for everything else, so
+the overlay cannot canonicalize a search tool and the adapter turns that fault into a deny. This is why the
+crash judge's in-flight call is an `edit` and not a `grep`: the crash judge must never fake an in-flight
+call, so it uses a call the product actually admits. Two lawful shapes: (A) add the search face
+(`grep`, `glob`) to the closed permission vocabulary with a subtree resource so the overlay can canonicalize
+it; or (B) rule that the overlay judges only the six canonicalizable tools and the lane alone judges the
+search face (then the adapter must not map "unsupported" to a fault for a lane-allowed call).
+
+## Files
+
+| path | content |
+| --- | --- |
+| `driver.log` | the whole run, both boots, all stage lines |
+| `run-ledger.jsonl` | the RUN record ledger (host starts, cases, result) |
+| `runs/boot01/`, `runs/boot02/` | per-boot evidence: `verdicts.json` (every clause), `before-crash.json`, `after-restart.json`, `crash.json`, `crash-call.json`, `centre-facts-a.json`, `centre-facts-b.json`, `collect*.json`, `member-*-transcript.txt`, `member-*-session.v4.jsonl.zstd` (raw session files), `state-after-restart.json`, `alpha6-arm.json` + `alpha6-host.log`, `leader-surface.json`, `member-surface.json`, `host-log-before-crash.log`, `counters.json`, `run-record.json` |
+| `agreement.json` / `agreement.txt` | the two-boot agreement (identical rows) |
+| `plan-patch.yml` | the composed profile patch of the last boot (what actually mounted) |
+| `plan.log`, `plan/plan-patch.yml` | the HOST-FREE `--plan` probe: the CCR refusal on `$.memberIoCeilings[0].io.process`, the 14 mounted preset plugins (no `tool-bash-persistent`) and the patch the plan would compose. `--plan` writes ONLY these two paths — it never touches `driver.log` or the measured `runs/` (a plan run that rewrote the run record was measured and fixed in this round; the record was then re-measured so `driver-digest.json` binds the committed driver byte-for-byte). |
+| `driver-digest.json` | the driver file digest bound into the RUN record |
+| `host-tree-porcelain.txt` | the pristine host tree's porcelain (empty) |
+| `archive/` | EARLIER iterations from the same development session (each `runs/` is archived before a new run starts, never overwritten). They are the repair trail of the driver itself, not part of the two-boot measured record; the measured record is `runs/boot01` + `runs/boot02` and `agreement.*`. |
+
+## What this round does NOT prove
+
+Any candidate/product-proven status (all DEV-LIVE). A persistent subprocess session (refused). A process
+lane declaration (no declaration source in v4; CCR unchanged). The Alpha.6 recorded-fact/wake path at a
+host entry (unreachable before root construction; in-process only). A search-capable governed Member
+(`grep`/`glob` refused by the overlay). A real-model interleaving (the model is the product's scripted
+mock provider). The 256 MiB `edit` window is a timing aid, not a claim about long-running tools: the
+settlement is open at the kill in both boots, but the driver kills as soon as it observes the open state.
+
+---
+
+## Round 64 addendum — shape B: the `grep` finding above is FIXED, and the search face is now LANE-governed
+
+The EXTRA finding above was measured at round 63. Round 64 implements **shape B** of
+`CONTRACT-CHANGE-REQUEST-search-face.md`: the durable overlay classifies the tool by its CLOSED vocabulary
+BEFORE canonicalization, so a face it cannot express is `overlayOutcome: 'no-opinion'` — never a deny and
+never a fault — and the compiled LANE alone judges the call. A canonicalization fault on a COVERED tool is
+still `ADMISSION_OVERLAY_FAULT`.
+
+The re-measured record (`runs/boot01` + `runs/boot02`, two agreeing boots, driver digest bound to the
+implementation commit) shows B's in-lane probe now:
+
+```
+{ "callId": "call-d3-b-grep-probe", "toolName": "grep", "axis": "fs.read",
+  "locator": "…/workspace/team-b/corpus", "decision": "allow",
+  "overlayOutcome": "no-opinion" }
+```
+
+and the tool result is a real match (`Found 1 match … team-b/corpus/huge-7.txt`), with an execution fact
+`outcome=completed`; the fact is byte-identical before and after the SIGKILL cold restart. The crash judge
+still uses the `edit` as the in-flight call (the grep is the search probe before it); the other judges and
+their assertions are unchanged (`persistent-subprocess` REFUTED, `crash-cold-recovery` / `work-delivery` /
+`alpha6` PROVEN).
+
+**Residual:** the search face is governed by the LANE only — a durable overlay rule cannot restrict
+`grep`/`glob` because they are outside the overlay's vocabulary. Shape A (a search face in the closed
+vocabulary with a subtree resource) remains the durable answer and is still open.
+
+---
+
+## Round 125 addendum — the in-flight window is now KERNEL-BLOCKED (the measured record below supersedes the `edit`/256 MiB method above)
+
+The round-63..64 text above describes the arm as it was: an ADMITTED `edit` of a 256 MiB in-lane file, whose
+settlement stays open only because the write is slow. On 2026-11-26 that hope failed on boot 2 of a frozen-SHA
+run (the edit settled `FAILED` before the SIGKILL, so the pair disagreed on `inflightBefore` and the judge
+refused with `no genuine in-flight call at crash time`). Round 125 replaces the method; the judge is
+stricter, not looser.
+
+**Mechanism.** Member B's in-flight call is a governed **`bash`** whose FINITE command (`i=0; while [ "$i" -lt
+2097152 ]; do printf '%s' 'DBOOT_D3_INFLIGHT_FIFO_WRITE'; i=$((i+1)); done > FIFO`, exactly **58,720,256**
+bytes) redirects into a FIFO the driver created in B's write lane. The driver holds **only** the read end,
+`O_RDONLY|O_NONBLOCK`; the 65,536 B kernel pipe buffer fills and the writer parks in `pipe_write`. The driver
+reads exactly one buffer (proof the write began), stops reading, waits 400 ms and re-reads the settlement —
+it must still be `RUNNING`. Only then does it SIGKILL the host pid; then it closes the read end
+(`pipeClosedAfterKill`) so a survivor would get `EPIPE`/`SIGPIPE`. Completion is gated by the kernel pipe, not
+by elapsed time. An infinite loop would have been wrong: it could never finish even with a drained pipe, so
+it would prove nothing.
+
+**Why `bash`, not `edit`.** `edit`/`write` accept only regular files (`post-consume-edit.ts` opens
+`O_RDWR|O_NOFOLLOW` and requires a file; `post-consume-write.ts` refuses a non-regular pre-open target), so a
+FIFO would be refused `not-a-file`; a regular-file write cannot be parked in the kernel without root/FUSE. The
+governed `bash` is a real admitted call (`process.exec` axis) — the honesty the crash judge enforces.
+
+**Fail-closed.** `waitInFlight` returns only on `RUNNING`; the kill gate is `state !== 'RUNNING'` (`ADMITTED`
+no longer counts). A refusal writes `runs/boot0N/inflight-refusal.json` (`sigkillIssued:false`,
+`killRefused:true`, `hostPidAliveAtRefusal`) and throws the SAME named reason; no `crash.json` is written and
+the host is left alive. `mkfifo`/open failure refuses with `A5SF_D3_INFLIGHT_BLOCK_UNAVAILABLE`.
+
+**Evidence files (new/changed).** `runs/boot0N/inflight-block.json` (mode, FIFO, `pipeCapacityBytes`,
+`commandIntendedBytes`, `drainReads`, `bytesObservedInPipe`, `stateOnObserve`, `stateAfterSettle`,
+`blockedWriter` best-effort `/proc` observation, `blocked`, `kernelReason`); `crash.json` now also records
+`inflightMode`, `inflightCallId` and `pipeClosedAfterKill`; `counters.json` carries `inflightMode`,
+`inflightBytesObserved`, `inflightBlockedInKernel`. The judge clause
+`inflight-window-blocked-in-kernel` requires `blocked===true`, bytes observed, `stateAfterSettle==='RUNNING'`
+and drained `<` intended.
+
+**Negative control.** `A5SF_D3_INFLIGHT_MODE=fast` runs the same arm with a provider that completes at once;
+`--expect-inflight-refusal` grades six checks (boot failed at `sigkill-restart`, the named reason, settlement
+not `RUNNING`, no SIGKILL, host alive, no `crash.json`) and writes
+`dev/agent-workflow/evidence/d-boot-feasibility/d3/controls/negative-inflight-refusal.json`.

@@ -1,0 +1,54 @@
+[2026-11-24T00:53:52.427Z] archived previous runs -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T00-53-52-427Z
+[2026-11-24T00:53:52.459Z] host tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use HEAD=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=[]
+[2026-11-24T00:53:52.459Z] started 2026-11-24T00:53:52.401Z boots=1
+[2026-11-24T00:53:52.491Z] [boot1] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-24T00:53:52.492Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=a7a7f08ca1f54229780fecce2a43df73e4351bde
+[2026-11-24T00:53:52.525Z] blueprint main.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T00:53:52.527Z] [boot1] alpha6 config gate (positive): null
+[2026-11-24T00:56:17.330Z] [boot1] host ready on http://127.0.0.1:3195
+[2026-11-24T00:56:17.350Z] [boot1] prompt(d4disc) status=200
+[2026-11-24T00:56:17.550Z] [boot1] discovery answered (mock requests=2)
+[2026-11-24T00:56:17.559Z] [boot1] prompt(d4off) status=200
+[2026-11-24T00:56:17.960Z] [boot1] officer delegated
+[2026-11-24T00:56:17.980Z] [boot1] officer instance=inst-1crltnl0089j childSession=session-team-child-1d56dbb16a118ba3573db3c4b2641997
+[2026-11-24T00:56:18.485Z] [boot1] d4:officer-up=PROVEN d4:officer-binding=PROVEN
+[2026-11-24T00:56:18.493Z] [boot1] prompt(d4wrk) status=200
+[2026-11-24T00:56:18.893Z] [boot1] worker delegated
+[2026-11-24T00:56:18.922Z] [boot1] worker ask appeared=true requestId=ctrl-12e1j8609qp1jx0bdrikg1sd
+[2026-11-24T00:56:19.327Z] [boot1] officer resolve(first) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-12e1j8609qp1jx0bdrikg1sd","decision":"allow","decider":{"kind":"instance","instanceId":"inst-1crltnl0
+[2026-11-24T00:56:19.829Z] [boot1] d4:ask-execute=PROVEN failing=[]
+[2026-11-24T00:56:19.829Z] [boot1] second worker ask appeared=true requestId=ctrl-1akhyzs1t37l5n00ihery0i9
+[2026-11-24T00:56:19.831Z] [boot1] officer resolve(second) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-1akhyzs1t37l5n00ihery0i9","decision":"allow","decider":{"kind":"instance","instanceId":"inst-1crltnl0
+[2026-11-24T00:56:20.335Z] [boot1] d4:ask-execute-2=PROVEN failing=[]
+[2026-11-24T00:57:20.560Z] [boot1] sticky: holdLanded=true hold=false cancelStatus=200 stopSeen=false markers=[]
+[2026-11-24T00:57:22.874Z] [boot1] sticky: thirdAsk=true requestId=ctrl-0azi5fn0ukmyi40dogt5t0ui markersAfter=[] wakeInputsWhileStopped=1
+[2026-11-24T00:57:22.886Z] [boot1] officer resolve(third) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-0azi5fn0ukmyi40dogt5t0ui","decision":"allow","decider":{"kind":"instance","instanceId":"inst-1crltnl0
+[2026-11-24T00:57:22.889Z] [boot1] sticky: resumeCleared=true resolve3=true write3Settled=true
+[2026-11-24T00:57:22.891Z] [boot1] duplicate: intents=1 delivered=1 inputs=1
+[2026-11-24T00:57:24.421Z] [boot1] d4:case-created=PROVEN failing=[]
+[2026-11-24T00:57:24.421Z] [boot1] d4:router-officer=PROVEN failing=[]
+[2026-11-24T00:57:24.421Z] [boot1] d4:wake-delivered=REFUTED failing=["one-correlated-confirmation","wake-intent-file-written"]
+[2026-11-24T00:57:24.421Z] [boot1] d4:officer-decides=PROVEN failing=[]
+[2026-11-24T00:57:24.421Z] [boot1] d4:ask-executes-after-review=PROVEN failing=[]
+[2026-11-24T00:57:24.421Z] [boot1] d4:duplicate-route=PROVEN failing=[]
+[2026-11-24T00:57:24.421Z] [boot1] d4:sticky-stop=REFUTED failing=["human-sticky-stop-marked","stop-survives-the-machine-wake","no-wake-input-while-stopped"]
+[2026-11-24T00:57:24.421Z] [boot1] d4:routed-wake=REFUTED failing=["d4:wake-delivered-proven","d4:sticky-stop-proven"]
+[2026-11-24T00:57:24.424Z] blueprint incoherent.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting=null
+[2026-11-24T00:59:47.256Z] [boot1] d4:refusal=PROVEN failing=[]
+[2026-11-24T00:59:47.258Z] [boot1] d4:enablement=PROVEN failing=[]
+[2026-11-24T00:59:47.484Z] blueprint ask-denied.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T01:02:12.642Z] [boot1] d4:ask-denied=PROVEN failing=[]
+[2026-11-24T01:02:12.769Z] blueprint ask-stopped.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T01:04:37.994Z] [boot1] d4:ask-stopped=PROVEN failing=[]
+[2026-11-24T01:04:38.119Z] [boot1] negative dev-live slot released (released=true held=false)
+[2026-11-24T01:04:38.120Z] [boot1] PROBE FAILED: TypeError: Cannot read properties of null (reading 'home')
+    at probeOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs:2312:54)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs:2428:18)
+[2026-11-24T01:04:38.120Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-24T01:04:38.151Z] host porcelain after: []
+[2026-11-24T01:04:38.151Z] TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)
+fact                              
+
+agreeing=true differing=[]
+[2026-11-24T01:04:38.151Z] RESULT evidence-complete=false allBooted=false blocked=false (1/1 boots; agreeing pair=true)

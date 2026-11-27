@@ -1,0 +1,18 @@
+{
+  "aGuardFacts": 14,
+  "bGuardFacts": 14,
+  "aAdmissions": 9,
+  "bAdmissions": 9,
+  "mockRequests": 56,
+  "memberModelRequests": 25,
+  "aWindow": {
+    "first": "2026-11-22T14:42:16.732Z",
+    "last": "2026-11-22T14:42:17.398Z",
+    "count": 10
+  },
+  "bWindow": {
+    "first": "2026-11-22T14:42:16.934Z",
+    "last": "2026-11-22T14:42:17.107Z",
+    "count": 3
+  }
+}

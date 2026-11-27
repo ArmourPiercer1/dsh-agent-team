@@ -1,0 +1,16 @@
+{
+  "judgedCorrelations": [
+    "admission:call_00_l674ITesNJAZLu1XgpFY9541",
+    "admission:call_00_ET_r8LwBYFKFCgJPVmwYrws2156",
+    "admission:call_00_f0vzJq9UflSqKtOlz6rv7559",
+    "admission:call_00_vuThNALXkfMNgpnGrSTE4571"
+  ],
+  "extraAsks": [
+    {
+      "requestId": "ctrl-1p9bi9511ag3w21omb4yn1iv",
+      "correlation": "admission:call_00_ET_zwDNMollnJ7Kn5YAETuo8026",
+      "token": ""
+    }
+  ],
+  "note": "extra governed calls the model made that are not one of the four judged asks; each correlation names an observed tool_use id"
+}

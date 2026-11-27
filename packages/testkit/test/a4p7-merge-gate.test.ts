@@ -62,6 +62,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, utimesSync, w
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { REQUIRED_CHECK_IDS } from '../../../scripts/composition-smoke-bundle.mjs'
+import { loadBookings } from './p4t6-bookings/load-bookings.mjs'
 import { PLUGIN_TARGETS } from '../../../scripts/composition-smoke-targets.mjs'
 import { INSTALL_SURFACES } from '../../../scripts/client-composition-surface.mjs'
 import { resolveScratchPath, sweepStaleScratches } from '../../../scripts/artifact-check-scratch.mjs'
@@ -2010,14 +2011,17 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
       // that booking's `paths` array, the only part the ledger sums. The derived-sum
       // assertion in p4t6 already reddens on such a deletion, so this is precision, not
       // teeth; precision is the reason the ledger exists.
+      // ROUND 72 (2026-11-22): the sixty per-merge bookings were re-baselined into ONE lane whose `paths` is the
+      // scanned population (all 553 historical paths had been deleted with the cut). The claim here is
+      // unchanged and still exact — "my path is an ENTRY of a booking's `paths`, never a mention, never a
+      // hand-written total" — it is now read over the WHOLE ledger through the same loader p4t6 uses, so a
+      // future re-lane does not need this file edited while a dropped entry still reddens it.
       const myPath = relative(REPO_ROOT, join(TEST_DIR, 'a4p7-merge-gate.test.ts')).replace(/\\/g, '/')
-      const bookingFile = join(TEST_DIR, 'p4t6-bookings', 'a4p76gate.json')
-      expect(existsSync(bookingFile), 'p4t6 has no `p4t6-bookings/a4p76gate.json` — re-add the lane booking, and its own tie').toBe(true)
-      const booking = JSON.parse(readFileSync(bookingFile, 'utf8')) as { lane?: string; paths?: unknown }
-      expect(booking.lane).toBe('A4P76GATE')
+      const { bookings } = loadBookings()
+      const booked = bookings.flatMap((b: { paths: string[], file: string }) => b.paths.map((entry) => ({ entry, lane: b.file })))
       expect(
-        Array.isArray(booking.paths) ? booking.paths : [],
-        `${myPath} is not an ENTRY in the A4P76GATE booking's paths — add the path and move that lane's own tie; never hand-write a total, and never count a mention`,
+        booked.map((b: { entry: string }) => b.entry),
+        `${myPath} is not an ENTRY in any booking's paths — book the path and move that lane's own tie; never hand-write a total, and never count a mention`,
       ).toContain(myPath)
     })
   })

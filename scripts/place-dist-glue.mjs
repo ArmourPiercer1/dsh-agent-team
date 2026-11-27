@@ -53,7 +53,7 @@ export const PLACEMENTS_DIR = join(dirname(fileURLToPath(import.meta.url)), 'dis
 const SCHEMA = 'dist-placements/1'
 const FILE_NAME = /^\d{3}-[a-z0-9][a-z0-9-]*\.json$/
 /** The glue: PLACEMENTS[0] by contract (composition-smoke's glue placement). */
-export const GLUE_SRC = 'packages/runtime/src/plugin/live/agent-bindings.mjs'
+export const GLUE_SRC = 'packages/runtime/src/plugin/vnext/agent-bindings.mjs'
 
 /**
  * Load every placement file in sorted file-name order and return the flat

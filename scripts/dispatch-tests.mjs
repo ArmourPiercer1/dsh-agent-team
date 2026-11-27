@@ -160,6 +160,16 @@ export function setDigest(suites) {
 
 // ------------------------------------------------------------------- parity
 
+/**
+ * STEPS THAT DISPATCH A LEG ADDED AFTER THE PARITY BASE. Such a step has no old `node --test` argv
+ * by construction (the base predates the leg), so it cannot be a missing conversion. Naming it here
+ * makes that a REVIEWED fact: the list is closed, a step that is not named is still a problem, and a
+ * new leg must be added deliberately (the test asserts this exact set).
+ */
+export const POST_BASE_STEPS = Object.freeze({
+  'UTE vNext A1 — realm mount + real FS slice + admission (pinned host, absence is RED)': 'round 72 added the ute-vnext-a1 leg after the M5 parity base',
+})
+
 /** Join shell line-continuations so a wrapped `node --test a \\\n b` yields both tokens. */
 function joinedLines(text) {
   return String(text).replace(/\\\r?\n/g, ' ').split('\n')
@@ -243,7 +253,21 @@ export function parityReport({ oldText, newText, manifest, tracked = null, workf
     })
   }
   const converted = [...legByStepNew.entries()].filter(([step]) => !oldByStep.has(step))
-  for (const [step, legId] of converted) problems.push(`step "${step}" dispatches ${legId} but had no \`node --test\` argv on the old side`)
+  for (const [step, legId] of converted) {
+    if (POST_BASE_STEPS[step] !== undefined) {
+      // Declared post-base: it is a ROW with an empty old side, so its suites still reach the union
+      // (the union is what the dispatched set becomes, not only what changed at the conversion).
+      const leg = legsById.get(legId)
+      const resolved = leg === undefined ? { suites: [], problems: [{ code: 'LEG_UNKNOWN', detail: `no leg ${legId}` }] } : resolveLeg(leg, tracked ?? new Set())
+      if (resolved.problems.length > 0) {
+        problems.push(`step "${step}": ${resolved.problems.map((p) => `${p.code} ${p.detail}`).join(' ;; ')}`)
+        continue
+      }
+      rows.push({ workflow, step, leg: legId, old: [], new: resolved.suites, missing: [], added: [...resolved.suites].sort() })
+      continue
+    }
+    problems.push(`step "${step}" dispatches ${legId} but had no \`node --test\` argv on the old side`)
+  }
   const ok = problems.length === 0 && rows.every((r) => r.missing.length === 0 && r.added.length === 0)
   return { rows, problems, ok }
 }
@@ -438,6 +462,24 @@ function main(argv) {
   if (run.stdout) process.stdout.write(run.stdout)
   if (run.stderr) process.stderr.write(run.stderr)
   const status = run.status ?? 1
+  // ENV-LIMITED LEDGER, printed at the LEG level. A capability-absent arm reports itself with a
+  // stable `UTE-VNEXT-A1-ENV-LIMITED …` line and SKIPS (never passes). This aggregates those lines so
+  // the leg's own summary names every env-limited arm, with its code and disposition, instead of
+  // leaving the count buried in per-file stdout. It runs on failure too: a red leg must still say
+  // which guarantees were unproven for environmental reasons.
+  const envLimited = [...String(run.stdout ?? '').matchAll(/^UTE-VNEXT-A1-ENV-LIMITED arm=(\S+) disposition=(\S+) code=(\S+)/gm)]
+    .map((match) => ({ arm: match[1], disposition: match[2], code: match[3] }))
+  if (envLimited.length > 0) {
+    for (const s of selected) {
+      const blockers = envLimited.filter((row) => row.disposition === 'ENV-BLOCK')
+      const controls = envLimited.filter((row) => row.disposition === 'FAIL-CLOSED-CONTROL')
+      process.stdout.write(
+        `DSH-TEST-DISPATCH-ENV-LIMITED mode=run leg=${s.id} count=${String(envLimited.length)} proven=0 ` +
+          `env_blocks=${String(blockers.length)} fail_closed_controls=${String(controls.length)} ` +
+          `arms=${envLimited.map((row) => `${row.arm}:${row.disposition}:${row.code}`).join(',')}\n`,
+      )
+    }
+  }
   for (const s of selected) {
     process.stdout.write(`DSH-TEST-DISPATCH mode=run leg=${s.id} suites=${String(s.suites.length)} files=${String(s.suites.length)} exit=${String(status)} set=${setDigest(s.suites)}\n`)
   }

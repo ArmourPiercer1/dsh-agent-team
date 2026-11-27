@@ -1,0 +1,8 @@
+[
+  {
+    "boot": 1,
+    "overall": "ERROR",
+    "failed": true,
+    "error": "the Leader surface lost 'team_delegate'"
+  }
+]

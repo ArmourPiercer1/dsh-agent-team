@@ -55,7 +55,7 @@ import { fileURLToPath } from 'node:url'
 
 import { describe, expect, it } from 'vitest'
 
-import { createTeamProductionRoot } from '../src/plugin/root.js'
+import { createTeamProductionRoot } from '../src/plugin/vnext/root.js'
 import type { TeamAgentBindings, TeamPluginConfig, TeamProductionRoot } from '../src/plugin/types.js'
 import type { GovernanceStartOutcome, GovernanceWarningService } from '../governance-warning/index.js'
 import { createTeamDomain, openTeamDomain } from '../../storage/repositories/index.js'
@@ -411,7 +411,7 @@ const w4 = await (async () => {
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const S6_SOURCE_TEXT = readFileSync(join(HERE, '..', 'src', 'plugin', 's6-remote.ts'), 'utf8')
-const ROOT_SOURCE_TEXT = readFileSync(join(HERE, '..', 'src', 'plugin', 'root.ts'), 'utf8')
+const ROOT_SOURCE_TEXT = readFileSync(join(HERE, '..', 'src', 'plugin', 'vnext', 'root.ts'), 'utf8')
 const HANDOFF_SOURCE_TEXT = readFileSync(join(HERE, '..', 'handoff', 'service.ts'), 'utf8')
 
 // --- assertions ---------------------------------------------------------------------
@@ -460,7 +460,10 @@ describe('A4-PR6 review round 1 (BLOCKER 1) — one mapper, every entrance', () 
   it('the three arms are built by ONE exported mapper and no entrance re-declares the wire codes', () => {
     expect(S6_SOURCE_TEXT).toContain('export function governanceStartRefusal(')
     expect(ROOT_SOURCE_TEXT).toContain('governanceStartRefusal(')
-    expect(ROOT_SOURCE_TEXT).toContain("from './s6-remote.js'")
+    // The root moved to `plugin/vnext/root.ts` in the A1 cut, so the relative
+    // import gained one `../`; the LAW is unchanged (the root imports the ONE
+    // mapper from s6-remote rather than declaring the arms itself).
+    expect(ROOT_SOURCE_TEXT).toContain("from '../s6-remote.js'")
     // root.ts owns NO copy of the three wire codes (drift between entrances is impossible):
     expect(ROOT_SOURCE_TEXT.includes("TEAM_START_GOVERNANCE_WARNING: '")).toBe(false)
     expect(ROOT_SOURCE_TEXT.includes("TEAM_START_GOVERNANCE_CORRUPT: '")).toBe(false)

@@ -1,0 +1,40 @@
+{
+  "proposition": "a Member `write` whose disposition is `ask` raises a REAL Control request, is approved through the REAL control path, and then executes: the confined Provider verifies the minted receipt and writes the exact approved bytes, settled COMPLETED",
+  "verdict": "REFUTED",
+  "clauses": [
+    {
+      "id": "control-request-raised",
+      "ok": false,
+      "detail": "requestRaised=false"
+    },
+    {
+      "id": "approved-through-real-control-path",
+      "ok": false,
+      "detail": "leader team_resolve_control result=\"\""
+    },
+    {
+      "id": "admission-fact-allow-lane-ask",
+      "ok": true,
+      "detail": "allow facts=[{\"callId\":\"call-d4-worker-write\",\"decision\":\"allow\",\"laneDecision\":\"ask\",\"axis\":\"fs.write\"}]"
+    },
+    {
+      "id": "write-tool-result-not-an-error",
+      "ok": true,
+      "detail": "write result isError=false text=\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T04-36-25Z/workspace/lane/worker-ask.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\""
+    },
+    {
+      "id": "real-bytes-on-disk",
+      "ok": true,
+      "detail": "file exists=true bytes=27 sha256=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3 expectedSha256=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3"
+    },
+    {
+      "id": "settlement-completed",
+      "ok": true,
+      "detail": "state=COMPLETED bodyOutcome=completed transitions=[\"ADMITTED\",\"RUNNING\",\"COMPLETED\"]"
+    }
+  ],
+  "failing": [
+    "control-request-raised",
+    "approved-through-real-control-path"
+  ]
+}

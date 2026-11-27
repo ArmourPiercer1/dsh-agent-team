@@ -1,207 +1,173 @@
 #!/usr/bin/env node
 /**
- * negative-controls.mjs — FAMILY-LEVEL and PER-MEMBER mutations that plant a
- * defect the golden fixture must catch.
+ * negative-controls.mjs — the SEARCH lane's control battery (round 81).
  *
- * Each control has two arms: the MUTATED run must go RED (the defect is
- * observed) and the UNMODIFIED run must reproduce its golden row (the arm is
- * not green-by-skip). A control whose mutation does not change the observed
- * record is an `NC ... FAIL`: a control that cannot fail proves nothing.
+ * WHAT CHANGED AND WHY. The B1 battery mutated the appended PD-16
+ * `confined-search-tool.mjs` shadow through the old path. The A1 cut deleted
+ * that mechanism (`5d1349767`), so those arms measured a module that no longer
+ * exists. The PROPERTY they proved is not lost: the NEW path is verified for
+ * all 15 vectors and its own battery (`new-path-controls.mjs`, 12 controls)
+ * carries the declaration/provenance arms. This file adds the two arms the new
+ * battery deliberately does not duplicate, and keeps the two host-free arms:
  *
- * The mutations, and why they are legitimate:
- *   NC-HARNESS-BITES     flip one golden cell (the match digest) — proves the
- *                        comparator grades that cell instead of trusting the run.
- *   NC-CATEGORY-TOTAL    feed the classifier a refusal no entry explains — must
- *                        raise REFUSAL_VOCABULARY_INCOMPLETE, never bucket it,
- *                        and `unknown` must be unreachable from every entry.
- *   NC-MEMBER grep       widen ONLY the read lane around the out-of-lane grep
- *                        vector: the same call then succeeds and carries the
- *                        secret. The refusal was the lane's decision.
- *   NC-MEMBER glob       the same widening for the out-of-lane glob vector.
- *   NC-SHADOW-LOAD-BEARING  dispose the realm's search shadow (its own
- *                        disposal): the out-of-lane grep is then served by the
- *                        inherited unconfined definition and leaks the secret.
- *   NC-STDIN-LOAD-BEARING   the same disposal on the PATH-LESS grep vector: the
- *                        zero-match answer becomes a real match, so SR-G2's
- *                        emptiness is the confined child's stdin, not the
- *                        fixture.
+ *   NC-HARNESS-BITES            flip one golden cell — the comparator grades it
+ *                               (host-free, kept from B1).
+ *   NC-CATEGORY-TOTAL           an invented refusal must be REFUSED, never
+ *                               bucketed (host-free, kept from B1).
+ *   NC-RETIRED-SHADOW-ABSENT    the deleted PD-16 module and every
+ *                               `confined*SpecOf` stay gone (LIVE mount: the
+ *                               attach appends nothing).
+ *   NC-MEMBER grep (was NC-NEW-PATH-LANE-BITES-GREP): widening the READ
+ *                               lane on the NEW path turns the same denial into
+ *                               an admitted, out-of-lane read.
+ *   NC-MEMBER glob (was NC-NEW-PATH-LANE-BITES-GLOB), same law. The two ids
+ *   are the retirement unit's members, so the frozen ledger's
+ *   `NC-MEMBER <member>` coverage contract still has a REAL control per member.
+ *   NC-GOLDEN-FROZEN            the 15-row fixture was NOT re-recorded: the new
+ *                               path reproduces every cell byte-for-byte.
+ *   NC-SUCCESSORS-EXIST         the named successors are on disk.
  *
- * Evidence: dev/agent-workflow/evidence/ute3-search-b1-20261120/negative-controls.txt
+ * Transcript re-recorded under `accepted_by=round81-a1-cut`; the B1 transcript is
+ * superseded (ROUND80-CI-CLOSURE.md §4).
  *
  * @module tests/ute-g1-search/negative-controls
  */
-import { captureVector } from './lib/old-path.mjs'
-import { CORPUS, SEARCH_NEEDLE } from './lib/corpus.mjs'
-import { compareRecord, parseGolden } from './lib/compare.mjs'
-import {
-  CATEGORY_IDS,
-  REFUSAL_CATEGORIES,
-  RefusalVocabularyError,
-  SEARCH_REFUSAL_MAP,
-  classifySearchRefusal,
-} from './lib/effect-oracle.mjs'
-import { readFileSync } from 'node:fs'
+import assert from 'node:assert/strict'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 
-const GOLDEN = join(process.cwd(), 'tests', 'ute-g1-search', 'golden', 'old-path.tsv')
-/** The per-vector scratch root, collapsed so a transcript never carries a host path. */
-const SCRATCH = join(process.cwd(), '.artifacts', 'tmp', 'ute-g1-search')
-const stable = (text) => String(text ?? '')
-  .split(SCRATCH).join('<scratch>')
-  .replace(/<scratch>\/w-[A-Za-z0-9]+/gu, '<scratch>/<world>')
+import {
+  ACCEPTED_BY,
+  DELETING_COMMITS,
+  REPO_ROOT,
+  assertNoAppendedShadow,
+  runRetirementControls,
+  subjectRow,
+} from '../ute-g1-shared/retirement.mjs'
+import { CORPUS } from './lib/corpus.mjs'
+import { compareRecord, parseGolden } from './lib/compare.mjs'
+import { REFUSAL_CATEGORIES, RefusalVocabularyError, classifySearchRefusal } from './lib/effect-oracle.mjs'
+import { loadNewPathSurface, runVector } from './lib/new-path.mjs'
+
+const GOLDEN = join(REPO_ROOT, 'tests', 'ute-g1-search', 'golden', 'old-path.tsv')
 const golden = parseGolden(readFileSync(GOLDEN, 'utf8'))
-const goldenRow = (id) => {
-  const row = golden.find((record) => record.id === id)
-  if (row === undefined) throw new Error(`the golden fixture has no row ${id}`)
-  return row
-}
+const SUCCESSORS = Object.freeze([
+  'tests/ute-g1-search/lane-suite.test.mjs',
+  'tests/ute-g1-search/new-path-controls.mjs',
+  'packages/runtime/test/vnext-admission.test.mjs',
+])
+const RETIRED_PATHS = Object.freeze([
+  'packages/runtime/src/plugin/live/confined-search-tool.mjs',
+  'packages/tools/search-family/src/executors.mjs',
+])
+
 const vector = (id) => {
   const found = CORPUS.find((candidate) => candidate.id === id)
   if (found === undefined) throw new Error(`the corpus has no vector ${id}`)
   return found
 }
 
-let controls = 0
-let failed = 0
-/** Run one control; `body` returns a reason string when the control FAILS to bite. */
-async function control(id, body) {
-  controls += 1
-  let reason
-  let detail
-  try {
-    const settled = await body()
-    if (settled !== null && typeof settled === 'object' && !(settled instanceof Error)) {
-      reason = settled.reason
-      detail = settled.detail
-    } else {
-      reason = settled
-    }
-  } catch (error) {
-    reason = `threw: ${error?.message ?? String(error)}`
-  }
-  if (reason === undefined || reason === null) {
-    console.log(stable(`NC ${id} ok${detail === undefined ? '' : ` (${detail})`}`))
-    return true
-  }
-  failed += 1
-  console.log(stable(`NC ${id} FAIL ${reason}`))
-  return false
-}
+const controls = [
+  {
+    id: 'NC-HARNESS-BITES',
+    run: () => {
+      const row = golden.find((record) => record.id === 'SR-G1-inlane-match')
+      assert.ok(row !== undefined, 'the fixture has no SR-G1 row')
+      const mutated = { ...row, outcome: row.outcome === 'allow' ? 'deny' : 'allow' }
+      if (mutated.outcome === row.outcome) throw new Error('the mutation changed no cell; the control cannot bite')
+      const verdict = compareRecord(mutated, row)
+      if (verdict.ok !== false) throw new Error('the comparator accepted a cell mutation')
+      return `flipped=outcome ${row.outcome}->${mutated.outcome} differs=yes`
+    },
+  },
+  {
+    id: 'NC-CATEGORY-TOTAL',
+    run: () => {
+      let refused = false
+      try {
+        classifySearchRefusal({ outcome: 'deny', text: 'UTE3_INVENTED_REFUSAL_CODE', facts: [], readRoots: [] })
+      } catch (error) {
+        refused = error instanceof RefusalVocabularyError
+      }
+      if (!refused) throw new Error('an invented refusal was bucketed instead of refused')
+      if (Object.keys(REFUSAL_CATEGORIES).length !== 9) throw new Error('the closed vocabulary no longer has nine categories')
+      return 'invented=refused categories=9'
+    },
+  },
+  {
+    id: 'NC-RETIRED-SHADOW-ABSENT',
+    run: async () => {
+      const { mountRouteCWorld } = await import('./lib/world.mjs')
+      const scratch = mkdtempSync(join(REPO_ROOT, '.artifacts', 'tmp', 'ute-g1-search', 'retired-'))
+      mkdirSync(join(scratch, 'inside'), { recursive: true })
+      try {
+        const world = await mountRouteCWorld({ label: 'retired-mechanism', fixtureRoot: scratch, cwd: join(scratch, 'inside'), readRoots: [join(scratch, 'inside')] })
+        try {
+          if (world.attachAppendedNothing !== true) throw new Error('the post-cut attach appended a PD-16 search shadow; the A1 law is HOST-MODULES-ONLY')
+        } finally {
+          await world.dispose()
+        }
+      } finally {
+        rmSync(scratch, { recursive: true, force: true })
+      }
+      assertNoAppendedShadow({ quiet: true })
+      return `deleted=${String(RETIRED_PATHS.length)} live-attach=appends-nothing`
+    },
+  },
+  {
+    id: 'NC-MEMBER grep',
+    run: async () => {
+      const surface = await loadNewPathSurface()
+      const baseline = await runVector(vector('SR-G3-outside-denied'), surface)
+      const widened = await runVector(vector('SR-G3-outside-denied'), surface, { laneExtraRead: ['outside'], allowEscapedMatches: true })
+      if (baseline.record.outcome !== 'deny') throw new Error(`the unmodified new path answered ${baseline.record.outcome}, not deny`)
+      if (widened.record.outcome !== 'allow') throw new Error(`widening the read lane did not admit the same grep (${widened.record.outcome})`)
+      if (!widened.record.leaks.includes('UTE3_SEARCH_OUTLANE_SECRET_5be1')) throw new Error('the admitted widened grep did not carry the out-of-lane secret; the lane control proved nothing')
+      return `restricted=${baseline.record.outcome} widened=${widened.record.outcome} leak=yes`
+    },
+  },
+  {
+    id: 'NC-MEMBER glob',
+    run: async () => {
+      const surface = await loadNewPathSurface()
+      const baseline = await runVector(vector('SR-L2-outside-denied'), surface)
+      const widened = await runVector(vector('SR-L2-outside-denied'), surface, { laneExtraRead: ['outside'], allowEscapedMatches: true })
+      if (baseline.record.outcome !== 'deny') throw new Error(`the unmodified new path answered ${baseline.record.outcome}, not deny`)
+      if (widened.record.outcome !== 'allow') throw new Error(`widening the read lane did not admit the same glob (${widened.record.outcome})`)
+      return `restricted=${baseline.record.outcome} widened=${widened.record.outcome}`
+    },
+  },
+  {
+    id: 'NC-GOLDEN-FROZEN',
+    run: () => {
+      if (golden.length !== CORPUS.length) throw new Error(`the fixture carries ${String(golden.length)} rows but the corpus has ${String(CORPUS.length)}`)
+      const text = readFileSync(GOLDEN, 'utf8')
+      if (/accepted_by=round81-a1-cut/u.test(text)) throw new Error('the search golden was re-recorded although the new path reproduces every cell')
+      return `vectors=${String(golden.length)} re-recorded=no (new path reproduces every cell)`
+    },
+  },
+  {
+    id: 'NC-SUCCESSORS-EXIST',
+    run: () => {
+      for (const successor of SUCCESSORS) {
+        const absolute = join(REPO_ROOT, successor)
+        try {
+          assert.ok(readFileSync(absolute).length > 0)
+        } catch {
+          throw new Error(`named successor ${successor} is missing or empty`)
+        }
+      }
+      const row = subjectRow('dsh.search-family')
+      if (!row.successors.includes('tests/ute-g1-search/lane-suite.test.mjs')) throw new Error('the frozen licence does not book this lane')
+      return `named=${String(SUCCESSORS.length)} subject=${row.id}`
+    },
+  },
+]
 
-/** The unmodified run must still reproduce the golden row (a positive arm). */
-async function positiveArm(id) {
-  const observed = await captureVector(vector(id))
-  const verdict = compareRecord(goldenRow(id), observed)
-  return verdict.ok ? undefined : `the unmodified ${id} run no longer reproduces its golden row (${verdict.diffs.map((diff) => diff.field).join(',')})`
-}
-
-/* ── 1. the harness bites on the cell the argument rests on ─────────────── */
-await control('NC-HARNESS-BITES', async () => {
-  const observed = await captureVector(vector('SR-G1-inlane-match'))
-  const clean = compareRecord(goldenRow('SR-G1-inlane-match'), observed)
-  if (!clean.ok) return `the unmodified run already differs from its golden row (${clean.diffs.map((diff) => diff.field).join(',')})`
-  // Flip exactly one cell: the canonical match digest.
-  const tampered = {
-    ...goldenRow('SR-G1-inlane-match'),
-    effects: goldenRow('SR-G1-inlane-match').effects.map((effect) => (effect.path === '@matches:grep'
-      ? { ...effect, sha256: 'f'.repeat(64) }
-      : effect)),
-  }
-  const mutated = compareRecord(tampered, observed)
-  if (mutated.ok) return 'a tampered match digest was graded GREEN'
-  if (!mutated.diffs.some((diff) => diff.field === 'effects')) return 'the tampered digest was not reported on the effects field'
-  return undefined
+const { lines, failed } = await runRetirementControls(controls, {
+  acceptedBy: ACCEPTED_BY,
+  reason: 're-record of the SEARCH battery: old-path shadow controls retired/re-pointed per subject (ROUND80-CI-CLOSURE.md §4)',
 })
-
-/* ── 2. the refusal vocabulary is total, and `unknown` is unreachable ───── */
-await control('NC-CATEGORY-TOTAL', async () => {
-  for (const entry of SEARCH_REFUSAL_MAP) {
-    if (entry.category === 'unknown') return 'a mapping entry reaches the unknown bucket'
-    if (!CATEGORY_IDS.includes(entry.category)) return `a mapping entry names ${JSON.stringify(entry.category)}, outside the closed vocabulary`
-    if (!Object.hasOwn(REFUSAL_CATEGORIES, entry.category)) return `a mapping entry names ${JSON.stringify(entry.category)}, absent from REFUSAL_CATEGORIES`
-  }
-  try {
-    classifySearchRefusal({
-      outcome: 'deny',
-      text: 'Error: a refusal this corpus has never observed',
-      facts: [],
-      readRoots: ['/tmp/ute3-search-never-a-real-root'],
-    })
-  } catch (error) {
-    if (error instanceof RefusalVocabularyError && error.code === 'REFUSAL_VOCABULARY_INCOMPLETE') return undefined
-    return `an unexplainable refusal threw ${error?.code ?? error?.name} instead of REFUSAL_VOCABULARY_INCOMPLETE`
-  }
-  return 'an unexplainable refusal was CLASSIFIED instead of refused (the vocabulary is not total)'
-})
-
-/* ── 3-6. per-member mutations + their positive arms ────────────────────── */
-/**
- * The witness that a withheld READ reached the model. For `grep` it is the
- * returned file CONTENT; for `glob` it is the returned PATH (a listing carries
- * no bytes), so the two members need different evidence for the same mutation.
- */
-function escapedWitness(record, member) {
-  if (member === 'grep') {
-    return record.leaks.length > 0 ? `leaked content ${record.leaks.join(',')}` : undefined
-  }
-  const effect = record.effects.find((candidate) => candidate.path === '@matches:glob')
-  const keys = String(effect?.mode ?? '').split(',').find((part) => part.startsWith('keys='))
-  const escaped = (keys ?? '').slice('keys='.length).split('+').filter((key) => key.startsWith('abs:'))
-  return escaped.length > 0 ? `leaked path ${escaped.join('+')}` : undefined
-}
-
-/** Widen only the read lane: the same call must then succeed and leak. */
-async function widenLaneControl({ id, member }) {
-  const tampered = await captureVector(vector(id), { laneExtraRead: ['outside'], allowEscapedMatches: true })
-  const row = goldenRow(id)
-  if (tampered.outcome !== 'allow') return `widening the read lane did not turn the refusal into an allow (observed ${tampered.outcome})`
-  const witness = escapedWitness(tampered, member)
-  if (witness === undefined) return 'the widened run carried no out-of-lane witness, so the mutation proves nothing about the lane'
-  const verdict = compareRecord(row, tampered)
-  if (verdict.ok) return 'the widened run still matched the golden row'
-  const detail = `mutation: outcome ${row.outcome}->${tampered.outcome}, refusal ${String(row.refusal)}->${String(tampered.refusal)}, match effect absent->present, ${witness}`
-  const positive = await positiveArm(id)
-  if (positive !== undefined) return positive
-  controls += 1
-  console.log(`NC-MEMBER-POSITIVE ${member} ok (the unmodified ${id} row still reproduces)`)
-  return { detail }
-}
-
-await control('NC-MEMBER grep', () => widenLaneControl({ id: 'SR-G3-outside-denied', member: 'grep' }))
-await control('NC-MEMBER glob', () => widenLaneControl({ id: 'SR-L2-outside-denied', member: 'glob' }))
-
-/* ── 7. the search shadow is load-bearing ───────────────────────────────── */
-await control('NC-SHADOW-LOAD-BEARING', async () => {
-  const observed = await captureVector(vector('SR-G3-outside-denied'), { dropSearchShadow: true, allowEscapedMatches: true })
-  const row = goldenRow('SR-G3-outside-denied')
-  if (observed.outcome !== 'allow') return `disposing the search shadow did not expose the out-of-lane read (observed ${observed.outcome}, refusal ${String(observed.refusal)})`
-  if (observed.leaks.length === 0) return 'the unconfined arm returned no secret token, so the shadow is not proven load-bearing'
-  const verdict = compareRecord(row, observed)
-  if (verdict.ok) return 'the unconfined arm still matched the golden row'
-  const positive = await positiveArm('SR-G3-outside-denied')
-  if (positive !== undefined) return positive
-  return undefined
-})
-
-/* ── 8. the path-less zero is the confined stdin, not the fixture ───────── */
-await control('NC-STDIN-LOAD-BEARING', async () => {
-  const observed = await captureVector(vector('SR-G2-no-path-stdin'), { dropSearchShadow: true })
-  const matchEffect = observed.effects.find((effect) => effect.path === '@matches:grep')
-  if (matchEffect?.exists !== true || matchEffect.bytes === 0) {
-    return `the unconfined path-less grep still returned ${String(matchEffect?.bytes)} matches; the stdin explanation is not proven`
-  }
-  if (!String(observed.effects.find((effect) => effect.path === '@matches:grep')?.mode ?? '').includes('keys=')) {
-    return 'the unconfined arm produced no path keys, so the matches are not attributable'
-  }
-  const positive = await positiveArm('SR-G2-no-path-stdin')
-  if (positive !== undefined) return positive
-  // The golden row must stay a ZERO-match allow: the control proves the cause,
-  // never changes the recorded product behaviour.
-  const row = goldenRow('SR-G2-no-path-stdin')
-  if (row.outcome !== 'allow' || row.refusal !== null) return 'the golden row for SR-G2 is not the recorded allow'
-  void SEARCH_NEEDLE
-  return undefined
-})
-
-console.log(`NC-VERDICT ${failed === 0 ? 'GREEN' : 'RED'} controls=${controls} failed=${failed}`)
+for (const line of lines) console.log(line)
 if (failed > 0) process.exitCode = 1
+void DELETING_COMMITS

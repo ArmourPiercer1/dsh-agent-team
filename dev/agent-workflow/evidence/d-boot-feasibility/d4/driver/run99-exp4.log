@@ -1,0 +1,24 @@
+[2026-11-24T03:54:16.513Z] archived previous runs -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T03-54-16-513Z
+[2026-11-24T03:54:16.818Z] host tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use HEAD=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=[]
+[2026-11-24T03:54:16.818Z] started 2026-11-24T03:54:16.489Z boots=1
+[2026-11-24T03:54:16.850Z] [boot1] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-24T03:54:16.851Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=954835b717c6768c6208281f80545af445b164c9
+[2026-11-24T03:54:16.881Z] blueprint main.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T03:54:16.884Z] [boot1] alpha6 config gate (positive): null
+[2026-11-24T03:56:38.644Z] [boot1] host ready on http://127.0.0.1:3195
+[2026-11-24T03:56:38.664Z] [boot1] prompt(d4disc) status=200
+[2026-11-24T03:56:38.864Z] [boot1] discovery answered (mock requests=2)
+[2026-11-24T03:56:38.873Z] [boot1] prompt(d4off) status=200
+[2026-11-24T03:56:39.274Z] [boot1] officer delegated
+[2026-11-24T03:58:39.358Z] [boot1] PROBE FAILED: Error: the Officer MemberTemplate never came up as an instance
+    at probeOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs:1761:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs:2665:18)
+[2026-11-24T03:58:39.493Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-24T03:58:39.528Z] host porcelain after: []
+[2026-11-24T03:58:39.529Z] TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)
+fact                              
+
+agreeing=true differing=[]
+[2026-11-24T03:58:39.529Z] RESULT evidence-complete=false allBooted=false blocked=false (1/1 boots; agreeing pair=true)
+exit=1

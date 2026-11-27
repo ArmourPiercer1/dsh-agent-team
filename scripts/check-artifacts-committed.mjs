@@ -65,8 +65,13 @@ const ROOT = process.cwd();
 const PATHS = [...INSTALL_SURFACES];
 const SEP = path.sep;
 
+// The install surfaces are thousands of files (`git ls-files -s -- …` plus the
+// `hash-object --stdin-paths` answer); Node's 1 MiB default is a capacity limit on a
+// scale-dependent read, not a rule about which files are artifacts. Explicit bound.
+const GIT_SCAN_MAX_BUFFER = 64 * 1024 * 1024;
+
 function git(...args) {
-  return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8' });
+  return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', maxBuffer: GIT_SCAN_MAX_BUFFER });
 }
 
 /**
@@ -108,6 +113,7 @@ function gitBlobShas(files) {
     cwd: ROOT,
     encoding: 'utf8',
     input: files.join('\n'),
+    maxBuffer: GIT_SCAN_MAX_BUFFER,
   });
   const shas = out.split('\n').map((s) => s.trim()).filter(Boolean);
   if (shas.length !== files.length) {

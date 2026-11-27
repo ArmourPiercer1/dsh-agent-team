@@ -45,7 +45,7 @@ import type {
   MemberPolicy,
   TrustedMemberIdentity,
 } from '../../member-io-policy/src/types.js'
-import type { FsProviderConstructor } from './fs.js'
+import type { ApprovedAskProviderAuthority, FsProviderConstructor } from './fs.js'
 import type { GuardConsultObserver } from './guard-observability.js'
 import {
   installMemberIoProviders,
@@ -69,7 +69,16 @@ export interface A5sfRealmMember {
 export interface A5sfRealmBinding {
   readonly identity: TrustedMemberIdentity
   readonly toolBindingIdentity: string
+  /** The bare tool name this binding narrows (additive, C 2026-11-21; absent on legacy bindings). */
+  readonly toolName?: string
   readonly effective: EffectiveIoPolicy
+  /**
+   * The v4 tool-level authorization and execution block, carried through from the SAME declaration
+   * the lanes came from. They are EXECUTION authority (may this tool start a process, on which
+   * executor), never an I/O lane; a process-class admission consults them, the fs/net lanes do not.
+   */
+  readonly authorization?: 'allow' | 'ask' | 'deny'
+  readonly execution?: { readonly implementationOrigin: string; readonly executionBoundary: 'trusted-host' | 'confined-subprocess' | 'delegated-remote' }
   readonly config?: Record<string, unknown>
 }
 
@@ -777,6 +786,14 @@ export interface MountA5sfRealmInput {
    * by the inherited, legacy-generation PTY service.
    */
   readonly terminal?: ConfinedTerminalRealmSpec
+  /**
+   * R3 PRODUCTION WIRING (round 95). The SAME invocation binder the centre
+   * spends one-shot grants through, handed to every realm guard this mount
+   * builds so a Provider can prove a minted receipt is still live. Omitted =
+   * default-preserving fail-closed asks. It is a liveness reader, NEVER an
+   * allow source: it cannot mint, widen a lane or override `deny`.
+   */
+  readonly approvedAskAuthority?: ApprovedAskProviderAuthority
 }
 
 export interface MountedA5sfRealm {
@@ -876,6 +893,7 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
     ...(input.subprocess === undefined ? {} : { subprocess: input.subprocess }),
     ...(input.web === undefined ? {} : { web: input.web }),
     ...(input.terminal === undefined ? {} : { terminal: input.terminal }),
+    ...(input.approvedAskAuthority === undefined ? {} : { approvedAskAuthority: input.approvedAskAuthority }),
   })
 
   // ROUTE C (2026-11-03): the native tool modules are re-mounted INSIDE the
@@ -921,6 +939,18 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
 
   try {
     for (const binding of input.bindings ?? []) {
+      // ROUND 76 — A PROCESS-CLASS BINDING GETS NO IO REALM.
+      //
+      // `installToolBindingRealm` isolates `fs` only; a `confined-subprocess` binding is executed by
+      // the MEMBER's process face, whose lane is the compiled ceiling (`ToolBindingRealm.faces`
+      // documents the refusal for `subprocess`/`terminals` consumers). Mounting an IO realm for it
+      // would nevertheless claim the tool's NAME in the routing authority below (`bindingToolNames`)
+      // and the ceiling router would then DROP that name — leaving no fiber to serve `bash` and a
+      // `SERVICE_MOUNT_FAILED` 'UNCOVERED name(s)' refusal (measured, round 76). The binding still
+      // reaches admission: the compiled answer (`compiled.bindings`) is the carrier, not this list.
+      // The assembler refuses a process-class binding that would narrow the ceiling, so skipping the
+      // IO realm never drops an enforceable narrowing.
+      if (binding.execution?.executionBoundary === 'confined-subprocess') continue
       const spec: ToolBindingRealmSpec = {
         identity: binding.identity,
         toolBindingIdentity: binding.toolBindingIdentity,
@@ -932,6 +962,7 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
         spec,
         ...(input.providerClass === undefined ? {} : { providerClass: input.providerClass }),
         ...(input.onGuardConsult === undefined ? {} : { onGuardConsult: input.onGuardConsult }),
+        ...(input.approvedAskAuthority === undefined ? {} : { approvedAskAuthority: input.approvedAskAuthority }),
       }))
     }
   } catch (error) {

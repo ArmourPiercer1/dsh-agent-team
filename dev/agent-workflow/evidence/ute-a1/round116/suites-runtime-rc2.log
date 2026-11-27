@@ -1,0 +1,17 @@
+# 3 representative runtime vitest suites that value-import @deepseek-ai/* (root vitest.config.ts)
+# cmd: node node_modules/vitest/vitest.mjs run packages/runtime/test/f15-mcp-live-loss.test.ts packages/runtime/test/a5sf-service-install.test.ts packages/runtime/test/mcp-blueprint-initial-grant.test.ts
+
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut
+
+ ✓ packages/runtime/test/a5sf-service-install.test.ts (20 tests) 57ms
+ ✓ packages/runtime/test/f15-mcp-live-loss.test.ts (10 tests) 9ms
+ ✓ packages/runtime/test/mcp-blueprint-initial-grant.test.ts (32 tests) 7ms
+
+ Test Files  3 passed (3)
+      Tests  62 passed (62)
+   Start at  09:05:07
+   Duration  1.65s (transform 2.41s, setup 0ms, import 3.34s, tests 73ms, environment 0ms)
+
+
+[exit 0]

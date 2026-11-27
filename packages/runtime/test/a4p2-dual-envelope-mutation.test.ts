@@ -472,10 +472,19 @@ describe('the production reader: the v3 switch, its THREE answers, one file (ADR
   })
 
   it('the production root and host actually inject it (a wiring pin, not a comment)', () => {
-    const root = readFileSync(join(HERE, '..', 'src', 'plugin', 'root.ts'), 'utf8')
+    // ROUND 72 (2026-11-22): the production root moved to the centre with the UTE A0/A1 cut; the wiring
+    // pin is unchanged — the root still injects the reader and the host still carries it.
+    const root = readFileSync(join(HERE, '..', 'src', 'plugin', 'vnext', 'root.ts'), 'utf8')
     const host = readFileSync(join(HERE, '..', 'src', 'plugin', 'host.ts'), 'utf8')
     expect(root).toMatch(/authorityCeiling:\s*permissionAuthorityCeiling/)
-    expect(host).toMatch(/permissionAuthorityCeiling:\s*createAuthorityCeilingReader\(\{\s*facts:\s*permissionFacts\s*\}\)/)
+    // ROUND 93 (R1, owner ruling on review `20261124-0151` §1) — the SPELLING moved, the FACT did not.
+    // The Alpha.6 case producer needs the SAME ceiling reader the root receives, and constructing a second
+    // one for the glue would be a second policy source. So the host now BINDS the reader once and forwards
+    // that one value to both consumers. The pin is therefore sharper, not looser: it requires the single
+    // construction over the SAME `permissionFacts`, AND that both forwards are of the bound name.
+    expect(host).toMatch(/const permissionAuthorityCeiling = createAuthorityCeilingReader\(\{\s*facts:\s*permissionFacts\s*\}\)/)
+    expect(host.match(/^[ ]{4}permissionAuthorityCeiling,$/gmu) ?? []).toHaveLength(2)
+    expect(host.match(/createAuthorityCeilingReader\(/gu) ?? []).toHaveLength(1)
   })
 })
 

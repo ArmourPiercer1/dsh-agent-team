@@ -1,0 +1,13 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+[dsh-agent-team] bootstrap FAILED: NextHostMissingError: next host lane: MODULE_UNRESOLVED: the next host tree at /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next does not resolve @deepseek-ai/dsh-storage-domain inside itself; 25 anchor(s) escaped into another tree (packages/fs/tool-fs/package.json -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/node_modules/.pnpm/@deepseek-ai+dsh-storage-domain@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4_@deepseek-ai+dsh-i_a9d0a33fe7835dbdf4640037e502e9d7/node_modules/@deepseek-ai/dsh-storage-domain/lib/index.js | packages/fs/tool-fs-search/package.json -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/node_modules/.pnpm/@deepseek-ai+dsh-storage-domain@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4_@deepseek-ai+dsh-i_a9d0a33fe7835dbdf4640037e502e9d7/node_modules/@deepseek-ai/dsh-storage-domain/lib/index.js | packages/fs/fs-local/package.json -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/node_modules/.pnpm/@deepseek-ai+dsh-storage-domain@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4_@deepseek-ai+dsh-i_a9d0a33fe7835dbdf4640037e502e9d7/node_modules/@deepseek-ai/dsh-storage-domain/lib/index.js) — an out-of-tree hit is the LEGACY host, not this one; is the tree installed (pnpm install --ignore-scripts --frozen-lockfile)?
+    at resolveInsideTree (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/next-host/host-next-lib.mjs:292:9)
+    at resolveSelectedHostModule (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/next-host/host-select.mjs:62:12)
+    at resolve (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/scripts/run-tests-hooks.mjs:71:27)
+    at nextResolve (node:internal/modules/esm/hooks:785:28)
+    at resolve (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/dist/packages/runtime/src/plugin/upstream-resolver.mjs:182:18)
+    at nextResolve (node:internal/modules/esm/hooks:785:28)
+    at AsyncLoaderHooksOnLoaderHookWorker.resolve (node:internal/modules/esm/hooks:269:30)
+    at MessagePort.handleMessage (node:internal/modules/esm/worker:251:24)
+    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:848:20)
+    at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)
+dsh web: http://127.0.0.1:13000/?token=PtifiHH5h7xlJelgIrMYLDBEBZjuZVfe60kpgPUYn4Y

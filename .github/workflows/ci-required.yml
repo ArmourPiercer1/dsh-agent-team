@@ -38,6 +38,27 @@
 # since 2026-11-03 it is the `ci-census` layer called from here, so the census gates merges
 # instead of running beside them. `pr-gate` stays as it is on its own terms; the plan's E3
 # exit allows it to retire only after the layered rules have been validated side by side.
+#
+# EVENT / MERGE-REF TRUTH (round 124, 2026-11-26 — measured, not inferred). `ready_for_review`
+# IS a supported trigger for this workflow: it is a `pull_request` activity type, GitHub serves
+# `refs/pull/N/merge` for it, and all four layers check that same merge ref out. Hosted run
+# 45727883993 (event `pull_request`, created 2026-11-26T00:19:14Z by PR #822's ready flip)
+# checked out `refs/pull/822/merge` = 23df45eb (`Uses: …/ci-fast.yml@refs/pull/822/merge`), whose
+# first parent is master tip a19d1df0 and whose head is 0d66cf8e; every layer's
+# `EVENT_NAME = pull_request` / two-parent-commit guard PASSED (the guard text visible in a raw
+# log is the step's command echo, not a fired error). No event guard was changed in round 124.
+#
+# WHAT A FULL REQUIRED SET NEEDS, and the SHA it grades. The census is suppressed while the PR is
+# a draft (`ci-census` `if:` below), so a draft run is red BY DESIGN. To obtain the full set with
+# census: make the PR ready (or push a `synchronize` commit while it is ready) so the event's merge
+# ref exists; the run then grades the MERGE COMMIT `M = merge(master tip, event head)`, NOT the event
+# head itself — for the measured run above, M = 23df45eb, not 0d66cf8e. If the PR is returned to
+# draft afterwards, GitHub re-evaluates and `ci-required` goes red because census is skipped; that
+# re-evaluation is the draft mechanism, not a candidate red. The frozen candidate SHA itself is
+# graded by `.github/workflows/candidate-acceptance.yml` via `workflow_dispatch -f head=<S>`, whose
+# stable `version-gate (Required at frozen candidate SHA)` job is a SEPARATE required context and is
+# NOT this per-PR workflow. There is deliberately no `workflow_dispatch` trigger here: this workflow's
+# synthesize job requires the two-parent merge checkout that only GitHub's PR merge ref provides.
 name: ci-required
 
 on:

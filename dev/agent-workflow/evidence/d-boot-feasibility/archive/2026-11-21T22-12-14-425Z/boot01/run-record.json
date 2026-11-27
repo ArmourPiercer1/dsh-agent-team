@@ -1,0 +1,350 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-live-member-2026-11-21T22-08-23-967Z-b1",
+  "suite": "a5sf-live-member",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-21T22:08:23.968Z",
+  "selectedCases": [
+    "d:member-read-admitted",
+    "d:member-read-denied",
+    "d:native-read-surface",
+    "d:guard-facts",
+    "d:centre-facts"
+  ],
+  "allCases": [
+    "d:member-read-admitted",
+    "d:member-read-denied",
+    "d:native-read-surface",
+    "d:guard-facts",
+    "d:centre-facts"
+  ],
+  "subset": false,
+  "selected": 5,
+  "totalCases": 5,
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3",
+        "snapshot_version": "as20261109r1"
+      },
+      "pointerSha256": "814b31f798a25fa963c5810d7733e73c127083bebd74641778ac33ad8c9a5351",
+      "snapshotDigest": "9e2a211ff34196c68fd8db5a0d0d19af124df8fd949190c9c6b990cf3600ede8"
+    },
+    "candidate": {
+      "head": "e739ddbbb774d4b921ec0264a08881419df88b49",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "grant": {
+      "grantId": "devlive-fs-search-1",
+      "scope": "DEV-LIVE",
+      "face": "FS Provider",
+      "world": "u5a5sfdev1"
+    },
+    "recordClass": "DEV-LIVE",
+    "compositionDrops": [],
+    "layout": "centre",
+    "installGraph": "provisioned",
+    "teamSha": "e739ddbbb774d4b921ec0264a08881419df88b49",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
+    "worldIds": [
+      "u5u5a5sfdev1-20261121T22-08-24Z"
+    ]
+  },
+  "cases": [
+    {
+      "id": "d:member-read-admitted",
+      "verdict": "FAIL",
+      "at": "2026-11-21T22:09:46.288Z",
+      "proposition": "the Member's model-visible NATIVE `read` admits an in-ceiling locator and returns the planted bytes",
+      "failed": [
+        "call-issued: the Member issued the admitted `read` call",
+        "call-is-read: name=undefined",
+        "native-arg: file_path=undefined",
+        "result-present: the Member received a tool result for the admitted call",
+        "result-not-error: isError=undefined",
+        "in-lane-bytes: the admitted read returned the in-lane bytes",
+        "path-in-result: the result is the native read tool's own rendering (path envelope), not a confined-shell record"
+      ],
+      "clauses": [
+        {
+          "id": "call-issued",
+          "ok": false,
+          "detail": "the Member issued the admitted `read` call"
+        },
+        {
+          "id": "call-is-read",
+          "ok": false,
+          "detail": "name=undefined"
+        },
+        {
+          "id": "native-arg",
+          "ok": false,
+          "detail": "file_path=undefined"
+        },
+        {
+          "id": "result-present",
+          "ok": false,
+          "detail": "the Member received a tool result for the admitted call"
+        },
+        {
+          "id": "result-not-error",
+          "ok": false,
+          "detail": "isError=undefined"
+        },
+        {
+          "id": "in-lane-bytes",
+          "ok": false,
+          "detail": "the admitted read returned the in-lane bytes"
+        },
+        {
+          "id": "path-in-result",
+          "ok": false,
+          "detail": "the result is the native read tool's own rendering (path envelope), not a confined-shell record"
+        }
+      ]
+    },
+    {
+      "id": "d:member-read-denied",
+      "verdict": "FAIL",
+      "at": "2026-11-21T22:09:46.288Z",
+      "proposition": "the same native `read` REFUSES an out-of-ceiling locator with a typed guard denial and zero secret bytes — which a base-provider read could not do",
+      "failed": [
+        "call-issued: the Member issued the denied `read` call",
+        "call-is-read: name=undefined",
+        "native-arg: file_path=undefined",
+        "result-present: the Member received a tool result for the denied call",
+        "result-is-error: isError=undefined",
+        "typed-denial: the tool result names the typed refusal code"
+      ],
+      "clauses": [
+        {
+          "id": "call-issued",
+          "ok": false,
+          "detail": "the Member issued the denied `read` call"
+        },
+        {
+          "id": "call-is-read",
+          "ok": false,
+          "detail": "name=undefined"
+        },
+        {
+          "id": "native-arg",
+          "ok": false,
+          "detail": "file_path=undefined"
+        },
+        {
+          "id": "result-present",
+          "ok": false,
+          "detail": "the Member received a tool result for the denied call"
+        },
+        {
+          "id": "result-is-error",
+          "ok": false,
+          "detail": "isError=undefined"
+        },
+        {
+          "id": "typed-denial",
+          "ok": false,
+          "detail": "the tool result names the typed refusal code"
+        },
+        {
+          "id": "zero-secret-bytes",
+          "ok": true,
+          "detail": "NO secret bytes reached the Member transcript"
+        },
+        {
+          "id": "not-enoent",
+          "ok": true,
+          "detail": "the refusal is a policy denial, not a filesystem miss"
+        }
+      ]
+    },
+    {
+      "id": "d:native-read-surface",
+      "verdict": "FAIL",
+      "at": "2026-11-21T22:09:46.288Z",
+      "proposition": "the Member's model-visible `read` is the pinned host's OWN native definition, registered once, and the row carries no shadow module",
+      "failed": [
+        "read-present-once: read schemas on the Member surface=0",
+        "native-params: properties=",
+        "native-description: description="
+      ],
+      "clauses": [
+        {
+          "id": "read-present-once",
+          "ok": false,
+          "detail": "read schemas on the Member surface=0"
+        },
+        {
+          "id": "native-params",
+          "ok": false,
+          "detail": "properties="
+        },
+        {
+          "id": "native-description",
+          "ok": false,
+          "detail": "description="
+        },
+        {
+          "id": "no-shadow-modules",
+          "ok": true,
+          "detail": "config.a5sfNativeToolModules=[] (the Team row mounts no re-registered native definition)"
+        },
+        {
+          "id": "tool-fs-is-shipped-row",
+          "ok": true,
+          "detail": "the preset row's own tool-fs row is what registers `read` (plugins include tool-fs=true)"
+        }
+      ]
+    },
+    {
+      "id": "d:guard-facts",
+      "verdict": "FAIL",
+      "at": "2026-11-21T22:09:46.288Z",
+      "proposition": "the confined Provider's guard was consulted for the ADMITTED native read (ALLOW facts naming the real Member identity) — a base-provider read would leave ZERO facts — and the out-of-lane read never reached a Provider at all",
+      "failed": [
+        "allow-facts-present: allow facts for the in-lane locator=0 (methods: )",
+        "allow-identity: memberIdentity=[]"
+      ],
+      "clauses": [
+        {
+          "id": "allow-facts-present",
+          "ok": false,
+          "detail": "allow facts for the in-lane locator=0 (methods: )"
+        },
+        {
+          "id": "allow-identity",
+          "ok": false,
+          "detail": "memberIdentity=[]"
+        },
+        {
+          "id": "allow-decidedBy",
+          "ok": true,
+          "detail": "decidedBy=[]"
+        },
+        {
+          "id": "out-lane-never-reached-provider",
+          "ok": true,
+          "detail": "guard facts for the out-of-lane locator=0 (the centre refused BEFORE the tool body, so the Provider/guard was never entered)"
+        },
+        {
+          "id": "fs-methods",
+          "ok": true,
+          "detail": "methods=[]"
+        }
+      ]
+    },
+    {
+      "id": "d:centre-facts",
+      "verdict": "FAIL",
+      "at": "2026-11-21T22:09:46.288Z",
+      "proposition": "the ONE centre ADMITTED the in-lane native read, REFUSED the out-of-lane one on the fs.read axis, and recorded both as durable facts (plus an execution fact for the admitted call)",
+      "failed": [
+        "two-read-admissions: read admission facts=0",
+        "in-lane-allow: decision=undefined axis=undefined",
+        "in-lane-axis: axis=undefined",
+        "out-lane-deny: decision=undefined refusalCode=undefined",
+        "out-lane-refusal-code: refusalCode=undefined reason=",
+        "out-lane-axis: axis=undefined",
+        "execution-fact: execution facts=0 (the admitted call ran and was joined to its admission)",
+        "durable-source: ledger=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-08-24Z/centre/inst-leader.facts.jsonl"
+      ],
+      "clauses": [
+        {
+          "id": "two-read-admissions",
+          "ok": false,
+          "detail": "read admission facts=0"
+        },
+        {
+          "id": "in-lane-allow",
+          "ok": false,
+          "detail": "decision=undefined axis=undefined"
+        },
+        {
+          "id": "in-lane-axis",
+          "ok": false,
+          "detail": "axis=undefined"
+        },
+        {
+          "id": "out-lane-deny",
+          "ok": false,
+          "detail": "decision=undefined refusalCode=undefined"
+        },
+        {
+          "id": "out-lane-refusal-code",
+          "ok": false,
+          "detail": "refusalCode=undefined reason="
+        },
+        {
+          "id": "out-lane-axis",
+          "ok": false,
+          "detail": "axis=undefined"
+        },
+        {
+          "id": "member-identity",
+          "ok": true,
+          "detail": "instanceId/agentId=[] expected=inst-leader"
+        },
+        {
+          "id": "execution-fact",
+          "ok": false,
+          "detail": "execution facts=0 (the admitted call ran and was joined to its admission)"
+        },
+        {
+          "id": "durable-source",
+          "ok": false,
+          "detail": "ledger=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-08-24Z/centre/inst-leader.facts.jsonl"
+        }
+      ]
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/run-ledger.jsonl",
+    "thisRunCount": 2,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-21T22:08:24.005Z",
+        "runId": "a5sf-live-member-2026-11-21T22-08-23-967Z-b1",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-fs-search-1",
+        "grantId": "devlive-fs-search-1",
+        "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the FS Provider face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+        "face": "FS Provider",
+        "worldLine": "u5a5sfdev1",
+        "headCommit": "e739ddbbb774d4b921ec0264a08881419df88b49",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-21T22:09:02.661Z",
+        "runId": "a5sf-live-member-2026-11-21T22-08-23-967Z-b1",
+        "suite": "a5sf-live-member",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfdev1-20261121T22-08-24Z",
+        "phase": "a5sf-live-member-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-live-member-boot1",
+      "world": "u5u5a5sfdev1-20261121T22-08-24Z",
+      "port": 3187,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/driver/logs/u5u5a5sfdev1-20261121T22-08-24Z/instance-port3187.log"
+    }
+  ],
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-live-member-2026-11-21T22-08-23-967Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "FAIL",
+  "partial": false,
+  "finishedAt": "2026-11-21T22:09:46.289Z"
+}

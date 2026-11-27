@@ -173,7 +173,8 @@ export interface DescendantDrainReport {
  *
  * Real-world binding (P7-T7, over the P2-T2/P2-T5 characterized public
  * API): recursive enumeration of the member child session's descendants +
- * `subagents.interrupt` / `subagents.drainContinuableDescendants` — the
+ * `subagents.interrupt` / `subagents.drainDescendants` (0.2.2-rc.5) or
+ * `drainContinuableDescendants` (0.2.0-rc.2) — the
  * generic descendant machinery, never a Team-specific channel. Mock-first
  * in this wave.
  *

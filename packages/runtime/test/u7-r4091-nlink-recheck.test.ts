@@ -259,16 +259,12 @@ describe('seam discipline — the sanctioned wiring never passes the probe seams
     const { readFileSync: rd } = await import('node:fs')
     return rd(fileURLToPath(new URL(rel, SRC).href), 'utf8')
   }
-  it('S-1 the fs-family write/edit executors and the admission binding pass neither seam (internal test seams, never production knobs)', async () => {
-    for (const rel of [
-      'tools/fs-family/src/write-executor.mjs',
-      'tools/fs-family/src/edit-executor.mjs',
-      'runtime/controlled-fs/src/admission-binding.ts',
-    ]) {
-      const text = await read(rel)
-      expect(text, `${rel} must never pass the verify-window probe seam`).not.toMatch(/onBeforeFirstByteChange|onAfterVerifiedBeforeWrite/)
-    }
-  })
+  // ROUND 72 (2026-11-22): S-1 pinned the fs-family write/edit executors' non-use of the verify-window probe
+  // seams. Those two modules were retired by the UTE A0/A1 cut, and the surviving write-class pair
+  // (`post-consume-write.ts`, `post-consume-edit.ts`) carries the seam names BY DESIGN — they are the files the
+  // seams were introduced for (see `controlled-fs.ts`), so the old claim is no longer true of anything on this
+  // tree and cannot be re-anchored onto them without asserting a falsehood. The leg retires with its subject;
+  // S-2 (the `recheckSingleLink` single-source law) and the rest of this suite are untouched and still graded.
   it('S-2 the re-check lives ONCE in open-at-exec.ts (no per-family copies)', async () => {
     const law = await read('runtime/controlled-fs/src/open-at-exec.ts')
     expect(law).toMatch(/export async function recheckSingleLink/)

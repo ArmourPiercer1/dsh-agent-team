@@ -45,6 +45,8 @@ import { createRequire, register } from 'node:module'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
+import { hostToolExecutorSpecifier } from '../../next-host/host-executor.mjs'
+
 const HERE = dirname(fileURLToPath(import.meta.url))
 /** This suite's repo root (tests/ute-g1-search/lib -> repo root). */
 export const REPO_ROOT = join(HERE, '..', '..', '..')
@@ -297,6 +299,11 @@ export async function mountRouteCWorld({ label, fixtureRoot, cwd, readRoots, wri
   const confined = countingProvider(osProvider)
 
   const mounted = await row.mountMemberA5sfRealm({
+    // ROUND 121: this world assembles a bare `ToolRuntime` from the pinned tree
+    // without the deployment bundle, so nothing has selected the host executor
+    // for the Member's scope. The composition says WHERE the host's executor
+    // plugin lives (rc.5 only; rc.2 dispatches through its registry).
+    ...(hostToolExecutorSpecifier(REPO_ROOT, 'next') === undefined ? {} : { hostToolExecutorSpecifier: hostToolExecutorSpecifier(REPO_ROOT, 'next') }),
     root: agent.ctx,
     a5sfConfig: row.a5sfRealmConfigOf({ a5sfEvidencePath: sinkPath }),
     provider: () => ({
@@ -327,8 +334,11 @@ export async function mountRouteCWorld({ label, fixtureRoot, cwd, readRoots, wri
   // face. `overrides.dropSearchShadow` is the negative control that removes it
   // AFTER the attach, through the realm's own disposal — the preset definition
   // then answers again (never a second, test-only mount).
+  // POST-CUT LAW (round 81): the A1 seam appends NO Team-authored shadow. With no
+  // composition-declared native module the attach answers `undefined`; the
+  // retirement pin measures exactly that instead of asserting the shadow exists.
   const fibers = await row.attachA5sfNativeToolModules(mounted, agent.ctx, row.a5sfRealmConfigOf({}))
-  assert.ok(Array.isArray(fibers), 'the attach must answer the fibers it created')
+  const attachAppendedNothing = fibers === undefined
   if (overrides.dropSearchShadow === true) {
     assert.equal(typeof mounted.disposeNativeToolModules, 'function', 'the realm must expose the native-module disposal the control uses')
     await mounted.disposeNativeToolModules()
@@ -365,6 +375,7 @@ export async function mountRouteCWorld({ label, fixtureRoot, cwd, readRoots, wri
     dispatch,
     facts,
     baseCalls,
+    attachAppendedNothing,
     providerCalls: () => [...confined.calls],
     async dispose() {
       if (disposed) return

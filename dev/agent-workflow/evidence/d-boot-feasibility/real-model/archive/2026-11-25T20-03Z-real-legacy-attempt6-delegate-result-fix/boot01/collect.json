@@ -1,0 +1,55 @@
+{
+  "measurement": {
+    "callId": "call_00_ET_Ec4dpdRYmfia1yR7Ce0j0976",
+    "found": true,
+    "call": {
+      "name": "team_collect",
+      "arguments": {
+        "requestToken": "rm-collect-1",
+        "requestTokens": [
+          "dboot-d4-delegate-worker"
+        ],
+        "rootSessionId": "session-real-model-root"
+      },
+      "result": {
+        "callId": "call_00_ET_Ec4dpdRYmfia1yR7Ce0j0976",
+        "isError": false,
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-real-model-root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"dboot-d4-delegate-worker\",\"status\":\"succeeded\",\"instanceId\":\"inst-1q9ehvo0zb4o\",\"admittedSequence\":7,\"settledSequence\":18,\"memberResult\":{\"body\":\"DBOOT_D4_WORKER_TURN_DONE\",\"requestToken\":\"dboot-d4-delegate-worker\",\"status\":\"succeeded\"}}]},\"requestToken\":\"rm-collect-1\"}"
+      }
+    },
+    "discovery": {
+      "slot": "leader-collect",
+      "predicate": "name=team_collect && requestToken=\"rm-collect-1\"",
+      "matched": {
+        "id": "call_00_ET_Ec4dpdRYmfia1yR7Ce0j0976",
+        "name": "team_collect",
+        "turnIndex": 38,
+        "input": "{\"requestToken\":\"rm-collect-1\",\"requestTokens\":[\"dboot-d4-delegate-worker\"],\"rootSessionId\":\"session-real-model-root\"}"
+      },
+      "at": "2026-11-25T19:48:00.836Z"
+    }
+  },
+  "error": null,
+  "verdict": {
+    "proposition": "the Leader COLLECTS the worker's work unit through the product's own team_collect read-back and receives its terminal result",
+    "verdict": "PROVEN",
+    "clauses": [
+      {
+        "id": "collect-call-issued",
+        "ok": true,
+        "detail": "call={\"requestToken\":\"rm-collect-1\",\"requestTokens\":[\"dboot-d4-delegate-worker\"],\"rootSessionId\":\"session-real-model-root\"}"
+      },
+      {
+        "id": "collect-result-not-an-error",
+        "ok": true,
+        "detail": "isError=false text={\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-real-model-root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"dboot-d4-delegate-worker\",\"status\":\"succeeded\",\"instanceId\":\"inst-1q9ehvo0zb4o\",\"admittedSequence\":7,\"settledSequence\":18,\"memberResu"
+      },
+      {
+        "id": "collect-result-carries-the-work-result",
+        "ok": true,
+        "detail": "text={\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-real-model-root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"dboot-d4-delegate-worker\",\"status\":\"succeeded\",\"instanceId\":\"inst-1q9ehvo0zb4o\",\"admittedSequence\":7,\"settledSequence\":18,\"memberResult\":{\"body\":\"DBOOT_D4_WORKER_TURN_DONE\",\"requestToken\":\"dboot-d4-delegate-worker\",\"status\":\"succeeded\"}}]},\"requestToken\":\"rm-collect-1\"}"
+      }
+    ],
+    "failing": []
+  }
+}

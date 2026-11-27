@@ -41,7 +41,8 @@
  *   - a stale report at the graded path (unlinked before the run → CENSUS_REPORT_MISSING)
  *   - EB3_MERGE_TREE naming another tree (→ PLAN_MERGE_TREE_MISMATCH)
  *   - a skipped assertion              (NOT a failure, but the count travels with the result)
- * plus the POSITIVE control (24 planned tasks, 24 observed, PASS), a two-shard layout control, and
+ * plus the POSITIVE control (the whole plan planned, the same observed, PASS), a two-shard layout
+ * control, and
  * the live branch with an injected runner (one stamped invocation per capture).
  *
  * NO HOST, NO SUITE RUN. Nothing here spawns vitest; the live branch's runner is injected and writes
@@ -737,15 +738,18 @@ test('NEGATIVE: the trailing digest is verified with OR without a `#root` fragme
 
 // ── the gate leg: plan mode, through the REAL function ─────────────────────────────────────────
 
-test('POSITIVE: the plan leg runs 24 planned tasks to a PASS with expected==observed', () => {
+test('POSITIVE: the plan leg runs every planned task to a PASS with expected==observed', () => {
   const { plan } = fixture()
   const dryRun = writeDryRun('positive', plan)
   try {
     const leg = LEGS.census(gateContext({ dryRun }))
     assert.equal(leg.verdict, 'pass', leg.detail)
-    assert.match(leg.detail, /expected=24 observed=24/)
+    // The numbers are the PLAN's own (round 80 moved the population to 11 roots / 599 files after
+    // the A0/A1 cut retired `packages/tools/a5p5-tools`); pinning literals here is what made this
+    // arm stale the moment the population changed.
+    assert.match(leg.detail, new RegExp(`expected=${plan.tasks.length} observed=${plan.tasks.length}`))
     assert.match(leg.detail, /aggregate=PASS/)
-    assert.match(leg.detail, /tasks=24 roots=12 captures=2/)
+    assert.match(leg.detail, new RegExp(`tasks=${plan.tasks.length} roots=${plan.roots.length} captures=${CAPTURES}`))
     assert.equal(plan.schema, PLAN_SCHEMA)
   } finally {
     rmSync(dryRun, { recursive: true, force: true })
@@ -970,7 +974,7 @@ test('LIVE: one stamped invocation per capture, graded from the report it just w
     const leg = LEGS.census(ctx)
     assert.equal(leg.verdict, 'pass', leg.detail)
     assert.equal(calls.length, 2, 'one invocation per capture, not one per task')
-    assert.match(leg.detail, /expected=24 observed=24/)
+    assert.match(leg.detail, new RegExp(`expected=${plan.tasks.length} observed=${plan.tasks.length}`))
     // Every result's evidence names an artifact written beside the shards, and carries its skip count.
     const shard = JSON.parse(readFileSync(join(ctx.shardDir, 'census-shard-1.json'), 'utf8'))
     for (const r of shard.results) {
@@ -978,19 +982,24 @@ test('LIVE: one stamped invocation per capture, graded from the report it just w
       assert.equal(statSync(join(ctx.shardDir, r.evidence.split('#')[0])).isFile(), true)
       assert.equal(r.skipped, 1, 'the skip count travels with the result')
       // P1-2: the REAL live producer emits the full measurement, so the new requirement is
-      // satisfiable without a fallback. 712 collected files, 1 assertion each, 1 skipped per root.
+      // satisfiable without a fallback. One assertion per collected file, 1 skipped per root.
       assert.ok(Number.isInteger(r.assertions) && r.assertions > 0)
       assert.ok(Number.isInteger(r.assertions_executed))
       assert.equal(r.assertions_executed + r.skipped, r.assertions)
     }
-    // The recorded shard of a live run carries the whole measurement: 712 files × 2 captures = 1424
-    // executed assertions, plus 1 skipped on the first file of each of the 12 roots per capture.
+    // The recorded shard of a live run carries the whole measurement: every planned file × both
+    // captures as executed assertions, plus 1 skipped on the first file of each root per capture.
+    // Derived from the plan, not from a recorded count: the population moves when a cut retires a root.
     const totals = shard.results.reduce((n, r) => ({
       assertions: n.assertions + r.assertions,
       executed: n.executed + r.assertions_executed,
       skipped: n.skipped + r.skipped,
     }), { assertions: 0, executed: 0, skipped: 0 })
-    assert.deepEqual(totals, { assertions: 1448, executed: 1424, skipped: 24 })
+    assert.deepEqual(totals, {
+      assertions: plan.file_count * CAPTURES + plan.roots.length * CAPTURES,
+      executed: plan.file_count * CAPTURES,
+      skipped: plan.roots.length * CAPTURES,
+    })
     // The graded path is the run-stamped one, not the plan's deterministic path.
     for (const call of calls) {
       const rel = call.args.find((a) => a.startsWith('--outputFile.json=')).slice('--outputFile.json='.length)
@@ -1049,10 +1058,10 @@ test('CLI: plan mode dry-run prints the same DSH-CI-VERDICT channel and exits 0 
       '--census-captures', String(CAPTURES), '--census-test-timeout', String(CLOCK), '--transcript-dir', transcript])
     assert.equal(r.status, 0, r.stderr)
     assert.match(r.stdout, /^DSH-CI-VERDICT pass /m)
-    assert.match(r.stdout, /DSH-CENSUS-PLAN execution=plan tasks=24 roots=12 captures=2 plan=sha256:[0-9a-f]{64}/)
-    assert.match(r.stdout, /DSH-CENSUS-SUMMARY mode=dry-run verdict=PASS codes=none expected=24 observed=24 missing=0 extra=0 shards=1 assertions_total=24 assertions_executed=24 skipped_total=0/)
+    assert.match(r.stdout, new RegExp(`DSH-CENSUS-PLAN execution=plan tasks=${plan.tasks.length} roots=${plan.roots.length} captures=${CAPTURES} plan=sha256:[0-9a-f]{64}`))
+    assert.match(r.stdout, new RegExp(`DSH-CENSUS-SUMMARY mode=dry-run verdict=PASS codes=none expected=${plan.tasks.length} observed=${plan.tasks.length} missing=0 extra=0 shards=1 assertions_total=${plan.tasks.length} assertions_executed=${plan.tasks.length} skipped_total=0`))
     assert.equal((r.stdout.match(/^DSH-CI-VERDICT /gm) ?? []).length, 1, 'exactly one token')
-    assert.match(r.stdout, /DSH-CENSUS-CAPTURE capture=1 .*assertions_executed=12 assertions_total=12 skipped_total=0 evidence=census-evidence-1\.json/)
+    assert.match(r.stdout, new RegExp(`DSH-CENSUS-CAPTURE capture=1 .*assertions_executed=${plan.roots.length} assertions_total=${plan.roots.length} skipped_total=0 evidence=census-evidence-1\\.json`))
   } finally {
     rmSync(dryRun, { recursive: true, force: true })
     rmSync(transcript, { recursive: true, force: true })
@@ -1105,7 +1114,7 @@ test('the plan leg writes the build stamp it used, and its digest equals the pla
     assert.equal(replay.schema, REPLAY_SCHEMA)
     assert.equal(replay.plan_digest, plan.identity.plan_digest)
     assert.equal(replay.merge_tree, plan.identity.merge_tree_sha)
-    assert.equal(replay.results.length, 12)
+    assert.equal(replay.results.length, plan.roots.length)
     assert.match(replay.results[0].evidence, /^census-evidence-1\.json#/)
   } finally {
     rmSync(dryRun, { recursive: true, force: true })

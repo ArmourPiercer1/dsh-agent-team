@@ -212,7 +212,11 @@ describe('the intervention lane imports nothing backwards (A1-17, audit F11)', (
     const relative = PACKAGE_SOURCES.map((file) => file.path)
     // Files whose edges MATTER today, asserted present so a silent narrowing of
     // the walk (a new skip, a moved directory) is red rather than a green hole.
-    for (const anchor of ['control/service.ts', 'operation-permission/pre-execute-adapter.ts']) {
+    // ROUND 72 (2026-11-22): `operation-permission/pre-execute-adapter.ts` was retired by the UTE A0/A1
+    // cut (the pre-execute route is gone), so the second anchor is the lane file that SURVIVED and still
+    // carries the canonical algebra the intervention lane reasons about. The non-vacuity law is unchanged:
+    // the two files must be found by the walk, so a silently narrowed walk is still red.
+    for (const anchor of ['control/service.ts', 'operation-permission/canonical-operation.ts']) {
       expect(relative.some((path) => path.endsWith(anchor))).toBe(true)
     }
     // And the directory a later lane writes into is inside the walk by

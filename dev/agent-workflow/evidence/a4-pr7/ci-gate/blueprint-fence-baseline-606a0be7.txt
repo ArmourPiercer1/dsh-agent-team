@@ -153,3 +153,75 @@ OFFENDING tests/kits/a6-cold-wake-nudge-20261113/a6-cold-wake-nudge.mjs :: L844=
 # is a derived copy of the A6 COLD-WAKE kit and authors the SAME v5 Team-create document (the subject
 # is the four-step restart flow, not the document). Four v5 literals, appended in the open from a re-run
 # of scripts/verify-blueprint-version-clean.mjs on this tree, not by hand-editing an offset.
+# 2026-11-22 (UTE A1 cut, Round 72 hosted-CI repair, vnext/a1-cut): TWO new test-fixture identities,
+# appended in the open from a re-run of scripts/verify-blueprint-version-clean.mjs on this tree (not by
+# hand-editing an offset). Cause is the cut, not a product change:
+#   - a3p4-pr4-production-entry-regression.test.ts was re-pointed at the NEW product entry by the A1
+#     cut and authors its E3 team as a v4 `memberIoCeilings` document (the retired Alpha.4
+#     `capabilities.permissions` lane is deliberately absent). ONE v4 literal.
+#   - vnext-admission.test.mjs grew the C-alpha6 `reachable vs refused` arms; their source is a v5
+#     Team-create document, the same shape a6-root-wiring authors. ONE v5 literal.
+# Both are documents a TEST authors and feeds to the parser. No shipped surface gained a blueprint
+# namespace literal, nothing was resolved, and no existing identity line moved.
+# 2026-11-22 (UTE A1 cut, Round 74, vnext/a1-cut): the SAME ONE v5 literal in
+# vnext-admission.test.mjs moved L4324 -> L4401 because round 74 rewrote ADM-86 (the C-remote arm) earlier
+# in the file. No literal was added or removed and no shipped surface gained a namespace literal; the
+# identity is re-recorded in the open from the gate's own report, not by guessing an offset.
+# 2026-11-22 (UTE A1 cut, Round 75, vnext/a1-cut): the SAME v5 literal moved L4401 -> L4416 because
+# round 75 rewrote ADM-18/24/26/87/114 and the C14b negative arms earlier in the file (the new
+# ADM-125…130 arms are appended at the end and contain no blueprint document). Re-recorded from the
+# gate's own `verify-blueprint-version-clean.mjs` report; no literal added, none resolved, no shipped
+# surface gained a namespace literal.
+# 2026-11-23 (UTE A1 cut, Round 77, vnext/a1-cut): the SAME ONE v5 literal in
+# vnext-admission.test.mjs moved L4416 -> L4417 because round 77 appended the six rc.5 FS arms
+# (ADM-135…ADM-140) at the END of the file and added one import line at the top. No literal was
+# added or removed, the appended arms author no blueprint document, and no shipped surface gained a
+# namespace literal. Re-recorded from the gate's own `verify-blueprint-version-clean.mjs` report,
+# not by hand-guessing an offset.
+# 2026-11-23 (UTE A1 cut, Round 83, vnext/a1-cut): the SAME ONE v5 literal in
+# vnext-admission.test.mjs moved L4417 -> L4555 because round 83 rewrote ADM-86 (the C-remote arm) to
+# the delivery law, which enlarged that arm by ~130 lines earlier in the file. No literal was added or
+# removed, the rewritten arm authors no blueprint document of its own, and no shipped surface gained a
+# namespace literal. Re-recorded from the gate's own `verify-blueprint-version-clean.mjs` report, not by
+# hand-guessing an offset.
+# 2026-11-23 (UTE A1 cut, Round 84, vnext/a1-cut): the SAME ONE v5 literal in
+# vnext-admission.test.mjs moved L4555 -> L4567 because round 84 added the positive-enablement
+# assertions to ADM-34 (~12 lines) earlier in the file; the five new arms (ADM-141/142/143/144/146)
+# are appended at the END and author no blueprint document of their own. No literal was added or
+# removed and no shipped surface gained a namespace literal. Re-recorded from the gate's own
+# `verify-blueprint-version-clean.mjs` report, not by hand-guessing an offset.
+OFFENDING packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts :: L933=v4
+# 2026-11-24 (UTE A1 cut, Round 92, vnext/a1-cut): the SAME ONE v5 literal in
+# vnext-admission.test.mjs moved L4571 -> L4641 because round 92 added the PTC rulings status
+# assertions to ADM-87 and the two ruled NOT-APPLICABLE marker arms (ADM-147/ADM-148, ~70 lines)
+# earlier in the file. Those arms author NO blueprint document: the v5 literal belongs to the
+# pre-existing C-alpha6 fixture, unchanged in content. Re-recorded from the gate's own
+# `verify-blueprint-version-clean.mjs` report, not by hand-guessing an offset.
+#   - vnext-admission.test.mjs moved L4641 -> L4645 and gained a SECOND identity (L7699) because round 93 (R1)
+#     edited ADM-54's glue witness above the C-alpha6 fixture (+4 lines) and appended the five R1 arms with
+#     their OWN v5 fixture (the C93 world) at the end of the file. Same fixture identity, same vocabulary,
+#     nothing added or resolved: the SECOND line is the new arm block's own document, recorded by path so a
+#     reviewer can see it is a test fixture and not product blueprint content.
+#   - vnext-admission.test.mjs moved L4645 -> L4646 and L7699 -> L7700 because round 94 (R3 PoC) added ONE
+#     import line (`node:fs` namespace) at the top of the file; no blueprint document was authored, edited
+#     or resolved. Same two fixture identities, re-recorded from the gate's own report.
+#   - vnext-admission.test.mjs moved L4646 -> L4709 and L7700 -> L7763 because round 98 (realmless Option B)
+#     inserted ADM-44b (+63 lines) ABOVE both fixtures; the two v5 documents are byte-unchanged. Same two
+#     fixture identities, re-recorded from the gate's own report.
+#   - vnext-admission.test.mjs moved L7763 -> L7768 because round 99 (R3 on the process face) edited the
+#     ADM-127/ADM-128 fixture block (+5 lines) BETWEEN the two fixtures; the C-alpha6 document at L4709 and
+#     the C93 document at the new L7768 are byte-unchanged. Re-recorded from the gate's own report, not by
+#     hand-guessing an offset: no blueprint content was authored, edited or resolved by this round.
+#   - vnext-admission.test.mjs moved L4709 -> L4721 and L7768 -> L7780 because round 110 (the rc.5 test
+#     matrix) added a real `AbortSignal` to the fabricated `exec` frames in ADM-96 and ADM-97 (+12 lines
+#     net, both ABOVE the two fixtures): rc.5's MCP client calls `AbortSignal.any` and rejects a missing
+#     signal (`ERR_INVALID_ARG_TYPE`). No blueprint document was authored, edited or resolved; the two v5
+#     fixture literals are byte-unchanged. Re-recorded from the gate's own report.
+#   - vnext-admission.test.mjs moved L4721 -> L4733 and L7780 -> L7792 because round 127 (2026-11-27)
+#     rewrote ADM-147 from a declared-skip vacancy into unsupported-and-refused acceptance (+12 lines
+#     net, ABOVE both fixtures): the arm now dispatches `run_code` and asserts the typed
+#     ADMISSION_PTC_UNAVAILABLE refusal, the status on both durable facts, REFUSED/not-started and zero
+#     fallback, while still emitting the ruling marker. No blueprint document was authored, edited or
+#     resolved; the two `=v5` fixture literals are byte-unchanged. Re-recorded from the gate's own
+#     report (`node scripts/verify-blueprint-version-clean.mjs`), not by hand-guessing an offset.
+OFFENDING packages/runtime/test/vnext-admission.test.mjs :: L4733=v5, L7792=v5

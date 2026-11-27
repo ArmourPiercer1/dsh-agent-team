@@ -51,133 +51,27 @@ describe('the tool-governance lane audit', () => {
   // lane's pure-domain law + the outward-leaf leg below still refuse any edge
   // pointing the other way.
   it('the consumer set is exactly the reviewed PR1+PR2+PR3+PR5+A5-M1 wiring (no accretion)', () => {
+    // ROUND 72 (2026-11-22): pinned against the UTE A0/A1 cut. The governed executors, tool-dispatch,
+    // a5p5-tools, the plane and agent-bindings were retired with the governed-execution route (the
+    // centre owns them now and does not import this lane), so their rows are gone from BOTH the audit's
+    // PR1_CONSUMERS table and this pin — a pin is a claim about the tree, and the tree no longer carries
+    // those files. The law is unchanged: a new consumer is a design change that must appear here, and a
+    // disappeared one is a broken wire.
     expect(verdict.consumers).toEqual([
-      // A5-M1: the Control lane's WRITE-side fingerprint — `canonicalJson
-      // Fingerprint` (control/service.ts:183) recomputed at :2311 so a PA
-      // manifest's `reviewPayloadDigest` / `operationFingerprint` must equal
-      // the SERVICE-computed digest of the payload it pairs with.
       'runtime/control/service.ts',
-      // A5-M1: the Control lane's READ-side fingerprint (the PR358 f5 item-4
-      // read-back VALUE check at types.ts:1285) plus the TYPE-ONLY call-facts
-      // vocabulary (`RequestedEffectSet` / `ToolBinding` / `ToolPolicy
-      // Document`, types.ts:153 → the slots at :1407/:1414/:1423; erased at
-      // emit, so the Control plane gains no runtime edge from that half).
       'runtime/control/types.ts',
       'runtime/controlled-fs/src/cf-descriptor.ts',
       'runtime/controlled-fs/src/cf-errors.ts',
       'runtime/controlled-fs/src/controlled-fs.ts',
       'runtime/controlled-fs/src/index.ts',
-      // U7-9a: the two post-consume closures consume TYPE-ONLY faces
-      // (`FsWriteReceipt`, `GovernanceResult`) — the receipt shape the
-      // write/create bodies return and the closed governance verdict the
-      // undetermined arms carry. Type edges add zero runtime coupling;
-      // booked because the audit law is per-EDGE, not per-weight. (The
-      // standalone script's `runtime/controlled-fs/src/` prefix already
-      // covered them; this file-level list enumerates.)
       'runtime/controlled-fs/src/post-consume-create.ts',
       'runtime/controlled-fs/src/post-consume-write.ts',
-      // A5-M1: the PA↔Control bridge — the manifest digest it writes
-      // (pa-control-bridge.ts:394) and the assurance snapshot it compares
-      // (:752), plus the closed admission vocabulary its ports are typed
-      // against (:93-98). runtime lane → domain leaf; the bridge's Alpha.4
-      // LADDER edge is booked on the a3p3 rows, not here.
-      'runtime/operation-permission/pa-control-bridge.ts',
-      'runtime/src/plugin/live/agent-bindings.mjs',
-      // U6 PR2 (the PR1-disclosed minter rebind): the shadow row consumes
-      // the ONE §6 feed face (`definitionIdentityOf`) so its audit identities
-      // are the identities the Guard binds; pure function, zero authority.
-      'runtime/src/plugin/live/center-shadow-row.mjs',
-      // A5-M1's plane-effect-backends booking RETIRED at U6 PR2: its one
-      // lane edge (`parseRequestedEffectSet`, the READ row's effect
-      // vocabulary) MOVED with the read executor to
-      // `tools/fs-family/src/read-executor.mjs` (booked at the tail of this
-      // list); the plane file now imports nothing from the lane. Consumer
-      // SET unchanged in count — the location moved, and this list is the
-      // map of locations.
-      // alpha5-ptc-fs (branch `alpha5-ptc-pr`; review provenance 独审 PASS,
-      // id 7f0e5d6e, booked by the integration coordinator on the #334 census
-      // red): the PTC fs escalation row — direct lane edge = the effect-grammar
-      // face (`parseRequestedEffectSet`), grants via the already-reviewed PR2
-      // grant-mint module only; zero lane edits (audit script entry carries
-      // the file:line provenance).
       'runtime/src/plugin/live/ptc-escalation-row.mjs',
-      // GLUE-7 (alpha5-glue7-backend): placement-feed wiring via the
-      // tool-dispatch §6 face (see the audit script entry for provenance).
-      'runtime/src/plugin/live/team-tool-plane.mjs',
       'runtime/tool-admission/admission-kernel.ts',
       'runtime/tool-admission/approval-case.ts',
       'runtime/tool-admission/assurance-runtime.ts',
       'runtime/tool-admission/clock.ts',
       'runtime/tool-admission/grant-mint.ts',
-      'runtime/tool-dispatch/closed-world-guard.ts',
-      'runtime/tool-dispatch/install.ts',
-      'runtime/tool-dispatch/scoped-dispatcher.ts',
-      'tools/a5p5-tools/src/args.ts',
-      'tools/a5p5-tools/src/effects-schema.ts',
-      'tools/a5p5-tools/src/pipeline.ts',
-      // P-B register.ts = pure-data Definition factory consuming tool-governance;
-      // placement-scoped registration only; P-B PR #299; GLUE-5 will dedup P-LSP
-      // stacked copies. Cross-lane shared-pin edit authorized in writing by the
-      // coordinator (P-B writer brief, the #299 census-red fix round).
-      'tools/a5p5-tools/src/register.ts',
-      'tools/a5p5-tools/src/render.ts',
-      'tools/a5p5-tools/src/spill.ts',
-      'tools/a5p5-tools/src/types.ts',
-      // U7-F: the agent-control family's ONE executor consumes the same thin
-      // effect-grammar face (`parseRequestedEffectSet`, domain/tool-governance)
-      // the fs-family executors were booked for — parse-only, zero further
-      // domain reach (file-by-file booking, zero lane edits; owner role:
-      // agent-control-family). Alphabetical here, as the fs block states.
-      'tools/agent-control-family/src/agent-control-executor.mjs',
-      // U7-F B (agent-state family): the five governed agent-state rows
-      // (todo_write/create_goal/get_goal/update_goal/exit_plan_mode) book
-      // TWO thin faces, file-by-file — `executors.mjs` consumes ONLY
-      // `parseRequestedEffectSet` (the SAME effect-grammar face the
-      // fs-family executors carry below) to validate the per-call PA arm
-      // sets, and `contribution.mjs` consumes ONLY `canonicalJsonStringify`
-      // (the deterministic canonical serialization behind the
-      // contribution's provider digest — pure function, zero authority).
-      // Zero lane edits; alphabetically placed, as everywhere here.
-      'tools/agent-state-family/src/contribution.mjs',
-      'tools/agent-state-family/src/executors.mjs',
-      // U6 PR2 + U7-9a: the FS family's FOUR executors (read/write/edit/
-      // read_image bodies) each consume the ONE effect-grammar face
-      // (`parseRequestedEffectSet`, domain/tool-governance) — the same thin
-      // face plane-effect-backends was booked for; the read file IS that
-      // plane file's moved read section, the mutation trio are U7-9a's
-      // governed bodies (file-by-file booking, zero lane edits; owner role:
-      // fs-family README). Alphabetical here: the expectation is the
-      // sorted-edge set the audit walks.
-      'tools/fs-family/src/edit-executor.mjs',
-      'tools/fs-family/src/image-executor.mjs',
-      'tools/fs-family/src/read-executor.mjs',
-      'tools/fs-family/src/write-executor.mjs',
-      // U7-F (inspect-family lane) booked FILE-BY-FILE, SAME single thin
-      // face (`parseRequestedEffectSet`) as the fs-family executors above:
-      // the two governed executors validate their admitted effect set at
-      // the PA boundary; everything read-only, zero lane edits (booking
-      // note in scripts/audit-a5-tool-governance-imports.mjs). Alphabetical.
-      'tools/inspect-family/src/inspect-executor.mjs',
-      'tools/inspect-family/src/skill-executor.mjs',
-      // U7-F (the governed pwsh shell-class row): the executor consumes the
-      // same two thin governance faces as the fs executors — the effect
-      // grammar (`parseRequestedEffectSet`) and the parsed-record fingerprint
-      // (`canonicalJsonFingerprint`, the PR #390 effect-set law) — zero lane
-      // edits (the audit script entry carries the file:line provenance).
-      'tools/process-family/src/pwsh-executor.mjs',
-      // u7-f: the UI family's TWO governed executors (ask/present bodies)
-      // each consume the SAME ONE effect-grammar face
-      // (`parseRequestedEffectSet`, domain/tool-governance) the fs executors
-      // are booked for — file-by-file booking, zero lane edits (owner role:
-      // ui-family README). Alphabetical here: the expectation is the
-      // sorted-edge set the audit walks.
-      'tools/ui-family/src/ask-executor.mjs',
-      'tools/ui-family/src/present-executor.mjs',
-      // U7-f web family: the two governed executors ride the SAME single
-      // face (parseRequestedEffectSet), booked file-by-file beside the
-      // fs-family entries in the audit; sorted here to match.
-      'tools/web-family/src/fetch-executor.mjs',
-      'tools/web-family/src/search-executor.mjs',
     ])
   })
 

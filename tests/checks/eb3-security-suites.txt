@@ -1,13 +1,22 @@
 # EB3 ci-security layer — the host-free security suites (no boot, no DSH_HOME, no
 # pristine host). One path per line; `#` comments and blank lines are ignored.
 #
-# WHAT THESE ARE. The Alpha.5 governance centre's own laws, each paired with the
-# negative controls that must fail if the law stops holding: the Kernel and its
-# grant algebra, the Registry's closed/collision/generation rules, the contribution
-# schema's closed field set, the Guard's closed world and native-trust filter, the
-# fixed reserved-native registry, the ARC-A fitness scanners, and — required by the
-# U7 verification — the two NON-TEAM NATIVE POSITIVE CONTROLS, which assert an
+# WHAT THESE ARE. The admission laws this tree actually ships, each paired with the
+# negative controls that must fail if the law stops holding: the admission kernel and
+# its one-shot grant algebra, the Alpha.5 Sandbox-First P1 policy compiler (two-axis
+# intersection, path/hardlink rules, Invocation Binder, Trust Registry, per-Member
+# service realm, OS profile compiler, subprocess and PTY contracts), and — required by
+# the U7 verification — the two NON-TEAM NATIVE POSITIVE CONTROLS, which assert an
 # ordinary (non-Team) install is never narrowed by Team governance.
+#
+# ROUND 72 (hosted-CI repair, 2026-11-22): the sixteen u6/A5P1 rows that named the
+# RETIRED execution route (Governance Center kernel + registry + contribution schema,
+# the scoped tool guard, the native-trust filter, the ARC-A fitness scanners) are GONE
+# from this list because their subjects are gone from the tree. Each file's disposition
+# — retire-with-subject, with the reason no preserved capability lost its arm — is
+# recorded per file in `dev/agent-workflow/ledgers/ute-cut-closure.allow.json`
+# (`retiredSubjects`) and in the Round 72 table of
+# `dev/agent-workflow/evidence/ute-a1/MIGRATED-SUITE-STATUS.md`.
 #
 # HOST-FREE MEANS HOST-FREE. A suite that resolves the pinned host checkout
 # (findTestRepoRoot / TEST_USE_REL / TEST_USE_BASELINE_SHA) cannot run on the hosted
@@ -20,25 +29,10 @@
 # ADDING A SUITE IS ADDING A LINE. Removing one is removing coverage the plan names;
 # the C5/P1 controls in scripts/eb3-ci-negative-controls.mjs assert the two non-Team
 # positives are still present and still asserting the native ride.
-packages/runtime/test/u6-arc-a-fitness.test.ts
-packages/runtime/test/u6-pr1-kernel.test.ts
-packages/runtime/test/u6-pr1-registry.test.ts
-packages/runtime/test/u6-pr1-contribution-schema.test.ts
-packages/runtime/test/u6-pr2-kernel-flow.test.ts
-packages/runtime/test/u6-pr2-kernel-guard-plants.test.ts
 packages/runtime/test/u6-pr2-review-r1.test.ts
-packages/runtime/test/u6-pr3-kernel-flow.test.ts
 packages/runtime/test/u6-pr3-bl01-ask-door.test.ts
-packages/runtime/test/u6-pr5-kernel-flow.test.ts
-packages/runtime/test/u6-pr6-arc-d-adversarial.test.ts
-packages/runtime/test/u6-pr6-arc-d-matrix.test.ts
-packages/runtime/test/u6-fixk-kernel-safety.test.ts
-packages/runtime/test/a5p1-closed-world-guard.test.ts
-packages/runtime/test/a5p1-guard-install.test.ts
-packages/runtime/test/a5p1-scoped-dispatcher.test.ts
 packages/runtime/test/a5p2-admission-kernel.test.ts
 packages/runtime/test/a5p2-grant-oneshot.test.ts
-packages/runtime/test/a5mcp-native-trust-filter.test.ts
 
 # Alpha.5 Sandbox-First P1 (a5sf, dated 2026-11-02). These are the policy
 # compiler's own laws and their negative controls: the two-axis intersection

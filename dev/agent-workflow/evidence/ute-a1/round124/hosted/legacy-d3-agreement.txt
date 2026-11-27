@@ -1,0 +1,16 @@
+TWO-RUN AGREEMENT (the same command, two boots; every measured row must be identical)
+fact                                boot1
+overall                             PASS
+persistent                          PROVEN
+crash                               PROVEN
+work                                PROVEN
+alpha6                              PROVEN
+aAdmissions                         4
+bAdmissions                         3
+inflightBefore                      open
+inflightAfter                       UNKNOWN
+collectStatus                       succeeded
+bash1State                          COMPLETED
+bash2State                          COMPLETED
+
+agreeing=false differing=[]

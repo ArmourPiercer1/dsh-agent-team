@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/client
+
+ ✓ test/team-creation-panel.client.spec.tsx (19 tests) 1392ms
+ ✓ test/team-governance.client.spec.tsx (28 tests) 1343ms
+
+ Test Files  2 passed (2)
+      Tests  47 passed (47)
+   Start at  06:55:28
+   Duration  3.69s (transform 2.49s, setup 27ms, import 3.70s, tests 2.73s, environment 650ms)
+

@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "ROUND74MANAGEMENTPLANE",
+  "paths": [
+    "packages/runtime/src/plugin/s6-command-classification.ts",
+    "packages/runtime/test/a3p3-governance-lane-hygiene.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1309,
+    "to": 1311
+  },
+  "reason": "Round 74 (owner ruling docs/reviews/20261122-1536.txt §3) adds ONE scannable production source, s6-command-classification.ts (the closed S6 command-effect table that keeps the restored remote plane a management surface rather than a second executor). The second path, a3p3-governance-lane-hygiene.test.ts, is a pre-existing tracked test restored by round 72's audit (c84171126) that the round72relive booking missed: the scanner already counted it, the ledger did not. Booking both in the open makes the ledger describe the tree again; neither path carries denylist vocabulary.",
+  "tieNote": "MEASURED on this tree, not copied: scanSessionEventVocabulary() reports 1311 files, loadBookings() derives 0 + 1309 = 1309, and the only two unbooked scanned paths are exactly the two above (the p4t6 coverage leg printed the same 1311-vs-1309 diff). 1309 + 2 = 1311."
+}

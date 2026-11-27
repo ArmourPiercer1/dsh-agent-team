@@ -101,6 +101,10 @@ import { existsSync, readFileSync } from 'node:fs'
 import { dirname, isAbsolute, join, normalize, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { checkRetirement } from './ute-retirement-gate.mjs'
+import {
+  loadRetiredSurfaces,
+  validateRetiredSurfaces,
+} from './ute-cut-closure.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(HERE, '..')
@@ -109,6 +113,7 @@ export const LEDGER_REL = 'dev/agent-workflow/ledgers/ute-family-inventory.json'
 export const CENSUS_REL = 'dev/agent-workflow/ledgers/arc-a-family-census.json'
 export const RETIREMENT_LEDGER_REL = 'dev/agent-workflow/ledgers/ute-retirement.json'
 export const INVENTORY_SCHEMA = 'ute-family-inventory/1'
+export const A0_SNAPSHOT_REL = 'dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json'
 
 /** The closed role vocabulary. A role is "what this file does in the old path",
  *  never "which directory it happens to live in". */
@@ -151,6 +156,7 @@ export const REFUSAL_CODES = Object.freeze([
   'INVENTORY_ROLE_UNKNOWN',
   'INVENTORY_READINESS_DRIFT',
   'INVENTORY_RETIREMENT_PATH_DRIFT',
+  'INVENTORY_RETIREMENT_UNEARNED',
 ])
 
 const BOUND_PREFIX = /^\(bound-definition\)\s+/
@@ -500,6 +506,43 @@ export function loadInventory({ root = ROOT, inventory } = {}) {
  * @param {(rel: string) => string} [p.readFile] absolute path → text
  * @param {(rel: string) => boolean} [p.fileExists]
  */
+
+/**
+ * THE A0 RETIREMENT PREDICATE (round 80). A booked family is RETIRED BY THE CUT when
+ *   - `retiredSurfaces` books a row for it of kind family-contribution / test-only-family-lane,
+ *   - EVERY file the census + inventory declare for it is inside the A0 frozen delete/replace set
+ *     (or inside the round-72 `retiredSubjects` per-file record), and
+ *   - none of those files is present, and the lane carries no tracked file.
+ * Only then are the absence-consequence findings (PATH_*, DEPENDENCY_UNKNOWN, RUNTIME_PATH_BROKEN,
+ * AUTHORITY_INVALID, READINESS_DRIFT, NATIVE_DRIFT, RETIREMENT_PATH_DRIFT) replaced by one
+ * per-family disposition: they describe a tree that no longer exists.
+ *
+ * A row is a LICENCE. Any uncovered path means the family is NOT retired and is graded normally
+ * (so a partial resurrection cannot hide behind the record); an unreadable snapshot or allow
+ * ledger discharges nothing (fail closed).
+ */
+function retirementOf ({ family, censusEntry, a0, present, tracked }) {
+  if (a0 === null) return null
+  const row = a0.subjects.get(family.familyId)
+  if (row === undefined || (row.kind !== 'family-contribution' && row.kind !== 'test-only-family-lane')) return null
+  const declared = [...new Set([
+    ...(censusEntry.contributionPaths ?? []),
+    ...family.oldPath.files.map((f) => f.path),
+  ])]
+  if (declared.length === 0) return null
+  const uncovered = declared.filter((rel) => !a0.isRetiredFile(rel))
+  const stillPresent = declared.filter((rel) => present(rel))
+  const laneFiles = [...tracked].filter((rel) => rel === family.lane || String(rel).startsWith(`${family.lane}/`))
+  return {
+    row,
+    declared,
+    uncovered,
+    stillPresent,
+    laneFiles,
+    retired: uncovered.length === 0 && stillPresent.length === 0 && laneFiles.length === 0,
+  }
+}
+
 export function checkInventory({
   inventory,
   census,
@@ -576,6 +619,35 @@ export function checkInventory({
   const ownerByPath = new Map() // path → familyId (first claim)
   const claimsByPath = new Map() // path → [familyId]
   const familyInfo = []
+  const retired = []
+
+  // The A0 retirement record + its frozen evidence. Absence/refusal discharges NOTHING: the
+  // families are then graded exactly as before, which is red on the post-cut tree (the honest
+  // answer when the licence is missing).
+  let a0 = null
+  try {
+    const record = loadRetiredSurfaces(root)
+    if (record !== null) {
+      const validation = validateRetiredSurfaces({ record, root, trackedPaths: tracked })
+      // The LICENCE is a HEAD artifact: read it from disk, never through the injected
+      // universe (a fixture that supplies its own files must not be able to write its
+      // own retirement licence).
+      const snapshot = JSON.parse(readFileSync(abs(A0_SNAPSHOT_REL), 'utf8'))
+      const frozen = new Set((snapshot.modules ?? [])
+        .filter((m) => m.verdict === 'delete' || m.verdict === 'replace')
+        .flatMap((m) => m.files ?? []))
+      const allowRaw = JSON.parse(readFileSync(abs('dev/agent-workflow/ledgers/ute-cut-closure.allow.json'), 'utf8'))
+      const retiredPaths = new Set((allowRaw.retiredSubjects?.entries ?? []).map((e) => e.path))
+      if (frozen.size > 0 && validation.subjects.size > 0 && validation.findings.length === 0) {
+        a0 = {
+          subjects: validation.subjects,
+          isRetiredFile: (rel) => frozen.has(rel) || retiredPaths.has(rel),
+        }
+      }
+    }
+  } catch {
+    a0 = null // fail closed: an unreadable record licenses nothing
+  }
 
   for (const family of ledger.families) {
     const censusEntry = censusById.get(family.familyId)
@@ -604,6 +676,43 @@ export function checkInventory({
       const extra = definitionNames.filter((n) => !expectedMembers.includes(n))
       add('INVENTORY_DEFINITION_DRIFT', family.familyId, `definitions are not exactly the members: missing ${missing.map((m) => JSON.stringify(m)).join(', ') || 'none'}, extra ${extra.map((n) => JSON.stringify(n)).join(', ') || 'none'}`)
     }
+    // THE A0 RETIREMENT BRANCH. Structural parity above (family set, members, lane,
+    // testOnly, definition set) still holds for a retired family; the facts about a tree
+    // that no longer exists are replaced by one per-family disposition.
+    const retirement = retirementOf({ family, censusEntry, a0, present, tracked })
+    if (retirement !== null) {
+      if (!retirement.retired) {
+        add('INVENTORY_RETIREMENT_UNEARNED', family.familyId,
+          `the A0 retirement record books this family, but ${retirement.uncovered.length} declared file(s) are not in the frozen set or the round-72 retiredSubjects record (${retirement.uncovered.slice(0, 4).join(', ') || 'none'}), ` +
+          `${retirement.stillPresent.length} are still present (${retirement.stillPresent.slice(0, 4).join(', ') || 'none'}) and ${retirement.laneFiles.length} lane file(s) are tracked — a retirement is a licence, not a claim, so the family is graded as live`)
+      } else {
+        retired.push({
+          familyId: family.familyId,
+          kind: retirement.row.kind,
+          files: retirement.declared.length,
+          lane: family.lane,
+          frozenModules: retirement.row.frozenModules,
+          successors: retirement.row.successors,
+        })
+        familyInfo.push({
+          familyId: family.familyId,
+          lane: family.lane,
+          testOnly: family.testOnly,
+          members: expectedMembers,
+          files: family.oldPath.files.length,
+          definitions: family.definitions.length,
+          dependsOn: [...(family.dependsOn ?? [])].sort(),
+          readiness: { ...family.retirementReadiness },
+          derivedReadiness: null,
+          runtimeSteps: family.runtimePath.length,
+          retiredByA0: true,
+          retiredFiles: retirement.declared.length,
+          frozenModules: [...retirement.row.frozenModules],
+        })
+        continue
+      }
+    }
+
     for (const definition of family.definitions) {
       const censusName = (censusEntry.nativeNames ?? []).find((n) => typeof n === 'string' && n.replace(BOUND_PREFIX, '').trim() === definition.name)
       if (censusName === undefined) continue // covered by the set drift above
@@ -799,7 +908,13 @@ export function checkInventory({
       continue
     }
     if (!isNonEmptyString(entry.reason)) add('INVENTORY_SHARED_UNREASONED', null, `${entry.path} is declared shared without a reason — an unexplained shared file is exactly the silence this rule exists to refuse`)
-    if (!isTracked(entry.path)) add('INVENTORY_PATH_UNTRACKED', null, `shared file ${entry.path} is not in the git index`)
+    // A shared entry that is GONE and inside the A0 frozen set is a retired file, not a drift:
+    // it is reported on the subject disposition (the family rows that named it) instead. A
+    // shared entry that is gone but NOT frozen keeps both findings — the licence is per file.
+    const retiredShared = a0 !== null && !isTracked(entry.path) && !present(entry.path) && a0.isRetiredFile(entry.path)
+    if (retiredShared) {
+      // recorded on the shared list, reported once below
+    } else if (!isTracked(entry.path)) add('INVENTORY_PATH_UNTRACKED', null, `shared file ${entry.path} is not in the git index`)
     else if (!present(entry.path)) add('INVENTORY_PATH_MISSING', null, `shared file ${entry.path} is absent from the working tree`)
     shared.set(entry.path, entry)
   }
@@ -809,9 +924,15 @@ export function checkInventory({
     add('INVENTORY_FILE_UNOWNED', null, `${path} is an implementation file in a booked family lane (or the family-body directory) that no family claims and no \`shared\` entry explains — an unowned file of the old path is an unauditable deletion later`)
   }
 
+  const retiredSharedFiles = a0 === null
+    ? []
+    : [...shared.keys()].filter((rel) => !tracked.has(rel) && !present(rel) && a0.isRetiredFile(rel)).sort()
+
   return {
     findings,
     families: familyInfo,
+    retired,
+    retiredSharedFiles,
     shared: [...shared.keys()].sort(),
     universe: universe.length,
     retirementProblem,
@@ -1006,19 +1127,32 @@ function main(argv) {
       findings: result.findings,
       summary: {
         families: result.families.length,
+        retiredFamilies: result.retired.length,
         findings: result.findings.length,
         codes: [...new Set(result.findings.map((f) => f.code))].sort(),
       },
+      retired: result.retired,
+      retiredSharedFiles: result.retiredSharedFiles,
     }
     console.log(JSON.stringify(payload, null, 2))
   } else {
     console.log(`UTE-FAMILY-INVENTORY ledger=${args.ledger ?? LEDGER_REL} schema=${INVENTORY_SCHEMA} families=${String(result.families.length)} universe=${String(result.universe)} shared=${String(result.shared.length)}`)
     for (const family of result.families) {
+      if (family.retiredByA0 === true) {
+        console.log(`  UTE-FAMILY-INVENTORY-FAMILY family=${family.familyId} members=${String(family.members.length)} files=${String(family.retiredFiles)} definitions=${String(family.definitions)} steps=${String(family.runtimeSteps)} retiredByA0=cut(${family.frozenModules.join(',')}) testOnly=${String(family.testOnly)}`)
+        continue
+      }
       const readiness = family.derivedReadiness ?? family.readiness
       console.log(`  UTE-FAMILY-INVENTORY-FAMILY family=${family.familyId} members=${String(family.members.length)} files=${String(family.files)} definitions=${String(family.definitions)} steps=${String(family.runtimeSteps)} readiness=baseline:${readiness.baseline},newPath:${readiness.newPath},negativeControls:${readiness.negativeControls} testOnly=${String(family.testOnly)}`)
     }
+    for (const subject of result.retired) {
+      console.log(`  UTE-FAMILY-INVENTORY-RETIRED-BY-A0 family=${subject.familyId} kind=${subject.kind} files=${String(subject.files)} frozen=${subject.frozenModules.join(',')} lane=${subject.lane} successors=${subject.successors.filter((x) => !x.startsWith('node ')).join('|')}`)
+    }
+    if (result.retiredSharedFiles.length > 0) {
+      console.log(`  UTE-FAMILY-INVENTORY-RETIRED-BY-A0 shared=${result.retiredSharedFiles.join('|')}`)
+    }
     for (const finding of result.findings) console.log(`UTE-FAMILY-INVENTORY-FINDING code=${finding.code} family=${finding.familyId ?? '-'} detail=${JSON.stringify(finding.detail)}`)
-    console.log(`UTE-FAMILY-INVENTORY-SUMMARY families=${String(result.families.length)} files=${String(result.universe)} findings=${String(result.findings.length)}`)
+    console.log(`UTE-FAMILY-INVENTORY-SUMMARY families=${String(result.families.length)} files=${String(result.universe)} retiredFamilies=${String(result.retired.length)} findings=${String(result.findings.length)}`)
   }
   return result.findings.length === 0 ? 0 : 1
 }

@@ -81,7 +81,6 @@ PRE_EXECUTE_CAPABILITY_ERROR_CODES, PRE_EXECUTE_CAPABILITY_ERROR_CODE_VALUES, PR
 export { PERMISSION_TOOL_VALUES, FILE_PERMISSION_TOOL_VALUES, SHELL_PERMISSION_TOOL_VALUES, } from './types.js';
 export { READ_OFFSET_DEFAULT, READ_LIMIT_DEFAULT, LSP_OPERATION_VALUES, BASH_TOOL_RESOURCE_KEY, SHELL_TOOL_RESOURCE_KEYS, classifyPermissionTool, isPermissionToolName, canonicalizeOperation, canonicalizeShellOperation, } from './canonical-operation.js';
 export { resolveOperationPermission, } from './permission-resolver.js';
-export { END_CAP_DENIAL_REASON, installParameterPermissionListener, } from './pre-execute-adapter.js';
 export { PERMISSION_COVERAGE_CLASSIFICATIONS, SAFE_UNMANAGED_TOOL_NAMES, KNOWN_SENSITIVE_TOOL_NAMES, KNOWN_SENSITIVE_TOOL_PREFIXES, SENSITIVE_REMEDIATION, UNKNOWN_REMEDIATION, UNKNOWN_REASON, classifyPermissionCoverageTool, evaluatePermissionCoverage, mcpIntroducedToolNames, permissionCoverageGateEnabled, buildPermissionCoverageErrorDetail, } from './permission-coverage.js';
 export { PERMISSION_COVERAGE_ERROR_CODES, PermissionCoverageUnmanagedError, isPermissionCoverageUnmanagedError, } from './errors.js';
 // A4-PR4 lane A (spec §10.1, §7.2-§7.4, acceptance §21.4) — the operation

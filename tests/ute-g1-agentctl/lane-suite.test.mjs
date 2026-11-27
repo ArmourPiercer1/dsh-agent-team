@@ -25,10 +25,11 @@
  */
 import assert from 'node:assert/strict'
 import { execFileSync, spawnSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { test } from 'node:test'
 
+import { retirementPin } from '../ute-g1-shared/retirement.mjs'
 import { COVERED_MEMBERS, CORPUS, REQUIRED_KINDS, kindCoverage } from './lib/corpus.mjs'
 import { compareAll, compareRecord, parseGolden, serializeGolden } from './lib/compare.mjs'
 import { AGENT_CONTROL_REFUSAL_CATEGORY, CATEGORY_IDS, RUNTIME_REFUSAL_CATEGORY, classifyRefusal } from './lib/effect-oracle.mjs'
@@ -47,18 +48,35 @@ function censusMembers() {
   return unit.nativeNames.map((name) => name.replace('(bound-definition) ', ''))
 }
 
-test('1. the old path reproduces its reviewed fixture idempotently', async () => {
+test('1. RETIRED-BY-A0: the retired tool plane is gone and the fixture is the frozen baseline', async () => {
+  // ROUND 81 disposition (ROUND80-CI-CLOSURE.md §4): B1 captured this corpus
+  // through `team-tool-plane.mjs`, deleted by the A0 frozen cut (`93ba0a1d1`);
+  // the module cannot even be imported now. The fixture stays the frozen
+  // historical baseline (NOT re-recorded: this lane owns no new path) and the
+  // retired surface is asserted ABSENT with a live source check.
   const golden = parseGolden(readFileSync(GOLDEN, 'utf8'))
-  const first = await captureCorpus()
-  const second = await captureCorpus()
-  assert.equal(serializeGolden(first), serializeGolden(second), 'two captures of the same corpus must be byte-identical')
-  const verdict = compareAll(golden, first)
-  for (const failure of verdict.failures) console.log(`OLD-PATH-DRIFT ${failure.id} ${failure.field}: golden=${JSON.stringify(failure.golden)} observed=${JSON.stringify(failure.observed)}`)
-  assert.deepEqual(verdict.missingObserved, [])
-  assert.deepEqual(verdict.missingGolden, [])
-  assert.deepEqual(verdict.failures, [])
-  assert.equal(golden.length, CORPUS.length)
-  console.log(`UTE-G1-AGENTCTL-VERDICT GREEN rows=${golden.length} members=${COVERED_MEMBERS.length}`)
+  const pin = retirementPin({
+    suite: 'AGENTCTL',
+    subject: 'dsh.agent-control-family',
+    retiredPaths: [
+      'packages/runtime/src/plugin/live/team-tool-plane.mjs',
+      'packages/tools/families/agent-control.mjs',
+      'packages/tools/families/index.mjs',
+    ],
+    successors: [
+      'tests/ute-g1-agentctl/lane-suite.test.mjs',
+      'packages/runtime/test/vnext-admission.test.mjs',
+      'tests/world-factory/a5sf-pd21-subagent.test.mjs',
+    ],
+    golden: 'tests/ute-g1-agentctl/golden/old-path.tsv',
+    goldenRows: golden.length,
+  })
+  assert.match(pin.line, /^UTE-G1-AGENTCTL-RETIRED-BY-A0 subject=dsh\.agent-control-family citation=5d1349767\+93ba0a1d1 /u)
+  assert.equal(golden.length, CORPUS.length, 'the frozen fixture must still cover every corpus vector')
+  console.log(`UTE-G1-AGENTCTL-VERDICT RETIRED-BY-A0 rows=${String(golden.length)} members=${String(COVERED_MEMBERS.length)}`)
+  void captureCorpus
+  void serializeGolden
+  void compareAll
 })
 
 test('2. the fixture speaks only the imported closed refusal vocabulary', () => {
@@ -100,37 +118,47 @@ test('3. the corpus covers the census unit with every required vector kind and n
   console.log(`UTE-G1-AGENTCTL-COVERAGE members=${members.length} vectors=${CORPUS.length} exclusions=0`)
 })
 
-test('4. the three semantic differences are declared, blocking, unapproved and still measured', () => {
+test('4. the three semantic differences stay DECLARED, blocking and unapproved; their measurement retired with the plane', () => {
   assert.equal(SEMANTIC_DIFFERENCES.length, 3)
   for (const difference of SEMANTIC_DIFFERENCES) {
     assert.equal(difference.blocking, true, `${difference.id} must stay blocking`)
     assert.equal(difference.approval, null, `${difference.id} must carry no approval record`)
     assert.ok(semanticDifferenceLines().includes(semanticDifferenceLineOf(difference)))
   }
-  const measurements = measureDifferences()
-  assert.deepEqual(measurements.map((m) => m.id), SEMANTIC_DIFFERENCES.map((d) => d.id), 'every declared difference has a measurement')
-  for (const measurement of measurements) {
-    assert.equal(measurement.holds, true, `${measurement.id} no longer holds: ${JSON.stringify(measurement.facts)}`)
-    console.log(`SEMANTIC-DIFF ${measurement.id} holds=yes facts=${JSON.stringify(measurement.facts)}`)
-  }
+  // The live re-derivation read `team-tool-plane.mjs` (deleted by 93ba0a1d1).
+  // The RECORDED facts stay asserted from the B1 measurement; the source must
+  // stay absent, so a re-measure would be impossible rather than stale.
+  const probe = readFileSync(join(EVIDENCE, 'composition-probe.txt'), 'utf8')
+  assert.match(probe, /PROBE-CONCLUSION booked-members=7 single=0 dual=7/u)
+  assert.equal(existsSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'team-tool-plane.mjs')), false, 'the retired plane is back; the retired measurement source must stay absent')
   for (const line of semanticDifferenceLines()) console.log(line)
+  console.log(`UTE-G1-AGENTCTL-SEMANTIC declared=${String(SEMANTIC_DIFFERENCES.length)} blocking=all approval=none measurement=RETIRED-BY-A0`)
+  void measureDifferences
 })
 
 function semanticDifferenceLineOf(difference) {
   return `SEMANTIC-DIFF id=${difference.id} blocking=${difference.blocking ? 'yes' : 'no'} approval=${difference.approval === null ? 'none' : difference.approval}`
 }
 
-test('5. the negative controls are green and the committed transcript is a fresh run', () => {
+test('5. the POST-CUT negative-control battery is green and the committed transcript is a fresh run', () => {
   const fresh = execFileSync(process.execPath, [join(REPO_ROOT, 'tests', 'ute-g1-agentctl', 'negative-controls.mjs')], { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 })
-  const freshLines = fresh.split('\n').filter((line) => line.length > 0 && !line.startsWith('[dsh-agent-team] '))
-  assert.ok(freshLines.includes('NC-VERDICT GREEN controls=24 failed=0'), `the battery must be green: ${freshLines.filter((line) => line.startsWith('NC-VERDICT')).join(' | ')}`)
-  const memberLines = freshLines.filter((line) => line.startsWith('NC-MEMBER '))
-  assert.equal(memberLines.length, 7, 'one NC-MEMBER line per member')
-  for (const member of censusMembers()) assert.ok(memberLines.some((line) => line.split(' ')[1] === member), `missing NC-MEMBER line for ${member}`)
+  const freshLines = fresh.split('\n').filter((line) => line.length > 0)
+  assert.ok(freshLines.includes('NC-VERDICT GREEN controls=14 failed=0'), `the battery must be green: ${freshLines.filter((line) => line.startsWith('NC-VERDICT')).join(' | ')}`)
+  assert.match(freshLines[0], /^ACCEPTED-BY round81-a1-cut reason=/u, 'the re-recorded battery must name this round and its reason')
+  for (const id of [
+    'NC-RETIRED-PLANE-ABSENT',
+    'NC-HOST-MODULES-ONLY',
+    'NC-SUCCESSORS-EXIST',
+    'NC-GOLDEN-FROZEN',
+    'NC-CATEGORY-TOTAL',
+    'NC-NO-NEW-PATH-CLAIM',
+    'NC-LEDGER-CITES-SUCCESSOR',
+  ]) {
+    assert.ok(freshLines.some((line) => line.startsWith(`NC ${id} `)), `${id} must be present`)
+  }
   const committed = readFileSync(join(EVIDENCE, 'negative-controls.txt'), 'utf8').split('\n').filter((line) => line.length > 0)
-  const freshBody = freshLines.filter((line) => !line.startsWith('NC-TRANSCRIPT '))
-  assert.deepEqual(freshBody, committed, 'the committed negative-control transcript must be exactly a fresh run (no shrunk battery)')
-  console.log('NC-VERDICT GREEN controls=24 failed=0')
+  assert.deepEqual(freshLines, committed, 'the committed negative-control transcript must be exactly a fresh run (no shrunk battery)')
+  console.log('NC-VERDICT GREEN controls=14 failed=0')
 })
 
 test('6. the Stage-0 evidence is seven dual members and route-C serves none', () => {
@@ -150,10 +178,12 @@ test('6. the Stage-0 evidence is seven dual members and route-C serves none', ()
   assert.match(probe, /PROBE-PLANE familyId=dsh\.agent-control-family .*claims=subagent,subagent_fork,send_message,interrupt_agent,list_agents,list_subagent_models,workflow/u)
   assert.match(probe, /PLANE_SUPPORTED_NATIVE_TAKEOVERS classes=\[bash,read,grep,glob,write,edit,read_image,jobs\] agent-control-class=ABSENT/u)
   assert.match(probe, /family-assembly-reserved-native-references=0/u)
-  // Re-derive the two static facts from the shipped source, not the transcript.
-  const descriptor = readFileSync(join(REPO_ROOT, 'packages', 'tools', 'families', 'agent-control.mjs'), 'utf8')
-  for (const member of members) assert.ok(descriptor.includes(`name: '${member}'`), `the descriptor must define ${member}`)
-  console.log(`PROBE-CONCLUSION booked-members=${members.length} single=0 dual=${members.length}`)
+  // The descriptor that produced that transcript was deleted by the A0 frozen
+  // cut (`93ba0a1d1`); the transcript is the HISTORICAL measurement and the
+  // descriptor must stay absent rather than be re-read.
+  const descriptor = join(REPO_ROOT, 'packages', 'tools', 'families', 'agent-control.mjs')
+  assert.equal(existsSync(descriptor), false, 'the retired agent-control descriptor is back; its transcript is no longer the only record')
+  console.log(`PROBE-CONCLUSION booked-members=${members.length} single=0 dual=${members.length} descriptor=RETIRED-BY-A0`)
 })
 
 test('7. the ledger and inventory record NOT_RETIREABLE with no approval, and the gate refuses it', () => {

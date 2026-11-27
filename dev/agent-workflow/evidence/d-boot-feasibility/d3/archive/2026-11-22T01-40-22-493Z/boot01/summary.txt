@@ -1,0 +1,1 @@
+RUN-SUMMARY run=a5sf-live-d3-2026-11-22T01-22-32-585Z-b1 suite=a5sf-live-d3 overall=FAIL cases=4 FAIL:1 PASS:3 worlds=u5u5a5sfdev1-20261122T01-24-22Z recordClass=DEV-LIVE (not candidate evidence)

@@ -1,0 +1,23 @@
+{
+  "at": "2026-11-26T02:25:56.988Z",
+  "callId": "call-d3-b-inflight",
+  "mode": "blocked",
+  "fifo": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261126T02-25-08Z/workspace/team-b/inflight-write.fifo",
+  "readEndHeldByDriver": true,
+  "pipeCapacityBytes": 65536,
+  "commandIntendedBytes": 58720256,
+  "drainReads": 10,
+  "bytesObservedInPipe": 40964,
+  "bytesDrainedOfCommand": 40964,
+  "stateOnObserve": "RUNNING",
+  "stateAfterSettle": "RUNNING",
+  "blockedWriter": {
+    "pid": 3577,
+    "state": "S",
+    "wchan": "anon_pipe_write",
+    "matchedBy": "write-fd",
+    "cmdline": "/bin/bash --noprofile --norc -i"
+  },
+  "blocked": true,
+  "kernelReason": "the writer is parked in write(2)/pipe_write because the pipe buffer is full; the only read end is held by this driver and stopped reading, so the command cannot complete until the process dies"
+}

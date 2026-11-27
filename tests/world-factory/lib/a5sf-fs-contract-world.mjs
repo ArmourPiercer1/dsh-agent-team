@@ -60,11 +60,14 @@ import assert from 'node:assert/strict'
 import {
   existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, readlinkSync, rmSync, statSync, writeFileSync,
 } from 'node:fs'
-import { createRequire, register } from 'node:module'
+import { register } from 'node:module'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { findTestRepoRoot, testUseTree } from '../../paths.mjs'
+import { assertNextHostTree } from '../../next-host/host-next-lib.mjs'
+import { hostToolExecutorSpecifier } from '../../next-host/host-executor.mjs'
+import { resolveSelectedHostModule, testHostMode } from '../../next-host/host-select.mjs'
 
 /** The Member identity every arm runs under. */
 export const FS_CONTRACT_IDENTITY = Object.freeze({
@@ -142,11 +145,18 @@ const SEAM_CACHE = new Map()
  * tree (`git ls-tree <pin> packages/fs/tool-fs` has no `lib/`), so "the checkout
  * is there" is not by itself enough — a provisioned lane must build the host.
  */
-export function fsContractHostLayout(repoRoot) {
-  const root = testUseTree(findTestRepoRoot(repoRoot) ?? repoRoot)
+export function fsContractHostLayout(repoRoot, mode = testHostMode()) {
+  // WHICH pinned host: `TEAM_TEST_HOST=next` reads the same three entries from
+  // tests/deepseek-harness-next (0.2.2-rc.5) instead of the rc.2 test-use tree.
+  // The layout is identical because both are the same upstream project; only the
+  // generation differs. The selector is inert unless a lane opts in.
+  const root = mode === 'next'
+    ? assertNextHostTree(repoRoot).tree
+    : testUseTree(findTestRepoRoot(repoRoot) ?? repoRoot)
   const pinnedFs = join(root, 'packages', 'fs')
   return {
     root,
+    mode,
     entries: {
       toolFs: join(pinnedFs, 'tool-fs', 'lib', 'index.js'),
       fsLocal: join(pinnedFs, 'fs-local', 'lib', 'index.js'),
@@ -156,27 +166,42 @@ export function fsContractHostLayout(repoRoot) {
 }
 
 /**
- * Load the repo seams and the PINNED module entries. Cached per repo root.
+ * Load the repo seams and the PINNED module entries. Cached per (repo root, host
+ * generation) — the generation is part of the key because one process may grade
+ * both hosts and a cache keyed only by path would hand out the wrong one.
  * @param {string} repoRoot - workspace root (the tree under test).
+ * @param {'legacy'|'next'} [mode] - selected host generation.
  */
-export function loadFsContractSeams(repoRoot) {
-  if (SEAM_CACHE.has(repoRoot)) return SEAM_CACHE.get(repoRoot)
+export function loadFsContractSeams(repoRoot, mode = testHostMode()) {
+  const cacheKey = `${mode}:${repoRoot}`
+  if (SEAM_CACHE.has(cacheKey)) return SEAM_CACHE.get(cacheKey)
   const promise = (async () => {
     register(pathToFileURL(join(repoRoot, 'scripts', 'run-tests-hooks.mjs')).href)
     const row = await import(pathToFileURL(join(repoRoot, 'packages/runtime/src/plugin/live/a5sf-realm-row.mjs')).href)
     /** The REAL P1 two-axis compiler; a binding lane is never re-intersected here. */
     const memberIoPolicy = await import(pathToFileURL(join(repoRoot, 'packages/runtime/member-io-policy/src/index.ts')).href)
-    const runtimeRequire = createRequire(join(repoRoot, 'packages/runtime/package.json'))
-    const { Context, Service } = await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/cordis')).href)
-    const ToolRuntime = (await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/dsh-tools')).href)).default
-    const SystemPrompt = (await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/dsh-system-prompt')).href)).default
-    const { bindScopeParent, createScope } = await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/dsh-scope')).href)
+    // B2 — HOST-ANCHORED. On rc.2 the repo's own `node_modules` and the pinned
+    // test-use tree are the same generation, so a `createRequire(repoRoot/...)`
+    // is harmless. On rc.5 it is NOT: that require resolves the repo's rc.2
+    // packages and the world would mix two hosts. `resolveSelectedHostModule`
+    // resolves inside the selected tree and refuses an out-of-tree escape.
+    const requireHost = (spec) => pathToFileURL(resolveSelectedHostModule(spec, repoRoot, mode)).href
+    const { Context, Service } = await import(requireHost('@deepseek-ai/cordis'))
+    const ToolRuntime = (await import(requireHost('@deepseek-ai/dsh-tools'))).default
+    const SystemPrompt = (await import(requireHost('@deepseek-ai/dsh-system-prompt'))).default
+    const { bindScopeParent, createScope } = await import(requireHost('@deepseek-ai/dsh-scope'))
+    // rc.5 splits dispatch behind an executor service; the legacy host has no
+    // such package (dispatch is built in). Only loaded when it is the host.
+    const NativeToolExecutor = mode === 'next'
+      ? await import(requireHost('@deepseek-ai/dsh-tool-executor-native'))
+      : undefined
 
-    const { entries } = fsContractHostLayout(repoRoot)
+    const { entries } = fsContractHostLayout(repoRoot, mode)
     for (const [name, entry] of Object.entries(entries)) {
       if (!existsSync(entry)) {
         throw new Error(
-          `the pinned baseline's ${name} entry is missing (${entry}); provision tests/deepseek-harness-test-use per docs/TEST_METHODS.md §1`,
+          `the pinned ${mode} baseline's ${name} entry is missing (${entry}); provision `
+          + `${mode === 'next' ? 'tests/deepseek-harness-next with node scripts/provision-next-host.mjs --materialize (+ --assets)' : 'tests/deepseek-harness-test-use per docs/TEST_METHODS.md §1'}`,
         )
       }
     }
@@ -186,12 +211,15 @@ export function loadFsContractSeams(repoRoot) {
       import(pathToFileURL(entries.observationPolicy).href),
     ])
     return {
+      hostMode: mode,
+      hostTree: mode === 'next' ? entries.toolFs.slice(0, entries.toolFs.indexOf(`${sep}packages${sep}`)) : undefined,
       row,
       memberIoPolicy,
       Context,
       Service,
       ToolRuntime,
       SystemPrompt,
+      NativeToolExecutor,
       bindScopeParent,
       createScope,
       nativeToolModules,
@@ -200,8 +228,141 @@ export function loadFsContractSeams(repoRoot) {
       toolFsEntry: entries.toolFs,
     }
   })()
-  SEAM_CACHE.set(repoRoot, promise)
+  SEAM_CACHE.set(cacheKey, promise)
   return promise
+}
+
+/**
+ * B3 — the `workingDirectory` INJECTION DOUBLE (rc.5).
+ *
+ * rc.5's `dsh-tool-fs` statically injects `['tools','fs','systemPrompt',
+ * 'workingDirectory']` (`packages/fs/tool-fs/src/index.ts:24`). Cordis SILENTLY
+ * DEFERS a plugin whose static inject is unmet, so a world that mounts no
+ * `workingDirectory` registers NO `read`/`write`/`edit` and every arm then fails
+ * at `DEFINITION_MISSING` — a harness absence masquerading as a product refusal.
+ *
+ * THIS IS A LABELED DOUBLE, exactly like the suite's `approval` double: it does
+ * not implement the production directory owner (no durable cwd, no change
+ * events); it answers the one question the tool body asks — "which directory is
+ * this session in?" — from the session header, or from the world's own default.
+ * It is mounted ONLY on the next host, where the inject exists; rc.2 has no such
+ * service and must not grow one (that would be product wiring invented by a test).
+ *
+ * @param {object} ctx - the world root context.
+ * @param {string} defaultDirectory - fallback when a session header has no cwd.
+ */
+export function provideWorkingDirectoryDouble(ctx, defaultDirectory) {
+  const directoryOf = (session) => session?.header?.cwd ?? defaultDirectory
+  ctx.provide('workingDirectory', {
+    defaultDirectory,
+    get: directoryOf,
+    ensure: (agent) => Promise.resolve(directoryOf(agent?.session)),
+  })
+}
+
+/** The typed code for "this tools service offers neither dispatch contract". */
+export const WORLD_NO_DISPATCH_CONTRACT = 'A5SF_TOOL_EXECUTOR_CAPABILITY_MISSING'
+
+/**
+ * The world's OWN capability probe: which call shape does THIS tools service
+ * accept? Decided ONLY by the public methods the live object exposes — never by
+ * a host generation, a version string, a `package.json` read or a
+ * `try { rc5 } catch { rc2 }`.
+ *
+ * WHY IT IS INDEPENDENT OF THE PRODUCT'S PROBE (round 123). The product's
+ * `hostToolDispatchShape` (`packages/runtime/src/plugin/vnext/tool-executor-mount.mjs`)
+ * answers the same question, and the whole point of the drift-control arm is
+ * that the two answers agree on the SAME object. Importing the product's
+ * function here would make that arm a tautology, so this is a second honest
+ * reading of the same public contract, and the round-123 arms in
+ * `packages/runtime/test/vnext-tool-dispatch-shape.test.ts` compare them service
+ * by service — same input, same shape, or the round is red.
+ *
+ * rc.5 `tools.setExecutor` = a per-scope EXECUTOR mount, dispatched as one BATCH
+ * (`{calls:[{type:'tool-call', id, name, arguments: <JSON string>}], signal,
+ * agent}` with `batch.results[0].result`). rc.2 `tools.modeFor` /
+ * `tools.defaultMode` = the registry dispatches itself, one SINGLE CALL.
+ *
+ * @param {object|undefined|null} tools - the live tools service.
+ * @returns {'executor-mount'|'registry-dispatch'|undefined} `undefined` when the
+ *   service declares neither contract (a typed refusal for the caller).
+ */
+export function worldToolDispatchShape(tools) {
+  if (tools === undefined || tools === null || typeof tools !== 'object') return undefined
+  if (typeof tools.setExecutor === 'function') return 'executor-mount'
+  if (typeof tools.modeFor === 'function' || 'defaultMode' in tools) return 'registry-dispatch'
+  return undefined
+}
+
+/**
+ * The world's typed refusal for a tools service that declares no dispatch
+ * contract. It carries the same machine-greppable `code` the product's seam
+ * raises, so a test-infra absence can never be mistaken for a product refusal of
+ * another kind — and the drift-control arm asserts the two codes are equal.
+ */
+export class WorldToolDispatchRefusal extends Error {
+  /**
+   * @param {string} code - the greppable code (see {@link WORLD_NO_DISPATCH_CONTRACT}).
+   * @param {string} detail - what is missing.
+   */
+  constructor(code, detail) {
+    super(`a5sf-fs-contract-world: ${code}: ${detail}`)
+    this.name = 'WorldToolDispatchRefusal'
+    this.code = code
+    this.detail = detail
+  }
+}
+
+/**
+ * B4 — dispatch one tool call in the shape the LIVE tools service declares.
+ *
+ * ROUND 123 replaces the `{ hostMode }` input: a host generation is not a
+ * dispatch contract, and keying test infrastructure on one was the same defect
+ * the product closed in rounds 121/122. The decision is now
+ * {@link worldToolDispatchShape} over the object the composition actually
+ * loaded — the same public-capability rule the product uses — so a world run
+ * against a synthetic service whose capabilities do not match the selected host
+ * fails by NAME instead of silently emitting the other host's shape.
+ *
+ * @param {object} tools - `root.get('tools')`.
+ * @param {{callId: string, name: string, arguments: unknown, signal: AbortSignal, agent: object}} call
+ * @param {object} [options]
+ * @param {(input: {calls: readonly object[], completion: object}) => void} [options.onCompletion] - receives
+ *   the host's OWN returned value before it is unwrapped. rc.5 announces a pre-dispatch cancellation
+ *   only in that value (`batch.results[].result`), never through `tools/result`; a caller that wants to
+ *   observe it must see the completion, and this is the one place the composition still has it.
+ * @returns {Promise<object>} the settled tool result.
+ */
+export async function executeToolDispatch(tools, call, { onCompletion } = {}) {
+  const shape = worldToolDispatchShape(tools)
+  if (shape === undefined) {
+    throw new WorldToolDispatchRefusal(
+      WORLD_NO_DISPATCH_CONTRACT,
+      'the mounted tools service exposes neither `tools.setExecutor` nor the built-in registry dispatch'
+      + ' (`modeFor`/`defaultMode`), so this world has no governed call shape to dispatch; refusing instead of'
+      + ' emitting whichever shape the selected host happens to accept',
+    )
+  }
+  if (shape === 'executor-mount') {
+    const batch = await tools.execute({
+      calls: [{ type: 'tool-call', id: call.callId, name: call.name, arguments: JSON.stringify(call.arguments) }],
+      signal: call.signal,
+      agent: call.agent,
+    })
+    const outcome = batch.results?.[0]
+    if (outcome === undefined) throw new Error(`the ${call.name} batch returned no result`)
+    if (typeof onCompletion === 'function') onCompletion({ calls: [{ id: call.callId, name: call.name }], completion: batch })
+    return outcome.result
+  }
+  const settled = await tools.execute({
+    signal: call.signal,
+    callId: call.callId,
+    name: call.name,
+    arguments: call.arguments,
+    agent: call.agent,
+  })
+  if (typeof onCompletion === 'function') onCompletion({ calls: [{ id: call.callId, name: call.name }], completion: settled })
+  return settled
 }
 
 /**
@@ -378,10 +539,11 @@ export async function makeFsContractWorld({
   bindings = [],
   llmModalities = ['text', 'image'],
   laneRoots = {},
+  hostMode = testHostMode(),
 }) {
-  const seams = await loadFsContractSeams(repoRoot)
+  const seams = await loadFsContractSeams(repoRoot, hostMode)
   const {
-    row, memberIoPolicy, Context, Service, ToolRuntime, SystemPrompt,
+    row, memberIoPolicy, Context, Service, ToolRuntime, SystemPrompt, NativeToolExecutor,
     bindScopeParent, createScope, nativeToolModules, observationPolicy, LocalFileSystem, toolFsEntry,
   } = seams
 
@@ -530,6 +692,10 @@ export async function makeFsContractWorld({
   const root = new Context()
   await root.plugin(SystemPrompt)
   await root.plugin(ToolRuntime)
+  // B4 — rc.5 selects a ToolExecutor service before it can dispatch; without
+  // one `selectExecutor` throws TOOL_EXECUTOR_UNAVAILABLE and every call would
+  // fail for a harness reason. The legacy host has no executor service.
+  if (hostMode === 'next') await root.plugin(NativeToolExecutor)
   await root.plugin(RecordingAttachments)
   await root.plugin(RecordingLlm)
   // The PRESET/base provider: the preset row resolves it before the shadow, and
@@ -537,6 +703,10 @@ export async function makeFsContractWorld({
   // preset scope.
   await root.plugin(LocalFileSystem, { cwd: dir, diffBasisMaxBytes: 10 * 1024 * 1024 })
   await root.plugin(observationPolicy)
+  // B3 — rc.5's tool-fs statically injects `workingDirectory`. A LABELED double
+  // (see provideWorkingDirectoryDouble): without it Cordis defers the whole
+  // tool module and the world has no read/write/edit at all.
+  if (hostMode === 'next') provideWorkingDirectoryDouble(root, dir)
 
   // The preset topology the live Member row has (route C relies on it).
   const standingKey = {}
@@ -557,7 +727,11 @@ export async function makeFsContractWorld({
 
   const fsInstances = []
   const InstrumentedFs = instrumentedFileSystemClass(LocalFileSystem, fsInstances)
+  const hostExecutorSpecifier = hostToolExecutorSpecifier(repoRoot, hostMode)
   const realm = await row.mountMemberA5sfRealm({
+    // ROUND 121: a synthetic world assembles the tools service itself, so it
+    // must also say where the host's executor plugin lives (rc.5 only).
+    ...(hostExecutorSpecifier === undefined ? {} : { hostToolExecutorSpecifier: hostExecutorSpecifier }),
     root: agent.ctx,
     a5sfConfig: row.a5sfRealmConfigOf({ a5sfEvidencePath: sinkPath }),
     provider: () => ({
@@ -677,7 +851,7 @@ export async function makeFsContractWorld({
     facts: () => readFactsFile(sinkPath),
     /** Dispatch one tool call through the REAL registry (the model call path). */
     async dispatch(name, args, { signal, callId } = {}) {
-      const settled = await root.get('tools').execute({
+      const settled = await executeToolDispatch(root.get('tools'), {
         signal: signal ?? new AbortController().signal,
         callId: callId ?? `a5sf-fs-contract-${name}`,
         name,

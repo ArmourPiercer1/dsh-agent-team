@@ -1,0 +1,26 @@
+# REAL-MODEL acceptance — boot 2 [REAL-MODEL]
+world=u5u5a5sfdev1-20261125T19-52-38Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T19-52-38Z port=3198 elapsedMs=535969
+
+judge                verdict    failing
+enablement           PROVEN     []
+officerUp            PROVEN     []
+officerBinding       PROVEN     []
+routedWake           PROVEN     []
+caseCreated          PROVEN     []
+routerOfficer        PROVEN     []
+wakeDelivered        PROVEN     []
+officerDecides       PROVEN     []
+askExecutesAfterReview PROVEN     []
+duplicateRoute       PROVEN     []
+stickyStop           PROVEN     []
+refusal              PROVEN     []
+askExecute           PROVEN     []
+askExecute2          PROVEN     []
+askDenied            PROVEN     []
+askStopped           PROVEN     []
+leaderCreatesWorker  PROVEN     []
+collect              PROVEN     []
+duplicateApproval    PROVEN     []
+restartNoReplay      PROVEN     []
+
+counters: {"askAppeared":true,"wakeFacts":8,"wakeIntentFiles":0,"reviewWakeHits":0,"officerAllowFacts":1,"askExecuteBytes":27,"askExecuteSha256":"ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3","askExecuteSettlement":"COMPLETED","askExecute2Bytes":29,"askExecute2Sha256":"2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f","askExecute2Settlement":"COMPLETED","askExecuteProcessRequestIdKnown":true,"askExecuteProcessInLaneBytes":null,"askExecuteProcessInLaneSha256":null,"askExecuteProcessOutLaneExists":false,"askExecuteProcessSettlement":"FAILED","askDeniedBytes":null,"askDeniedSettlement":"REFUSED","askStoppedBytes":null,"askStoppedSettlement":"REFUSED","legOrdinal":1,"routeKind":"recipient","routeRole":"officer","selfAskRouteKind":"recipient","selfAskRouteRole":"leader","routedWakes":4,"deliveredWakes":4,"managementExecutions":0,"officerResolveSettlement":"COMPLETED","duplicateWakeInputs":1,"stickyStopMarkerCount":1}

@@ -873,3 +873,94 @@ describe('R1 · the real ControlService owns the one-shot approval', () => {
     }
   })
 })
+
+// --- BL-30: the measured BOUNDARY (why the production consumer cannot be wired) ---------------
+//
+// BL-30's consumption half is "wire `resolveAskClassCall` so a granted `ask` executes". This arm
+// PINS the reason that wire-up is not a wiring change: the adapter's `AskApprovalAuthority` contract
+// is the durable last-mile guard (`guardOperation`), which authorizes and consumes a GUARDED one-shot
+// allow — while the ONLY production producer of an `ask`-disposition approval, the centre's admission
+// ask (`src/plugin/vnext/admission-port.mjs`), records its row `executionCoupling: 'inline'` and waits
+// on it through `awaitControlDecision`, because an inline allow IS the frozen invocation's own
+// continuation and never a reusable guard token (`control/service.ts` B2/D.4 lane disjointness).
+//
+// The measurement below is the same durable world, twice: the SAME admission-shaped scope is
+//   (a) GUARDED  → `guardOperation` allows it and consumes exactly one durable row; the adapter
+//                  accepts (the positive control, and the shape the R1 integration arm already runs);
+//   (b) INLINE   → `guardOperation` answers `no-request` (it deliberately skips inline allows), the
+//                  adapter refuses `APPROVAL_DENIED`, and ZERO consumption rows exist.
+//
+// So wiring the adapter at the confined Provider would refuse EVERY granted admission ask (the live
+// D4 `d4:routed-wake` row is exactly (b)), and making (b) guard-consumable would give one approval two
+// consumption paths and destroy the inline abort/abandon law (`ADM-57`). This arm is the regression
+// fence on that boundary: if someone later makes an inline allow guard-consumable, or makes the
+// admission ask guarded, this arm goes red and the coupling invariant has to be re-decided openly.
+describe('BL-30 · the admission ask is INLINE, and an inline allow is not a guard token', () => {
+  const admissionScope = () => makeScope({
+    targetInstanceId: WORKER_ID,
+    actionName: 'admission-ask',
+    toolName: 'read',
+    correlation: 'admission:call-d4-worker-write',
+  })
+
+  async function durableAllow(coupling: 'guarded' | 'inline') {
+    const world = await createP6T4World(`a5sf-bl30-${coupling}`, ['leader', 'worker'])
+    const service = createP6T4Service(world, { authorityRevalidation: constantAuthorityRecheck().port })
+    const scope = admissionScope()
+    const request = await service.requestControl({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER_ID),
+      kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+      targetInstanceId: WORKER_ID,
+      actionName: scope.actionName,
+      toolName: scope.toolName,
+      correlation: scope.correlation,
+      executionCoupling: coupling,
+    })
+    await service.resolveControl({
+      rootSessionId: P6T4_ROOT,
+      caller: leaderCaller(),
+      requestId: request.requestId,
+      decision: 'allow',
+    })
+    const member = compiledPolicy(WORKER_ID)
+    const tool = toolRestriction()
+    const result = await resolve({
+      memberPolicy: member,
+      tool,
+      invocation: invocationFor(member, tool, { callId: 'call-d4-worker-write' }),
+      currentInstanceGeneration: 3,
+      expectedRootSessionId: P6T4_ROOT,
+      ask: { axis: 'read', locator: '/work/a/p1.txt' },
+      scope,
+      approvalAuthority: (received) => service.guardOperation(received),
+    })
+    const guard = await service.guardOperation(scope)
+    const state = await service.listControlState(P6T4_ROOT)
+    return { world, scope, result, guard, consumptions: state.consumptions.length }
+  }
+
+  it('a GUARDED allow is consumed by the adapter (the control)', async () => {
+    const measured = await durableAllow('guarded')
+    try {
+      expect(measured.result.ok).toBe(true)
+      expect(measured.guard.allowed).toBe(false)
+      expect(measured.guard).toMatchObject({ reason: CONTROL_GUARD_BLOCK_REASONS.ALLOW_CONSUMED })
+      expect(measured.consumptions).toBe(1)
+    } finally {
+      await destroyP6T1World(measured.world)
+    }
+  })
+
+  it('the INLINE admission allow is NOT consumable: the adapter refuses it and consumes nothing', async () => {
+    const measured = await durableAllow('inline')
+    try {
+      expect(measured.guard.allowed).toBe(false)
+      expect(measured.guard).toMatchObject({ reason: CONTROL_GUARD_BLOCK_REASONS.NO_REQUEST })
+      refusal(measured.result, APPROVAL_TAKEOVER_REFUSAL_CODES.APPROVAL_DENIED)
+      expect(measured.consumptions, 'an inline allow never becomes a consumed guard token').toBe(0)
+    } finally {
+      await destroyP6T1World(measured.world)
+    }
+  })
+})

@@ -142,6 +142,7 @@ import {
   type PathIdentityResolver,
 } from '../../member-io-policy/src/provider-capabilities.js'
 import type { EffectiveIoPolicy, PathRuleSet } from '../../member-io-policy/src/types.js'
+import { authorizeProcessAskWithReceipt } from '../../member-io-policy/src/approved-ask-receipt.js'
 import { compileExecutionProfile } from '../../team-sandbox/src/profile.js'
 import type { FsGuard } from './fs.js'
 import { observeGuard, type GuardConsultObserver } from './guard-observability.js'
@@ -1213,6 +1214,27 @@ export interface ConfinedSubprocessOptions {
    * admits; the Member cannot widen this through argv, config or a tool call.
    */
   readonly shellClass?: ConfinedShellClassAdmission
+  /**
+   * ROUND 99 — the COMPILED process disposition for the shell tool this face serves. `deny`
+   * refuses a declared shell spawn before any receipt; `ask` requires an approved-ask receipt
+   * covering THIS execution; `allow` is the pre-round behaviour. Omitted = no declaration reached
+   * this face (the Centre refuses the call anyway); the face never invents one.
+   *
+   * It gates the DECLARED shell-class spawn only; a `grep`/`glob` spawn is not this tool's execution
+   * and is unaffected. THE RECEIPT ADDS NO CAPABILITY: the profile and `allowPaths` are computed
+   * from the same three lanes, unchanged.
+   */
+  readonly processAuthority?: {
+    readonly authorization: 'allow' | 'ask' | 'deny'
+    readonly executionBoundary: string
+  }
+  /** ROUND 99 — the SAME invocation binder the Centre spends grants through (liveness only). */
+  readonly approvedAskAuthority?: {
+    readonly binder?: {
+      currentEpoch(): number
+      currentMemberEpoch(memberIdentity: string): number
+    }
+  }
 }
 
 /** A Provider constructor Cordis can mount as the `subprocess` service. */
@@ -1226,6 +1248,10 @@ export const CONFINED_SUBPROCESS_REFUSAL_CODES = [
   'SUBPROCESS_PROVIDER_REFUSED',
   'SUBPROCESS_TERMINAL_UNSUPPORTED',
   'SUBPROCESS_EXIT_UNRECORDABLE',
+  /** ROUND 99: the compiled process authorization for the shell is `deny`; no receipt is read. */
+  'SUBPROCESS_PROCESS_DENIED',
+  /** ROUND 99: a shell-class `ask` had no valid receipt covering THIS execution. */
+  'SUBPROCESS_PROCESS_RECEIPT_REFUSED',
   /**
    * BL-17 — the lane requests `network: deny` and the backend's own capability
    * probe does NOT report `network-destination: enforced`. The existing
@@ -1466,6 +1492,48 @@ export function createConfinedSubprocessClass(
             if (!(error instanceof TeamIoDenial)) throw error
           }
           throw new ConfinedSubprocessRefusal(shellRefusal.code, shellRefusal.detail)
+        }
+        // ROUND 99 — THE PROCESS-EXECUTION ADMISSION, at the governed spawn point and before any
+        // provider call. It applies to a DECLARED SHELL-CLASS spawn only (a `grep`/`glob` spawn is a
+        // process too, but it is not this face's authored shell tool and is not gated by the shell
+        // tool's authorization). `deny` wins here, before any receipt; `ask` requires an
+        // approved-ask receipt covering THIS execution; `allow` is the pre-round behaviour.
+        //
+        // THE RECEIPT ADDS NO CAPABILITY: it returns no policy, and the request below is built from
+        // `searchArgv`/`profile`/`allowPaths` exactly as before. It cannot widen a writable,
+        // executable or kernel bit.
+        if (shellInvocation !== undefined && options.processAuthority !== undefined) {
+          if (options.processAuthority.authorization === 'deny') {
+            throw new ConfinedSubprocessRefusal(
+              'SUBPROCESS_PROCESS_DENIED',
+              'the compiled process authorization for this shell is \'deny\'; no approval can turn a deny into a spawn',
+            )
+          }
+          if (options.processAuthority.authorization === 'ask') {
+            const dashC = spec.argv.indexOf('-c')
+            const command = dashC >= 0 ? spec.argv[dashC + 1] : undefined
+            const verified = authorizeProcessAskWithReceipt({
+              memberIdentity: effective.memberIdentity,
+              policyRevision: effective.policyRevision,
+              ...(options.toolBindingIdentity === undefined || options.toolBindingIdentity === null
+                ? {}
+                : { toolBindingIdentity: options.toolBindingIdentity }),
+              toolName: 'bash',
+              executionBoundary: options.processAuthority.executionBoundary,
+              processClass: {
+                program: typeof spec.argv[0] === 'string' ? spec.argv[0] : '',
+                programs: options.shellClass?.programs ?? [],
+              },
+              ...(command === undefined ? {} : { command }),
+              ...(options.approvedAskAuthority === undefined ? {} : { authority: options.approvedAskAuthority }),
+            })
+            if (!verified.ok) {
+              throw new ConfinedSubprocessRefusal(
+                'SUBPROCESS_PROCESS_RECEIPT_REFUSED',
+                `${verified.code}: ${verified.detail}`,
+              )
+            }
+          }
         }
         // B3 (review round 3): the name allow-list cannot tell a shipped `rg`
         // from a Member-writable script that happens to be named `rg`. A

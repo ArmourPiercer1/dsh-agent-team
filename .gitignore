@@ -122,3 +122,7 @@ agent-sandbox-hotfix-*.sh
 # next host runtime tree (second pinned DSH host, 0.2.2-rc.5) — gitignored,
 # reproducible with the documented command (docs/TEST_METHODS.md §11)
 tests/deepseek-harness-next/
+
+# test credentials — never committed (owner key lives ONLY here, injected per run)
+.env
+.env.*

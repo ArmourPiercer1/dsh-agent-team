@@ -17,6 +17,16 @@ export interface WakeDeliveryPort {
         readonly targetSessionId: string;
         readonly wakeId: string;
         readonly text: string;
+        /**
+         * ROUND 84 — the ROUTED reviewer instance and the durable request this wake is about. Both are
+         * outputs of the ONE shared routing decision (`routeReview`), never re-derived by the delivery
+         * seam: the governed delivery records who was routed and for which leg, so the durable fact and
+         * the delivered message can never name different subjects. OPTIONAL because a caller that only
+         * has a session (the pre-round-84 seam shape) stays valid; the production notifier always passes
+         * them.
+         */
+        readonly recipientInstanceId?: string;
+        readonly requestId?: string;
     }): Promise<void>;
 }
 /**

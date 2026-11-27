@@ -1,0 +1,791 @@
+# RC5-MIGRATION — the rc.5 lane actually RUNS: B1–B4 measured, B5 CLOSED (round 77), B6 (Stop semantics) CLOSED (round 79)
+
+Round 72b, 2026-11-22; round 77 (2026-11-23) closes B5 — see §6.1 and §11; round 79 (2026-11-23)
+closes B6 — see §7 and §12; **round 102 (2026-11-24) puts the D4 routed-wake acceptance probe on
+rc.5 — see §13** (and the single current verdict table in `D-ACCEPTANCE-REPORT.md`). Worktree `.worktrees/vnext-a1-cut`, branch `vnext/a1-cut`,
+base `6350d04b0` (+ this round's commit). Read first: `NEXT-HOST-RC5-FEASIBILITY.md` (the
+feasibility this round executes), `docs/TEST_METHODS.md` §2/§5/§7/§11.
+
+## Verdict, one screen
+
+| step | state | measured fact |
+| --- | --- | --- |
+| B1 provisioning | **done** | rc.5 tree installed + built (10/10 build gates), pinned native assets provisioned and verified; tree `git status --porcelain` empty |
+| B2 host-anchored resolution | **done, and a real false-green closed** | the lane's resolver used to RETURN an out-of-tree rc.2 hit; it now refuses one and continues. Product bare imports are redirected to the host tree by the test loader |
+| B3 `workingDirectory` injection | **done** | LABELED double, next-host only; measured: without it rc.5 registers **no** read/write/edit |
+| B4 batch + executor dispatch | **done** | batch shape (`calls:[{type:'tool-call',…}]` → `batch.results[0].result`) + `dsh-tool-executor-native` mounted; legacy shape kept verbatim for rc.2 |
+| existing next-host lane | **19/19 pass** | boot, native-api (A1–A6), provisioning controls (11 refusals + positive) |
+| ute-g1-fs rc.5 lane | **5/5 pass** | 16/16 vectors reproduce the rc.2 golden; 13/13 negative controls |
+| A1 slice on rc.2 | **36/36 pass** | no regression from the port (default = legacy) |
+| A1 slice on rc.5 | **38/38 pass** (round 79) | was 34/36 at round 77; SLICE-35 GREEN since round 77 (§6.1), SLICE-21/30 GREEN since round 79 (§7), plus the new SLICE-37 dedupe arm and the SLICE-38 durable no-fabrication arm. The same 38/38 runs on rc.2 (unset selector) |
+| B5 three unconfined FS methods | **CLOSED (round 77)** | `patchText`/`deleteFile`/`moveFile` are confined, SLICE-35 GREEN on rc.5 and rc.2; six new arms `ADM-135`…`ADM-140` (§6.1, §11) |
+| local gates | **all green** | dispatch 204+2skip, catalog 785/38/14, cut-closure, P0, docs-sync, 29 placements, ci-required 10/0, bound vitest 238 (round 79) |
+
+No `CORE_SEAM_BLOCKER`. No host-tree file was written (the only host writes are the gitignored
+install/build outputs and the pinned `bin/` payload, both by the provisioning transport). No
+upstream patch, no vendored copy, port 3080 and its `DSH_HOME` untouched.
+
+## 1. B1 — provisioning and build (DONE)
+
+### The tree is SHARED, stated plainly
+
+`tests/deepseek-harness-next` in this worktree is a **symlink**:
+
+```
+tests/deepseek-harness-next -> ../../../tests/deepseek-harness-next
+realpath = /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-next
+```
+
+So provisioning writes the tree shared by the main checkout **and every worktree**. That is the
+documented protocol (§ feasibility "worktree host trees are symlinks to the main checkout") and it
+was done deliberately; it is recorded here because the blast radius is every worktree, not this one.
+Afterwards the tree is pristine upstream: `git -C tests/deepseek-harness-next status --porcelain`
+is **empty**, HEAD is still the pin.
+
+### Materialize + build
+
+```
+$ node scripts/provision-next-host.mjs --materialize
+...
+run-gates: 10 passed, 0 failed, 0 skipped in 124.58s.
+NEXT-HOST-MATERIALIZED tag=dsh-v0.2.2-rc.5 head=9c2670d3bce5275e0d1610272958121af87787bb \
+  version=0.2.2-rc.5 pnpm=11.28.5 tree=…/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+```
+
+The script DOES build (the feasibility's "BUILD it if the script does not" is moot — its embedded
+`pnpm run build` runs the host's own 10-gate orchestrator). Install+build took ~3 min
+(`pnpm install` 1 m 0.4 s, build 124.58 s) plus the shared pnpm store warm-up.
+
+Identity, read back:
+
+| fact | value |
+| --- | --- |
+| version | `0.2.2-rc.5` |
+| HEAD | `9c2670d3bce5275e0d1610272958121af87787bb` |
+| tag | `dsh-v0.2.2-rc.5` (upstream `git ls-remote` re-checked = same SHA) |
+| package manager | `pnpm@11.28.5` (read from the tree's `packageManager`, not typed) |
+| build entry | `apps/cli/lib/bin.js` present; `packages/fs/tool-fs/lib/index.js` present |
+
+### Published native assets
+
+`--assets` from this worktree is **refused** for a symlink-mechanical reason, not a semantic one:
+
+```
+$ node scripts/provision-next-host.mjs --assets
+NEXT-HOST-REFUSED code=ASSETS_LAUNCHER_PATH_OUTSIDE_TREE \
+  detail=host-sandbox-assets: LAUNCHER_PATH_OUTSIDE_TREE: launcherPath resolved outside the runtime tree:
+  /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-next/native/system/packages/linux-x64/bin/landlock-run
+```
+
+The CLI passes the UNRESOLVED tree path and compares it to the launcher's realpath; through the
+symlink the two can never agree. The documented operation was therefore run with the **same
+transport, same pins, same receipt**, anchored at the resolved tree (ephemeral, gitignored driver
+`.artifacts/tmp/next-host/provision-assets-driver.mjs`, quoted in full by the command below):
+
+```
+$ node .artifacts/tmp/next-host/provision-assets-driver.mjs
+NEXT-HOST-ASSETS package=@deepseek-ai/node-addon-system-linux-x64 version=0.1.2 \
+  tarballSha256=77fb771bee2133c3ffd1f96c7b9435ddb1ccaee72b6814f6f4391343a611cc20 \
+  distIntegrity=sha512-S2aPVHvYCpNCppCFyNlooMYuTB7ucK5lvD9oXQQ42v5Z2s5AoaiCdjz9r2l+ED2rI5oS1x0cUZmKjJH2dxV0pg== \
+  files=2 hostBaseline=next host=9c2670d3bce5275e0d1610272958121af87787bb \
+  manifestDigest=7f367c7a964ca9fdb33e93e889a5a999c481da35e81edc67976fffbc3cc8c52c \
+  receipt=…/.artifacts/tmp/host-assets/next-provision-receipt.json
+```
+
+Then the documented verifier (no network, no writes) passes from the worktree:
+
+```
+$ node scripts/provision-next-host.mjs --verify
+NEXT-HOST-VERIFIED head=9c2670d3bce5275e0d1610272958121af87787bb version=0.2.2-rc.5 \
+  assets=bin/glibc/system.node:54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc:17360:0o755|\
+bin/landlock-run:a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31:38552:0o755 \
+  manifestDigest=7f367c7a964ca9fdb33e93e889a5a999c481da35e81edc67976fffbc3cc8c52c
+```
+
+**Residual friction (not a blocker, disclosed):** the CLI cannot provision assets for a
+symlink-shared tree from a worktree. A one-line fix would compare realpaths in
+`assertInsideWorkspace`/`resolveHostSandboxLayout`; it is NOT done this round (not needed, and it
+changes a provisioning guard).
+
+## 2. B2 — host-anchored resolution, and the false green it was hiding (DONE)
+
+### The measured trap
+
+`createRequire(join(tree, 'packages/fs/fs-local/package.json')).resolve('@deepseek-ai/dsh-tool-fs')`
+— fs-local does not depend on tool-fs, so Node climbs OUT of the host tree and returns the rc.2
+copy. The lane's old `resolveHostModule` returned the FIRST successful resolution with **no
+containment check**, i.e. it could hand a caller rc.2 while the suite reported rc.5.
+
+```
+HOST-ANCHOR naive-require-escapes=true \
+  escapedTo=…/.worktrees/vnext-a1-cut/node_modules/.pnpm/@deepseek-ai+dsh-tool-fs@0.2.0-rc.2_…/lib/index.js
+HOST-ANCHOR hardened-refuses-escape=true \
+  resolved=…/tests/deepseek-harness-next/packages/fs/tool-fs/lib/index.js
+```
+
+### What changed
+
+1. `tests/next-host/host-next-lib.mjs#resolveInsideTree` — resolution now REQUIRES the resolved
+   realpath to be inside the realpath of the host tree. An out-of-tree hit is not a resolution: the
+   next anchor is tried, and if every anchor escapes the lane throws `MODULE_UNRESOLVED` **with the
+   escape evidence**. Anchor list extended to every package the lanes import (fs/tool-fs-search,
+   shell/tool-bash-persistent, sandbox/{sandbox,sandbox-local,sandbox-policy}, web/tool-web,
+   spill/spill-local, subprocess/subprocess-local, …).
+2. `tests/next-host/host-select.mjs` (new) — `TEAM_TEST_HOST=next|legacy`, unknown values throw.
+   `legacy` is the default and resolves exactly as before (per-package anchor), so every existing
+   leg is untouched.
+3. `scripts/run-tests-hooks.mjs` — when `TEAM_TEST_HOST=next`, every bare `@deepseek-ai/*` import
+   from **TEAM code** is redirected into the host tree. This is the half the feasibility called
+   "factory or TEAM bare imports": without it the product's `import { scopeOf } from
+   '@deepseek-ai/dsh-scope'` binds rc.2's scope while the world builds rc.5 scopes — two host
+   generations in one process. Imports whose parent is ALREADY inside the host tree are left to
+   Node's normal host-anchored walk (otherwise legitimate host deps such as
+   `@deepseek-ai/cosmokit` fail to resolve from a workspace anchor).
+4. `tests/world-factory/lib/a5sf-fs-contract-world.mjs` — `fsContractHostLayout` /
+   `loadFsContractSeams` are host-selectable (`TEAM_TEST_HOST`), cache keyed by `mode:repoRoot`,
+   and every upstream entry the world consumes goes through `resolveSelectedHostModule`.
+
+### Proof (same process, `TEAM_TEST_HOST=next`)
+
+```
+HOST-ANCHOR tree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-next
+HOST-ANCHOR @deepseek-ai/cordis                    inside=true file=…/tests/deepseek-harness-next/vendor/cordis/lib/index.js
+HOST-ANCHOR @deepseek-ai/dsh-tools                 inside=true file=…/packages/core/tools/lib/index.js
+HOST-ANCHOR @deepseek-ai/dsh-scope                 inside=true file=…/packages/core/scope/lib/index.js
+HOST-ANCHOR @deepseek-ai/dsh-fs-local              inside=true file=…/packages/fs/fs-local/lib/index.js
+HOST-ANCHOR @deepseek-ai/dsh-tool-fs               inside=true file=…/packages/fs/tool-fs/lib/index.js
+HOST-ANCHOR @deepseek-ai/dsh-tool-executor-native  inside=true file=…/packages/core/tool-executor-native/lib/index.js
+HOST-ANCHOR @deepseek-ai/dsh-tool-fs-search        inside=true file=…/packages/fs/tool-fs-search/lib/index.js
+HOST-ANCHOR @deepseek-ai/dsh-sandbox-local         inside=true file=…/packages/sandbox/sandbox-local/lib/index.js
+HOST-ANCHOR @deepseek-ai/dsh-tool-bash-persistent  inside=true file=…/packages/shell/tool-bash-persistent/lib/index.js
+```
+
+Corroboration that it is the REAL rc.5 code executing, not a relabelled rc.2: the boot lane's own
+`NEXT-SMOKE HOST` line prints the tree HEAD and the pinned native bytes, and `A1–A6` exercise rc.5
+host packages the rc.2 install does not even ship in the same shape (`@deepseek-ai/dsh-ptc-runtime`,
+the batch executor). `ute-g1-fs` independently resolves through its own contained loader and reports
+`host=9c2670d3…`.
+
+## 3. B3 — the `workingDirectory` injection double (DONE)
+
+rc.5 `dsh-tool-fs` statically injects `['tools','fs','systemPrompt','workingDirectory']`. Cordis
+defers a plugin with an unmet static inject **silently**. Measured on the rc.5 tree, same context,
+double absent vs present:
+
+```
+WD-DOUBLE withDouble=false registered=(none)
+WD-DOUBLE withDouble=true  registered=read,write,edit
+```
+
+`provideWorkingDirectoryDouble(ctx, defaultDirectory)` is exported from the world factory and is a
+**LABELED DOUBLE**, exactly like the slice's existing `approval` double: it answers "which directory
+is this session in?" from `session.header.cwd`, falls back to the world's directory, does no
+durability, no change events, no host checks. It is mounted ONLY when the host is `next`; rc.2 has
+no such inject and must not grow product wiring invented by a test. Both the slice world and
+`makeFsContractWorld` mount it.
+
+## 4. B4 — batch dispatch + executor (DONE)
+
+rc.5 replaced `tools.execute({callId,name,arguments})` with:
+
+```js
+tools.execute({ calls: [{ type: 'tool-call', id, name, arguments: JSON.stringify(args) }], signal, agent })
+// -> batch.results[0].result
+```
+
+`executeToolDispatch(tools, call, {hostMode})` branches: batch + JSON-string arguments on `next`,
+the legacy shape verbatim on `legacy`. `@deepseek-ai/dsh-tool-executor-native` is mounted after
+`ToolRuntime` on `next` only (rc.5 selects an executor before dispatch; unmounted it is
+`TOOL_EXECUTOR_UNAVAILABLE`). Evidence: `native-api` A2/A3 pass on rc.5 (`executor=selected`,
+`order=tools/pre-execute>tools/execute>tools/post-execute>tools/result`), and 33/36 slice arms
+dispatch through the batch shape.
+
+The slice's rung 4/5/6 prerequisite modules were also moved onto the host selector (they used a
+`packages/runtime`-anchored require, which is correct for rc.2 and an rc.2-escape for rc.5):
+`resolveHostEntry` / `requireOfOwningPackage` / `resolveFromPackageOrHost`. This is why SLICE-28 and
+SLICE-33 went from `MODULE_UNRESOLVED` to passing; no assertion was touched.
+
+## 5. The lanes, per suite, honestly
+
+### 5.1 `tests/next-host` — the existing next-host lane: 19/19 PASS
+
+```
+$ node --test --test-reporter=spec tests/next-host/*.test.mjs
+NEXT-SMOKE BANDS ok legacy=3181-3199(19) next=13000-13049(50) overlap=0
+NEXT-SMOKE BOOT ok ms=1255 port=13000 treeHead=9c2670d3… version=0.2.2-rc.5
+NEXT-SMOKE SESSION ok sessionId=session-0340298e… createStatus=200 promptStatus=200 modelRequests=2
+NEXT-SMOKE SERVED ok … sessionFiles=…/session.v4.jsonl.zstd modelReplies=2
+NEXT-SMOKE A1 ok resolve=ResolvedToolSet dispose=function admitted=observe
+NEXT-SMOKE A2 ok executor=selected tool=observe value=observed:one bodyObserved=["one"]
+NEXT-SMOKE A3 ok order=tools/pre-execute>tools/execute>tools/post-execute>tools/result
+NEXT-SMOKE A4 ok transport=run_code … sessionEvents=tool/ptc-dispatch-start,tool/ptc-dispatch
+NEXT-SMOKE A5 ok bodySawAbort=true resultIsError=true notified=1
+NEXT-SMOKE A6 ok lateSuccessOverridden=ABORTED preDispatch=ABORTED_BEFORE_DISPATCH dispatched=0
+NEXT-SMOKE HOST ok tag=0.2.2-rc.5 head=9c2670d3… assets=bin/glibc/system.node:54a9c25c…|bin/landlock-run:a752bc72…
+ℹ tests 19  pass 19  fail 0  skipped 0
+```
+
+The 19 include the 11 provisioning-refusal controls (`TREE_MISSING`, `NOT_BUILT`,
+`NOT_A_GIT_CHECKOUT`, `HEAD_DRIFT`, `VERSION_DRIFT`, `VERSION_UNREADABLE`, `PIN_INVALID`×2,
+`ASSET_MISSING`, `ASSET_DIGEST_DRIFT`, `ASSET_BYTES_DRIFT`, `ASSET_MODE_DRIFT`) — still refused,
+still red-on-demand. **This is a real boot of the pinned rc.5 binary on port 13000 with its own
+`tests/homes/next-boot-…-next` home, and the session log is on disk.** Nothing was skipped, no
+timeout was raised, nothing mocked.
+
+### 5.2 `tests/ute-g1-fs` (the other rc.5 lane): 5/5 PASS
+
+```
+$ node --test --test-reporter=spec tests/ute-g1-fs/lane-suite.test.mjs
+UTE-G1-FS-VERDICT GREEN vectors=16 pending=0 host=9c2670d3bce5275e0d1610272958121af87787bb
+UTE-G1-FS-NC NC-1-lane-bites ok … NC-4-lane-load-bearing ok … NC-MEMBER {read,write,edit,read_image} ok
+NC-MEMBER-POSITIVE ×4 ok … NC-IMAGE-OBSERVER ok cases=4
+ℹ tests 5  pass 5  fail 0
+```
+
+16/16 corpus vectors reproduce the rc.2 golden through the rc.5 host's own executor; 13/13 negative
+controls hold. (This lane was green-capable in code already; it had never RUN because the tree was
+not built. It runs now.)
+
+### 5.3 A1 vertical slice, rc.2 (default): 36/36 PASS
+
+```
+$ node --test --test-reporter=spec packages/runtime/test/vnext-fs-slice.test.mjs
+ℹ tests 36  pass 36  fail 0
+```
+
+The port is inert on the legacy host: no assertion changed, no arm skipped.
+
+### 5.4 A1 vertical slice, rc.5 (`TEAM_TEST_HOST=next`): 33/36 PASS
+
+```
+$ TEAM_TEST_HOST=next node --test --test-reporter=spec packages/runtime/test/vnext-fs-slice.test.mjs
+ℹ tests 36  pass 33  fail 3
+✖ SLICE-21 — STOP before dispatch: an aborted call never reaches the body
+✖ SLICE-30 — a Stop before admission invents no settlement record, and is not silently lost
+✖ SLICE-35 — the confined provider covers EVERY base entry point that touches a path
+```
+
+This is the first rc.5 green/red measurement of the product slice. 30 of the arms — identity,
+inside/outside confinement through the Member's own provider, admission allow/deny/unwired, the
+durable ledger, duplicate-callId refusal, restart no-replay, observation policy on/off, approved-ask
+exactly-once, revocation recheck, settlement, crash recovery, edit confinement, web rung 5/6 — pass
+on rc.5 **with the same assertions that pass on rc.2**. The three reds are analysed below; two are
+host drift, one is the intended product signal.
+
+## 6. SLICE-35 — the confinement invariant is RED on rc.5 (the intended B5 signal)
+
+> **ROUND 77 UPDATE — this section is history, B5 is closed.** The signal below was collected at
+> round 72b and is kept verbatim because the fix has to be read against it. It now reads GREEN on
+> BOTH lanes; what closed it, and the evidence, is §6.1 and §11.
+
+```
+✖ SLICE-35 — the base provider has path-touching entry points the Team confined class does not override:
+  deleteFile, moveFile, patchContent, patchText, requireFile, withLocks, writeTarget
+```
+
+Derived from the rc.5 concrete `LocalFileSystem` prototype; SLICE-36 (the positive control) passes
+after being made host-relative (its expectation is now "the selected base's own un-overridden set
+PLUS the three the fixture adds", computed, not hard-coded — still an exact `deepEqual`).
+
+Reading the 7 names honestly, because the number is larger than the feasibility's 3:
+
+| name | what it is |
+| --- | --- |
+| `patchText`, `deleteFile`, `moveFile` | the three PUBLIC rc.5 `FileSystem` additions — the real confinement gap; `apply_patch`/delete/move reach the backend without the Member lane |
+| `patchContent`, `requireFile`, `withLocks`, `writeTarget` | **internal helpers of the concrete rc.5 provider**, called only from inside `patchText`/`deleteFile`/`moveFile` (`fs-local/src/index.ts:129,290,317,348,369`). TS `private` is not runtime-private, so the derivation sees them |
+
+So the invariant is not over-reporting a *reachable* surface: the three public methods are the gap,
+and the four helpers are the same gap's internals. Whether the derivation should exclude known
+internal helpers is a follow-up decision for the invariant's owner — excluding them by name is an
+allowlist, which the arm's design explicitly refused ("no allowlist to rot"), so it was NOT done.
+
+**Consequence, stated for the host list:** on rc.5, `apply_patch`, delete and move are NOT confined.
+No claim of "FS confinement holds on rc.5" may be made until the three overrides exist. B5 itself
+(three overrides in `packages/runtime/team-services/src/fs.ts` + arms) is a separate product task
+and was NOT attempted this round, per instruction.
+
+## 6.1 ROUND 77 — B5 CLOSED: the three rc.5 FS methods are confined
+
+**What changed (product).** `packages/runtime/team-services/src/fs.ts`:
+
+| method | impl | mirrors |
+| --- | --- | --- |
+| `patchText` | `fs.ts:365` | `editText` — same target, write axis, read coverage when the file exists |
+| `deleteFile` | `fs.ts:383` | a write of the file it removes — write axis + `write ⇒ read` (the file exists by construction) |
+| `moveFile` | `fs.ts:416` | BOTH paths: the SOURCE as `editText` (removal of an existing file), the DESTINATION as `writeText` (write + read-if-existing) |
+
+Both `moveFile` paths are judged on the REAL guard (`createMemberFsGuard`, same
+`evaluateLocatorAccess` canonicalization) BEFORE the base Provider runs, so an out-of-lane
+destination refuses with `IO_WRITE_DENIED` and the source is not removed either. `WRITE_METHODS`
+(`fs.ts:120`) grew the three names so the axis table treats them as mutations, not reads.
+
+**Type strategy (rc.2 compile / rc.5 runtime).** rc.2's provider type has none of the three, so they
+are declared as extra methods on a separate `FsNewMethodSurface` (`fs.ts:99`) and the base
+implementation is looked up ONCE on `Base.prototype` through one local cast (`fs.ts:250-264`). No
+`any` was added. A base that does not implement a method refuses TYPED with
+`IO_POLICY_UNSUPPORTED` (`fs.ts:279`, carrying the Member identity every install site now passes —
+`install.ts:510`, `:875`) instead of throwing `TypeError` on `undefined(...)`. `MANAGED_FS_METHODS`
+was deliberately NOT grown: the three are optional per-call capabilities, so the install still
+accepts an rc.2 provider and the refusal happens at the call.
+
+**SLICE-35 GREEN on BOTH lanes.** The 7-name derivation needed one decision, and it is now made and
+WITNESSED rather than a bare allowlist: the four TS-`private` helpers (`patchContent`, `requireFile`,
+`withLocks`, `writeTarget`) are not entry points, and each excluded name must be called from a base
+method that is itself in the guarded set — if a future host calls a helper from a method the class
+does not override, that method is still derived and red; if the guarded caller disappears, the
+witness fails. An extra host-relative assertion pins that the three public names ARE derived and ARE
+covered whenever the selected base declares them, so the exclusion cannot swallow them. SLICE-36
+(the positive control) keeps the same exact `deepEqual`; its fixture now adds three names the
+PRODUCT does not cover (`copyFile`/`truncateFile`/`renamePath`), because reusing the rc.5 names
+would have measured the product's new coverage instead of the derivation.
+
+```
+$ node --test --test-reporter=spec --test-name-pattern='SLICE-3[56]' packages/runtime/test/vnext-fs-slice.test.mjs
+✔ SLICE-35 — the confined provider covers EVERY base entry point that touches a path
+✔ SLICE-36 — the coverage invariant actually detects an unconfined entry point
+
+$ TEAM_TEST_HOST=next node --test --test-reporter=spec --test-name-pattern='SLICE-3[56]' packages/runtime/test/vnext-fs-slice.test.mjs
+✔ SLICE-35 — the confined provider covers EVERY base entry point that touches a path
+✔ SLICE-36 — the coverage invariant actually detects an unconfined entry point
+```
+
+**Mutation control (the green is falsifiable).** Renaming the `patchText` override (so the class no
+longer covers it) turns SLICE-35 RED on rc.5, naming exactly that method:
+
+```
+✖ SLICE-35 — the base provider has path-touching entry points the Team confined class does not override: patchText
+  — on a newer host those calls reach the real backend with the Member lane never consulted.
+```
+
+**Six new arms, `ADM-135`…`ADM-140`** (node:test, `vnext-admission.test.mjs`, `ute-vnext-a1` leg):
+
+| arm | positive | negative |
+| --- | --- | --- |
+| `ADM-135` `patchText` | spy provider reached exactly once with the SAME target object | out-of-lane ⇒ `IO_WRITE_DENIED`, provider never called, file untouched |
+| `ADM-136` `deleteFile` | same, on a delete | out-of-lane ⇒ `IO_WRITE_DENIED`; write-only lane ⇒ `IO_WRITE_REQUIRES_READ` (judged LIKE A WRITE) |
+| `ADM-137` `moveFile` | both objects delegated, source+destination unchanged | out-of-lane DESTINATION ⇒ refused, zero provider calls, source NOT removed, nothing published; out-of-lane SOURCE ⇒ same |
+| `ADM-138` cross-root | a move into a second allow root IS admitted when each path passes its own admission | an existing destination in a write-only root ⇒ `IO_WRITE_REQUIRES_READ` (the product's per-path rule, no invented cross-root ban) |
+| `ADM-139` old backend | — | a base without the three ⇒ `IO_POLICY_UNSUPPORTED` naming the method, no `TypeError`, nothing changed |
+| `ADM-140` REAL provider | on rc.5 the three calls take effect through the real `LocalFileSystem` (patch is a no-op, delete removes, move publishes+removes) | out-of-lane destination refused by the real provider's lane; on rc.2 the same calls are typed `IO_POLICY_UNSUPPORTED` and nothing moves |
+
+`ADM-140` asserts the branch it took matches the selected host, so a lane that says
+`TEAM_TEST_HOST=next` and resolves the rc.2 tree cannot read as an rc.5 green.
+
+**Lane results (both hosts, this HEAD).** `ute-vnext-a1` on rc.2: **204 tests / 202 pass / 0 fail /
+2 disclosed skips**, exit 0 (was 182/180 at round 72b). The rc.5 lane cannot run as ONE `node --test`
+invocation: `vnext-b-probe-ladder.test.mjs` hangs there (16/16 arms never settle; **baseline-identical
+— the same hang reproduces with this round's four files reverted**), so the rc.5 evidence is taken
+per suite, exactly as round 72b did. Per suite on rc.5: realm-lane 12/12, fs-slice 34/36 (SLICE-21/30
+red, §7), admission 124 tests / 119 pass / 5 red (pre-existing, below), os-probe 3/3,
+work-turn-reader 7/7, template-binding 6/6; b-probe-ladder hangs. The five admission failures and the
+b-ladder hang are **pre-existing rc.5 drift, measured against the reverted tree, not caused by this
+round**: `ADM-96`/`ADM-97` (`TypeError: signals[0] is not of type AbortSignal`, rc.5 MCP call shape)
+and `ADM-100`/`ADM-101`/`ADM-102` (the preset native-module default mount). They are recorded, not
+bent, and remain open rc.5 work for a later round.
+
+**What this does NOT prove.** The arms are IN-PROCESS: a spy/real provider class mounted through
+Cordis in the test process, and the "real provider" arm is the real pinned `LocalFileSystem` with the
+REAL lane guard, but there is still no host boot, no model turn, and no kernel boundary at this
+layer. In particular: (a) no live `apply_patch`/delete/move through a booted member is measured;
+(b) the guard is in-process, so a TOCTOU between the guard's canonicalization and the provider's own
+syscall is inherited from the base provider, not closed here; (c) the rc.2 compile-time reality is
+asserted by `tsc` + the typed-refusal arm, not by running rc.2's provider through a real move;
+(d) `moveFile`'s rc.5 semantics (publish-then-remove, `sourceDeleted:false` on a retained source)
+were read from the host source and exercised only for the unconditional case (no hunks, no version
+guards).
+
+
+## 7. SLICE-21 / SLICE-30 — rc.5 pre-dispatch cancellation (B6): the drift, and the observation point that closes it
+
+**Status: CLOSED (round 79).** Both arms are GREEN on rc.5 AND rc.2, with their assertions unchanged
+(no weakening, no skip, no widened timeout). This section keeps the measured drift, then states where
+the product now observes the call and what it does — and does not — record for it.
+
+### 7.1 The measured drift (round 77, kept verbatim)
+
+Both arms abort a call BEFORE dispatch and then require the host to have SETTLED it, so the
+admission/settlement record exists. On rc.5 it does not: rc.5's batch scheduler synthesizes
+`ABORTED_BEFORE_DISPATCH` results for skipped calls (`packages/core/tools/src/batch.ts#skip`) and
+**never runs the pipeline**, so `tools/result` never fires; on rc.2 the pipeline handled the
+pre-dispatch abort and emitted the event. Measured with one probe, one call, both hosts:
+
+```
+ABORT-PROBE mode=legacy isError=true code=ABORTED_BEFORE_DISPATCH toolsResultEvents=1
+ABORT-PROBE mode=next   isError=true code=ABORTED_BEFORE_DISPATCH toolsResultEvents=0
+```
+
+### 7.2 Where rc.5 actually announces it (the observation point)
+
+rc.5 does not hide the cancellation; it announces it at a different boundary. In the pinned tree:
+
+- `tests/deepseek-harness-next/packages/core/tools/src/batch.ts:225-229` — an aborted group is
+  drained and `settlement.skip(call.block)` is called for every call that was never started;
+- `tests/deepseek-harness-next/packages/core/tools/src/batch.ts:271-280` — `skip()` synthesizes the
+  ordered error result, with the host's own `code: TOOL_ABORTED_BEFORE_DISPATCH`
+  (`contracts.ts:268`; the exported NAME is `TOOL_ABORTED_BEFORE_DISPATCH`, its VALUE is
+  `ABORTED_BEFORE_DISPATCH` — the first implementation of this round matched the NAME and was
+  correctly red until it matched the VALUE);
+- `tests/deepseek-harness-next/packages/core/tools/src/batch.ts:88` —
+  `executeToolBatch` returns the complete batch, synthetic results included;
+- `tests/deepseek-harness-next/packages/core/tools/src/index.ts:375-377` — `ToolsService.execute`
+  returns that batch to its caller.
+
+So the boundary where the abort becomes observ**able** is the value `tools.execute` RETURNS. Nothing
+in the pipeline can see it, and nothing emits an event for it.
+
+Product side (one reader, one writer):
+
+- `packages/runtime/src/plugin/vnext/pre-dispatch-abort.mjs` (new) — `preDispatchAbortsOf({calls,
+  completion})` reads that returned value for BOTH host generations (rc.5 `ToolBatchResult`, rc.2
+  single `ToolExecutionResult`) and returns exactly the entries carrying the host's pre-dispatch
+  code. It schedules nothing, dispatches nothing, and never invents an event.
+- `packages/runtime/src/plugin/vnext/execution-facts.mjs` — the same canonical fact writer now has a
+  second entry point (`observeExecutorCompletion`) over the SAME `written` map, keyed by the
+  product's **ExecutionId** (`dispatchExecutionId(provenance, callId)`).
+- `packages/runtime/src/plugin/vnext/centre-install.mjs` — `installMemberCentre` wires
+  `onPreDispatchAbort` to the settle writer and exposes `observeExecutorCompletion`;
+  `member-execution.mjs` re-exports it on the member composition.
+- `packages/runtime/src/plugin/vnext/settlement-port.mjs` — `stoppedBeforeBody()` now reports an
+  UNRECORDED settlement visibly under one stable code (`SETTLEMENT_NO_RECORD_BEFORE_ADMISSION`)
+  instead of returning null silently; the same code is used by the terminal writer's no-record path.
+- `tests/world-factory/lib/a5sf-fs-contract-world.mjs` — `executeToolDispatch` hands the host's OWN
+  returned value to the composition (`onCompletion`); the slice world installs the product observer.
+
+**No scheduler was intercepted or replaced.** The product does not register a `ToolExecutor`, does
+not wrap `ToolsService.execute`, and does not touch rc.5's batching: it reads the value the scheduler
+already returns.
+
+### 7.3 What is recorded for a pre-dispatch abort
+
+| case | durable record | why |
+| --- | --- | --- |
+| abort observed, **no admission record** (a call aborted before the admission point — the case both slices drive) | an **execution fact** `outcome: 'aborted'`, `abortPhase: 'pre-dispatch'`, with the product ExecutionId; **no settlement record**; the unrecorded settlement is **reported** under `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` | the admission point never ran, so there is no authority record to close. Inventing a settlement would attribute an admission nobody made to a call nobody admitted. The fact still carries the Stop, so the cancellation is not lost |
+| abort observed **and** an admission record exists | the same fact, plus `recordStop({phase:'pre-dispatch'})` and `settle(CANCELLED)` through `stoppedBeforeBody()` | the record exists and must be closed: `ADMITTED → CANCELLED` is legal exactly with a recorded pre-dispatch Stop (`settlement/execution-settlement.ts:1127-1133`) |
+| the call entered the pipeline and settled normally | nothing from this observer | the completion carries no pre-dispatch code; and the ExecutionId dedupe refuses a second fact anyway |
+
+**No fabrication rule, stated once.** An abort before the admission point has no admission record,
+and the product does not manufacture one: no fabricated `tools/result`, no fake allow/deny, no
+invented settlement. What it owes is a visible report, and it writes one.
+
+### 7.4 Dedupe by ExecutionId (the arm)
+
+`SLICE-37` (new) pins the law on BOTH hosts:
+
+1. a pre-dispatch abort produces exactly ONE execution fact whose `executionId` is the product id,
+   and ZERO settlement records, with the unrecorded gap REPORTED naming that ExecutionId;
+2. the SAME completion delivered again through the observer (the both-paths-fire case; on rc.2 the
+   pipeline really does report it too) is DEDUPED: `observed:1, recorded:0, deduped:1`, the fact
+   count stays 1 and no settlement appears;
+3. a call that ENTERED the pipeline (`completed`) makes the observer report `observed: 0`, and its
+   settlement is written exactly once by the pipeline path.
+
+On rc.2 the first fact is written by the `tools/result` path and the completion observation is the
+deduped one; on rc.5 the completion observation writes it and the re-delivery is deduped. The arm is
+one arm, not a host-conditional assertion.
+
+`SLICE-38` pins the DURABLE edge of the same rule: in a world WITH the product ledger, a
+pre-dispatch abort before the admission point cannot be written at all (`LEDGER_EXECUTION_UNBOUND`:
+"an execution the ledger cannot join to an authority record is not writable"). The arm requires the
+observer to report that refusal (`unrecordable: 1`, the ledger's own code, the callId it could not
+bind), to write NO execution record, NO settlement and NO admission record, and to leave the host's
+dispatch unbroken; a control call that DID reach admission is then recorded and settled normally.
+
+### 7.5 NOT proven, and the residual gap
+
+**The production `tools.execute` call site is not wired.** In a real rc.5 agent turn the caller of
+`tools.execute` is the host's own agent loop, which the product does not own. The observer exists,
+is exported by the product composition (`member-execution.mjs` → `observeExecutorCompletion`) and is
+driven end to end in the slice composition, but no product composition is the caller of the host
+loop's batch. Wiring it there needs an upstream seam; per the repo rule that is a
+`CORE_SEAM_BLOCKER` for that leg, **not** a patch. What this round therefore proves is the
+OBSERVATION AND RECORDING contract at the boundary, over the real pinned hosts — not that a booted
+rc.5 member's pre-dispatch cancel is recorded by production wiring. That is recorded here and in
+`RC5-ACCEPTANCE.md` §3.5 as an open item rather than claimed.
+
+Also NOT proven: a pre-dispatch abort that lands between admission and dispatch on rc.5. The pinned
+scheduler's `startCall` prepares and dispatches in one step (no recheck between them), so the
+"record exists, dispatch skipped" row above is exercised by the settle writer's contract and by
+`stoppedBeforeBody`'s arms, not by a real rc.5 interleaving.
+
+## 8. Local gates, pasted
+
+```
+$ node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1
+DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 \
+  set=sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975
+ℹ tests 182  pass 180  fail 0  skipped 2        (the two disclosed process-lane skips, unchanged)
+
+$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+  tests=785  DISCOVERED_AND_COLLECTED 733  EXCLUDED_WITH_REASON 14  UNCOLLECTED 38
+DSH-TEST-CATALOG tests=785 refused=0 findings=0
+
+$ node scripts/ute-cut-closure.mjs --check
+UTE-CUT-CLOSURE pass deleted=148 references=3 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 findings=0
+
+$ node scripts/ute-p0-assets.mjs --check
+UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 cut=cut(148/148) findings=0
+
+$ node scripts/docs-sync.mjs --check
+docs:sync --check: docs=193 notes=4 plans=152(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+AUTHORITY_SOURCE_BINDING {… "pointer_digest_verified":true …}
+
+$ node scripts/place-dist-glue.mjs
+place-dist-glue: done (28 placement(s))
+
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=10 findings=0
+
+$ node scripts/eb3-security-run.mjs --layer ci-integration \
+    --list-file tests/checks/eb3-ute-migrated-suites.txt --timeout 30000
+EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0 clock_ms=30000
+```
+
+## 9. Still blocked / not attempted
+
+| item | state | why |
+| --- | --- | --- |
+| **B5** — three unconfined FS methods | **CLOSED (round 77)** | three overrides + six arms; SLICE-35 GREEN on rc.5 and rc.2 (§6.1, §11) |
+| SLICE-21 / SLICE-30 on rc.5 | **CLOSED (round 79)** | observed at the executor completion boundary, deduped by ExecutionId; GREEN on rc.5 and rc.2 with unchanged assertions (§7, §12) |
+| provisioning CLI on a symlinked tree (`--assets`) | **environment friction, worked around** | `LAUNCHER_PATH_OUTSIDE_TREE` is lexical; realpath-anchored transport used and verified. A realpath fix in the CLI is a follow-up, not done here |
+| hosted CI `next-host` leg | **not run here** | the leg provisions the tree on the runner; this round only proves the LANE, locally, against the real pinned host |
+| claim "FS confinement holds on rc.5" | **allowed for the three FS methods, with the scope in §11** | §6.1/§11: in-process + real-provider evidence, NOT a live-host or kernel claim |
+| any `CAPABILITY-MATRIX-C.md` row upgrade | **not done** | no row is PRODUCT-PROVEN; rc.5 greens are lane evidence, not a matrix upgrade |
+
+## 10. Files changed (this round)
+
+- `tests/next-host/host-next-lib.mjs` — `resolveInsideTree`: containment is part of resolution; anchors extended.
+- `tests/next-host/host-select.mjs` — **new**: `TEAM_TEST_HOST=next|legacy`, fail-loud, tree + bare-import selection.
+- `scripts/run-tests-hooks.mjs` — host-anchored redirect of TEAM `@deepseek-ai/*` imports under `next`.
+- `tests/world-factory/lib/a5sf-fs-contract-world.mjs` — host-selectable seams/layout; LABELED `workingDirectory` double; `executeToolDispatch` batch/legacy branch.
+- `packages/runtime/test/vnext-fs-slice.test.mjs` — next-host mount (executor, workingDirectory double), batch dispatch, host-resolved rung 4/5/6 prerequisites, host-relative SLICE-36 expectation. SLICE-35 unchanged.
+
+Untracked, gitignored, not committed: the rc.5 tree (its own checkout), `.artifacts/tmp/**`
+(provisioning driver, logs, probes), `tests/homes/**`.
+
+## 11. Round 77 — files changed and the gate outputs
+
+Product: `packages/runtime/team-services/src/fs.ts` (three overrides + `FsNewMethodSurface` +
+`WRITE_METHODS` + `baseImplementation` + the module header), `packages/runtime/team-services/src/install.ts`
+(two call sites pass `spec.identity.memberInstanceId`). Tests: `packages/runtime/test/vnext-admission.test.mjs`
+(`ADM-135`…`ADM-140`), `packages/runtime/test/vnext-fs-slice.test.mjs` (SLICE-35 witnessed-helper
+exclusion + host-relative assertion; SLICE-36 fixture + additive assertion). Docs: this file,
+`CAPABILITY-MATRIX-C.md`, `D-ACCEPTANCE-REPORT.md`, `MIGRATED-SUITE-STATUS.md`.
+
+Gates at this HEAD (all green; the `ci-pr-gate --full --census-captures 2` output is the last block
+of the round's commit message / `SESSION_ROUTER_LOG.md` entry):
+
+```
+$ node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1
+ℹ tests 204  pass 202  fail 0  skipped 2
+DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0
+$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+DSH-TEST-CATALOG tests=785 … uncollected=38 excluded=14 findings=0
+$ node scripts/ute-cut-closure.mjs --check      → UTE-CUT-CLOSURE pass cut=cut(0/148) findings=0
+$ node scripts/ute-p0-assets.mjs --check        → UTE-P0-ASSETS pass cut=cut(148/148) findings=0
+$ node scripts/docs-sync.mjs --check            → findings=0 blocking=0
+$ node scripts/place-dist-glue.mjs              → done (28 placement(s))
+$ node scripts/eb3-ci-required.mjs              → EB3-CI-REQUIRED pass workflows=10 findings=0
+$ node scripts/eb3-security-run.mjs --layer ci-integration \
+    --list-file tests/checks/eb3-ute-migrated-suites.txt --timeout 30000
+EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0
+```
+
+## 12. Round 79 — B6 CLOSED: files, gates, and what is not proven
+
+### Files changed (this round)
+
+- `packages/runtime/src/plugin/vnext/pre-dispatch-abort.mjs` — **new**: reads the host's own
+  pre-dispatch result out of the value `ToolsService.execute` returns, for rc.5's batch shape and
+  rc.2's single-result shape. Selects by the host's own code only.
+- `packages/runtime/src/plugin/vnext/execution-facts.mjs` — the second observation entry point
+  (`observeExecutorCompletion` / `observePreDispatchAbort`) over the SAME ExecutionId-keyed dedupe
+  map; `abortPhase: 'pre-dispatch'`; a durable refusal is reported (`onUnrecordable`) instead of
+  thrown or fabricated.
+- `packages/runtime/src/plugin/vnext/centre-install.mjs` — wires the observation to the settle
+  writer (`stoppedBeforeBody`, `observedAt: 'executor-completion'`) and the refusal to `onFault`;
+  exposes `observeExecutorCompletion` on the composition.
+- `packages/runtime/src/plugin/vnext/member-execution.mjs` — re-exports the observer.
+- `packages/runtime/src/plugin/vnext/settlement-port.mjs` — `stoppedBeforeBody` records
+  `Stop(pre-dispatch)` + `CANCELLED` when a record exists, and reports
+  `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` (naming the observation point) when none does; the
+  terminal writer uses the same code for its own no-record path.
+- `packages/runtime/dist/**` — the byte-identical mirror of the five modules above (the placement
+  list gained the new module; without it the shipped face would fail with `ERR_MODULE_NOT_FOUND`).
+- `scripts/dist-placements/240-ute-vnext-centre.json` — the placement entry.
+- `tests/world-factory/lib/a5sf-fs-contract-world.mjs` — `executeToolDispatch` hands the host's OWN
+  returned value to the composition (`onCompletion`); the durable sink appends to the ledger BEFORE
+  the in-memory list so a refused fact is never observable as recorded.
+- `packages/runtime/test/vnext-fs-slice.test.mjs` — the world installs the observer; new SLICE-37
+  (dedupe + no fabrication + visible report + normal-call no-op) and SLICE-38 (durable refusal).
+  SLICE-21/30 unchanged.
+
+### Gates (fresh at the code commit `274aec2cc`)
+
+```
+place-dist-glue                 done (29 placement(s))
+dispatch-tests --leg ute-vnext-a1   tests 206 / pass 204 / fail 0 / skipped 2, exit 0
+test-catalog --max-uncollected 41 --max-excluded 7   tests=785 refused=0 findings=0
+ute-cut-closure --check         pass deleted=148 references=3 prodRefs=0 distResiduals=0 cut(0/148) findings=0
+ute-p0-assets --check           pass modules=37 files=180 lines=69512 cut(148/148) findings=0
+docs-sync --check               docs=193 findings=0 blocking=0
+eb3-ci-required                 pass workflows=10 findings=0
+vitest leg (ci-integration)     passed=238 failed=0
+vnext-fs-slice on rc.2          38/38
+vnext-fs-slice on rc.5          38/38
+vnext-admission on rc.2         124/124
+vnext-admission on rc.5         122/124 (ADM-96/97 red: pre-existing rc.5 MCP `AbortSignal.any` shape, unchanged by this round)
+```
+
+`ci-pr-gate --full --census-captures 2` **pass=10 fail=0** at `64a841c72` (census 2 captures,
+identity set IDENTICAL to the published baseline; artifact
+`dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-comparison-20261122T161736Z-3.json`).
+Its first run at the code commit was red for one honest bookkeeping reason — the new module was not
+yet in the p4t6 scannable-surface ledger — fixed by booking it (1311 -> 1312), never by relaxing the
+arm; `RC5-ACCEPTANCE.md` §7 keeps both runs.
+
+### Not proven (this round)
+
+- The production `tools.execute` call site is the host agent loop's. The observer is exported by the
+  product composition and driven end to end in the slice composition, but no booted rc.5 member's
+  pre-dispatch cancel is recorded by production wiring yet — that leg needs an upstream seam
+  (`CORE_SEAM_BLOCKER` for it) and is NOT claimed.
+- No real rc.5 interleaving that aborts between admission and dispatch was produced; the pinned
+  `startCall` prepares and dispatches in one step.
+- `place-dist-glue` only proves the mirror is byte-identical; it does not load the shipped face.
+- The three D drivers exercise the pipeline path (their Stops land in-flight), so the re-run
+  confirms no regression from the shared fact writer, NOT that a driver observes a pre-dispatch
+  abort. The pre-dispatch observation is proven in-process on both hosts (SLICE-21/30/37/38).
+
+## 13. Round 102 (2026-11-24) — the D4 routed-wake probe on rc.5, judge by judge
+
+The three D drivers were migrated in round 78; the **D4 acceptance probe** was not. Round 102 makes
+it host-selectable through the SAME selector and runs it on the TARGET host. HEAD measured:
+`10d8a67aeb7e189011faf2c131a73aa33b76fac3`. Evidence: `dev/agent-workflow/evidence/ute-a1/round102/`
+(`d4-rc2/`, `d4-rc5/`: the probe's own `agreement.txt`/`results.json`/`runs/` per host, plus the two
+`*.log` transcripts).
+
+### 13.1 The one genuine porting bug (fixed)
+
+`tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs` already took its tree and
+pin from `tests/next-host/host-select.mjs`, but it mounted the governed realm's native module from a
+LITERAL rc.2 path:
+
+```
+- const BASELINE_TOOL_FS = join(REPO_ROOT, 'tests', 'deepseek-harness-test-use', 'packages', 'fs', 'tool-fs', 'lib', 'index.js')
++ const HOST_TOOL_FS = join(HOST_TREE, 'packages', 'fs', 'tool-fs', 'lib', 'index.js')
+```
+
+Under `TEAM_TEST_HOST=next` that handed an **rc.2 `tool-fs` module to an rc.5 Host**. It is not
+cosmetic: the two generations declare different injected services —
+
+```
+rc.2  tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js:1176-1180
+      const inject = ["tools", "fs", "systemPrompt"]
+rc.5  tests/deepseek-harness-next/packages/fs/tool-fs/lib/index.js:2003-2008
+      const inject = ["tools", "fs", "systemPrompt", "workingDirectory"]
+```
+
+— so the incriminated pairing is exactly the two-generation world `host-select.mjs` exists to
+prevent. The path is now derived from the SELECTED tree (the `fsContractHostLayout()` layout, same
+expression, no second mechanism). The module's existence is asserted with the host and pin named.
+
+No other probe change was needed: ports (`13000-13049`), the DSH_HOME suffix (`-next`), the child
+`--import tests/next-host/host-loader.mjs` preload and the tree-head/porcelain assertion are all
+already selector-driven (`world-factory.mjs:392,705`; `tests/characterization/lib/instance.mjs:38-43`).
+
+### 13.2 The rc.5 run (evidence, not inference)
+
+Command, verbatim, rc.5:
+
+```
+$ TEAM_TEST_HOST=next node tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs --boots 2
+[boot1] candidate: {"host":"next","pin":"9c2670d3bce5275e0d1610272958121af87787bb",
+  "source":"tests/paths.mjs#NEXT_HOST","hostTree":"…/tests/deepseek-harness-next","asserted":true}
+world=u5u5a5sfdev1-20261124T08-51-32Z-next port=13000 …
+… RESULT evidence-complete=true allBooted=true blocked=true runRecordsValid=true (2/2 boots; agreeing pair=true)
+```
+
+(The `08-51` rc.5 run above is the first rc.5 execution; the pair recorded in `round102/` is the
+re-run at the measured HEAD, same host, same verdicts.) rc.2 for the same command with the selector
+unset: `host:"legacy"`, `port=3195`, world `u5u5a5sfdev1-…` (no suffix), same RESULT line.
+
+Every judge, both hosts, two agreeing boots each:
+
+| judge | rc.2 | rc.5 | counted facts (identical on both hosts) |
+| --- | --- | --- | --- |
+| `d4:enablement` | PROVEN | PROVEN | row not refused; `/__p6t6/state` serves the TeamSession |
+| `d4:officer-up` | PROVEN | PROVEN | officer instance up with its own bound child session |
+| `d4:officer-binding` | PROVEN | PROVEN | `officerAllowFacts=1`, its own callId + instanceId |
+| `d4:routed-wake` | PROVEN | PROVEN | conjunction of the seven rows below |
+| `d4:case-created` | PROVEN | PROVEN | durable `control-request-recorded`, `approvalCaseId case-…`, `legOrdinal=1`, rung `leader` |
+| `d4:router-officer` | PROVEN | PROVEN | `routeKind=recipient`, `routeRole=officer`; self-ask → `leader` |
+| `d4:wake-delivered` | PROVEN | PROVEN | `wakeFacts=8`, `routedWakes=4`, `deliveredWakes=4`, `wakeIntentFiles=0`, `reviewWakeHits=0`, `managementExecutions=0` |
+| `d4:officer-decides` | PROVEN | PROVEN | `officerResolveSettlement=COMPLETED` |
+| `d4:ask-executes-after-review` | PROVEN | PROVEN | `askExecuteBytes=27`, `sha256:ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3`, `COMPLETED` |
+| `d4:duplicate-route` | PROVEN | PROVEN | `duplicateWakeInputs=1` |
+| `d4:sticky-stop` | PROVEN | PROVEN | `stickyStopMarkerCount=1`; zero wake inputs while stopped |
+| `d4:refusal` | PROVEN | PROVEN | incoherent v5 row refused by the closed enablement rule |
+| `d4:ask-execute` (`write`) | PROVEN | PROVEN | 27 B / `COMPLETED` |
+| `d4:ask-execute-2` (`write`, 2nd path) | PROVEN | PROVEN | `askExecute2Bytes=29`, `sha256:2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f`, `COMPLETED` |
+| `d4:ask-denied` | PROVEN | PROVEN | `askDeniedBytes=null`, settlement `REFUSED` |
+| `d4:ask-stopped` | PROVEN | PROVEN | `askStoppedBytes=null`, settlement `REFUSED` |
+| `d4:ask-execute-process` | **REFUTED** | **REFUTED** | `askExecuteProcessInLaneBytes=null`, `…OutLaneExists=false`, settlement `FAILED` — same three failing clauses, same error |
+
+`overall=BLOCKED` on both hosts is the probe's own contract for "some judge is REFUTED";
+`runRecordsValid=true` means each boot's RUN record also passed `scripts/eb3-run-manifest.mjs`.
+The two `agreement.txt` files (one per host) are **byte-identical**.
+
+### 13.3 `d4:case-created` — one measurement oracle made deterministic (disclosed)
+
+The first re-run at `5952c84` produced boot 2 `caseCreated=REFUTED` on **rc.2**, clause
+`case-has-no-decision-yet`: the durable request fact was sequence 9 at `…25.351Z` and the decision
+sequence 12 at `…25.527Z` — **176 ms**, faster than the probe's 300 ms poll — while the clause read
+the ledger AFTER the capture and asserted zero decisions. It measured the Officer's speed, not the
+captured row, and it refuted a correct product.
+
+The clause was rewritten in the open (the round-93/101 pattern: state the intent, assert it
+strictly):
+
+* **before:** `zero control-decision-recorded facts for the request in a ledger read after capture`.
+* **after** (`captured-case-precedes-any-decision`): the captured row IS the
+  `control-request-recorded` fact (its sequence pinned by the first clause), its `approvalCaseId`
+  equals the case id that creation fact recorded, and **every** decision fact for the request has a
+  **strictly later** sequence in the append-only ledger. A post-decision capture cannot satisfy that
+  ordering. The detail records the creation/decision sequences and timestamps for audit.
+* Nothing else in the verdict changed; the capability is not relaxed (no wake, byte or settlement
+  clause was touched). Replayed against both recorded boots it passes without a decision and with a
+  later decision, and fails an out-of-order one.
+
+### 13.4 The one product finding (rc.5 and rc.2, identical)
+
+`d4:ask-execute-process` — a Member `bash` declared with disposition `ask` — raises the real Control
+request, is approved through the real control path, and the centre writes the real `process.exec`
+`allow` fact… and then the tool fails:
+
+```
+Error: no PTY backend registered for "a5sf-governed-shell"
+```
+
+* Thrown by the HOST at `tests/deepseek-harness-next/packages/terminal/terminal/src/index.ts:140`
+  (rc.2: `tests/deepseek-harness-test-use/packages/terminal/terminal/src/index.ts:159`), code
+  `NO_BACKEND`.
+* Product reason: the governed PTY face is created only when the realm is handed a PTY terminal spec
+  (`packages/runtime/team-services/src/install.ts:609-619`, `backendType: … ?? 'a5sf-governed-shell'`),
+  and a **v5 per-tool `bash` binding lands on the BINDING realm**, which carries no such spec. The
+  receipt verifier is therefore never reached on a boot; zero bytes, settlement
+  `ADMITTED → RUNNING → FAILED` (fail-closed).
+* This is NOT an rc.5 drift: rc.5 produces the identical three failing clauses. It is the same named
+  assembly gap round 99 recorded, now measured on the target host too. Owner decision required.
+
+### 13.5 Everything NOT proven by this round
+
+* Two scripted boots per host on this machine prove determinism of these scenarios, not concurrency
+  or crash recovery; the model is the shared scripted mock, never a real model.
+* `d4:ask-execute-process` is not proven (product gap above); the governed PTY face IS proven live
+  in the v4 D3 world (`d3:persistent-subprocess`) — the gap is the v5 binding-realm composition.
+* The pre-dispatch abort observer (`pre-dispatch-abort.mjs`) is still NOT production-wired on either
+  host: **OPEN TARGET-HOST ACCEPTANCE BLOCKER** (see `D-ACCEPTANCE-REPORT.md`, "P0-2").
+* Only the D4 probe joins the three already-migrated D drivers on rc.5; the wider vitest/node:test
+  population is not re-run on rc.5 by this round.
+* The rc.5 tree stayed clean: `porcelain=[]` before and after every boot. No upstream patch, no
+  vendor copy, `:3080` and its DSH_HOME untouched.

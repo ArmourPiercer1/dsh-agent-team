@@ -1,0 +1,54 @@
+✔ S1 --self-test: every FACE_TABLE / KIND_STAGES / shadow citation holds at this tree (47.997788ms)
+✔ S2 the self-test is not vacuous: a fixture tree without the emitters fails it (1.562578ms)
+✔ S3 a drifted line hint is reported as moved, a vanished token as a problem (no false red, no false green) (12.007808ms)
+✔ S4 family refusal codes resolve from the reviewed descriptors: the three at this tree, a new listed family without editing the tool (1.234146ms)
+✔ S5 control: a listed descriptor that drops its refusalCode turns the self-test RED, naming the code and the file (1.498126ms)
+✔ S6 fail-closed: no manifest means no family code is attributable (UNKNOWN, never a guess); vocabulary-only stays NO_PRODUCTION_EMITTER (0.315893ms)
+✔ A1 refused-admission: attributed through the kind, fingerprint printed only in digest shape (45.042528ms)
+✔ A2 a code with several source emitters is AMBIGUOUS with every candidate named, never the first (37.392432ms)
+✔ A3 the same code on the backend kind narrows to the shut backend face (39.73304ms)
+✔ F1 unknown code → UNKNOWN_CODE, exit 1, no nearest match (34.495921ms)
+✔ F2 the spill set is read from source, never guessed from the prefix: an invented code and a retired one are BOTH UNKNOWN (76.158295ms)
+✔ F3 a vocabulary-only code (no production emitter) is not attributed: exit 1 (33.25056ms)
+✔ F4 no refusal in the input → REFUSED exit 2 (empty is never "nothing wrong") (34.197102ms)
+✔ F5 shadow rows: only outcome=refuse counts; allow/defer rows are not refusals (69.046634ms)
+✔ F6 usage: zero or two inputs, unknown flag, --kind without --code → exit 2 (145.384167ms)
+✔ B1 bound: an input file over 1 MiB is REFUSED before it is read (37.367772ms)
+✔ B2 bound: a symlinked --file is refused (regular files only) (72.81694ms)
+✔ B3 bound: more than 12 refusals → 12 reported, the rest counted, truncated=true (36.907207ms)
+✔ B4 bound: a free-text field is cut to the detail cap after redaction (38.62071ms)
+✔ N1 a credential in a backend-failed detail is redacted, the rest of the detail kept (74.534585ms)
+✔ N2 a non-digest detail on refused-admission is withheld entirely, not printed (36.448057ms)
+✔ N3 credentials inside a shadow-ledger row (scopeKey/callId/name) are redacted (39.612777ms)
+✔ N4 sensitivity: without redaction the same output would be caught by the backstop (1.165747ms)
+✔ N5 the tool never prints the input verbatim for an unknown code (no echo channel) (39.248073ms)
+✔ D1 --self-test: every routed script exists, every entry declares bounds + an owner + a red story (44.219528ms)
+✔ D2 the self-test is not vacuous: a routed script that does not exist is caught (0.605386ms)
+✔ D3 the table is closed and bounded: no entry routes outside scripts/ or pnpm, all bounds positive (0.209928ms)
+✔ D4 list + describe: every refused entry explains why and points at its doc (121.026163ms)
+✔ D5 run host / release REFUSES (exit 2) and runs nothing (0.348761ms)
+✔ D6 run: verdict comes from the child status alone (pass / fail / refused) (0.406229ms)
+✔ D7 a timeout is reported TIMEOUT, never pass, and never left running (0.21137ms)
+✔ D8 output is capped per step, the TAIL kept, and the cut size stated (33.755175ms)
+✔ D9 arguments only pass through where the entry declares passArgs (0.244142ms)
+✔ D10 real routed commands (read-only ones) actually pass through devex (66.907876ms)
+✔ D11 real: verify-changed over this tree passes and prints one DEVEX-RESULT line (729.433301ms)
+✔ E1 --self-test: the six classes behave, including the fail-closed record checks (4638.123314ms)
+✔ E2 classify over a known lineage: exact / ancestor lag 1 and 2 / branch-local / unrelated / no-sha / incomplete (73.315123ms)
+✔ E2b E2 is not vacuous: a classify with an off-by-one lag is caught (71.120369ms)
+✔ E3 an unresolvable target REFUSES (exit 2) — absence of evidence is never a clean report (38.172737ms)
+✔ E4 --strict fails while any record does not bind the candidate head (4571.721841ms)
+✔ E5 the report states the EB4-E rule and its own limit; the bound is not hit on this tree (4635.284392ms)
+✔ E6 untracked and uncommitted evidence does not change the result (134.237633ms)
+✔ E7 more records than the bound FAILS (non-zero, BOUND HIT) — partial evidence is never a clean audit (197.036628ms)
+✔ E8 a record late in name order is found: non-record json does not spend the record budget (356.241562ms)
+ℹ tests 44
+ℹ suites 0
+ℹ pass 44
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15812.269
+DSH-TEST-DISPATCH mode=run leg=devex-diag suites=2 files=2 exit=0 set=sha256:08ea42463381f08e6797e90afa6c9bc910a7dc6e4b1e3d7891f94bfce22bb3e1
+EXIT:0

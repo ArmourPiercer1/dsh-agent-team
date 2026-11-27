@@ -71,6 +71,11 @@ import { TEST_USE_REL, findTestRepoRoot } from '../../../tests/paths.mjs'
 // scope tag on the setup ctx). Same package the glue already imports
 // (scopeOf) — a public root export, an established seam in this repo.
 import { createScope } from '@deepseek-ai/dsh-scope'
+// E3 realm world (round 49): the REAL Cordis service seams `team-services` installs through. The
+// bridge's agent ctx is a double, so a world that asks for a mounted a5sf realm gets an in-process
+// Cordis Context ONLY for `isolate`/`plugin`/`get('fs')`; every other surface stays the double every
+// other suite pins.
+import { Context, Service } from '@deepseek-ai/cordis'
 
 const TEST_DIR = dirname(fileURLToPath(import.meta.url))
 /** The checkout root of the tree the tests run in (test -> runtime ->
@@ -140,7 +145,7 @@ let glueModulePromise
 export async function loadGlueModule() {
   ensureGlueResolvable()
   if (glueModulePromise === undefined) {
-    glueModulePromise = import('../src/plugin/live/agent-bindings.mjs')
+    glueModulePromise = import('../src/plugin/vnext/agent-bindings.mjs')
   }
   return glueModulePromise
 }
@@ -219,6 +224,47 @@ function makeFakeFs() {
 }
 
 /**
+ * E3 realm world: the base `fs` Provider a real Member install samples (`root.get('fs')`'s constructor).
+ * It is a REAL Cordis `Service` (so the confined class `team-services` derives from it registers the
+ * same `fs` service name in its isolated scope) with the CLOSED `MANAGED_FS_METHODS` surface. No E3
+ * leg executes a native tool, so the bodies are inert; the mount's install-time capability gate is the
+ * only reader, and a missing method there is a typed refusal rather than a test skip.
+ */
+class BridgeRealmFileSystem extends Service {
+  constructor (ctx, config = {}) {
+    super(ctx, 'fs')
+    this.config = config
+  }
+
+  processPath (target) {
+    const raw = typeof target === 'object' && target !== null ? target.targetKey ?? target.hostPath : target
+    return String(raw).replace(/^file:\/\//u, '')
+  }
+
+  contains (parent, child) {
+    const p = this.processPath(parent)
+    const c = this.processPath(child)
+    return c === p || c.startsWith(`${p}/`)
+  }
+
+  async resolve (path, opts = {}) {
+    const target = await makeFakeFs().resolve(path, opts)
+    return target
+  }
+
+  async stat () { return { isFile: () => true, isDirectory: () => false } }
+  async lstat () { return { isFile: () => true, isDirectory: () => false, isSymbolicLink: () => false } }
+  async readText () { return '' }
+  async *streamText () { yield '' }
+  async readBytes () { return new Uint8Array() }
+  async readByteRange () { return new Uint8Array() }
+  async listDir () { return [] }
+  async watch () { return async () => {} }
+  async writeText () { return undefined }
+  async editText () { return undefined }
+}
+
+/**
  * One agent-scoped ctx double: records every `on(event, listener)`
  * registration (with a working disposer), every plugin() fiber (a thenable
  * that resolves immediately, with a recording .dispose()), the tools
@@ -267,12 +313,18 @@ function makeFakeFs() {
  *   dispose() unregisters them (the real fiber's teardown removes its
  *   tools). Absent/empty = no registration (the pre-multi-mcp behavior).
  */
-function makeAgentCtx(globalSections, mcpFailures, mcpToolNames) {
+function makeAgentCtx(globalSections, mcpFailures, mcpToolNames, realmMount = false) {
   const listeners = []
   const registeredTools = []
   const toolExecutions = []
   const plugins = []
   const scopedSections = []
+  // E3 realm world: a REAL Cordis Context backing ONLY the service isolation the a5sf mount uses.
+  // `provide('fs')` seeds the base Provider a real Member install samples; `isolate`/`plugin` below
+  // delegate to it for service classes, while every fake surface the rest of the bridge pins is
+  // untouched. A world without `realmMount` allocates nothing and keeps the pre-E3 shape byte-for-byte.
+  const realmContext = realmMount ? new Context() : undefined
+  if (realmContext !== undefined) new BridgeRealmFileSystem(realmContext, {})
   // alpha.1: the agent-scoped restriction seam (tools.restrict({ deny })) —
   // records every restriction call on THIS ctx (sibling-inert by
   // construction: each ctx double is one agent scope); the scoped deny
@@ -353,6 +405,26 @@ function makeAgentCtx(globalSections, mcpFailures, mcpToolNames) {
     globalSchemaReads,
     definitionReads,
     fs,
+    // E3 realm world: the service-isolation seam `team-services` installs through. It is absent (and
+    // throws if used) on every pre-E3 world, so a world that did not ask for a realm cannot silently
+    // get one.
+    isolate(name, label) {
+      if (realmContext === undefined) {
+        throw new TypeError(
+          't12a-live-bridge: ctx.isolate is only available on a realm world (createLiveWorld({ realmMount: true }))',
+        )
+      }
+      const scoped = realmContext.isolate(name, label)
+      const wrap = {
+        plugin: (pluginSpec, options) => scoped.plugin(pluginSpec, options),
+        get: (key) => scoped.get(key),
+        isolate: (childName, childLabel) => {
+          const child = scoped.isolate(childName, childLabel)
+          return { plugin: (p, o) => child.plugin(p, o), get: (k) => child.get(k) }
+        },
+      }
+      return wrap
+    },
     // alpha.2 (A6): the agent back-reference — the handle factory sets it
     // to the live agent (the `ctx.agent` DX accessor basis; undefined
     // between construction and the handle wiring, as on a real context
@@ -366,6 +438,11 @@ function makeAgentCtx(globalSections, mcpFailures, mcpToolNames) {
       }
     },
     get(key) {
+      // E3 realm world: the tools service the centre's admission port requires (`tools.guard`), and the
+      // base `fs` service the a5sf install samples for its Provider class. Absent without `realmMount`
+      // (where `tools` is still returned — additive and behaviour-inert for every pre-E3 world).
+      if (key === 'tools') return this.tools
+      if (key === 'fs' && realmContext !== undefined) return realmContext.get('fs')
       if (key === 'skills') {
         return {
           // The SkillRegistrationDisposer contract (T3 skill-adapter) is an
@@ -386,6 +463,12 @@ function makeAgentCtx(globalSections, mcpFailures, mcpToolNames) {
       return undefined
     },
     plugin(pluginSpec, options) {
+      // E3 realm world: the a5sf mount installs real Cordis SERVICE classes (the confined fs Provider
+      // and any binding realms). Only a Service subclass goes to the real Context; the dsh-scope no-op
+      // function and every fake world-mount fiber keep the double's own path below.
+      if (realmContext !== undefined && typeof pluginSpec === 'function' && pluginSpec.prototype instanceof Service) {
+        return realmContext.plugin(pluginSpec, options)
+      }
       // A2C-2 (alpha.2, plan §7): the dsh-scope package's `createScope`
       // mints a scope through this seam with its PRIVATE no-op FUNCTION
       // backing plugin and reads the fiber's `.ctx` carrier (the double
@@ -555,6 +638,15 @@ function makeAgentCtx(globalSections, mcpFailures, mcpToolNames) {
         toolExecutions.push(call)
         return Promise.resolve({ ok: true, callId: call.callId })
       },
+      // ROUND 122: the double DECLARES the rc.2 public dispatch contract it models.
+      // `execute(call)` above IS registry dispatch — one call in, one settlement
+      // out — and rc.2 proves that publicly through `mode`/`modeFor`/`defaultMode`
+      // (`ToolRuntime`, rc.2 `packages/core/tools/src/index.ts`). The host-shape
+      // seam (`plugin/vnext/tool-executor-mount.mjs`) may not GUESS a shape: a
+      // service that declares neither contract is refused by name, so a double
+      // that dispatches must say so. This is a capability declaration only — the
+      // double's recorded call shape and return value are unchanged.
+      defaultMode: 'native',
       // alpha.1: the public Agent-scoped restriction seam (tools.restrict).
       // Records the deny list on THIS ctx only (sibling-inert); the scoped
       // effective deny is the union of every call (the seam accumulates).
@@ -770,7 +862,7 @@ export function createAgentsDouble(options = {}) {
   ]
 
   async function makeHandle(sessionId, { setup, meta }) {
-    const ctx = makeAgentCtx(globalSections, mcpFailures, mcpToolNames)
+    const ctx = makeAgentCtx(globalSections, mcpFailures, mcpToolNames, options.realmMount === true)
     // alpha.2 (A6): the session header double (the lazy `cwd` read basis of
     // the permission adapter's resolveTarget closure, FACT 3b). CREATE
     // carries the meta.cwd the glue requested (the production session
@@ -1071,11 +1163,33 @@ export async function createDomainDouble({
   const findRow = (id) => rows.find((row) => String(row.rootSessionId) === String(id))
   const pickByRoot = (byRoot, root, fallback) =>
     Object.prototype.hasOwnProperty.call(byRoot, String(root)) ? byRoot[String(root)] : fallback
+  // ROUND 84: the durable fact ledger. The double used to stop at the member/override/session reads,
+  // but a governed DELIVERY (round 83's `member.send`, and now the Alpha.6 review wake) writes a
+  // delivery intent fact + a confirmation fact through `repositories.ledger` and allocates their
+  // sequences there. An in-memory ledger with the REAL repository's contract (list / get / put /
+  // atomic allocateSequence) keeps the world honest: an arm reads the facts back through the same
+  // port the product writes them through, not through a private test hook.
+  const ledgerEntries = []
+  const ledger = {
+    list: () => [...ledgerEntries].sort((left, right) => left.sequence - right.sequence),
+    get: (sequence) => ledgerEntries.find((entry) => entry.sequence === sequence),
+    async put(entry) {
+      const stored = Object.freeze({ ...entry })
+      ledgerEntries.push(stored)
+      return stored
+    },
+    async allocateSequence() {
+      return ledgerEntries.length === 0
+        ? 1
+        : Math.max(...ledgerEntries.map((entry) => Number(entry.sequence) || 0)) + 1
+    },
+  }
   return {
     repositories: {
       memberInstances: { list: (root) => pickByRoot(membersByRoot, root, members) },
       overrides: { list: (root) => pickByRoot(overridesByRoot, root, overrides) },
       teamSessions: { get: (id) => findRow(id), list: () => rows },
+      ledger,
     },
     consumption: {
       model: { resolveDurableModelSelection: modelModule.resolveDurableModelSelection },
@@ -1090,25 +1204,35 @@ export async function createDomainDouble({
  * drain (the real service rejects with an aggregate after all branches
  * settle when any failed) and a configurable descendant tree.
  *
+ * Each host generation exposes the drain under its OWN public name
+ * (0.2.2-rc.5 `drainDescendants`, 0.2.0-rc.2 `drainContinuableDescendants`),
+ * so `drainMethodName` selects which single name the double exposes — the
+ * point of the arm is that the glue resolves the seam by name, not that a
+ * double carries both.
+ *
  * @param {object} [options]
+ * @param {'drainDescendants'|'drainContinuableDescendants'} [options.drainMethodName]
+ *   which public drain name this double exposes (default: the rc.2 name)
  * @param {'reject'} [options.drainBehavior] reject the drain call
  * @param {string} [options.drainErrorMessage]
  * @param {object[]} [options.descendants] listDescendants result entries
  */
 export function createSubagentsDouble(options = {}) {
+  const drainMethodName = options.drainMethodName ?? 'drainContinuableDescendants'
   const drainCalls = []
   const listCalls = []
   const descendants = options.descendants ?? []
+  const drain = (parents) => {
+    drainCalls.push(parents)
+    if (options.drainBehavior === 'reject') {
+      return Promise.reject(new Error(options.drainErrorMessage ?? 'subagent drain failed (aggregate)'))
+    }
+    return Promise.resolve()
+  }
   return {
     drainCalls,
     listCalls,
-    drainContinuableDescendants(parents) {
-      drainCalls.push(parents)
-      if (options.drainBehavior === 'reject') {
-        return Promise.reject(new Error(options.drainErrorMessage ?? 'subagent drain failed (aggregate)'))
-      }
-      return Promise.resolve()
-    },
+    [drainMethodName]: drain,
     listDescendants(rootSessionId) {
       listCalls.push(rootSessionId)
       return Promise.resolve(descendants)
@@ -1338,6 +1462,9 @@ export async function createLiveWorld(options = {}) {
     ...(activationEvents !== undefined ? { activationEvents } : {}),
     ...(options.agents ?? {}),
     ...(firedEventsExplicitAgent ? { passExplicitAgent: true } : {}),
+    // E3 realm world: an isolated Cordis service scope per agent ctx (see makeAgentCtx). Off by default,
+    // so every pre-E3 world is byte-identical.
+    ...(options.realmMount === true ? { realmMount: true } : {}),
     systemPromptGlobals: options.systemPromptGlobals,
     // multi-mcp (Task C): the per-server activation behavior tables
     // (plan §6.7 failure injection / §6.11 coverage tool names) — passed
@@ -1415,7 +1542,7 @@ export async function createLiveWorld(options = {}) {
     mcpServer: { name: 't12a-mini-mcp', port: 3999 },
     environmentFacts: [],
     externalPolicyFacts: { hard: {}, capabilityExists: {} },
-    glueUrl: new URL('../src/plugin/live/agent-bindings.mjs', import.meta.url).href,
+    glueUrl: new URL('../src/plugin/vnext/agent-bindings.mjs', import.meta.url).href,
     ...options.configOverrides,
   }
   const teamToolsRef = { current: options.teamTools !== undefined ? options.teamTools : undefined }
@@ -1451,6 +1578,17 @@ export async function createLiveWorld(options = {}) {
     // glue. Absent = the glue's pre-PR4 posture (no seam installed).
     ...(options.permissionPlaneRef !== undefined
       ? { permissionPlaneRef: options.permissionPlaneRef }
+      : {}),
+    // E3 (round 49): the SAME durable overlay port the production host hands the glue. The glue reads it
+    // for the authority generation AND, when a centre is installed, for the admission-side restriction.
+    ...(options.permissionOverlay !== undefined
+      ? { permissionOverlay: options.permissionOverlay }
+      : {}),
+    // E3 (round 49): the row's LAZY compiled-realm provider accessor. The world supplies the row's own
+    // `a5sfMemberPolicies` declaration, so the accessor answers undefined (the production shape when the
+    // composition provides no `teamA5sfRealm` service); the mount then compiles from the declaration.
+    ...(options.a5sfRealmProvider !== undefined
+      ? { a5sfRealmProvider: options.a5sfRealmProvider }
       : {}),
     ...(options.subagents !== undefined ? { subagents: options.subagents } : {}),
     // F15 (plan §11): the durable capability-runtime telemetry hook —

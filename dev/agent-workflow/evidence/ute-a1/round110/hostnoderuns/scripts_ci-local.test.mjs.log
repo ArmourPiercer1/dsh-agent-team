@@ -1,0 +1,21 @@
+✔ isTestFile recognises both runners by convention (0.787781ms)
+✔ packageOf only claims packages/<name>/ (0.134605ms)
+✔ isCiFamily claims the CI declarations, but never a test file (0.141588ms)
+✔ classify: a package source selects that package, a test selects itself (0.424824ms)
+✔ classify: root config and shared test libraries are undetermined, not guessed (0.212853ms)
+✔ classify: CI files are graded by the CI checkers, not by package tests (0.161435ms)
+✔ runnerFor ignores quoted strings that only mention a runner (0.252618ms)
+✔ runnerFor reads the import, not the extension (0.162227ms)
+✔ buildPlan: a package change selects the package test tree (0.280621ms)
+✔ buildPlan: undetermined changes are reported, never silently dropped (0.216179ms)
+✔ buildPlan: a docs-only change selects no test runner and is determined (0.148491ms)
+✔ classify: an unrecognised root file is UNDETERMINED, not "no tests" (0.117192ms)
+✔ classify: only prose counts as docs-only (0.085772ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 51.522055

@@ -1,0 +1,49 @@
+{
+  "askAppeared": true,
+  "ids": {
+    "officer": "inst-1crltnl0089j",
+    "worker": "inst-0ty67u70r99a",
+    "pendingRequestId": "ctrl-11alwpb03vltrc100fqq101o",
+    "pendingRequestId2": null,
+    "pendingRequestId3": null,
+    "pendingProcessRequestId": null
+  },
+  "askRow": {
+    "requestId": "ctrl-11alwpb03vltrc100fqq101o",
+    "kind": "leader-approval",
+    "targetInstanceId": "inst-0ty67u70r99a",
+    "actionName": "admission-ask",
+    "toolName": "write",
+    "correlation": "admission:call-d4-worker-write",
+    "status": "pending",
+    "createdAt": "2026-11-24T09:12:06.524Z",
+    "subject": {
+      "kind": "instance",
+      "instanceId": "inst-0ty67u70r99a"
+    },
+    "executionCoupling": "inline",
+    "requestSequence": 9,
+    "operationFingerprint": "sha256:d95fb373e1563af0baece04d6309d2748a363470f8024e391d7e2505475cdd26",
+    "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T09-09-03Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:288e07b4c9aae057785e43fa4c7778ea)"
+  },
+  "requests": [
+    {
+      "requestId": "ctrl-11alwpb03vltrc100fqq101o",
+      "kind": "leader-approval",
+      "targetInstanceId": "inst-0ty67u70r99a",
+      "actionName": "admission-ask",
+      "toolName": "write",
+      "correlation": "admission:call-d4-worker-write",
+      "status": "pending",
+      "createdAt": "2026-11-24T09:12:06.524Z",
+      "subject": {
+        "kind": "instance",
+        "instanceId": "inst-0ty67u70r99a"
+      },
+      "executionCoupling": "inline",
+      "requestSequence": 9,
+      "operationFingerprint": "sha256:d95fb373e1563af0baece04d6309d2748a363470f8024e391d7e2505475cdd26",
+      "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T09-09-03Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:288e07b4c9aae057785e43fa4c7778ea)"
+    }
+  ]
+}

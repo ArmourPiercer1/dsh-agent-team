@@ -1,0 +1,129 @@
+{
+  "bash1": {
+    "executionId": "exec-8945de87213f27f7cffe24a44c0a67f1fa4e9bd2",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T13-51-52Z/centre/settlement/inst-1vd6cy21kl6k/exec-8945de87213f27f7cffe24a44c0a67f1fa4e9bd2.settlement.json",
+    "present": true,
+    "state": "COMPLETED",
+    "dispatch": "quiesced",
+    "bodyOutcome": "completed",
+    "stops": [],
+    "transitions": [
+      "ADMITTED",
+      "RUNNING",
+      "COMPLETED"
+    ]
+  },
+  "bash2": {
+    "executionId": "exec-6e161a7a87bf3fea939f3b7590e45bad6e5ba1e0",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T13-51-52Z/centre/settlement/inst-1vd6cy21kl6k/exec-6e161a7a87bf3fea939f3b7590e45bad6e5ba1e0.settlement.json",
+    "present": true,
+    "state": "COMPLETED",
+    "dispatch": "quiesced",
+    "bodyOutcome": "completed",
+    "stops": [],
+    "transitions": [
+      "ADMITTED",
+      "RUNNING",
+      "COMPLETED"
+    ]
+  },
+  "aReadAfterRestart": {
+    "executionId": "exec-dd89435a21b0e5d2052c725b301bda0fc1e88071",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T13-51-52Z/centre/settlement/inst-1vd6cy21kl6k/exec-dd89435a21b0e5d2052c725b301bda0fc1e88071.settlement.json",
+    "present": true,
+    "state": "COMPLETED",
+    "dispatch": "quiesced",
+    "bodyOutcome": "completed",
+    "stops": [],
+    "transitions": [
+      "ADMITTED",
+      "RUNNING",
+      "COMPLETED"
+    ]
+  },
+  "bOpenAtKill": {
+    "executionId": "exec-c7761249d1064b23c36e5e4f76a48778dd895896",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T13-51-52Z/centre/settlement/inst-1v36r931jr7r/exec-c7761249d1064b23c36e5e4f76a48778dd895896.settlement.json",
+    "present": true,
+    "state": "ADMITTED",
+    "dispatch": "not-started",
+    "bodyOutcome": "not-started",
+    "stops": [],
+    "transitions": [
+      "ADMITTED"
+    ]
+  },
+  "bOpenAfterRestart": {
+    "executionId": "exec-c7761249d1064b23c36e5e4f76a48778dd895896",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T13-51-52Z/centre/settlement/inst-1v36r931jr7r/exec-c7761249d1064b23c36e5e4f76a48778dd895896.settlement.json",
+    "present": true,
+    "state": "UNKNOWN",
+    "dispatch": "not-started",
+    "bodyOutcome": "unknown",
+    "stops": [],
+    "transitions": [
+      "ADMITTED",
+      "UNKNOWN"
+    ]
+  },
+  "bGrepFactsBefore": [
+    {
+      "callId": "call-d3-b-grep-probe",
+      "agentId": "inst-1v36r931jr7r",
+      "instanceId": "inst-1v36r931jr7r",
+      "sessionId": "session-team-child-6788a23a6d1be9784107fcb7631d08f9",
+      "instanceGeneration": 0,
+      "toolName": "grep",
+      "axis": "fs.read",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T13-51-52Z/workspace/team-b/corpus",
+      "definitionSource": "",
+      "policyGeneration": "a5sf1:05dcdf06b998026298e3d749b9a1194b",
+      "blueprintRevision": "",
+      "owner": "session-dboot-d3-root",
+      "decision": "allow",
+      "overlayOutcome": "no-opinion",
+      "kind": "invocation-authority",
+      "at": "2026-11-22T13:54:04.493Z"
+    }
+  ],
+  "bGrepFactsAfter": [
+    {
+      "callId": "call-d3-b-grep-probe",
+      "agentId": "inst-1v36r931jr7r",
+      "instanceId": "inst-1v36r931jr7r",
+      "sessionId": "session-team-child-6788a23a6d1be9784107fcb7631d08f9",
+      "instanceGeneration": 0,
+      "toolName": "grep",
+      "axis": "fs.read",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T13-51-52Z/workspace/team-b/corpus",
+      "definitionSource": "",
+      "policyGeneration": "a5sf1:05dcdf06b998026298e3d749b9a1194b",
+      "blueprintRevision": "",
+      "owner": "session-dboot-d3-root",
+      "decision": "allow",
+      "overlayOutcome": "no-opinion",
+      "kind": "invocation-authority",
+      "at": "2026-11-22T13:54:04.493Z"
+    }
+  ],
+  "bGrepResult": {
+    "callId": "call-d3-b-grep-probe",
+    "isError": false,
+    "text": "Found 1 match\n\nteam-b/corpus/huge-7.txt\nLine 65537: DBOOT_D3_NEVER_MATCH_7f3c1a9e2b5d8046",
+    "at": 1795355647799
+  },
+  "aAfter": {
+    "executionId": "exec-4234abeefc2ea36ed069a700594f293419d220f4",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T13-51-52Z/centre/settlement/inst-1vd6cy21kl6k/exec-4234abeefc2ea36ed069a700594f293419d220f4.settlement.json",
+    "present": true,
+    "state": "COMPLETED",
+    "dispatch": "quiesced",
+    "bodyOutcome": "completed",
+    "stops": [],
+    "transitions": [
+      "ADMITTED",
+      "RUNNING",
+      "COMPLETED"
+    ]
+  }
+}

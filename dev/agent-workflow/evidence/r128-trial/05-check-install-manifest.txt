@@ -1,0 +1,53 @@
+# 05 — install-manifest checker: trial manifest, lock leg, negative controls (2026-11-27, round 128)
+
+## A. shipped tree (trial manifest): 11 issues, ALL pre-existing computed-specifier rejections
+FAIL check-install-manifest: 11 issue(s) over 465 graph visit(s); lock leg: PASS
+  - computed new URL() target rejected at packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-web-transport.mjs:119 expr="text"
+  - computed new URL() target rejected at packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-web-transport.mjs:145 expr="origin"
+  - computed import() rejected (no audited structural match) at packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-web-transport.mjs:170 expr="fetchSpecifier"
+  - computed import() rejected (no audited structural match) at packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-web-transport.mjs:196 expr="searchSpecifier"
+  - computed import() rejected (no audited structural match) at packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:748 expr="moduleSpecifierOf(spec.url)"
+  - computed import() rejected (no audited structural match) at packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1311 expr="moduleSpecifierOf(spec.url)"
+  - computed import() rejected (no audited structural match) at packages/runtime/dist/packages/runtime/src/plugin/vnext/tool-executor-mount.mjs:210 expr="specifier"
+  - computed import() rejected (no audited structural match) at packages/runtime/dist/packages/runtime/src/plugin/vnext/member-execution.mjs:218 expr="url"
+  - computed import() rejected (no audited structural match) at packages/runtime/dist/packages/runtime/src/plugin/vnext/realm-lane.mjs:422 expr="url"
+  - computed new URL() target rejected at packages/runtime/dist/packages/runtime/team-services/src/web.js:241 expr="raw.trim()"
+  - computed new URL() target rejected at packages/runtime/dist/packages/runtime/team-services/src/web.js:271 expr="target"
+
+## A2. base-equal: the SAME checker against the pre-change manifest (.artifacts/tmp/r128/package.json.orig)
+FAIL check-install-manifest: 11 issue(s) over 465 graph visit(s); lock leg: PASS
+   => 11 before the change, 11 after: the manifest edit introduces no new install-surface issue.
+   (The pre-change 'orig' checker cannot be used for this comparison: it caps its error list, so on
+    the trial tree it truncates after the peer/lock policy errors and never reaches the 11 computed sites.)
+
+## B. the OLD checker on the SAME trial tree (the relaxation is load-bearing, not decorative)
+FAIL check-install-manifest: 65 issue(s) over 465 graph visit(s); lock leg: FAILED (36 manifest/lock issue(s); negative control alive)
+  - @deepseek-ai/dsh peer must be an exact semver: 0.2.0-rc.2 || 0.2.2-rc.5
+
+## C. negative controls (mutated copies of the manifest, same tree)
+--- a-comparator ---
+FAIL check-install-manifest: 14 issue(s) over 465 graph visit(s); lock leg: FAILED (2 manifest/lock issue(s); negative control alive)
+  - @deepseek-ai/dsh peer requirement must be an exact semver or a '||' enumeration of exact semvers: ^0.2.0
+--- b-no-engines ---
+FAIL check-install-manifest: 11 issue(s) over 465 graph visit(s); lock leg: PASS
+--- b2-engines-comparator ---
+FAIL check-install-manifest: 12 issue(s) over 465 graph visit(s); lock leg: PASS
+  - engines.dsh must be an exact semver or a '||' enumeration of exact semvers (no comparator/wildcard ranges): >=0.2.0-rc.2
+--- c-engines-subset ---
+FAIL check-install-manifest: 12 issue(s) over 465 graph visit(s); lock leg: PASS
+  - engines.dsh and the @deepseek-ai/dsh peer must enumerate the same host set (agreeing surfaces, one compatibility claim): engines=["0.2.0-rc.2"] peers=["0.2.0-rc.2","0.2.2-rc.5"] missing-from-engines=["0.2.2-rc.5"] extra-in-engines=[]
+--- d-engines-extra ---
+FAIL check-install-manifest: 12 issue(s) over 465 graph visit(s); lock leg: PASS
+  - engines.dsh and the @deepseek-ai/dsh peer must enumerate the same host set (agreeing surfaces, one compatibility claim): engines=["0.2.0-rc.2","0.2.2-rc.5","0.2.3-alpha.2"] peers=["0.2.0-rc.2","0.2.2-rc.5"] missing-from-engines=[] extra-in-engines=["0.2.3-alpha.2"]
+--- e-peer-drift ---
+FAIL check-install-manifest: 12 issue(s) over 465 graph visit(s); lock leg: PASS
+  - @deepseek-ai/* peer must be byte-identical to the declared @deepseek-ai/dsh peer requirement (0.2.0-rc.2 || 0.2.2-rc.5): @deepseek-ai/dsh-terminal@0.2.0-rc.2
+
+## D. reading the controls
+   a-comparator        : a comparator range is REFUSED on the peer surface (and the lock leg follows).
+   b-no-engines        : omitting engines.dsh is LEGAL — the peers alone then decide, and they still
+                         enumerate exactly the two measured hosts (nothing widens).
+   b2-engines-comparator: engines.dsh itself must be exact-or-enumeration.
+   c-engines-subset    : the two surfaces must agree — a subset is named with missing-from-engines.
+   d-engines-extra     : an unmeasured host in engines.dsh is named extra-in-engines (no padding).
+   e-peer-drift        : ONE peer left at an exact pin is caught (byte-identity is unconditional).

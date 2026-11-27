@@ -88,13 +88,6 @@ function deniedBy(lane, locator) {
   return lane.deny.some((entry) => covers(entry, locator))
 }
 
-/** Own allow test: mode `all`, or a covering allow locator, and not denied. */
-function allowedBy(lane, locator) {
-  if (deniedBy(lane, locator)) return false
-  if (lane.mode === 'all') return true
-  return lane.allow.some((entry) => covers(entry, locator))
-}
-
 /**
  * S2's disposition over ONE declared lane. Frozen precedence identical to the
  * declared vocabulary: explicit deny, then ask (never promoted), then `all` or a
@@ -133,7 +126,17 @@ function union(left, right) {
 /**
  * S1's intersection of two DECLARED lanes (`ceiling ∩ restriction`):
  * `all` is the identity, allow keeps the narrower related subtree, deny is the
- * union, and an ask survives only where the permission side still allows it.
+ * union, and an `ask` survives iff NEITHER declared lane answers `deny` for that
+ * locator.
+ *
+ * G11 (owner ruling `docs/reviews/20261124-0151.txt` §2, fixed in round 94):
+ * requiring the intersection's ALLOW list to cover the ask dropped a legal PURE
+ * ask lane — `{allow: [], ask: [p]}` intersected with anything has an empty
+ * allow, so the ask vanished and the lane collapsed to deny-everything. An ask
+ * is a DECLARED disposition, not a grant: preserving it where both lanes permit
+ * the location (each lane's own disposition is `allow` or `ask`) widens nothing,
+ * because the ask still requires approval and every other locator is still
+ * denied. An ask that either lane DENIES is still dropped — deny wins.
  */
 export function intersectDeclaredLanes(ceiling, restriction) {
   const bothAll = ceiling.mode === 'all' && restriction.mode === 'all'
@@ -146,11 +149,11 @@ export function intersectDeclaredLanes(ceiling, restriction) {
         : intersectAllow(ceiling.allow, restriction.allow)
   const mode = bothAll ? 'all' : 'restricted'
   const deny = union(ceiling.deny, restriction.deny)
-  const permissionOnly = { mode, allow, ask: [], deny }
   const ask = []
   for (const locator of union(ceiling.ask, restriction.ask)) {
     if (ask.includes(locator)) continue
-    if (!allowedBy(permissionOnly, locator)) continue
+    if (authoredDisposition(ceiling, locator) === 'deny') continue
+    if (authoredDisposition(restriction, locator) === 'deny') continue
     ask.push(locator)
   }
   return { mode, allow, ask, deny }

@@ -1,14 +1,17 @@
-NC-MEMBER ask_user_question control=ask-port-removed GREEN
-NC-MEMBER present control=present-root-widened GREEN
-NC-MEMBER todo_write control=todo-lane-allowed GREEN
-NC-MEMBER get_goal control=get-goal-other-scope GREEN
-NC-MEMBER create_goal control=create-arm-direct-human GREEN
-NC-MEMBER update_goal control=update-revision-current GREEN
-NC-MEMBER exit_plan_mode control=exit-plan-mode-seeded GREEN
-NC-HARNESS compare-bites GREEN
-NC-HARNESS category-vocabulary-total GREEN
-NC-HARNESS category-coverage-declared GREEN
-NC-HARNESS store-witness-load-bearing GREEN
-NC-HARNESS effect-witness-load-bearing GREEN
-NC-HARNESS durable-readback-load-bearing GREEN
-NC-VERDICT GREEN controls=13 failed=0
+ACCEPTED-BY round81-a1-cut reason=re-record of the UI/AS battery: the governed family body retired per subject (ROUND80-CI-CLOSURE.md §4)
+NC NC-MEMBER ask_user_question ok — frozen-vectors=10 successor=tests/world-factory/a5sf-ask-precedence.test.mjs
+NC NC-MEMBER present ok — frozen-vectors=12 successor=tests/world-factory/a5sf-ask-precedence.test.mjs
+NC NC-MEMBER todo_write ok — frozen-vectors=10 successor=packages/runtime/test/vnext-admission.test.mjs
+NC NC-MEMBER get_goal ok — frozen-vectors=7 successor=packages/runtime/test/vnext-admission.test.mjs
+NC NC-MEMBER create_goal ok — frozen-vectors=10 successor=packages/runtime/test/vnext-admission.test.mjs
+NC NC-MEMBER update_goal ok — frozen-vectors=13 successor=packages/runtime/test/vnext-admission.test.mjs
+NC NC-MEMBER exit_plan_mode ok — frozen-vectors=7 successor=packages/runtime/test/vnext-admission.test.mjs
+NC NC-RETIRED-FAMILY-ABSENT ok — deleted=3 specSymbols=none
+NC NC-HOST-MODULES-ONLY ok — successor=composition-declared-native-modules appended=0
+NC NC-SUCCESSORS-EXIST ok — named=3
+NC NC-GOLDEN-FROZEN ok — vectors=69 re-recorded=no members=7
+NC NC-CATEGORY-TOTAL ok — observed=32 invented=refused
+NC NC-GOLDEN-DESIGN-CLAIMS ok — rows=69 claims=hold
+NC NC-NO-NEW-PATH-CLAIM ok — new-path=ABSENT claimed=no
+NC NC-LEDGER-CITES-SUCCESSOR ok — subjects=2 lane-booked=yes
+NC-VERDICT GREEN controls=15 failed=0

@@ -1,0 +1,93 @@
+[2026-11-26T02:12:29Z] START legacy-run1
+[2026-11-26T02:21:26Z] END legacy-run1 exit=0
+== legacy-run1 exit=0
+[2026-11-26T02:16:44.207Z] [boot1] in-flight settlement state=RUNNING executionId=exec-30e352c6e4d866e04655d65f24896fa0d06eb814 closedTooEarly=false
+[2026-11-26T02:16:44.838Z] [boot1] blocking window: bytesObserved=30184 stateAfterSettle=RUNNING blocked=true writer={"pid":575,"state":"S","wchan":"anon_pipe_write","matchedBy":"write-fd","cmdline":"/bin/bash --noprofile --norc -i"}
+[2026-11-26T02:16:44.878Z] [boot] SIGKILL pid=127 exit={"code":null,"signal":"SIGKILL"} pidGone=true portFree=true
+[2026-11-26T02:16:48.876Z] [boot1] case d3:crash-cold-recovery: PASS (PROVEN)
+[2026-11-26T02:21:06.798Z] [boot2] in-flight settlement state=RUNNING executionId=exec-30e352c6e4d866e04655d65f24896fa0d06eb814 closedTooEarly=false
+[2026-11-26T02:21:07.426Z] [boot2] blocking window: bytesObserved=51352 stateAfterSettle=RUNNING blocked=true writer={"pid":1284,"state":"S","wchan":"anon_pipe_write","matchedBy":"write-fd","cmdline":"/bin/bash --noprofile --norc -i"}
+[2026-11-26T02:21:07.473Z] [boot] SIGKILL pid=840 exit={"code":null,"signal":"SIGKILL"} pidGone=true portFree=true
+[2026-11-26T02:21:11.444Z] [boot2] case d3:crash-cold-recovery: PASS (PROVEN)
+[2026-11-26T02:21:12.452Z] RESULT evidence-complete=true allProven=true (2/2 boots; agreeing pair=true)
+[2026-11-26T02:21:26Z] START legacy-run2
+[2026-11-26T02:24:35Z] END legacy-run2 exit=0
+== legacy-run2 exit=0
+[2026-11-26T02:22:49.017Z] [boot1] in-flight settlement state=RUNNING executionId=exec-30e352c6e4d866e04655d65f24896fa0d06eb814 closedTooEarly=false
+[2026-11-26T02:22:49.647Z] [boot1] blocking window: bytesObserved=65408 stateAfterSettle=RUNNING blocked=true writer={"pid":2065,"state":"S","wchan":"anon_pipe_write","matchedBy":"write-fd","cmdline":"/bin/bash --noprofile --norc -i"}
+[2026-11-26T02:22:49.687Z] [boot] SIGKILL pid=1641 exit={"code":null,"signal":"SIGKILL"} pidGone=true portFree=true
+[2026-11-26T02:22:53.687Z] [boot1] case d3:crash-cold-recovery: PASS (PROVEN)
+[2026-11-26T02:24:15.550Z] [boot2] in-flight settlement state=RUNNING executionId=exec-30e352c6e4d866e04655d65f24896fa0d06eb814 closedTooEarly=false
+[2026-11-26T02:24:16.178Z] [boot2] blocking window: bytesObserved=30016 stateAfterSettle=RUNNING blocked=true writer={"pid":2774,"state":"S","wchan":"anon_pipe_write","matchedBy":"write-fd","cmdline":"/bin/bash --noprofile --norc -i"}
+[2026-11-26T02:24:16.233Z] [boot] SIGKILL pid=2330 exit={"code":null,"signal":"SIGKILL"} pidGone=true portFree=true
+[2026-11-26T02:24:20.224Z] [boot2] case d3:crash-cold-recovery: PASS (PROVEN)
+[2026-11-26T02:24:21.251Z] RESULT evidence-complete=true allProven=true (2/2 boots; agreeing pair=true)
+[2026-11-26T02:24:35Z] START legacy-run3
+[2026-11-26T02:27:42Z] END legacy-run3 exit=0
+== legacy-run3 exit=0
+[2026-11-26T02:25:56.359Z] [boot1] in-flight settlement state=RUNNING executionId=exec-30e352c6e4d866e04655d65f24896fa0d06eb814 closedTooEarly=false
+[2026-11-26T02:25:56.989Z] [boot1] blocking window: bytesObserved=40964 stateAfterSettle=RUNNING blocked=true writer={"pid":3577,"state":"S","wchan":"anon_pipe_write","matchedBy":"write-fd","cmdline":"/bin/bash --noprofile --norc -i"}
+[2026-11-26T02:25:57.029Z] [boot] SIGKILL pid=3131 exit={"code":null,"signal":"SIGKILL"} pidGone=true portFree=true
+[2026-11-26T02:26:00.984Z] [boot1] case d3:crash-cold-recovery: PASS (PROVEN)
+[2026-11-26T02:27:22.831Z] [boot2] in-flight settlement state=RUNNING executionId=exec-30e352c6e4d866e04655d65f24896fa0d06eb814 closedTooEarly=false
+[2026-11-26T02:27:23.459Z] [boot2] blocking window: bytesObserved=1876 stateAfterSettle=RUNNING blocked=true writer={"pid":4284,"state":"S","wchan":"anon_pipe_write","matchedBy":"write-fd","cmdline":"/bin/bash --noprofile --norc -i"}
+[2026-11-26T02:27:23.522Z] [boot] SIGKILL pid=3842 exit={"code":null,"signal":"SIGKILL"} pidGone=true portFree=true
+[2026-11-26T02:27:27.534Z] [boot2] case d3:crash-cold-recovery: PASS (PROVEN)
+[2026-11-26T02:27:28.568Z] RESULT evidence-complete=true allProven=true (2/2 boots; agreeing pair=true)
+[2026-11-26T02:27:42Z] START next-run1
+[2026-11-26T02:29:44Z] END next-run1 exit=0
+== next-run1 exit=0
+[2026-11-26T02:28:30.897Z] [boot1] in-flight settlement state=RUNNING executionId=exec-30e352c6e4d866e04655d65f24896fa0d06eb814 closedTooEarly=false
+[2026-11-26T02:28:31.526Z] [boot1] blocking window: bytesObserved=65408 stateAfterSettle=RUNNING blocked=true writer={"pid":5419,"state":"S","wchan":"anon_pipe_write","matchedBy":"write-fd","cmdline":"/bin/bash --noprofile --norc -i"}
+[2026-11-26T02:28:31.582Z] [boot] SIGKILL pid=4980 exit={"code":null,"signal":"SIGKILL"} pidGone=true portFree=true
+[2026-11-26T02:28:37.095Z] [boot1] case d3:crash-cold-recovery: PASS (PROVEN)
+[2026-11-26T02:29:22.910Z] [boot2] in-flight settlement state=RUNNING executionId=exec-30e352c6e4d866e04655d65f24896fa0d06eb814 closedTooEarly=false
+[2026-11-26T02:29:23.540Z] [boot2] blocking window: bytesObserved=65408 stateAfterSettle=RUNNING blocked=true writer={"pid":6827,"state":"S","wchan":"anon_pipe_write","matchedBy":"write-fd","cmdline":"/bin/bash --noprofile --norc -i"}
+[2026-11-26T02:29:23.585Z] [boot] SIGKILL pid=6370 exit={"code":null,"signal":"SIGKILL"} pidGone=true portFree=true
+[2026-11-26T02:29:29.001Z] [boot2] case d3:crash-cold-recovery: PASS (PROVEN)
+[2026-11-26T02:29:31.993Z] RESULT evidence-complete=true allProven=true (2/2 boots; agreeing pair=true)
+[2026-11-26T02:29:44Z] START next-run2
+[2026-11-26T02:31:42Z] END next-run2 exit=0
+== next-run2 exit=0
+[2026-11-26T02:30:29.435Z] [boot1] in-flight settlement state=RUNNING executionId=exec-30e352c6e4d866e04655d65f24896fa0d06eb814 closedTooEarly=false
+[2026-11-26T02:30:30.063Z] [boot1] blocking window: bytesObserved=65408 stateAfterSettle=RUNNING blocked=true writer={"pid":8313,"state":"S","wchan":"anon_pipe_write","matchedBy":"write-fd","cmdline":"/bin/bash --noprofile --norc -i"}
+[2026-11-26T02:30:30.105Z] [boot] SIGKILL pid=7874 exit={"code":null,"signal":"SIGKILL"} pidGone=true portFree=true
+[2026-11-26T02:30:35.705Z] [boot1] case d3:crash-cold-recovery: PASS (PROVEN)
+[2026-11-26T02:31:21.319Z] [boot2] in-flight settlement state=RUNNING executionId=exec-30e352c6e4d866e04655d65f24896fa0d06eb814 closedTooEarly=false
+[2026-11-26T02:31:21.948Z] [boot2] blocking window: bytesObserved=65408 stateAfterSettle=RUNNING blocked=true writer={"pid":9699,"state":"S","wchan":"anon_pipe_write","matchedBy":"write-fd","cmdline":"/bin/bash --noprofile --norc -i"}
+[2026-11-26T02:31:21.981Z] [boot] SIGKILL pid=9264 exit={"code":null,"signal":"SIGKILL"} pidGone=true portFree=true
+[2026-11-26T02:31:27.319Z] [boot2] case d3:crash-cold-recovery: PASS (PROVEN)
+[2026-11-26T02:31:30.249Z] RESULT evidence-complete=true allProven=true (2/2 boots; agreeing pair=true)
+[2026-11-26T02:31:42Z] START next-run3
+[2026-11-26T02:33:40Z] END next-run3 exit=0
+== next-run3 exit=0
+[2026-11-26T02:32:27.438Z] [boot1] in-flight settlement state=RUNNING executionId=exec-30e352c6e4d866e04655d65f24896fa0d06eb814 closedTooEarly=false
+[2026-11-26T02:32:28.067Z] [boot1] blocking window: bytesObserved=65408 stateAfterSettle=RUNNING blocked=true writer={"pid":11185,"state":"S","wchan":"anon_pipe_write","matchedBy":"write-fd","cmdline":"/bin/bash --noprofile --norc -i"}
+[2026-11-26T02:32:28.097Z] [boot] SIGKILL pid=10746 exit={"code":null,"signal":"SIGKILL"} pidGone=true portFree=true
+[2026-11-26T02:32:33.310Z] [boot1] case d3:crash-cold-recovery: PASS (PROVEN)
+[2026-11-26T02:33:19.354Z] [boot2] in-flight settlement state=RUNNING executionId=exec-30e352c6e4d866e04655d65f24896fa0d06eb814 closedTooEarly=false
+[2026-11-26T02:33:19.984Z] [boot2] blocking window: bytesObserved=65408 stateAfterSettle=RUNNING blocked=true writer={"pid":12571,"state":"S","wchan":"anon_pipe_write","matchedBy":"write-fd","cmdline":"/bin/bash --noprofile --norc -i"}
+[2026-11-26T02:33:20.046Z] [boot] SIGKILL pid=12136 exit={"code":null,"signal":"SIGKILL"} pidGone=true portFree=true
+[2026-11-26T02:33:25.262Z] [boot2] case d3:crash-cold-recovery: PASS (PROVEN)
+[2026-11-26T02:33:28.234Z] RESULT evidence-complete=true allProven=true (2/2 boots; agreeing pair=true)
+[2026-11-26T02:33:40Z] START negative-legacy
+[2026-11-26T02:35:18Z] END negative-legacy exit=0
+== negative-legacy exit=0
+[2026-11-26T02:35:06.533Z] NEGATIVE CONTROL (fast): PASS failing=[]
+[2026-11-26T02:35:06.533Z]   control boot-failed-at-sigkill-restart: PASS (failed=true stage=sigkill-restart error=no genuine in-flight call at crash time: call-d3-b-inflight settlement state="COMPLETED" fact=[{"decision":"allow","axis":"process.exec","code":null,"reason":""},{"code":null,"reason":""}] (the crash judge cannot fake an in-flight call))
+[2026-11-26T02:35:06.533Z]   control refusal-reason-is-the-named-reason: PASS (reason=no genuine in-flight call at crash time: call-d3-b-inflight settlement state="COMPLETED" fact=[{"decision":"allow","axis":"process.exec","code":null,"reason":""},{"code":null,"reason":""}] (the crash judge cannot fake an in-flight call))
+[2026-11-26T02:35:06.533Z]   control settlement-was-not-running: PASS (state=COMPLETED)
+[2026-11-26T02:35:06.533Z]   control no-sigkill-issued: PASS (sigkillIssued=false killRefused=true)
+[2026-11-26T02:35:06.533Z]   control host-left-alive: PASS (hostPid=13277 alive=true)
+[2026-11-26T02:35:06.533Z]   control no-restart-recorded: PASS (crash.json exists=false (a killed boot writes it))
+[2026-11-26T02:35:18Z] START negative-next
+[2026-11-26T02:36:20Z] END negative-next exit=0
+== negative-next exit=0
+[2026-11-26T02:36:11.053Z] NEGATIVE CONTROL (fast): PASS failing=[]
+[2026-11-26T02:36:11.053Z]   control boot-failed-at-sigkill-restart: PASS (failed=true stage=sigkill-restart error=no genuine in-flight call at crash time: call-d3-b-inflight settlement state="COMPLETED" fact=[{"decision":"allow","axis":"process.exec","code":null,"reason":""},{"code":null,"reason":""}] (the crash judge cannot fake an in-flight call))
+[2026-11-26T02:36:11.053Z]   control refusal-reason-is-the-named-reason: PASS (reason=no genuine in-flight call at crash time: call-d3-b-inflight settlement state="COMPLETED" fact=[{"decision":"allow","axis":"process.exec","code":null,"reason":""},{"code":null,"reason":""}] (the crash judge cannot fake an in-flight call))
+[2026-11-26T02:36:11.053Z]   control settlement-was-not-running: PASS (state=COMPLETED)
+[2026-11-26T02:36:11.053Z]   control no-sigkill-issued: PASS (sigkillIssued=false killRefused=true)
+[2026-11-26T02:36:11.053Z]   control host-left-alive: PASS (hostPid=14205 alive=true)
+[2026-11-26T02:36:11.053Z]   control no-restart-recorded: PASS (crash.json exists=false (a killed boot writes it))
+[2026-11-26T02:36:21Z] ALL DONE

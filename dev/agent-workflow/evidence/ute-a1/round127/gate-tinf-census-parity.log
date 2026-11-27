@@ -1,0 +1,19 @@
+=== tinf-instruments leg (hosted tinf step; 51 suites)
+ℹ tests 816
+ℹ pass 810
+ℹ fail 0
+ℹ skipped 6
+DSH-TEST-DISPATCH mode=run leg=tinf-instruments suites=51 files=51 exit=0 set=sha256:6954daa63c627bfe8968b1221dadf58b2e6fcfdd8a562c39d3a7a51f6c49d556
+
+=== the two stale pins, measured after re-record
+ℹ tests 78
+ℹ pass 78
+ℹ fail 0
+
+=== census population baseline regenerated (growth only)
+  "accepted_reason": "round 127 (2026-11-27): population grew 599 -> 601 with no loss, no equal-count swap and no removed root. The two additions are collected suites from rounds 122/123 - packages/runtime/test/vnext-tool-dispatch-shape.test.ts (507623eef) and packages/tools/test/p6t6-tool-route-errors.test.ts (fe09d0dba) - which no round re-recorded, leaving the census population pin and the dispatch-parity union digest stale behind the earlier hosted EB3 failure. Growth only: every previously baselined file is still present (checkPopulationBaseline reports POPULATION_GREW / added=2, no shrink).",
+  "accepted_by": "round127-a1-cut",
+  "file_count": 601,
+
+=== parity union re-recorded
+  union old=25 new=80 set=sha256:28989ca1091a0807b7c8b11557d4883a5c1ed48a56d49fad62e5650850f8ec45

@@ -1,0 +1,21 @@
+{
+  "schema": "ute-a1-window/1",
+  "branch": "vnext/a1-cut",
+  "base": "a19d1df018e772f20602f93bc726694524bdeb2f",
+  "note": "The A1 window: master's required-green set still applies to the THREE Required contexts; everything else that cannot pass mid-cut is declared here, by file, with a reason and the phase that turns it green. Growing this list requires raising budget.max in the same diff.",
+  "requiredGreen": [
+    "pr-gate",
+    "ci-required",
+    "pr-settlement-gate"
+  ],
+  "redList": [],
+  "budget": {
+    "max": 0
+  },
+  "cut": {
+    "retiredSourcesOnDisk": 148,
+    "retiredDistArtifacts": 52,
+    "survivingProductionRefs": 13,
+    "complete": false
+  }
+}

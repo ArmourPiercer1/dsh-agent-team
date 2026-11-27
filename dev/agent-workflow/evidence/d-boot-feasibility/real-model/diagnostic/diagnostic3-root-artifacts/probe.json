@@ -1,0 +1,224 @@
+{
+  "schema": "real-model-probe/1",
+  "at": "2026-11-25T16:29:04.346Z",
+  "head": "b2f4b1a08bd9728b907bbc122f338c12c40be783",
+  "level": "REAL-ROUTE-AVAILABLE",
+  "available": true,
+  "missing": null,
+  "lookedFor": {
+    "launchEnvironment": {
+      "names": [
+        "DEEPSEEK_API_KEY",
+        "DEEPSEEK_BASE_URL"
+      ],
+      "credentialEnvPresent": true,
+      "baseUrlPresent": true
+    },
+    "testHomes": {
+      "root": "tests/homes",
+      "worlds": 58,
+      "credentialsFiles": 27,
+      "providerRefInAnyHome": false,
+      "providerRecordInAnyHome": false,
+      "recordNamesObserved": [
+        "client-connection/browser-session"
+      ]
+    },
+    "mockDeployment": {
+      "file": "packages/tools/harness/mock-deepseek.mjs",
+      "present": true,
+      "wiredBy": "tests/world-factory/lib/world-factory.mjs#startMock (DEEPSEEK_BASE_URL -> in-process mock, DEEPSEEK_API_KEY=u5-fake-key)",
+      "isEvidenceOfRealModel": false
+    },
+    "hostWiring": [
+      {
+        "generation": "rc.2",
+        "tree": "tests/deepseek-harness-test-use",
+        "provider": "deepseek-official",
+        "apiKeyEnvDefault": "DEEPSEEK_API_KEY",
+        "packagePresent": true
+      },
+      {
+        "generation": "rc.5",
+        "tree": "tests/deepseek-harness-next",
+        "provider": "deepseek-official",
+        "apiKeyEnvDefault": "DEEPSEEK_API_KEY",
+        "packagePresent": true
+      }
+    ]
+  },
+  "found": {
+    "credentialEnvNamesObserved": [
+      "DEEPSEEK_API_KEY",
+      "DEEPSEEK_BASE_URL"
+    ],
+    "envCredentialPresent": true,
+    "envBaseUrl": "http://127.0.0.1:13270/anthropic",
+    "providerRefInHomes": false,
+    "providerRecordInHomes": false,
+    "homesWithCredentials": [
+      {
+        "world": "u5u5a5sfdev1-20261122T10-16-16Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261122T10-27-07Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261122T10-44-00Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261122T10-56-37Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261123T19-05-44Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261123T19-11-45Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261123T19-17-32Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261123T19-34-34Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261123T19-42-43Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261123T23-28-57Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261123T23-38-13Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261123T23-40-41Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261124T00-22-44Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261124T00-39-07Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261124T00-48-49Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261124T03-19-04Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261124T03-30-23Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261124T03-35-41Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261124T03-42-46Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261124T03-54-16Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261124T04-29-58Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261125T16-07-08Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261125T16-08-40Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261125T16-15-36Z-next",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261125T16-15-46Z-next",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261125T16-16-35Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      },
+      {
+        "world": "u5u5a5sfdev1-20261125T16-21-56Z",
+        "recordNames": [
+          "client-connection/browser-session"
+        ]
+      }
+    ]
+  }
+}

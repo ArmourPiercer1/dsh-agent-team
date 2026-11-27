@@ -1,0 +1,50 @@
+{
+  "askAppeared": true,
+  "ids": {
+    "officer": "inst-0hvc2y01v51z",
+    "worker": "inst-1q9ehvo0zb4o",
+    "pendingRequestId": "ctrl-00309jo0wi7l8l0cgl8ey16i",
+    "pendingRequestId2": null,
+    "pendingRequestId3": null,
+    "pendingProcessRequestId": null
+  },
+  "askRow": null,
+  "requests": [
+    {
+      "requestId": "ctrl-00309jo0wi7l8l0cgl8ey16i",
+      "kind": "leader-approval",
+      "targetInstanceId": "inst-1q9ehvo0zb4o",
+      "actionName": "admission-ask",
+      "toolName": "write",
+      "correlation": "admission:call_00_ET_Ue1isJzE4C9R0GrIwklA9097",
+      "status": "decided",
+      "createdAt": "2026-11-25T19:09:01.098Z",
+      "subject": {
+        "kind": "instance",
+        "instanceId": "inst-1q9ehvo0zb4o"
+      },
+      "executionCoupling": "inline",
+      "requestSequence": 9,
+      "operationFingerprint": "sha256:39ff7c4542a5e04b12723a75569e9bea3b55987c6ea008b1943480c6b5bbc0f9",
+      "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T19-07-11Z/workspace/lane/worker-ask.txt\" requires approval under policy generation a5sf1:2d394a74fedd3d4a3dad5ba05f936590)"
+    },
+    {
+      "requestId": "ctrl-0n3xi8x1uwqnci10mgg6v0l7",
+      "kind": "leader-approval",
+      "targetInstanceId": "inst-1q9ehvo0zb4o",
+      "actionName": "admission-ask",
+      "toolName": "write",
+      "correlation": "admission:call_00_v01CfIHhrmSRZJoOMalh2429",
+      "status": "decided",
+      "createdAt": "2026-11-25T19:09:03.932Z",
+      "subject": {
+        "kind": "instance",
+        "instanceId": "inst-1q9ehvo0zb4o"
+      },
+      "executionCoupling": "inline",
+      "requestSequence": 13,
+      "operationFingerprint": "sha256:f12d065b88723f59f414386ba8b170108a83ebb68711fc4a617eb0242872ed56",
+      "summary": "admission ask: write (fs.write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T19-07-11Z/workspace/lane/worker-ask-2.txt\" requires approval under policy generation a5sf1:2d394a74fedd3d4a3dad5ba05f936590)"
+    }
+  ]
+}

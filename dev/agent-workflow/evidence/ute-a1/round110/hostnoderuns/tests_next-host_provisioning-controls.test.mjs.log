@@ -1,0 +1,35 @@
+NEXT-CONTROL positive ok head=98857e4d57cf5c1cb62d798107ec2e8d2f7df97b files=2
+NEXT-CONTROL tree-missing refused code=TREE_MISSING message="next host lane: TREE_MISSING: no host tree at /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/tmp/next-host-lane/controls-missing-Kwq5kg/tests/deepseek-harness-next — provision it with `node scripts/provision-next-host.mjs --materialize` (or the documented clone in doc"
+NEXT-CONTROL not-built refused code=NOT_BUILT message="next host lane: NOT_BUILT: the host tree at /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/tmp/next-host-lane/controls-not-built-ZMjFVw is not BUILT (apps/cli/lib/bin.js missing) — run: node scripts/provision-next-host.mjs --materialize"
+NEXT-CONTROL not-a-git-checkout refused code=NOT_A_GIT_CHECKOUT message="next host lane: NOT_A_GIT_CHECKOUT: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/tmp/next-host-lane/controls-not-git-abrZoV is not its own git checkout: git resolves its toplevel to /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut — a directory ne"
+NEXT-CONTROL head-drift refused code=HEAD_DRIFT message="next host lane: HEAD_DRIFT: the host tree at /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/tmp/next-host-lane/controls-head-drift-5JZOQL is at 22edd75c31acdacd2c861b6ffce96bc7ff385998, the pin is 0000000000000000000000000000000000000000 (0.2.2-rc.5) — refusing to tes"
+NEXT-CONTROL version-drift refused code=VERSION_DRIFT message="next host lane: VERSION_DRIFT: the host tree at /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/tmp/next-host-lane/controls-version-drift-JgFg89 declares version 0.2.2-rc.3, the pin is 0.2.2-rc.5"
+NEXT-CONTROL version-unreadable refused code=VERSION_UNREADABLE message="next host lane: VERSION_UNREADABLE: could not read /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/tmp/next-host-lane/controls-version-unreadable-t0LT1V/package.json: Expected property name or '}' in JSON at position 2 (line 1 column 3)"
+NEXT-CONTROL pin-invalid-tree refused code=PIN_INVALID message="next host lane: PIN_INVALID: the expected pin is not a 40-hex commit (\"not-a-sha\") — the verifier refuses to grade against an unpinned expectation"
+NEXT-CONTROL pin-invalid-assets refused code=PIN_INVALID message="next host lane: PIN_INVALID: the asset pin is empty (no files) — an empty pin accepts every tree, which is never a pinned host"
+NEXT-CONTROL asset-missing refused code=ASSET_MISSING message="next host lane: ASSET_MISSING: pinned native asset landlock-run is ABSENT from the next host tree at /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/tmp/next-host-lane/controls-asset-missing-LbdPl2 — provision it: node scripts/provision-next-host.mjs --assets"
+NEXT-CONTROL asset-digest-drift refused code=ASSET_DIGEST_DRIFT message="next host lane: ASSET_DIGEST_DRIFT: pinned native asset glibc/system.node is DRIFTED: 4491495b60519a5ed579c324ca95c9a4a4710d496885c761b358adb995448840 (17360 B), pin is 54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc (17360 B) — a locally built binary is not the pinned host; re-prov"
+NEXT-CONTROL asset-bytes-drift refused code=ASSET_BYTES_DRIFT message="next host lane: ASSET_BYTES_DRIFT: pinned native asset landlock-run has the pinned sha256 but 27 B, pin is 28 B — the manifest's own row is inconsistent, so the pin cannot be trusted"
+NEXT-CONTROL asset-mode-drift refused code=ASSET_MODE_DRIFT message="next host lane: ASSET_MODE_DRIFT: pinned native asset landlock-run has mode 0o644, pin is 0o755 — the published bytes arrive executable or they are not the published artifact"
+NEXT-CONTROL host-pin ok tag=dsh-v0.2.2-rc.5 head=9c2670d3bce5275e0d1610272958121af87787bb version=0.2.2-rc.5 addon=0.1.2 ports=13000-13049
+✔ POSITIVE control: an honest fixture tree + its own pinned bytes pass (the refusals below are not vacuous) (38.514387ms)
+✔ TREE_MISSING — a lane with no host tree is RED and names the tree it looked for (0.953906ms)
+✔ NOT_BUILT — a pinned clone that was never built is RED, never "nothing to run" (25.507428ms)
+✔ NOT_A_GIT_CHECKOUT — a directory that is not a checkout cannot claim a commit (4.532289ms)
+✔ HEAD_DRIFT — a tree at the wrong commit is refused, and the message names both commits (27.87027ms)
+✔ VERSION_DRIFT — a tree that declares another version is not the pinned host (28.353054ms)
+✔ VERSION_UNREADABLE — an unreadable package.json refuses instead of guessing a version (28.302419ms)
+✔ PIN_INVALID — an unpinned expectation is refused before any file is read (24.616809ms)
+✔ ASSET_MISSING — absent native assets are RED and name the provisioning command (33.763015ms)
+✔ ASSET_DIGEST_DRIFT — a LOCALLY BUILT system.node is not the published pin (35.775965ms)
+✔ ASSET_BYTES_DRIFT — a manifest row whose length disagrees with its own sha256 is refused (30.613598ms)
+✔ ASSET_MODE_DRIFT — the pinned mode (0o755) is part of the pin (29.998309ms)
+✔ HOST PIN — the fixture controls grade the SAME pin the lane executes (0.263288ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 362.599182

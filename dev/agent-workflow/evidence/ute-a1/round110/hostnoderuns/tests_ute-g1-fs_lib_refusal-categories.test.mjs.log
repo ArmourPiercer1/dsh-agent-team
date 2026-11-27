@@ -1,0 +1,59 @@
+REFUSAL-CATEGORY-DERIVATION classes=6 cancelled,image-modality-denied,lane-deny,missing-path,stale-version,write-requires-read
+✔ the vocabulary self-check passes: definitions, reachability, samples, citations (1.394941ms)
+✔ no category definition bakes in a model-facing code or prose (0.300589ms)
+✔ every category is reachable from at least one explicit mapping entry (0.102665ms)
+✔ every legacy refusal CLASS the corpus records maps to its category (1.320879ms)
+✔ the two DECIDED mappings are pinned, and neither of them is the default bucket (0.151807ms)
+✔ every measured legacy PROSE sentence maps to its category (in order) (0.234073ms)
+✔ every legacy TYPED code (TeamIoDenial + compiled path decisions) maps to its category (0.153981ms)
+✔ matching ORDER: a stale-edit remedy is not mistaken for read-before-write (0.111361ms)
+✔ every native FsError code maps to its category (0.243561ms)
+✔ native TOOL codes (not FsError) map explicitly and unknown reasons refuse (0.614623ms)
+✔ cross-category pairs are INCOMPATIBLE and never receive a default category (0.241687ms)
+✔ same-category cross-surface pairs ARE compatible (that is the whole ruling) (0.097765ms)
+✔ an unmapped legacy value is REFUSED, never defaulted to unknown (0.336436ms)
+✔ an unmapped native code is REFUSED, never defaulted to unknown (0.117593ms)
+✔ a "no refusal" sentinel is not a category and is skipped by the audit (0.181865ms)
+✔ a comparison needs both sides — one side against nothing is vacuous (0.150425ms)
+✔ the corpus vocabulary is exhaustive today (classes, codes and prose all map) (2.418528ms)
+✔ the merged golden TSV yields EXACTLY the six legacy refusal classes (named, not counted) (0.552896ms)
+REFUSAL-CATEGORY-DERIVATION-EXTRA classes=7 new="image-downscale-denied"
+REFUSAL-CATEGORY-MUTANT id=corpus-gains-unmapped-native-code real_catches=true mutant_catches=false red=true
+REFUSAL-CATEGORY-MUTANT id=comparator-default-buckets-unknown-values real_catches=true mutant_catches=false red=true
+REFUSAL-CATEGORY-MUTANT id=drop-a-category real_catches=true mutant_catches=false red=true
+REFUSAL-CATEGORY-MUTANT id=drop-route-unresolved-fixture-evidence real_catches=true mutant_catches=false red=true
+REFUSAL-CATEGORY-MUTANT id=bucket-route-unresolved-as-unknown real_catches=true mutant_catches=false red=true
+REFUSAL-CATEGORY-MUTANT id=shadow-a-prose-entry-by-reordering real_catches=true mutant_catches=false red=true
+REFUSAL-CATEGORY-MUTANTS total=6 red=6
+✖ the class the corpus no longer emits is produced by the EXECUTED withheld-continuation fixture (408.203288ms)
+✔ the SAME derivation refuses an EXTRA class (the exhaustiveness law is not a count) (0.887841ms)
+✔ the corpus audit REFUSES a value the corpus gains later (the contract, before the mutation) (2.713276ms)
+✔ REAL MUTATIONS: every injected defect is caught by the probes above (1.25747ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 21
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 476.231854
+
+✖ failing tests:
+
+test at tests/ute-g1-fs/lib/refusal-categories.test.mjs:390:1
+✖ the class the corpus no longer emits is produced by the EXECUTED withheld-continuation fixture (408.203288ms)
+  AssertionError [ERR_ASSERTION]: the withheld continuation must fail closed
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/ute-g1-fs/lib/refusal-categories.test.mjs:406:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

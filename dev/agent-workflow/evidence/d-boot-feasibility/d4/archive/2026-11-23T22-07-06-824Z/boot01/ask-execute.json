@@ -1,0 +1,120 @@
+{
+  "writeSettled": true,
+  "requestId": "ctrl-1xxrzo21k29yc31rawhls0qn",
+  "resolveOutcome": {
+    "call": {
+      "rootSessionId": "session-dboot-d4-root",
+      "requestToken": "dboot-d4-resolve-ctrl-1xxrzo21k29yc31rawhls0qn",
+      "requestId": "ctrl-1xxrzo21k29yc31rawhls0qn",
+      "decision": "allow"
+    },
+    "result": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-1xxrzo21k29yc31rawhls0qn\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"scope\":{\"rootSessionId\":\"session-dboot-d4-root\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0ty67u70r99a\"},\"targetInstanceId\":\"inst-0ty67u70r99a\",\"actionName\":\"admission-ask\",\"correlation\":\"admission:call-d4-worker-write\",\"toolName\":\"write\"},\"requestSequence\":9,\"decisionSequence\":10,\"createdAt\":\"2026-11-23T21:53:20.921Z\"}}",
+    "isError": false
+  },
+  "workerWriteCall": {
+    "callId": "call-d4-worker-write",
+    "name": "write",
+    "arguments": {
+      "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/runs-workspace/boot1/worker-ask.txt",
+      "content": "DBOOT_D4_WORKER_ASK_CALLED\n"
+    },
+    "result": {
+      "callId": "call-d4-worker-write",
+      "isError": true,
+      "text": "Error: [sandbox: file access denied under workspace-write mode]\n[sandbox: escalation available — retry this exact operation once with sandbox_permissions (the narrowest wider mode that suffices) + justification; the approval prompt asks the user]"
+    }
+  },
+  "file": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/runs-workspace/boot1/worker-ask.txt",
+    "exists": false,
+    "content": null,
+    "bytes": null,
+    "sha256": null
+  },
+  "settlement": {
+    "executionId": "exec-e14318d017ca1dc2ba9c1821dfa714eee89178b2",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T21-50-54Z/centre/settlement/inst-0ty67u70r99a/exec-e14318d017ca1dc2ba9c1821dfa714eee89178b2.settlement.json",
+    "present": true,
+    "state": "FAILED",
+    "bodyOutcome": "failed",
+    "dispatch": "quiesced",
+    "transitions": [
+      "ADMITTED",
+      "RUNNING",
+      "FAILED"
+    ]
+  },
+  "facts": [
+    {
+      "callId": "call-d4-worker-write",
+      "agentId": "inst-0ty67u70r99a",
+      "instanceId": "inst-0ty67u70r99a",
+      "sessionId": "session-team-child-ecd32f24e3090ec60b7270eebdb92a6c",
+      "instanceGeneration": 0,
+      "toolName": "write",
+      "axis": "fs.write",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/runs-workspace/boot1/worker-ask.txt",
+      "definitionSource": "",
+      "policyGeneration": "a5sf1:252bb6604e7b023506588e3902046231",
+      "blueprintRevision": "",
+      "owner": "session-dboot-d4-root",
+      "decision": "allow",
+      "laneDecision": "ask",
+      "kind": "invocation-authority",
+      "at": "2026-11-23T21:53:21.048Z"
+    },
+    {
+      "callId": "call-d4-worker-write",
+      "executionId": "exec-e14318d017ca1dc2ba9c1821dfa714eee89178b2",
+      "toolName": "write",
+      "agentId": "session-team-child-ecd32f24e3090ec60b7270eebdb92a6c",
+      "outcome": "failed",
+      "isError": true,
+      "errorMessage": "[sandbox: file access denied under workspace-write mode]\n[sandbox: escalation available — retry this exact operation once with sandbox_permissions (the narrowest wider mode that suffices) + justification; the approval prompt asks the user]",
+      "policyGeneration": "a5sf1:252bb6604e7b023506588e3902046231",
+      "kind": "execution",
+      "at": "2026-11-23T21:53:21.078Z"
+    }
+  ],
+  "verdict": {
+    "proposition": "a Member `write` whose disposition is `ask` raises a REAL Control request, is approved through the REAL control path, and then executes: the confined Provider verifies the minted receipt and writes the exact approved bytes, settled COMPLETED",
+    "verdict": "REFUTED",
+    "clauses": [
+      {
+        "id": "control-request-raised",
+        "ok": true,
+        "detail": "requestRaised=true"
+      },
+      {
+        "id": "approved-through-real-control-path",
+        "ok": true,
+        "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-1xxrzo21k29yc31rawhls0qn\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":9,\\\"decisionSequence\\\":10,\\\"createdAt\\\":\\\"2026-11-23T21:53:20.9\""
+      },
+      {
+        "id": "admission-fact-allow-lane-ask",
+        "ok": true,
+        "detail": "allow facts=[{\"callId\":\"call-d4-worker-write\",\"decision\":\"allow\",\"laneDecision\":\"ask\",\"axis\":\"fs.write\"}]"
+      },
+      {
+        "id": "write-tool-result-not-an-error",
+        "ok": false,
+        "detail": "write result isError=true text=\"Error: [sandbox: file access denied under workspace-write mode]\\n[sandbox: escalation available — retry this exact operation once with sandbox_permissions (the narrowest wider mode that suffices) + justification; the approval prompt asks the user]\""
+      },
+      {
+        "id": "real-bytes-on-disk",
+        "ok": false,
+        "detail": "file exists=false bytes=null sha256=null expectedSha256=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3"
+      },
+      {
+        "id": "settlement-completed",
+        "ok": false,
+        "detail": "state=FAILED bodyOutcome=failed transitions=[\"ADMITTED\",\"RUNNING\",\"FAILED\"]"
+      }
+    ],
+    "failing": [
+      "write-tool-result-not-an-error",
+      "real-bytes-on-disk",
+      "settlement-completed"
+    ]
+  }
+}

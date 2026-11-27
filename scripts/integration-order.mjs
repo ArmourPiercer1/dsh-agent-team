@@ -51,8 +51,24 @@
  * adjudication for cand-v0.1.6-2 committed 205 per-run artifacts under
  * `evidence/c2-adjudication-2/`: measured, origin/master carries 3863 tracked `.json` under the
  * evidence root and that branch 4068. The bound is a capacity budget, not a safety assertion,
- * so it is raised with a measurement rather than by trimming committed evidence; 6000 leaves
- * room for two more adjudication rounds of that size), each ≤ 512 KiB (over the cap:
+ * so it is raised with a measurement rather than by trimming committed evidence. RAISED AGAIN on
+ * 2026-11-22 (Round 72, hosted-CI repair) with this measurement: on `vnext/a1-cut` (a descendant of
+ * that master) `git ls-files` over the evidence root reports 6832 tracked `.json`, of which 461
+ * mention `u5-run-record/1` and 440 parse as that schema — so the audit had hit BOUND HIT at 6000
+ * candidates and again at 400 records, and `E5` ("the bound is not hit on this tree") was RED on
+ * every PR since. maxCandidates 6000 → 8000 and maxRecords 400 → 600; the bound is never trimmed to
+ * fit the tree and no committed evidence was deleted to fit the bound. RAISED AGAIN on 2026-11-24
+ * (Round 100) with this measurement: `git ls-tree` over the evidence root counts 8161 tracked
+ * `.json` at 954835b71 (already over 8000, but the audit never ran there — the earlier
+ * `EB3-RUN-MANIFEST` step failed first and masked `devex-diag`) and 8790 at 35af064f3, of which 516
+ * parse as `u5-run-record/1` (under the unchanged 600-record budget). maxCandidates 8000 → 12000;
+ * this is a capacity budget raised with a measurement, never an assertion weakened, and no
+ * committed evidence was trimmed to fit it). RAISED AGAIN on 2026-11-24 (Round 115) with the
+ * measurement quoted at the `BOUNDS` declaration below: 602 committed records parse on
+ * `vnext/a1-cut` at `974c643de`, so `maxRecords` 600 → 900 (maxCandidates unchanged at 12000
+ * against 10440 measured). Same doctrine, same controls: `E7` still requires BOUND HIT for
+ * `maxRecords + 1` fixture records and `E8` still requires a late record to be graded. Each
+ * record is ≤ 512 KiB (over the cap:
  * NOT GRADED by name and size, never read). Rows reported ≤ 40 per class; stdout ≤ 24 KiB; one
  * memoized git call per distinct SHA; no child process other than `git`.
  *
@@ -67,7 +83,35 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-export const BOUNDS = Object.freeze({ maxRecords: 400, maxCandidates: 6000, maxRecordBytes: 512 * 1024, perClass: 40, outputBytes: 24 * 1024 })
+// maxCandidates raised 6000 → 8000 and maxRecords 400 → 600 on 2026-11-22 (Round 72, hosted-CI
+// repair), each with a measurement: on `vnext/a1-cut` the committed evidence root carries 6832
+// tracked `.json`, of which 461 mention `u5-run-record/1` and 440 parse as that schema. The audit
+// had therefore hit BOTH bounds (6000 candidates, then 400 records) and `devex-diag`'s `E5` — "the
+// bound is not hit on this tree" — was RED on every PR. Bounds are capacity budgets: raised with a
+// measurement, never trimmed by deleting committed evidence.
+// maxRecords raised 600 → 900 on 2026-11-24 (Round 115, candidate-report round), with this
+// measurement at `974c643de` on `vnext/a1-cut`: `git ls-files 'dev/agent-workflow/evidence/**'` →
+// 10440 tracked `.json`, 12 of them over the 512 KiB cap (never read), 623 mention
+// `u5-run-record/1`, and **602 parse as that schema** — so the 600 budget was hit by 2 records and
+// `E5` ("the bound is not hit on this tree") was RED on the branch, which is what made the hosted
+// `ci-integration` `devex-diag` step fail (job 138849199239, step 19, run 45508260944). The raise is
+// a capacity budget with a measurement, per this header's own rule: maxRecords 900 leaves ~298
+// records of headroom at the measured growth of a few per round; maxCandidates stays 12000 against
+// 10440 measured candidates (~1560 of headroom, the next bound a later round will have to raise with
+// its own measurement). No assertion is weakened: `E7` still builds `BOUNDS.maxRecords + 1` fixture
+// records and requires BOUND HIT (a partial audit is never a clean report), `E8` still requires a
+// late record to be graded without BOUND HIT, and no committed evidence was deleted or trimmed.
+// maxCandidates raised 12000 → 16000 on 2026-11-27 (Round 127, hosted-CI repair), with this
+// measurement at `03500b51b` on `vnext/a1-cut`: `git ls-files 'dev/agent-workflow/evidence/**'`
+// reports **12883 tracked `.json`** (30 of them over the 512 KiB per-record cap, so NOT GRADED by name
+// and size and never read). The audit therefore hit BOUND HIT at 12000 and REFUSED with no partial
+// report, which is what made the hosted `ci-integration` `devex-diag` step fail (run 45960633416, job
+// 140377491907: "BOUND HIT: 12883 … > maxCandidates 12000"). The raise is a capacity budget with a
+// measurement, exactly as the Rounds 72/100/115 raises above: 16000 leaves ~3117 candidates of
+// headroom, maxRecords stays 900 (the record population is measured separately below by `E5`; the
+// bound is not trimmed to fit the tree), no committed evidence was deleted or trimmed, and `E5`/`E7`/
+// `E8` keep their refusals — a partial audit is still never a clean report.
+export const BOUNDS = Object.freeze({ maxRecords: 900, maxCandidates: 16000, maxRecordBytes: 512 * 1024, perClass: 40, outputBytes: 24 * 1024 })
 const EVIDENCE_ROOT = 'dev/agent-workflow/evidence'
 const SCHEMA = 'u5-run-record/1'
 

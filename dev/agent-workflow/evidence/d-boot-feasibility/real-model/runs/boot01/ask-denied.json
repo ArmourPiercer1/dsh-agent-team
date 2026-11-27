@@ -1,0 +1,275 @@
+{
+  "kind": "deny",
+  "terminal": true,
+  "resolveOutcome": {
+    "call": {
+      "rootSessionId": "session-real-model-root",
+      "requestToken": "dboot-d4-resolve-ctrl-0jivl7u1cuqx7b11qrp2w1vc",
+      "requestId": "ctrl-0jivl7u1cuqx7b11qrp2w1vc",
+      "decision": "deny"
+    },
+    "result": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-0jivl7u1cuqx7b11qrp2w1vc\",\"decision\":\"deny\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"scope\":{\"rootSessionId\":\"session-real-model-root\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-1q9ehvo0zb4o\"},\"targetInstanceId\":\"inst-1q9ehvo0zb4o\",\"actionName\":\"admission-ask\",\"correlation\":\"admission:call_00_PKqnzZquYpmRqWuaZiKv1353\",\"toolName\":\"write\"},\"requestSequence\":4,\"decisionSequence\":5,\"createdAt\":\"2026-11-25T20:24:39.732Z\"}}",
+    "isError": false
+  },
+  "cancelStatus": null,
+  "file": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-23-14Z/workspace/lane/ask-denied.txt",
+    "exists": false,
+    "content": null,
+    "bytes": null,
+    "sha256": null
+  },
+  "settlement": {
+    "executionId": "exec-0c4f7780eeff779242731dcae2eda603abf9a607",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-23-14Z/centre/settlement/inst-1q9ehvo0zb4o/exec-0c4f7780eeff779242731dcae2eda603abf9a607.settlement.json",
+    "present": true,
+    "state": "REFUSED",
+    "bodyOutcome": "not-started",
+    "dispatch": "not-started",
+    "transitions": [
+      "ADMITTED",
+      "REFUSED"
+    ],
+    "terminalAt": "2026-11-25T20:24:39.744Z"
+  },
+  "facts": [
+    {
+      "callId": "call_00_PKqnzZquYpmRqWuaZiKv1353",
+      "agentId": "inst-1q9ehvo0zb4o",
+      "instanceId": "inst-1q9ehvo0zb4o",
+      "sessionId": "session-team-child-a3d2ddfd7c73a4e7714c635105202791",
+      "instanceGeneration": 0,
+      "toolName": "write",
+      "axis": "fs.write",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-23-14Z/workspace/lane/ask-denied.txt",
+      "definitionSource": "",
+      "policyGeneration": "a5sf1:0d37ed7175b10f4764cc231cca999fe5",
+      "blueprintRevision": "",
+      "owner": "session-real-model-root",
+      "decision": "deny",
+      "laneDecision": "ask",
+      "refusalCode": "ADMISSION_APPROVAL_DENIED",
+      "reason": "the durable control decision for \"ctrl-0jivl7u1cuqx7b11qrp2w1vc\" is deny; the call is refused",
+      "kind": "invocation-authority",
+      "at": "2026-11-25T20:24:39.736Z"
+    },
+    {
+      "callId": "call_00_PKqnzZquYpmRqWuaZiKv1353",
+      "executionId": "exec-0c4f7780eeff779242731dcae2eda603abf9a607",
+      "toolName": "write",
+      "agentId": "session-team-child-a3d2ddfd7c73a4e7714c635105202791",
+      "outcome": "admission-refusal",
+      "isError": true,
+      "refusalCode": "ADMISSION_APPROVAL_DENIED",
+      "policyGeneration": "a5sf1:0d37ed7175b10f4764cc231cca999fe5",
+      "kind": "execution",
+      "at": "2026-11-25T20:24:39.750Z"
+    }
+  ],
+  "verdict": {
+    "proposition": "the SAME live `write` ask denied through the real control path mints nothing and writes nothing: zero bytes on disk, a recorded deny fact, and a REFUSED / not-started settlement",
+    "verdict": "PROVEN",
+    "clauses": [
+      {
+        "id": "control-request-raised",
+        "ok": true,
+        "detail": "requestRaised=true"
+      },
+      {
+        "id": "denied-through-real-control-path",
+        "ok": true,
+        "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-0jivl7u1cuqx7b11qrp2w1vc\\\",\\\"decision\\\":\\\"deny\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-leader\\\",\\\"role\\\":\\\"leader\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-real-model-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1q9ehvo0zb4o\\\"},\\\"targetInstanceId\\\":\\\"inst-1q9ehvo0zb4o\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call_00_PKqnzZquYpmRqWuaZiKv1353\\\",\\\"toolName\\\":\\\"write\\\"},\\\"requestSequence\\\":4,\\\"decisionSequence\\\":5,\\\"createdAt\\\":\\\"2026-11-2\""
+      },
+      {
+        "id": "deny-fact-recorded",
+        "ok": true,
+        "detail": "deny facts=[{\"callId\":\"call_00_PKqnzZquYpmRqWuaZiKv1353\",\"refusalCode\":\"ADMISSION_APPROVAL_DENIED\",\"decision\":\"deny\"}]"
+      },
+      {
+        "id": "zero-bytes",
+        "ok": true,
+        "detail": "file exists=false bytes=null"
+      },
+      {
+        "id": "settlement-refused-not-started",
+        "ok": true,
+        "detail": "state=REFUSED bodyOutcome=not-started transitions=[\"ADMITTED\",\"REFUSED\"]"
+      }
+    ],
+    "failing": [],
+    "discovery": {
+      "ask-denied-leader-resolve": {
+        "slot": "ask-denied-leader-resolve",
+        "predicate": "name=team_resolve_control && requestId=\"ctrl-0jivl7u1cuqx7b11qrp2w1vc\"",
+        "matchedId": "call_00_ET_YD9R4uoOjuwRk4B4NEvr6174",
+        "turnIndex": 6,
+        "input": "{\"rootSessionId\":\"session-real-model-root\",\"requestToken\":\"dboot-d4-resolve-ctrl-0jivl7u1cuqx7b11qrp2w1vc\",\"requestId\":\"ctrl-0jivl7u1cuqx7b11qrp2w1vc\",\"decision\":\"deny\"}"
+      },
+      "ask-denied-worker-write": {
+        "slot": "ask-denied-worker-write",
+        "predicate": "name=write && file_path=\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-23-14Z/workspace/lane/ask-denied.txt\"",
+        "matchedId": "call_00_PKqnzZquYpmRqWuaZiKv1353",
+        "turnIndex": 3,
+        "input": "{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-23-14Z/workspace/lane/ask-denied.txt\",\"content\":\"DBOOT_D4_WORKER_ASK_CALLED\\n\"}"
+      }
+    }
+  },
+  "discovery": {
+    "ask-denied-leader-resolve": {
+      "slot": "ask-denied-leader-resolve",
+      "predicate": "name=team_resolve_control && requestId=\"ctrl-0jivl7u1cuqx7b11qrp2w1vc\"",
+      "matchedId": "call_00_ET_YD9R4uoOjuwRk4B4NEvr6174",
+      "turnIndex": 6,
+      "input": "{\"rootSessionId\":\"session-real-model-root\",\"requestToken\":\"dboot-d4-resolve-ctrl-0jivl7u1cuqx7b11qrp2w1vc\",\"requestId\":\"ctrl-0jivl7u1cuqx7b11qrp2w1vc\",\"decision\":\"deny\"}"
+    },
+    "ask-denied-worker-write": {
+      "slot": "ask-denied-worker-write",
+      "predicate": "name=write && file_path=\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-23-14Z/workspace/lane/ask-denied.txt\"",
+      "matchedId": "call_00_PKqnzZquYpmRqWuaZiKv1353",
+      "turnIndex": 3,
+      "input": "{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-23-14Z/workspace/lane/ask-denied.txt\",\"content\":\"DBOOT_D4_WORKER_ASK_CALLED\\n\"}"
+    }
+  },
+  "observed": [
+    {
+      "index": 0,
+      "at": "2026-11-25T20:24:34.684Z",
+      "text": "Create governed worker via team_delegate",
+      "toolUses": [],
+      "toolResults": []
+    },
+    {
+      "index": 1,
+      "at": "2026-11-25T20:24:34.685Z",
+      "text": "",
+      "toolUses": [
+        {
+          "id": "call_00_gGf26choCTbrwq73KHAt1988",
+          "name": "team_delegate",
+          "input": "{\"rootSessionId\":\"session-real-model-root\",\"requestToken\":\"dboot-d4-delegate-worker\",\"delegationTemplateId\":\"worker\",\"label\":\"dboot-d4-worker\",\"prompt\":\"dboot-d4-worker-work: You are the governed worker for this team. Do NOT answer with text. Your first action MUST be the Step 1 tool call; do not run bash, do not read files, do not explore the repository. Step 1: call the `write` tool with {\\\"file_path\\\":\\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-23-14Z/workspace/lane/ask-denied.txt\\\",\\\"content\\\":\\\"DBOOT_D4_WORKER_ASK_CALLED\\\\n\\\"}. This call needs approval; wait for its result. Step 2: after Step 1 has returned, call the `write` tool with {\\\"file_path\\\":\\\"\\\",\\\"content\\\":\\\"DBOOT_D4_WORKER_ASK_CALLED_2\\\\n\\\"}. This call also needs approval; wait for its result. Step 3: after Step 2 has returned, reply with the single token DBOOT_D4_WORKER_TURN_DONE and nothing else.\",\"taskSummary\":\"dboot d4 probe: worker work unit\"}"
+        }
+      ],
+      "toolResults": []
+    },
+    {
+      "index": 2,
+      "at": "2026-11-25T20:24:37.122Z",
+      "text": "DBOOT_D4_WORKER_DELEGATED",
+      "toolUses": [],
+      "toolResults": [
+        {
+          "toolUseId": "call_00_gGf26choCTbrwq73KHAt1988",
+          "isError": false,
+          "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-real-model-root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1q9ehvo0zb4o\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-a3d2ddfd7c73a4e7714c635105202791\",\"operationId\":\"op-10cpjie0ugz2ut0egr20g12r\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":2,\"workSettled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"dboot-d4-delegate-worker\"}"
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "at": "2026-11-25T20:24:37.132Z",
+      "text": "",
+      "toolUses": [
+        {
+          "id": "call_00_PKqnzZquYpmRqWuaZiKv1353",
+          "name": "write",
+          "input": "{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-23-14Z/workspace/lane/ask-denied.txt\",\"content\":\"DBOOT_D4_WORKER_ASK_CALLED\\n\"}"
+        }
+      ],
+      "toolResults": []
+    },
+    {
+      "index": 4,
+      "at": "2026-11-25T20:24:37.132Z",
+      "text": "Delegate worker write approval test",
+      "toolUses": [],
+      "toolResults": []
+    },
+    {
+      "index": 5,
+      "at": "2026-11-25T20:24:38.780Z",
+      "text": "",
+      "toolUses": [],
+      "toolResults": [
+        {
+          "toolUseId": "call_00_gGf26choCTbrwq73KHAt1988",
+          "isError": false,
+          "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-real-model-root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1q9ehvo0zb4o\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-a3d2ddfd7c73a4e7714c635105202791\",\"operationId\":\"op-10cpjie0ugz2ut0egr20g12r\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":2,\"workSettled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"dboot-d4-delegate-worker\"}"
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "at": "2026-11-25T20:24:38.995Z",
+      "text": "",
+      "toolUses": [
+        {
+          "id": "call_00_ET_YD9R4uoOjuwRk4B4NEvr6174",
+          "name": "team_resolve_control",
+          "input": "{\"rootSessionId\":\"session-real-model-root\",\"requestToken\":\"dboot-d4-resolve-ctrl-0jivl7u1cuqx7b11qrp2w1vc\",\"requestId\":\"ctrl-0jivl7u1cuqx7b11qrp2w1vc\",\"decision\":\"deny\"}"
+        }
+      ],
+      "toolResults": [
+        {
+          "toolUseId": "call_00_gGf26choCTbrwq73KHAt1988",
+          "isError": false,
+          "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-real-model-root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1q9ehvo0zb4o\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-a3d2ddfd7c73a4e7714c635105202791\",\"operationId\":\"op-10cpjie0ugz2ut0egr20g12r\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":2,\"workSettled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"dboot-d4-delegate-worker\"}"
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "at": "2026-11-25T20:24:39.781Z",
+      "text": "DBOOT_D4_RESOLVE_DONE",
+      "toolUses": [],
+      "toolResults": [
+        {
+          "toolUseId": "call_00_gGf26choCTbrwq73KHAt1988",
+          "isError": false,
+          "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-real-model-root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1q9ehvo0zb4o\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-a3d2ddfd7c73a4e7714c635105202791\",\"operationId\":\"op-10cpjie0ugz2ut0egr20g12r\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":2,\"workSettled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"dboot-d4-delegate-worker\"}"
+        },
+        {
+          "toolUseId": "call_00_ET_YD9R4uoOjuwRk4B4NEvr6174",
+          "isError": false,
+          "text": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-0jivl7u1cuqx7b11qrp2w1vc\",\"decision\":\"deny\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"scope\":{\"rootSessionId\":\"session-real-model-root\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-1q9ehvo0zb4o\"},\"targetInstanceId\":\"inst-1q9ehvo0zb4o\",\"actionName\":\"admission-ask\",\"correlation\":\"admission:call_00_PKqnzZquYpmRqWuaZiKv1353\",\"toolName\":\"write\"},\"requestSequence\":4,\"decisionSequence\":5,\"createdAt\":\"2026-11-25T20:24:39.732Z\"}}"
+        }
+      ]
+    },
+    {
+      "index": 8,
+      "at": "2026-11-25T20:24:39.781Z",
+      "text": "",
+      "toolUses": [
+        {
+          "id": "call_00_ELEpzgcphiai8ypeXHxP6618",
+          "name": "write",
+          "input": "{\"content\":\"DBOOT_D4_WORKER_ASK_CALLED_2\\n\",\"file_path\":\"\"}"
+        }
+      ],
+      "toolResults": [
+        {
+          "toolUseId": "call_00_PKqnzZquYpmRqWuaZiKv1353",
+          "isError": true,
+          "text": "Error: ADMISSION_APPROVAL_DENIED: the durable control decision for \"ctrl-0jivl7u1cuqx7b11qrp2w1vc\" is deny; the call is refused"
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "at": "2026-11-25T20:24:41.041Z",
+      "text": "",
+      "toolUses": [],
+      "toolResults": [
+        {
+          "toolUseId": "call_00_PKqnzZquYpmRqWuaZiKv1353",
+          "isError": true,
+          "text": "Error: ADMISSION_APPROVAL_DENIED: the durable control decision for \"ctrl-0jivl7u1cuqx7b11qrp2w1vc\" is deny; the call is refused"
+        },
+        {
+          "toolUseId": "call_00_ELEpzgcphiai8ypeXHxP6618",
+          "isError": true,
+          "text": "Error: ADMISSION_NO_LOCATOR: tool \"write\" was called without a locator the fs.write lane can be judged on"
+        }
+      ]
+    }
+  ]
+}

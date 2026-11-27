@@ -1,0 +1,22 @@
+{
+  "schema": "dboot/composition-drops/1",
+  "at": "2026-11-22T04:12:23.728Z",
+  "disclosure": "Rows removed from THIS driver's composition only (product files untouched). Every drop is a measured reason, never a convenience.",
+  "drops": [],
+  "presetPluginsAfterDrop": [
+    "persona",
+    "agent-instructions",
+    "tool-bash",
+    "tool-fs",
+    "tool-fs-search",
+    "tool-jobs",
+    "tool-skill",
+    "tool-present",
+    "command-goal",
+    "tool-goal",
+    "planning",
+    "compaction",
+    "tool-todo",
+    "tool-plugin-manager"
+  ]
+}

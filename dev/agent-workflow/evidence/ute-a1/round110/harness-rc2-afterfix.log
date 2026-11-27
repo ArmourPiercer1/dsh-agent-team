@@ -1,0 +1,18 @@
+✔ budget lease: no run record ⇒ typed BUDGET_LEASE_REQUIRED, nothing constructed (1.10919ms)
+✔ budget lease: a record with NO shared ledger path is refused — no ledger, no boot (1.0197ms)
+✔ budget lease: an exhausted SHARED ledger refuses the boot and leaves ledger + World untouched (0.770799ms)
+✔ budget lease: a permitted boot appends to the SAME shared ledger BEFORE startHost, then boots (0.409806ms)
+✔ fixed candidate: the pin is READ from tests/paths.mjs, never copied into the harness (0.426407ms)
+✔ policy identity: the installed ceiling IS the P1 MemberPolicy, and its guard is the shipped P1 guard (221.135892ms)
+✔ policy identity: the Alpha.4 authority is required, never synthesised by the harness (0.508302ms)
+✔ unsupported lane: network:restricted surfaces the P1 UNSUPPORTED code, never an allow (0.472815ms)
+✔ oracle adapter: a planted effect is detected and an unplanted tag is absent (sensitivity, both arms) (0.90365ms)
+✔ diagnostics: classifyFailure delegates to the PR #394 tool, and keeps a5sf codes in their own vocabulary (4.000582ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 294.32414

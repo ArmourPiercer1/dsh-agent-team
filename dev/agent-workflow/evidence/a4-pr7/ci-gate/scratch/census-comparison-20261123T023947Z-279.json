@@ -1,0 +1,47 @@
+{
+  "head": "f7490643055cbb4abcb06fed65b34460e3522a82",
+  "baseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md",
+  "baselineIds": [],
+  "reports": [
+    {
+      "jsonPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/census/census-20261123T023947Z-279-1.json",
+      "files": 599,
+      "legs": 7412,
+      "ids": [
+        "TEST packages/runtime/test/a6-pr1-lane-hygiene.test.ts::a6-pr1 lane hygiene has no production importer yet"
+      ]
+    },
+    {
+      "jsonPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/census/census-20261123T023947Z-279-2.json",
+      "files": 599,
+      "legs": 7412,
+      "ids": []
+    }
+  ],
+  "comparison": {
+    "verdict": "fail",
+    "setIdentical": false,
+    "countsMoved": true,
+    "added": [
+      "TEST packages/runtime/test/a6-pr1-lane-hygiene.test.ts::a6-pr1 lane hygiene has no production importer yet"
+    ],
+    "newReds": [
+      "TEST packages/runtime/test/a6-pr1-lane-hygiene.test.ts::a6-pr1 lane hygiene has no production importer yet"
+    ],
+    "newCollections": [],
+    "escalations": [],
+    "resolved": [],
+    "totals": {
+      "files": 599,
+      "legs": 7412,
+      "declared": {
+        "files": 626,
+        "legs": 7936
+      },
+      "moved": true,
+      "capturesAgree": "2 captures, identity sets DIFFER — graded as the union, so a red seen once is a red",
+      "captured": "599f/7412l, 599f/7412l",
+      "totalsNote": "captured 599f/7412l, 599f/7412l vs baseline-declared 626 / 7936"
+    }
+  }
+}

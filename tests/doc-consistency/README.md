@@ -38,6 +38,21 @@ output, byte-checked against the fixed parent). The derived mirror `current-stat
 is never consulted as an authority source, and the candidate view is T0 diagnostic
 output only: it proves nothing about product acceptance and switches nothing.
 
+### Capacity bound and unreadable-diff refusal (round 127, 2026-11-27)
+
+`docs:probe` reads its change scope from `git diff --name-only` (and
+`git ls-files --others`). On the A1 cut that diff is **1,225,506 bytes / 11,284
+changed files**, above Node's 1 MiB `execFileSync` default, so the read failed
+with `spawnSync git ENOBUFS`. The helper caught that failure and returned `null`,
+which `changeScope` folded into an **empty** scope — the mandatory `ci-fast` probe
+graded nothing while printing a pass. The buffer is now explicitly 64 MiB (a
+capacity bound, not a selection rule: the whole path set is read), and a
+resolvable merge-base whose committed diff cannot be read now returns
+`REFUSED DIFF_UNREADABLE:<base>` instead of an empty change set. Regression
+control: `scripts/eb3-ci-negative-controls.mjs` C20 builds a synthetic diff larger
+than the old default and asserts the measured path count, so a reintroduced
+default buffer fails by count rather than by luck.
+
 ## Rule × scenario matrix
 
 | rule (code) | positive case | negative case (must fail) |

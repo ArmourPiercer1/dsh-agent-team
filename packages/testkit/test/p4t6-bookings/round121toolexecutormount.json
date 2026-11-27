@@ -1,0 +1,15 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "ROUND121TOOLEXECUTORMOUNT",
+  "paths": [
+    "packages/runtime/src/plugin/vnext/tool-executor-mount.mjs",
+    "packages/runtime/src/plugin/vnext/tool-executor-mount.d.mts",
+    "packages/runtime/src/plugin/vnext/centre-install.d.mts"
+  ],
+  "expectedDelta": {
+    "from": 1320,
+    "to": 1323
+  },
+  "reason": "Round 121 (UTE vNext A1, the rc.5 dispatch seam) adds THREE scannable files, all NEW work in this tree and zero legacy SessionEvent vocabulary: packages/runtime/src/plugin/vnext/tool-executor-mount.mjs (the ONE host-shape seam: PUBLIC capability probe for `tools.setExecutor` vs `tools.modeFor`/`defaultMode`, the mount of the host's own `@deepseek-ai/dsh-tool-executor-native` plugin on the Member's agent scope, and the typed A5SF_TOOL_EXECUTOR_CAPABILITY_MISSING / A5SF_TOOL_EXECUTOR_UNAVAILABLE refusals — it emulates no removed API and adds no second execution path) plus its two ADJACENT tsc type surfaces, tool-executor-mount.d.mts (its own declaration half) and centre-install.d.mts (the declaration for the already-counted centre-install.mjs, added in the same round so the collected .test.ts drivers can type the centre without a repo-wide allowJs change — the admission-port.d.mts / host-surface-refusal.d.mts / plane-effect-backends.d.mts pattern). No file is removed, no skip is added, no exclusion changes; dist mirrors, dev evidence and docs are outside the scanner's packages/** scope.",
+  "tieNote": "MEASURED on this tree with the three files on disk and no booking: the scanner reports filesScanned 1323 while the ledger derived 1320 (base 0 + sum of the seven booked lanes = 1320), i.e. `expected 1320 to be 1323` — RED-first, then this booking makes it exact. Arithmetic: 1320 + 3 = 1323. Same law, no tolerance; the round-94 lane (1319 -> 1320) is untouched and still counted. The denylist hit set is measured unchanged (the three files carry no Team SessionEvent vocabulary)."
+}

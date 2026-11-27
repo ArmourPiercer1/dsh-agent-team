@@ -69,11 +69,31 @@ const sha256 = (buf) => createHash('sha256').update(buf).digest('hex')
 const POSIX = (p) => p.split('\\').join('/')
 
 /** The host pin, read from tests/paths.mjs (the single source of truth for it). */
-export function hostPin(root = ROOT) {
+/**
+ * EVERY host generation this tree DECLARES. `tests/paths.mjs` is the single source of the
+ * pins, and it declares two: the test-use baseline (`TEST_USE_BASELINE_SHA`) and the next
+ * host (`NEXT_HOST`, its own tree/port band/home suffix). A record measured on either one is
+ * tied to a generation a reader can check out; a record measured on some OTHER commit is
+ * drift. Reading both pins from the same file is not a relaxation: before this, the rc.5
+ * migration's own records (round 79) were all graded as drift even though the tree declares
+ * that generation, so the law graded the declaration it was reading as foreign.
+ */
+export function hostPins(root = ROOT) {
   const text = readFileSync(join(root, 'tests/paths.mjs'), 'utf8')
   const sha = /export const TEST_USE_BASELINE_SHA\s*=\s*'([0-9a-f]{40})'/.exec(text)?.[1]
   const version = /export const DSH_BASELINE_VERSION\s*=\s*'([^']+)'/.exec(text)?.[1]
   if (sha === undefined) throw new Error('tests/paths.mjs declares no TEST_USE_BASELINE_SHA — refusing to grade a RUN against an unknown host pin')
+  const pins = [{ id: 'baseline', sha, version }]
+  const nextBlock = /export const NEXT_HOST = Object\.freeze\(\{([\s\S]*?)\n\}\)/.exec(text)?.[1]
+  const nextSha = nextBlock === undefined ? undefined : /\n\s*sha:\s*'([0-9a-f]{40})'/.exec(nextBlock)?.[1]
+  const nextVersion = nextBlock === undefined ? undefined : /\n\s*version:\s*'([^']+)'/.exec(nextBlock)?.[1]
+  if (nextSha !== undefined) pins.push({ id: 'next', sha: nextSha, version: nextVersion })
+  return pins
+}
+
+/** The baseline pin (the historical name kept for callers that grade one host). */
+export function hostPin(root = ROOT) {
+  const { sha, version } = hostPins(root)[0]
   return { sha, version }
 }
 
@@ -87,7 +107,7 @@ export function liveAuthority(root = ROOT) {
 
 /** Build the grading context once per process. */
 export function context(root = ROOT) {
-  return { root, host: hostPin(root), authority: liveAuthority(root), commitExists: (sha) => {
+  return { root, host: hostPin(root), hosts: hostPins(root), authority: liveAuthority(root), commitExists: (sha) => {
     try { execFileSync('git', ['-C', root, 'cat-file', '-e', `${sha}^{commit}`], { stdio: 'ignore' }); return true } catch { return false }
   } }
 }
@@ -134,8 +154,11 @@ export function validateRunRecord({ record, rel, ctx, strictGeneration = false }
   if (!isReconstruct) {
     if (typeof b.hostSha !== 'string' || !/^[0-9a-f]{40}$/.test(b.hostSha)) {
       add('RUN_SCHEMA', `bindings.hostSha=${JSON.stringify(b.hostSha)} is not a full 40-hex commit id`)
-    } else if (b.hostSha !== ctx.host.sha) {
-      add('RUN_HOST_PIN_DRIFT', `bindings.hostSha=${b.hostSha} but tests/paths.mjs pins ${ctx.host.sha} (${ctx.host.version}) — the record measures a DIFFERENT host generation than the one this tree declares`)
+    } else {
+      const pins = Array.isArray(ctx.hosts) && ctx.hosts.length > 0 ? ctx.hosts : [ctx.host]
+      if (!pins.some((p) => p.sha === b.hostSha)) {
+        add('RUN_HOST_PIN_DRIFT', `bindings.hostSha=${b.hostSha} but tests/paths.mjs declares ${pins.map((p) => `${p.id} ${p.sha} (${String(p.version)})`).join(' / ')} — the record measures a host generation this tree does not declare`)
+      }
     }
   }
 
@@ -268,6 +291,30 @@ export function validateRunRecord({ record, rel, ctx, strictGeneration = false }
   return { findings }
 }
 
+/**
+ * THE STRICT-GRADING SET, computed from `git diff --name-only <since>...HEAD` over the
+ * evidence root. Exported so a control can grade a synthetic diff LARGER than Node's
+ * default 1 MiB `execFileSync` `maxBuffer` and assert the MEASURED count, not just exit 0.
+ *
+ * MEASURED 2026-11-27 (round 127, hosted run 45754488920 step "EB3-D: RUN Manifest"):
+ * this diff on the A1 cut branch is 1,167,305 bytes of names (10,262 added files at
+ * `a19d1df0...HEAD`), above the 1,048,576-byte default, so the whole leg died with
+ * `spawnSync git ENOBUFS` BEFORE grading anything. The bound below is a capacity bound,
+ * not a selection rule: the scan still sees the WHOLE tree (it is not truncated).
+ */
+export const GIT_SCAN_MAX_BUFFER = 64 * 1024 * 1024
+
+/**
+ * Evidence paths ADDED/CHANGED since `since`, as the `--new-since` strict set.
+ * @param {string} root repository root
+ * @param {string} since base ref (`<since>...HEAD` is the diff)
+ * @returns {string[]} repo-relative paths (the caller filters to `.json`)
+ */
+export function freshEvidencePaths(root, since) {
+  return execFileSync('git', ['-C', root, 'diff', '--name-only', `${since}...HEAD`, '--', 'dev/agent-workflow/evidence'], { encoding: 'utf8', maxBuffer: GIT_SCAN_MAX_BUFFER })
+    .split('\n').map((s) => s.trim()).filter(Boolean)
+}
+
 /** RUN records on the tree: any tracked JSON whose `schema` is the RUN schema. */
 export function findRunRecords(root = ROOT, only = null) {
   const list = only ?? execFileSync('git', ['-C', root, 'ls-files', '-z', 'dev/agent-workflow/evidence'], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 })
@@ -301,8 +348,7 @@ if (invokedDirectly) {
     const since = arg('--new-since')
     let freshList = arg('--new')?.split(',').map((s) => s.trim()).filter(Boolean) ?? []
     if (since !== null) {
-      freshList = execFileSync('git', ['-C', ROOT, 'diff', '--name-only', `${since}...HEAD`, '--', 'dev/agent-workflow/evidence'], { encoding: 'utf8' })
-        .split('\n').map((s) => s.trim()).filter((s) => s.endsWith('.json'))
+      freshList = freshEvidencePaths(ROOT, since).filter((s) => s.endsWith('.json'))
     }
     const fresh = new Set(freshList)
     const records = findRunRecords(ROOT, only)

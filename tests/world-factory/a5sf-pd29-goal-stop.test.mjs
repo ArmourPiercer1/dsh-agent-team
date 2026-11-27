@@ -50,7 +50,14 @@ import { fileURLToPath } from 'node:url'
 
 const HERE = fileURLToPath(new URL('.', import.meta.url))
 const REPO_ROOT = join(HERE, '..', '..')
-const BINDINGS = 'packages/runtime/src/plugin/live/agent-bindings.mjs'
+// ROUND 80: the A1 cut replaced the legacy glue; the stop sequence survived in the successor.
+// ROUND 90 (2026-11-23): the Member stop lane moved VERBATIM out of the glue into
+// `stop-drain-lane.mjs`; the glue now CONSTRUCTS it. The PD-29 facts are read from the
+// module that owns the sequence, and PD29-WIRING below pins that the glue really mounts it.
+const STOP_LANE = 'packages/runtime/src/plugin/vnext/stop-drain-lane.mjs'
+const BINDINGS = 'packages/runtime/src/plugin/vnext/agent-bindings.mjs'
+// The historical base is read at its OWN path (the vnext assembly did not exist then).
+const LEGACY_BINDINGS = 'packages/runtime/src/plugin/live/agent-bindings.mjs'
 const BASE_COMMIT = process.env.A5SF_PD29_BASE ?? '24d2cf760'
 
 function read(rel, rev = null) {
@@ -111,7 +118,7 @@ function stopFacts(source) {
 }
 
 test('PD29-STOP-SEQUENCE: cancel, then disarm, then the durable CAS pause', () => {
-  const facts = stopFacts(read(BINDINGS))
+  const facts = stopFacts(read(STOP_LANE))
   assert.deepEqual(facts, {
     cancelCause: 'hook',
     neverHumanCause: true,
@@ -124,19 +131,50 @@ test('PD29-STOP-SEQUENCE: cancel, then disarm, then the durable CAS pause', () =
   })
 })
 
+test('PD29-WIRING: the extracted stop lane is the one the row mounts (no orphaned module)', () => {
+  // ROUND 101: after the round-90 extraction, reading the facts from
+  // `stop-drain-lane.mjs` alone could pass while the glue stopped mounting it.
+  // This control pins the WIRING: the glue imports the factory from the module,
+  // constructs it ONCE with the row's own child-session derivation, and
+  // destructures `interrupt` from the returned port (the port the row publishes).
+  const glue = read(BINDINGS)
+  assert.match(
+    glue,
+    /import \{ createStopDrainLane \} from '\.\/stop-drain-lane\.mjs'/,
+    'the glue must import the ONE stop-lane factory from its module',
+  )
+  assert.equal(
+    (glue.match(/createStopDrainLane\(\{/g) ?? []).length,
+    1,
+    'the glue constructs the stop lane exactly once (one factory per row instance)',
+  )
+  assert.match(
+    glue,
+    /\} = createStopDrainLane\(\{[^}]*\}\)/,
+    'the glue destructures the stop/drain/residency ports from the constructed lane',
+  )
+  assert.match(glue, /^\s*interrupt,$/m, 'the row publishes the lane\'s `interrupt` port')
+})
+
 test('PD29-PIN: the base commit had no disarm seam (a revert reddens this suite)', () => {
-  const base = read(BINDINGS, BASE_COMMIT)
+  const base = read(LEGACY_BINDINGS, BASE_COMMIT)
   assert.equal(base.includes('disarmStoppedGoal'), false, `base ${BASE_COMMIT} must not contain the PD-29 disarm seam`)
   assert.throws(() => stopFacts(base))
+  // The stop lane lives in its own module since round 90; that module did not
+  // exist at the base commit, so "the seam is new" is pinned by the PATH too.
+  assert.throws(
+    () => execFileSync('git', ['show', `${BASE_COMMIT}:${STOP_LANE}`], { cwd: REPO_ROOT, stdio: 'pipe' }),
+    `base ${BASE_COMMIT} must not contain ${STOP_LANE}`,
+  )
 })
 
 test('PD29-MUTATION: deleting the disarm call reddens the stop sequence', () => {
-  const source = read(BINDINGS)
+  const source = read(STOP_LANE)
   const mutated = source.replace('    disarmStoppedGoal(handle.agent, target)', '    // disarmStoppedGoal(handle.agent, target)')
   assert.notEqual(mutated, source)
   const dir = mkdtempSync(join(tmpdir(), 'pd29-mutation-'))
   try {
-    const file = join(dir, 'agent-bindings.mjs')
+    const file = join(dir, 'stop-drain-lane.mjs')
     writeFileSync(file, mutated)
     const facts = stopFacts(readFileSync(file, 'utf8'))
     assert.equal(facts.callsDisarm, false)

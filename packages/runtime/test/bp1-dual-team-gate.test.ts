@@ -367,9 +367,21 @@ function denyUnion(handle: any): string[] {
   return (ctx?.toolRestrictions ?? []).flatMap((r) => r.deny ?? [])
 }
 
+/**
+ * ROUND 72 (2026-11-22): the enforcement surface this leg pins moved with the UTE A0/A1 cut. The
+ * `tools/pre-execute` waterfall adapter was retired; the centre admits a call through the PUBLIC
+ * `tools.guard` seam (`installAdmissionPoint` refuses a ctx without one — see
+ * packages/runtime/src/plugin/vnext/admission-port.mjs). The assertion is the same claim about the
+ * same fact — "this member has an enforcement surface installed, not just a persona and an allowlist"
+ * — measured through the seam that now exists. The retired listener is still accepted so a double
+ * that predates the cut keeps speaking, but a member with NEITHER is red, as before.
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic test-double surface
-function hasPermissionListener(handle: any): boolean {
+function hasEnforcementSurface(handle: any): boolean {
   const ctx = handle?.agent?.ctx as unknown as AgentCtxDouble | undefined
+  if (ctx === undefined) return false
+  const tools = (ctx as unknown as { tools?: { guard?: unknown } }).tools
+  if (typeof tools?.guard === 'function') return true
   return (ctx?.listeners ?? []).some((l) => l.event === 'tools/pre-execute' && l.active)
 }
 
@@ -386,8 +398,8 @@ const liveMemberATools = toolNames(memberAHandle)
 const liveMemberBTools = toolNames(memberBHandle)
 const liveMemberADeny = denyUnion(memberAHandle)
 const liveMemberBDeny = denyUnion(memberBHandle)
-const liveMemberAPerms = hasPermissionListener(memberAHandle)
-const liveMemberBPerms = hasPermissionListener(memberBHandle)
+const liveMemberAPerms = hasEnforcementSurface(memberAHandle)
+const liveMemberBPerms = hasEnforcementSurface(memberBHandle)
 
 const registryRows = domain.repositories.blueprintRegistry.list()
 
@@ -468,14 +480,14 @@ describe('BP-F dual-Team architecture gate (plan §11.3): per-Team Blueprint aut
     expect(liveRootBPersona.indexOf(A_LEADER_PERSONA) === -1).toBe(true)
   })
 
-  it('the A member gets ONLY A: persona + the A teamTools allowlist + the A builtinToolDeny + a permission listener', () => {
+  it('the A member gets ONLY A: persona + the A teamTools allowlist + the A builtinToolDeny + an enforcement surface (the admission guard)', () => {
     expect(liveMemberAPersona.startsWith(A_MEMBER_PERSONA)).toBe(true)
     expect(liveMemberATools.sort()).toEqual(['assign-task', 'send-message'])
     expect(liveMemberADeny).toEqual(['fs.write'])
     expect(liveMemberAPerms).toBe(true)
   })
 
-  it('the B member gets ONLY B: persona + the B teamTools allowlist + the B builtinToolDeny + a permission listener', () => {
+  it('the B member gets ONLY B: persona + the B teamTools allowlist + the B builtinToolDeny + an enforcement surface (the admission guard)', () => {
     expect(liveMemberBPersona.startsWith(B_MEMBER_PERSONA)).toBe(true)
     expect(liveMemberBTools.sort()).toEqual(['create-member', 'report-progress'])
     expect(liveMemberBDeny).toEqual(['fs.read'])

@@ -597,11 +597,32 @@ export interface ConfinedSubprocessOptions {
      * admits; the Member cannot widen this through argv, config or a tool call.
      */
     readonly shellClass?: ConfinedShellClassAdmission;
+    /**
+     * ROUND 99 — the COMPILED process disposition for the shell tool this face serves. `deny`
+     * refuses a declared shell spawn before any receipt; `ask` requires an approved-ask receipt
+     * covering THIS execution; `allow` is the pre-round behaviour. Omitted = no declaration reached
+     * this face (the Centre refuses the call anyway); the face never invents one.
+     *
+     * It gates the DECLARED shell-class spawn only; a `grep`/`glob` spawn is not this tool's execution
+     * and is unaffected. THE RECEIPT ADDS NO CAPABILITY: the profile and `allowPaths` are computed
+     * from the same three lanes, unchanged.
+     */
+    readonly processAuthority?: {
+        readonly authorization: 'allow' | 'ask' | 'deny';
+        readonly executionBoundary: string;
+    };
+    /** ROUND 99 — the SAME invocation binder the Centre spends grants through (liveness only). */
+    readonly approvedAskAuthority?: {
+        readonly binder?: {
+            currentEpoch(): number;
+            currentMemberEpoch(memberIdentity: string): number;
+        };
+    };
 }
 /** A Provider constructor Cordis can mount as the `subprocess` service. */
 export type SubprocessProviderConstructor = new (ctx: unknown, config?: Record<string, unknown>) => unknown;
 /** The closed refusal vocabulary of THIS provider (never a bare `Error`). */
-export declare const CONFINED_SUBPROCESS_REFUSAL_CODES: readonly ["SUBPROCESS_PROGRAM_NOT_ABSOLUTE", "SUBPROCESS_STDIO_UNSUPPORTED", "SUBPROCESS_PROFILE_REFUSED", "SUBPROCESS_PROVIDER_REFUSED", "SUBPROCESS_TERMINAL_UNSUPPORTED", "SUBPROCESS_EXIT_UNRECORDABLE", "NETWORK_UNCONFINED_REALM"];
+export declare const CONFINED_SUBPROCESS_REFUSAL_CODES: readonly ["SUBPROCESS_PROGRAM_NOT_ABSOLUTE", "SUBPROCESS_STDIO_UNSUPPORTED", "SUBPROCESS_PROFILE_REFUSED", "SUBPROCESS_PROVIDER_REFUSED", "SUBPROCESS_TERMINAL_UNSUPPORTED", "SUBPROCESS_EXIT_UNRECORDABLE", "SUBPROCESS_PROCESS_DENIED", "SUBPROCESS_PROCESS_RECEIPT_REFUSED", "NETWORK_UNCONFINED_REALM"];
 export type ConfinedSubprocessRefusalCode = (typeof CONFINED_SUBPROCESS_REFUSAL_CODES)[number] | ConfinedShellAdmissionCode;
 /** A typed refusal from the confined subprocess face. */
 export declare class ConfinedSubprocessRefusal extends Error {

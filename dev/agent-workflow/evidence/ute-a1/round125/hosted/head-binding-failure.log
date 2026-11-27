@@ -1,0 +1,34 @@
+STEP: "Bind the graded head to the requested SHA"  (job: candidate-acceptance, run 45746665143) — FAILED
+Workflow lines (.github/workflows/candidate-acceptance.yml:289 and :294) as executed:
+
+  VERDICT=$(find dev/agent-workflow/evidence/candidate-acceptance-gate -name verdict.json \
+            -newer "$RUNNER_TEMP/candidate-gate-start" -printf '%T@ %p\n' | sort -nr | head -n 1 | cut -d' ' -f2-)
+  GRADED=$(node -e "const j=require(process.argv[1]); process.stdout.write(String(j.head))" "$VERDICT")
+
+Both commands were echoed by the runner; the step then died on the second one:
+
+  node:internal/modules/cjs/loader:1568
+    throw err;
+  Error: Cannot find module 'dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T03-15-42-275Z/verdict.json'
+      at [eval]:1:9   code: 'MODULE_NOT_FOUND'
+  ##[error]Process completed with exit code 1.
+
+ROOT CAUSE: `find dev/...` emits a RELATIVE path, and `require()` treats a specifier that does not
+start with `./` or `/` as a PACKAGE name — so the freshly written verdict.json (which the same step
+located) cannot be loaded. The gate step itself (`Candidate acceptance gate — both pinned hosts, one
+machine verdict`) had already SUCCEEDED; the failure is the binding step's path handling, NOT a stale
+head and NOT a gate verdict.
+
+PROOF the verdict is for the requested SHA: the artifact's `verdict.json` (kept in this directory) has
+  "head": "e07f431e9c599eaa73ede15996ae36808b8a3750"
+  "verdict": "pass"
+and `git rev-parse HEAD` in the run was the requested SHA (the checkout step is bound to -f head).
+
+CONSEQUENCE (fail-closed, as designed): step "Publish version-gate-receipt.json" was SKIPPED, no
+receipt was written, and the separate `version-gate (Required at frozen candidate SHA)` job refused with
+  REFUSED VERSION_GATE_RECEIPT_MISSING …/version-gate-receipt.json does not exist
+(see version-gate-refusal.log). The workflow conclusion is FAILURE with a PASSING machine verdict.
+
+FIX (not applied in this round; the gate is dispatch-once and a red is recorded as a red):
+  GRADED=$(node -e "const j=require(require('node:path').resolve(process.argv[1])); …" "$VERDICT")
+  — or make the find root absolute ($PWD/dev/...) / read the file with fs.readFileSync + JSON.parse.

@@ -1,0 +1,3 @@
+=== 2026-11-24T22:26:58Z node scripts/ute-p0-assets.mjs --check ===
+UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 wave1=146 wave2=0 cut=cut(148/148) findings=0
+EXIT=0

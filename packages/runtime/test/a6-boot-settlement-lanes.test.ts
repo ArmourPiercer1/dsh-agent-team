@@ -13,7 +13,7 @@
  * class of defect cannot return without a second lane being named here.
  */
 import { describe, expect, it } from 'vitest'
-import { isExecutionAskLane, settlementCallIdOf } from '../src/plugin/root.js'
+import { isExecutionAskLane, settlementCallIdOf } from '../src/plugin/vnext/root.js'
 
 describe('A6 boot settlement — the execution ask lanes', () => {
   it('owns the three tool-execution lanes and nothing else', () => {

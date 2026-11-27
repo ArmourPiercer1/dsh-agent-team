@@ -411,18 +411,72 @@ export function diagnose(text, { json = false, kind = null } = {}, codeOnly = nu
 }
 
 /** --self-test: every FACE_TABLE / KIND_STAGES citation still holds at this tree. */
-export function selfTest(root = REPO_ROOT, moved = []) {
+/**
+ * THE CITED SOURCES THE A0/A1 CUT RETIRED. This diagnostic's whole static table — FACE_TABLE,
+ * KIND_STAGES, SHADOW_CITE, the family descriptor arm — cites the Alpha.5 tool-io route
+ * (`packages/tools/a5p5-tools`, `packages/runtime/tool-dispatch`, `packages/runtime/governance-center`,
+ * `packages/runtime/src/plugin/live/team-tool-plane.mjs`). The UTE A0/A1 cut deleted every one of them
+ * (commit 1617d5839 and its siblings), and the replacement centre has its own refusal vocabulary, so
+ * this table now attributes nothing that this tree can produce: `attribute()` answers UNKNOWN_CODE,
+ * which is TRUE. Retired-with-subject, not silently deleted: a citation whose file is missing AND in
+ * the A0 frozen delete set is reported on `retired` and is NOT a problem; a citation to a file that is
+ * missing and NOT frozen stays a problem (the teeth are kept for every live table row and for every
+ * new citation). The `--self-test` line states the count so a reader never mistakes "no problems" for
+ * "the table is live".
+ */
+export const RETIRED_BY_CUT = Object.freeze({
+  cut: 'ute-a0/ute-a1',
+  round: 72,
+  why: 'the Alpha.5 tool-io route was retired; the centre (packages/runtime/src/plugin/vnext/) is the live admission surface and has its own refusal codes',
+  // Retired by the cut's own follow-up commits rather than by the A0 booking. Each one is named with
+  // the commit that removed it, because "the file is missing" is not evidence of anything on its own.
+  alsoRetired: Object.freeze({
+    'packages/runtime/src/plugin/live/center-shadow-row.mjs': 'retired by 82deae159 — its only production edge reached the retired governance-center lane (`leg: shadow-verdict`), so the shadow ledger row can no longer exist',
+  }),
+})
+
+/** The A0 frozen delete set (verdict delete|replace), or an empty Set when the ledger is unreadable. */
+function frozenSources(root) {
+  // The frozen set is a fact about THIS repository, not about the tree being graded: a fixture tree
+  // (the drift/self-test fixtures) carries sources, not ledgers, so the fallback is REPO_ROOT and not
+  // "no frozen set" — otherwise every fixture would report the whole retired table as missing files.
+  const rel = 'dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json'
+  for (const base of [root, REPO_ROOT]) {
+    try {
+      const snap = JSON.parse(readFileSync(join(base, rel), 'utf8'))
+      return new Set((snap?.modules ?? [])
+        .filter((m) => m?.verdict === 'delete' || m?.verdict === 'replace')
+        .flatMap((m) => (Array.isArray(m?.files) ? m.files : [])))
+    } catch { /* try the next base */ }
+  }
+  return new Set()
+}
+
+export function selfTest(root = REPO_ROOT, moved = [], retired = []) {
   const problems = []
+  const frozen = frozenSources(root)
+  const isRetired = (rel) => frozen.has(rel) || Object.hasOwn(RETIRED_BY_CUT.alsoRetired, rel)
   const read = (rel) => {
     const abs = join(root, rel)
-    if (!existsSync(abs)) { problems.push(`missing file ${rel}`); return null }
+    if (!existsSync(abs)) {
+      if (isRetired(rel)) { retired.push(rel); return null }
+      problems.push(`missing file ${rel}`)
+      return null
+    }
     return readFileSync(abs, 'utf8')
   }
   // FACE_TABLE was resolved at REPO_ROOT; re-resolve the family rows at `root`, and grade BOTH
   // tables' citations at `root`: a code the shipped table attributes to a descriptor that no
   // longer carries it is a red that NAMES the code (the table is the claim, the tree the fact).
-  const fam = familyRefusalRows(root)
-  problems.push(...fam.problems)
+  // The family descriptor arm reads `packages/tools/families/manifest.json`. The cut retired that whole
+  // directory with the family execution system, so a retired manifest means "no family refusal code is
+  // attributable on this tree" — the same true statement as the Alpha.5 table above, not a finding.
+  if (!existsSync(join(root, FAMILY_MANIFEST)) && isRetired(FAMILY_MANIFEST)) {
+    retired.push(FAMILY_MANIFEST)
+  } else {
+    const fam = familyRefusalRows(root)
+    problems.push(...fam.problems)
+  }
   const graded = { ...FACE_TABLE }
   for (const [code, rows] of Object.entries(buildFaceTable(root))) if (!Object.hasOwn(graded, code)) graded[code] = rows
   for (const [code, rows] of Object.entries(graded)) {
@@ -494,9 +548,12 @@ function runCli(argv) {
   }
   if (self) {
     const moved = []
-    const problems = selfTest(REPO_ROOT, moved)
+    const retired = []
+    const problems = selfTest(REPO_ROOT, moved, retired)
     const note = moved.length === 0 ? '' : `\n  NOTE ${String(moved.length)} line hint(s) drifted (token still present; refresh the hint):\n${moved.map((m) => `    ${m}`).join('\n')}`
-    if (problems.length === 0) { process.stdout.write(`diag-call-chain --self-test: OK ${String(Object.keys(FACE_TABLE).length)} codes, ${String(Object.keys(KIND_STAGES).length)} kinds, every cited site still carries its token at this tree${note}\n`); process.exit(0) }
+    const uniqRetired = [...new Set(retired)].sort()
+    const retiredNote = uniqRetired.length === 0 ? '' : `\n  RETIRED-BY-CUT ${String(uniqRetired.length)} cited source(s) are in the A0 frozen delete set (${RETIRED_BY_CUT.cut}), so the vocabulary they emitted is not attributable on this tree — attribute() answers UNKNOWN_CODE there by design:\n${uniqRetired.map((m) => `    ${m}`).join('\n')}`
+    if (problems.length === 0) { process.stdout.write(`diag-call-chain --self-test: OK ${String(Object.keys(FACE_TABLE).length)} codes, ${String(Object.keys(KIND_STAGES).length)} kinds, every cited site NOT retired by the cut still carries its token at this tree (${String(uniqRetired.length)} retired citation source(s) disclosed)${note}${retiredNote}\n`); process.exit(0) }
     process.stdout.write(`diag-call-chain --self-test: FAIL ${String(problems.length)}\n${problems.map((p) => `  ${p}`).join('\n')}\n`)
     process.exit(1)
   }

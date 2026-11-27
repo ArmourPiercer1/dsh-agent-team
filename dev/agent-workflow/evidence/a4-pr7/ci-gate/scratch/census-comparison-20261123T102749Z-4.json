@@ -1,0 +1,41 @@
+{
+  "head": "b67a3eb38d617b2aa7dbe0cddd2fb9f2a49e334f",
+  "baseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md",
+  "baselineIds": [],
+  "reports": [
+    {
+      "jsonPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/census/census-20261123T102749Z-4-1.json",
+      "files": 599,
+      "legs": 7416,
+      "ids": []
+    },
+    {
+      "jsonPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/census/census-20261123T102749Z-4-2.json",
+      "files": 599,
+      "legs": 7416,
+      "ids": []
+    }
+  ],
+  "comparison": {
+    "verdict": "pass",
+    "setIdentical": true,
+    "countsMoved": true,
+    "added": [],
+    "newReds": [],
+    "newCollections": [],
+    "escalations": [],
+    "resolved": [],
+    "totals": {
+      "files": 599,
+      "legs": 7416,
+      "declared": {
+        "files": 626,
+        "legs": 7936
+      },
+      "moved": true,
+      "capturesAgree": "2 captures, identical identity sets",
+      "captured": "599f/7416l, 599f/7416l",
+      "totalsNote": "captured 599f/7416l, 599f/7416l vs baseline-declared 626 / 7936"
+    }
+  }
+}

@@ -1,0 +1,37 @@
+[2026-11-24T00:48:48.808Z] archived previous runs -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T00-48-48-807Z
+[2026-11-24T00:48:49.209Z] host tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use HEAD=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=[]
+[2026-11-24T00:48:49.210Z] started 2026-11-24T00:48:48.763Z boots=1
+[2026-11-24T00:48:49.251Z] [boot1] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-24T00:48:49.252Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=a7a7f08ca1f54229780fecce2a43df73e4351bde
+[2026-11-24T00:48:49.305Z] blueprint main.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T00:48:49.308Z] [boot1] alpha6 config gate (positive): null
+[2026-11-24T00:51:14.624Z] [boot1] host ready on http://127.0.0.1:3195
+[2026-11-24T00:51:14.644Z] [boot1] prompt(d4disc) status=200
+[2026-11-24T00:51:14.844Z] [boot1] discovery answered (mock requests=2)
+[2026-11-24T00:51:14.851Z] [boot1] prompt(d4off) status=200
+[2026-11-24T00:51:15.853Z] [boot1] officer delegated
+[2026-11-24T00:51:15.873Z] [boot1] officer instance=inst-1crltnl0089j childSession=session-team-child-1d56dbb16a118ba3573db3c4b2641997
+[2026-11-24T00:51:16.379Z] [boot1] d4:officer-up=PROVEN d4:officer-binding=PROVEN
+[2026-11-24T00:51:16.387Z] [boot1] prompt(d4wrk) status=200
+[2026-11-24T00:51:16.788Z] [boot1] worker delegated
+[2026-11-24T00:51:16.813Z] [boot1] worker ask appeared=true requestId=ctrl-0sqb1an1kl2tg4031us3x0hs
+[2026-11-24T00:51:17.217Z] [boot1] officer resolve(first) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-0sqb1an1kl2tg4031us3x0hs","decision":"allow","decider":{"kind":"instance","instanceId":"inst-1crltnl0
+[2026-11-24T00:51:17.720Z] [boot1] d4:ask-execute=PROVEN failing=[]
+[2026-11-24T00:51:17.720Z] [boot1] second worker ask appeared=true requestId=ctrl-08o7vij066pjvs0ccn2op0x1
+[2026-11-24T00:51:17.722Z] [boot1] officer resolve(second) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-08o7vij066pjvs0ccn2op0x1","decision":"allow","decider":{"kind":"instance","instanceId":"inst-1crltnl0
+[2026-11-24T00:51:18.226Z] [boot1] d4:ask-execute-2=PROVEN failing=[]
+[2026-11-24T00:52:18.377Z] [boot1] sticky: hold=false cancelStatus=200 stopSeen=false markers=[]
+[2026-11-24T00:52:20.692Z] [boot1] sticky: thirdAsk=true requestId=ctrl-19gmh2w151p1nn1b0tkke0l0 markersAfter=[] wakeInputsWhileStopped=1
+[2026-11-24T00:52:20.703Z] [boot1] officer resolve(third) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-19gmh2w151p1nn1b0tkke0l0","decision":"allow","decider":{"kind":"instance","instanceId":"inst-1crltnl0
+[2026-11-24T00:52:20.706Z] [boot1] sticky: resumeCleared=true resolve3=true write3Settled=true
+[2026-11-24T00:52:20.706Z] [boot1] PROBE FAILED: ReferenceError: Cannot access 'wakeFacts' before initialization
+    at probeOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs:1880:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs:2410:18)
+[2026-11-24T00:52:20.874Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-24T00:52:20.911Z] host porcelain after: []
+[2026-11-24T00:52:20.912Z] TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)
+fact                              
+
+agreeing=true differing=[]
+[2026-11-24T00:52:20.912Z] RESULT evidence-complete=false allBooted=false blocked=false (1/1 boots; agreeing pair=true)

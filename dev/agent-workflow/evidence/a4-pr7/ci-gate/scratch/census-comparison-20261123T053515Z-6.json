@@ -1,0 +1,53 @@
+{
+  "head": "c29da52d31ba52088eb58622b4858803031d060d",
+  "baseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md",
+  "baselineIds": [],
+  "reports": [
+    {
+      "jsonPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/census/census-20261123T053515Z-6-1.json",
+      "files": 599,
+      "legs": 7414,
+      "ids": [
+        "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) is green, asserted by arm name and by absence of a skip — never by the exit code",
+        "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) refuses the leg, by name, when the host module closure cannot be traversed"
+      ]
+    },
+    {
+      "jsonPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/census/census-20261123T053515Z-6-2.json",
+      "files": 599,
+      "legs": 7414,
+      "ids": [
+        "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) is green, asserted by arm name and by absence of a skip — never by the exit code",
+        "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) refuses the leg, by name, when the host module closure cannot be traversed"
+      ]
+    }
+  ],
+  "comparison": {
+    "verdict": "fail",
+    "setIdentical": false,
+    "countsMoved": true,
+    "added": [
+      "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) is green, asserted by arm name and by absence of a skip — never by the exit code",
+      "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) refuses the leg, by name, when the host module closure cannot be traversed"
+    ],
+    "newReds": [
+      "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) is green, asserted by arm name and by absence of a skip — never by the exit code",
+      "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) refuses the leg, by name, when the host module closure cannot be traversed"
+    ],
+    "newCollections": [],
+    "escalations": [],
+    "resolved": [],
+    "totals": {
+      "files": 599,
+      "legs": 7414,
+      "declared": {
+        "files": 626,
+        "legs": 7936
+      },
+      "moved": true,
+      "capturesAgree": "2 captures, identical identity sets",
+      "captured": "599f/7414l, 599f/7414l",
+      "totalsNote": "captured 599f/7414l, 599f/7414l vs baseline-declared 626 / 7936"
+    }
+  }
+}

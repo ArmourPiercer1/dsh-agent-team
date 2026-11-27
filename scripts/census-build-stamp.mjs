@@ -100,6 +100,9 @@ export function ignoredSurfaceFiles({ cwd = process.cwd(), surfaces = SURFACES }
   const r = spawnSync('git', ['ls-files', '--ignored', '--exclude-standard', '-o', '--', ...surfaces], {
     cwd,
     encoding: 'utf8',
+    // A surface-wide `ls-files` is scale-dependent; the explicit bound keeps the WHOLE
+    // ignored set (a truncated answer here would silently drop artifacts from the stamp).
+    maxBuffer: 64 * 1024 * 1024,
   })
   if (r.status !== 0) {
     throw Object.assign(new Error(`git ls-files failed in ${cwd}: ${String(r.stderr ?? '').trim() || `exit ${String(r.status)}`}`), {

@@ -23,7 +23,7 @@
  */
 import type { Context } from '@deepseek-ai/cordis';
 import type { CompileResult, EffectiveIoPolicy, MemberPolicy, TrustedMemberIdentity } from '../../member-io-policy/src/types.js';
-import { type FsProviderConstructor, type FsProviderSurface } from './fs.js';
+import { type ApprovedAskProviderAuthority, type FsProviderConstructor, type FsProviderSurface } from './fs.js';
 import { createConfinedSubprocessClass, type ConfinedProcessProvider, type SubprocessProviderConstructor } from './subprocess.js';
 import { type ConfinedWebProvider, type WebProviderConstructor } from './web.js';
 import { type GuardConsultObserver } from './guard-observability.js';
@@ -55,6 +55,18 @@ export interface InstallMemberIoProvidersInput {
      * `guard-observability.ts`.
      */
     readonly onGuardConsult?: GuardConsultObserver;
+    /**
+     * R3 PRODUCTION WIRING (owner ruling 20261124-0151 §2, round 95). The
+     * invocation binder's read-only epoch surface. Supplied by the production
+     * mount that shares the SAME binder the centre spends grants through, so a
+     * receipt minted at grant consumption can be proven live at the Provider's
+     * `ask` branch. Omitted = the pre-R3 fail-closed state: every `ask` refuses
+     * `IO_ASK_REQUIRES_APPROVAL`/`IO_ASK_RECEIPT_REFUSED`, never an ambient
+     * allow. This is NOT an allow source: the receipt still has to cover THIS
+     * execution, Member, tool, bounds, canonical path and bytes, and `deny` still
+     * wins before any receipt is consulted.
+     */
+    readonly approvedAskAuthority?: ApprovedAskProviderAuthority;
     /**
      * BL-16 (additive, default-preserving): mount a CONFINED `subprocess`
      * Provider on the SAME isolated Member scope, so a routed native module that
@@ -133,6 +145,11 @@ export interface GovernedPtyTerminalRealmSpec {
     readonly backendConfig?: Readonly<Record<string, unknown>>;
     /** Reads the CURRENT policy revision at a call boundary (default: install revision). */
     readonly revisionNow?: () => string;
+    /** ROUND 99 — the compiled process disposition for the PTY shell (see the face). */
+    readonly processAuthority?: {
+        readonly authorization: 'allow' | 'ask' | 'deny';
+        readonly executionBoundary: string;
+    };
 }
 /** Any terminal face a Member realm may mount. */
 export type TerminalRealmSpec = ConfinedTerminalRealmSpec | GovernedPtyTerminalRealmSpec;
@@ -163,6 +180,8 @@ export interface ConfinedSubprocessRealmSpec {
      * launcher pin and the process provider.
      */
     readonly shellClass?: Parameters<typeof createConfinedSubprocessClass>[1]['shellClass'];
+    /** ROUND 99 — the compiled process disposition for a declared shell spawn (see the face). */
+    readonly processAuthority?: Parameters<typeof createConfinedSubprocessClass>[1]['processAuthority'];
 }
 /** The mounted confined `subprocess` service (structural, provider-private). */
 export interface ConfinedSubprocessSurface {
@@ -239,5 +258,7 @@ export declare function installToolBindingRealm(input: {
      * consultation before delegation, and a report failure refuses the call.
      */
     readonly onGuardConsult?: GuardConsultObserver;
+    /** Same R3 wiring as {@link InstallMemberIoProvidersInput.approvedAskAuthority}. */
+    readonly approvedAskAuthority?: ApprovedAskProviderAuthority;
 }): Promise<ToolBindingRealm>;
 //# sourceMappingURL=install.d.ts.map

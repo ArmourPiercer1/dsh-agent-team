@@ -18,883 +18,1235 @@
         "pa-control-bridge.ts"
       ],
       "reason": "Historical evidence: it NAMES retired files as a record of a past run and is executed by no CI leg. Keeping the record is the point — deleting it would rewrite history."
-    },
-    {
-      "path": "packages/runtime/test/a3p4-pr4-decision-routing-regression.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "pre-execute-adapter.ts",
-        "root.ts"
-      ],
-      "reason": "Its subject is a retired module (pre-execute-adapter.ts, root.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "pre-execute-adapter.ts",
-        "root.ts"
-      ],
-      "reason": "Its subject is a retired module (pre-execute-adapter.ts, root.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a3p4-production-permission-plane.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "pre-execute-adapter.ts",
-        "root.ts"
-      ],
-      "reason": "Its subject is a retired module (pre-execute-adapter.ts, root.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a3p5-permission-read-wiring.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/a3p5-permission-splice.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/a4f1-row-version-not-document-version.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/a4p6-start-gate-entrances.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/a4p7-live-descendant-authority.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/a5-cancel-glob.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "cancel-leg.mjs"
-      ],
-      "reason": "Its subject is a retired module (cancel-leg.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5-cancel-search.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "cancel-leg.mjs"
-      ],
-      "reason": "Its subject is a retired module (cancel-leg.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5-globoff-key.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5-m1-auth-bridge.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.mjs",
-        "index.ts",
-        "pa-control-bridge.ts",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (index.mjs, index.ts, pa-control-bridge.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5-m1-bash-c1.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5-m1-correlation.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5-m1-pa-mount-registry.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "pa-mount-registry.mjs"
-      ],
-      "reason": "Its subject is a retired module (pa-mount-registry.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5-m1-read-c1c2.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5-m1-seam-enforcement.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5-m1-unsupported-c1.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5-pindir-reserved-native.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5-pindir-subagent-flip.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5-read-slice-window.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.mjs",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (index.mjs, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5-scratch-default.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5b2-exit-code-fidelity.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5b3-cancel-leg.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.mjs",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (index.mjs, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5int-r3-mount-integration.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5mcp-native-trust-filter.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "agent-bindings.mjs",
-        "index.ts"
-      ],
-      "reason": "Its subject is a retired module (agent-bindings.mjs, index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5natexe-native-takeover.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5p1-closed-world-guard.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts"
-      ],
-      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5p1-guard-install.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts"
-      ],
-      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5p1-scoped-dispatcher.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts"
-      ],
-      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5p1r-change-abort.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts"
-      ],
-      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5p1r-gg-probes.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts"
-      ],
-      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5p1r-scoped-registry-double.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts"
-      ],
-      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5p1r-shadow-attribution.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts"
-      ],
-      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5p1r-validate-resolve.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts"
-      ],
-      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5p2-composition.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts"
-      ],
-      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5p7-jobs-assembly-actuator.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5pbr2-binding-feed.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts"
-      ],
-      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5r-cause-relay.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.mjs",
-        "index.ts"
-      ],
-      "reason": "Its subject is a retired module (index.mjs, index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5w-bindseam-subtree-seam-c1.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "agent-bindings.mjs",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (agent-bindings.mjs, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5w-vobs-admission-observe-c1.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a5w-vseam-pa-verifier-seam-c1.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts",
-        "pa-control-bridge.ts"
-      ],
-      "reason": "Its subject is a retired module (index.ts, pa-control-bridge.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a6-boot-settlement-lanes.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/a6-root-wiring.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/alpha5-g1-deny-lane.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/alpha5-glob-backend.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/alpha5-glob-harness.ts",
-      "subject": "retired-module",
-      "targets": [
-        "glob-backend.mjs"
-      ],
-      "reason": "Its subject is a retired module (glob-backend.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/alpha5-glue7-plane-backends.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "glob-backend.mjs",
-        "index.ts",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (glob-backend.mjs, index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/alpha5-search-backend.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "glob-backend.mjs",
-        "search-mechanics.mjs"
-      ],
-      "reason": "Its subject is a retired module (glob-backend.mjs, search-mechanics.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/alpha5-search-harness.ts",
-      "subject": "retired-module",
-      "targets": [
-        "search-backend.mjs"
-      ],
-      "reason": "Its subject is a retired module (search-backend.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/bound-blueprint-persona-root.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/d2-s6-ensure-root-live.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/f15-mcp-live-loss.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "agent-bindings.mjs"
-      ],
-      "reason": "Exercises a REPLACED entry (agent-bindings.mjs), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/pd41-allow-semantics.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts"
-      ],
-      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/pd42-execution-outcome.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "pre-execute-adapter.ts"
-      ],
-      "reason": "Its subject is a retired module (pre-execute-adapter.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/t12a-live-bridge.mjs",
-      "subject": "replaced-entry",
-      "targets": [
-        "agent-bindings.mjs"
-      ],
-      "reason": "Exercises a REPLACED entry (agent-bindings.mjs), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/team-session-activation-glue.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "agent-bindings.mjs"
-      ],
-      "reason": "Exercises a REPLACED entry (agent-bindings.mjs), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/u6-fixk-kernel-safety.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts"
-      ],
-      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u6-pr1-contribution-schema.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts"
-      ],
-      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u6-pr1-kernel.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts"
-      ],
-      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u6-pr1-registry.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts"
-      ],
-      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u6-pr2-kernel-flow.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "fs-read-contribution.mjs",
-        "index.ts",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (fs-read-contribution.mjs, index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u6-pr2-kernel-guard-plants.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts"
-      ],
-      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u6-pr2-read-golden-vectors.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "read-normalizer.ts"
-      ],
-      "reason": "Its subject is a retired module (read-normalizer.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u6-pr2-review-r1.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u6-pr2-rrem2-read-lane.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts"
-      ],
-      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u6-pr3-bl01-ask-door.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u6-pr3-kernel-flow.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "bash-contribution.mjs",
-        "fs-read-contribution.mjs",
-        "index.ts",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (bash-contribution.mjs, fs-read-contribution.mjs, index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u6-pr3-shell-golden-vectors.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "bash-normalizer.ts"
-      ],
-      "reason": "Its subject is a retired module (bash-normalizer.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u6-pr4-jobs-bridge.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "agent-bindings.mjs",
-        "index.ts",
-        "pa-mount-registry.mjs",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (agent-bindings.mjs, index.ts, pa-mount-registry.mjs, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u6-pr5-kernel-flow.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u6-pr5-search-golden-vectors.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts"
-      ],
-      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u6-pr6-arc-d-adversarial.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts"
-      ],
-      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u6-pr6-arc-d-matrix.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u7-9a-fs-mutation-c1.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "fs-mutation-mechanics.mjs",
-        "image-executor.mjs",
-        "image-read-port.mjs",
-        "image-row.mjs",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (fs-mutation-mechanics.mjs, image-executor.mjs, image-read-port.mjs, image-row.mjs, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u7-9a-mutation-golden-vectors.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "fs-mutation-mechanics.mjs"
-      ],
-      "reason": "Its subject is a retired module (fs-mutation-mechanics.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u7-ac1-subagents-port-c1.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "agent-runtime-port.mjs",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (agent-runtime-port.mjs, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u7-agentstate-fs-store-audit.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.mjs"
-      ],
-      "reason": "Its subject is a retired module (index.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u7-agentstate-fs-store-c1.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "agent-state.mjs",
-        "index.mjs",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (agent-state.mjs, index.mjs, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u7-f-agent-control-c1.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "agent-control-executor.mjs",
-        "agent-control-mechanics.mjs",
-        "agent-runtime-port.mjs",
-        "index.mjs",
-        "index.ts",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (agent-control-executor.mjs, agent-control-mechanics.mjs, agent-runtime-port.mjs, index.mjs, index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.mjs",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (index.mjs, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u7-f-ui-c1.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "ask-executor.mjs",
-        "index.mjs",
-        "present-executor.mjs",
-        "team-tool-plane.mjs",
-        "ui-mechanics.mjs"
-      ],
-      "reason": "Its subject is a retired module (ask-executor.mjs, index.mjs, present-executor.mjs, team-tool-plane.mjs, ui-mechanics.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "image-executor.mjs",
-        "image-read-port.mjs",
-        "index.mjs",
-        "present-executor.mjs",
-        "search-mechanics.mjs",
-        "skill-executor.mjs"
-      ],
-      "reason": "Its subject is a retired module (image-executor.mjs, image-read-port.mjs, index.mjs, present-executor.mjs, search-mechanics.mjs, skill-executor.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u7-grep-late-stream.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "stream-drain.mjs"
-      ],
-      "reason": "Its subject is a retired module (stream-drain.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u7-state-home-c1.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.mjs"
-      ],
-      "reason": "Its subject is a retired module (index.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u7-state-home-prod-c1.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "agent-state.mjs",
-        "family-assembly.mjs",
-        "fs-state-store.mjs",
-        "index.mjs"
-      ],
-      "reason": "Its subject is a retired module (agent-state.mjs, family-assembly.mjs, fs-state-store.mjs, index.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u7-w0b-approval-entry-law.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u7-w0b-family-seam.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "family-assembly.mjs",
-        "index.mjs",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (family-assembly.mjs, index.mjs, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u74a-jobs-producer.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.mjs",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (index.mjs, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u7f-inspect-family-c1.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "inspect-executor.mjs",
-        "inspect.mjs",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (inspect-executor.mjs, inspect.mjs, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u7f-pwsh-row-c1.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "bash-contribution.mjs",
-        "bash-normalizer.ts",
-        "index.mjs",
-        "process.mjs",
-        "pwsh-mechanics.mjs"
-      ],
-      "reason": "Its subject is a retired module (bash-contribution.mjs, bash-normalizer.ts, index.mjs, process.mjs, pwsh-mechanics.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/u7f-web-c1.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/tools/test/u7f-ask-port-agent-binding.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "team-tool-plane.mjs",
-        "ui-interaction-port.mjs"
-      ],
-      "reason": "Its subject is a retired module (team-tool-plane.mjs, ui-interaction-port.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "tests/poc-web-native-reuse/poc-w1-native-shape.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts",
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "tests/poc-web-native-reuse/poc-w2-ctx-web-adapter.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "team-tool-plane.mjs"
-      ],
-      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "tests/poc-web-native-reuse/poc-w3-fetch-parity.test.ts",
-      "subject": "retired-module",
-      "targets": [
-        "team-tool-plane.mjs",
-        "web-transport.mjs"
-      ],
-      "reason": "Its subject is a retired module (team-tool-plane.mjs, web-transport.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "tests/u6-arc-a-probe-family/src/probe-assembly.mjs",
-      "subject": "retired-module",
-      "targets": [
-        "index.ts"
-      ],
-      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
     }
-  ]
+  ],
+  "retiredSubjects": {
+    "schema": "ute-cut-closure-retired-subjects/2",
+    "note": "Per-FILE retirement record for suites whose SUBJECT the A0/A1 cut removed. Round 72 (hosted-CI repair) deleted them, because a suite that cannot load (its module is gone) is not coverage — it is a red gate. Each entry states the subject it tested and why no preserved capability lost its arm. A file listed here is GONE from the tree; the entry stays so a reviewer can see the disposition without reading the deletion diff. The check reads `entries` only; this key is the record. A file that STILL EXISTS (a migrated or re-anchored suite, however it was edited) is NEVER a retired subject and must not be listed here — the live migrated population is declared in tests/checks/eb3-ute-migrated-suites.txt. Round 72 originally listed three live files here; the Round-72 deletion audit removed them and added the ten deleted suites that had no disposition at all.",
+    "entries": [
+      {
+        "path": "packages/runtime/test/a2c1-pwsh-permission.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/a2c2-permission-coverage.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/a2c4-external-lastmile.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/a2c7-subtree-matcher.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/a3p4-pr4-decision-routing-regression.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a3p4-production-permission-plane.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a4p4-capability-vs-permission.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/a4p4-operation-approval-authority.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/a4p4-operation-single-shot.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/a5-cancel-glob.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5-cancel-search.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5-globoff-key.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5-m1-auth-bridge.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5-m1-bash-c1.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5-m1-correlation.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5-m1-pa-mount-registry.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5-m1-read-c1c2.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5-m1-seam-enforcement.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5-m1-unsupported-c1.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5-pindir-subagent-flip.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5-read-slice-window.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5-scratch-default.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5a-pre-execute.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/a5b2-exit-code-fidelity.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5b3-cancel-leg.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5int-r3-mount-integration.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5intr3-kit-runner.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "A shim that drives `dev/agent-workflow/evidence/alpha5/int-r3/a5intr3-plane-mount-kit.mjs`, which mounts `team-tool-plane` + the search/glob rows -> both in the A1 delete set. The kit file itself survives as an evidence-record exemption; its runner is a test whose only subject retired."
+      },
+      {
+        "path": "packages/runtime/test/a5mcp-native-trust-filter.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5natexe-native-takeover.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5p1-closed-world-guard.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5p1-guard-install.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5p1-scoped-dispatcher.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5p1r-change-abort.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5p1r-gg-probes.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5p1r-scoped-registry-double.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5p1r-shadow-attribution.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5p1r-validate-resolve.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5p2-composition.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5p7-jobs-assembly-actuator.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5pbr2-binding-feed.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5r-cause-relay.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5w-bindseam-subtree-seam-c1.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5w-vobs-admission-observe-c1.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5w-vseam-pa-verifier-seam-c1.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a6-stop-fence.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/a6a-production-wiring.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Its subject is the A6 PRODUCTION WIRING of the A5 `tools/pre-execute` listener installed by the replaced root/glue (assembly-root + assembly-agent-bindings in the frozen set). The install-decision and listener-lifecycle laws it proved are re-expressed by the new centre: vnext-admission.test.mjs ADM-26/27 (compiled member -> binding by reference; installMemberCentre wires admission/facts/settlement over ONE callId) and ADM-44 (a row that asked for the centre cannot run unmediated)."
+      },
+      {
+        "path": "packages/runtime/test/alpha2-explicit-agent-setup.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drives the host setup contract through the replaced assembly (t12a-live-bridge -> old root/glue). The explicit-Agent setup seam it pinned is now owned by the new entry; the setup-time permission-coverage gate it also exercised is a kept module but is NOT wired by the new entry, which is recorded as an open finding in ROUND72-DELETION-AUDIT.md (a2c2 alpha) rather than claimed here."
+      },
+      {
+        "path": "packages/runtime/test/alpha5-g1-deny-lane.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/alpha5-g6b-rc-first.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Its subject is the search-family glob row (`family-search/src/glob-backend.mjs`, A1 delete set) and its rc-first adjudication; the row retired whole (03-RETIRE-KEEP.md §1, family-search group: \"deleted with the provider lane each family needs\"). The host now owns the walker; the typed-refusal law survives at the admission axis (ADM-16 search family on fs.read)."
+      },
+      {
+        "path": "packages/runtime/test/alpha5-glob-backend-adversarial.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Its subject is the retired anchored-glob row (`family-search/src/glob-backend.mjs`). Its NEGATIVE CONTROL (a symlinked middle/last component, or a swapped root, escaping the governed root is refused before spawn) is a C14b safety invariant and it SURVIVES on the product lane: packages/runtime/test/a5sf-path-rules.test.ts (symlink escape + symlinked-parent escape + prefix-trap over member-io-policy). The real-rg RACE loop (A4/A5) retired with the row; it is not re-expressed and is recorded in the audit as a retired-subject arm."
+      },
+      {
+        "path": "packages/runtime/test/alpha5-glob-backend.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/alpha5-glob-harness.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/alpha5-glue7-plane-backends.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/alpha5-search-backend.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/alpha5-search-harness.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/artifact-read-permission-lane.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/exec-contract-dual-gate.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/h1a-pre-execute-endcap.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/h4-rule-identity.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/h5-bash-effects.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/issue2-capability-permission-precedence.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/pd41-allow-semantics.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/pd42-execution-outcome.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/rc2a1-fs-containment.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Its subject is the replaced production root/glue (`assembly-root` -> src/plugin/host.ts, replaced whole) and the `fs` facade receiver-preservation bug it pinned. The CONTAINMENT LAW it proved (resolve + contains, sibling prefix trap, relative/absolute equivalence) is C14b and survives in a5sf-path-rules.test.ts + a3p4-permission-lifecycle-e2e.test.ts; the host-facade receiver bug surface itself retired with host.ts."
+      },
+      {
+        "path": "packages/runtime/test/u6-arc-a-fitness.test.ts",
+        "subject": "governance-center-fitness-gate",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "ARC-A fitness gate C1: its four laws scanned the Governance Center source set, the retired family census ledger and the retired contribution schema. All four subjects retired with the Center; the centre-only equivalent would be a new gate, not a migration of this one."
+      },
+      {
+        "path": "packages/runtime/test/u6-arc-a-probe-family.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Its subject is the U6 ARC-A PROBE FAMILY (governance-closed-world, A1 delete set) whose kit lived in tests/u6-arc-a-probe-family/ (deleted with it, see CUT-BOUNDARY-ADDITIONS.md §1 precedent). The centre it probed retired whole; no preserved capability is claimed by it."
+      },
+      {
+        "path": "packages/runtime/test/u6-fixk-kernel-safety.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u6-pr1-contribution-schema.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u6-pr1-kernel.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u6-pr1-registry.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u6-pr2-kernel-flow.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u6-pr2-kernel-guard-plants.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u6-pr2-read-golden-vectors.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u6-pr2-rrem2-read-lane.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u6-pr3-kernel-flow.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u6-pr3-shell-golden-vectors.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u6-pr4-jobs-bridge.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u6-pr5-kernel-flow.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u6-pr5-search-golden-vectors.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u6-pr5-search-move-law.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Its subject is the search family MOVE LAW (family-search byte-identity against master + the retired CANDIDATE-A glob factory). Both sides of the comparison retired in the A1 cut, so the pin has no subject; the no-dual-ledger law it enforced is moot once the second copy is deleted."
+      },
+      {
+        "path": "packages/runtime/test/u6-pr6-arc-d-adversarial.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u6-pr6-arc-d-matrix.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u7-9a-fs-mutation-c1.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u7-9a-mutation-golden-vectors.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u7-ac1-subagents-port-c1.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u7-agentstate-fs-store-audit.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u7-agentstate-fs-store-c1.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u7-f-agent-control-c1.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u7-f-agent-control-native-output-schema-c1.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Its subject is `family-agent-control` (native-output-schemas.mjs + the family rows), all in the A1 delete set. The re-homed `subagent_fork` row (06-CAPABILITY-CONTRACT C16) is the preserved capability and it is tested by the new row, not by this family schema comparison."
+      },
+      {
+        "path": "packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u7-f-ui-c1.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u7-g6b-late-stream.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Its subject is the retired CANDIDATE-A glob factory in `family-search/src/search-mechanics.mjs` plus the production glob row (both deleted). It is a deterministic RED reproducer of a row that no longer exists; its late-stream law belongs to the host walker now."
+      },
+      {
+        "path": "packages/runtime/test/u7-grep-late-stream.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u7-state-home-c1.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u7-state-home-prod-c1.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u7-w0b-approval-entry-law.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u7-w0b-family-seam.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u74a-jobs-producer.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u7f-inspect-family-c1.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u7f-pwsh-row-c1.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u7f-web-c1.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/tools/test/u7f-ask-port-agent-binding.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "tests/poc-web-native-reuse/poc-w1-native-shape.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "tests/poc-web-native-reuse/poc-w2-ctx-web-adapter.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "tests/poc-web-native-reuse/poc-w3-fetch-parity.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "tests/u6-arc-a-probe-family/src/probe-assembly.mjs",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "tests/u6-arc-a-probe-family/src/probe-contribution.mjs",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "The ARC-A probe lane contribution: its subject is the retired centre-shadow row / governance-centre kernel the probe family existed to exercise (round 72 already recorded probe-assembly.mjs). Deleted with the lane in round 72; no preserved capability lost its arm - the native centre suites (vnext-admission, ute-g1-*) carry the admission laws the probe certified."
+      },
+      {
+        "path": "tests/u6-arc-a-probe-family/src/probe-assembly.d.mts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Type declaration of the probe lane assembly above; deleted with it in round 72. Recorded here so the lane has a per-file disposition (the Round-72 audit added the ten deleted suites that had none; this is the same repair for the probe lane remaining files)."
+      }
+    ]
+  },
+  "retiredSurfaces": {
+    "schema": "ute-a0-retired-surfaces/1",
+    "note": "Per-SUBJECT retirement record for the A0 Family Contribution surface and the four instruments that graded it (scripts/eb3-family-definitions.mjs census + inventory arms, scripts/eb3-family-boundaries.mjs, scripts/eb3-tool-acceptance.mjs, scripts/ute-family-inventory.mjs). A0 retired the whole legacy execution plane (146 modules deleted, 2 entries replaced) in the frozen snapshot; the instruments that booked it were left grading a surface that no longer exists, which is 473 findings on the Required path and a red census. Each row here is one SUBJECT, its citation into the frozen inventory/decision, the exact frozen modules that make the retirement lawful, and the NAMED successors that carry the guarantee now: the frozen deletion list (scripts/ute-p0-assets.mjs --check), the dependency closure (scripts/ute-cut-closure.mjs --check) and the native execution-centre suites. A row is a LICENCE, not a silence: the check refuses a row whose citations are not tracked, whose frozen modules are not delete/replace in the snapshot, or whose declared surface is not wholly inside the frozen set and absent from the tree. A subject whose surface reappears is a resurrection finding, never a retirer. Read by scripts/ute-cut-closure.mjs (--check validates it), scripts/ute-family-inventory.mjs, scripts/eb3-family-definitions.mjs and scripts/eb3-tool-acceptance.mjs.",
+    "frozenTree": "a19d1df018e772f20602f93bc726694524bdeb2f",
+    "frozenTreeNote": "The commit that FROZE the A0 boundary (dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json landed there, and the family plane still existed in its tree). It is the fixture tree the committed ute-family-inventory.json records and the source of the retired tool claim set — read by git object id, never copied.",
+    "subjects": [
+      {
+        "id": "dsh.fs-family",
+        "kind": "family-contribution",
+        "lane": "packages/tools/fs-family",
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "family-fs",
+          "row-fs"
+        ],
+        "citations": [
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "§family-fs — the reviewed keep/delete entry for this subject (DELETE, wave 1)"
+          },
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/03-RETIRE-KEEP.md",
+            "note": "the keep/delete decision over that inventory list"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#module-family-fs — the frozen attestation that licenses this retirement"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "#retiredSubjects — the per-file record of every suite that retired with this subject (round 72)"
+          }
+        ],
+        "successors": [
+          "tests/ute-g1-fs/lane-suite.test.mjs",
+          "tests/ute1-fs/native-fs-binding.test.mjs",
+          "scripts/ute-cut-closure.mjs --check",
+          "scripts/ute-p0-assets.mjs --check"
+        ]
+      },
+      {
+        "id": "dsh.process-family",
+        "kind": "family-contribution",
+        "lane": "packages/tools/process-family",
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "family-process",
+          "row-process"
+        ],
+        "citations": [
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "§family-process — the reviewed keep/delete entry for this subject (DELETE, wave 1)"
+          },
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/03-RETIRE-KEEP.md",
+            "note": "the keep/delete decision over that inventory list"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#module-family-process — the frozen attestation that licenses this retirement"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "#retiredSubjects — the per-file record of every suite that retired with this subject (round 72)"
+          }
+        ],
+        "successors": [
+          "tests/ute-g1-process/lane-suite.test.mjs",
+          "tests/ute1-fs/native-fs-binding.test.mjs",
+          "scripts/ute-cut-closure.mjs --check",
+          "scripts/ute-p0-assets.mjs --check"
+        ]
+      },
+      {
+        "id": "dsh.search-family",
+        "kind": "family-contribution",
+        "lane": "packages/tools/search-family",
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "family-search",
+          "row-search"
+        ],
+        "citations": [
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "§family-search — the reviewed keep/delete entry for this subject (DELETE, wave 1)"
+          },
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/03-RETIRE-KEEP.md",
+            "note": "the keep/delete decision over that inventory list"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#module-family-search — the frozen attestation that licenses this retirement"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "#retiredSubjects — the per-file record of every suite that retired with this subject (round 72)"
+          }
+        ],
+        "successors": [
+          "tests/ute-g1-search/lane-suite.test.mjs",
+          "scripts/ute-cut-closure.mjs --check",
+          "scripts/ute-p0-assets.mjs --check"
+        ]
+      },
+      {
+        "id": "dsh.inspect-family",
+        "kind": "family-contribution",
+        "lane": "packages/tools/inspect-family",
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "family-inspect",
+          "row-inspect"
+        ],
+        "citations": [
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "§family-inspect — the reviewed keep/delete entry for this subject (DELETE, wave 1)"
+          },
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/03-RETIRE-KEEP.md",
+            "note": "the keep/delete decision over that inventory list"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#module-family-inspect — the frozen attestation that licenses this retirement"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "#retiredSubjects — the per-file record of every suite that retired with this subject (round 72)"
+          }
+        ],
+        "successors": [
+          "packages/runtime/test/vnext-admission.test.mjs",
+          "scripts/ute-cut-closure.mjs --check",
+          "scripts/ute-p0-assets.mjs --check"
+        ]
+      },
+      {
+        "id": "dsh.web-family",
+        "kind": "family-contribution",
+        "lane": "packages/tools/web-family",
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "family-web",
+          "row-web"
+        ],
+        "citations": [
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "§family-web — the reviewed keep/delete entry for this subject (DELETE, wave 1)"
+          },
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/03-RETIRE-KEEP.md",
+            "note": "the keep/delete decision over that inventory list"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#module-family-web — the frozen attestation that licenses this retirement"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "#retiredSubjects — the per-file record of every suite that retired with this subject (round 72)"
+          }
+        ],
+        "successors": [
+          "tests/ute-g1-web/lane-suite.test.mjs",
+          "scripts/ute-cut-closure.mjs --check",
+          "scripts/ute-p0-assets.mjs --check"
+        ]
+      },
+      {
+        "id": "dsh.agent-control-family",
+        "kind": "family-contribution",
+        "lane": "packages/tools/agent-control-family",
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "family-agent-control",
+          "row-agent-control"
+        ],
+        "citations": [
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "§family-agent-control — the reviewed keep/delete entry for this subject (DELETE, wave 1)"
+          },
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/03-RETIRE-KEEP.md",
+            "note": "the keep/delete decision over that inventory list"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#module-family-agent-control — the frozen attestation that licenses this retirement"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "#retiredSubjects — the per-file record of every suite that retired with this subject (round 72)"
+          }
+        ],
+        "successors": [
+          "tests/ute-g1-agentctl/lane-suite.test.mjs",
+          "scripts/ute-cut-closure.mjs --check",
+          "scripts/ute-p0-assets.mjs --check"
+        ]
+      },
+      {
+        "id": "dsh.ui-family",
+        "kind": "family-contribution",
+        "lane": "packages/tools/ui-family",
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "family-ui",
+          "row-ui"
+        ],
+        "citations": [
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "§family-ui — the reviewed keep/delete entry for this subject (DELETE, wave 1)"
+          },
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/03-RETIRE-KEEP.md",
+            "note": "the keep/delete decision over that inventory list"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#module-family-ui — the frozen attestation that licenses this retirement"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "#retiredSubjects — the per-file record of every suite that retired with this subject (round 72)"
+          }
+        ],
+        "successors": [
+          "tests/ute-g1-uistate/lane-suite.test.mjs",
+          "scripts/ute-cut-closure.mjs --check",
+          "scripts/ute-p0-assets.mjs --check"
+        ]
+      },
+      {
+        "id": "dsh.agent-state-family",
+        "kind": "family-contribution",
+        "lane": "packages/tools/agent-state-family",
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "family-agent-state",
+          "row-agent-state"
+        ],
+        "citations": [
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "§family-agent-state — the reviewed keep/delete entry for this subject (DELETE, wave 1)"
+          },
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/03-RETIRE-KEEP.md",
+            "note": "the keep/delete decision over that inventory list"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#module-family-agent-state — the frozen attestation that licenses this retirement"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "#retiredSubjects — the per-file record of every suite that retired with this subject (round 72)"
+          }
+        ],
+        "successors": [
+          "tests/ute-g1-uistate/lane-suite.test.mjs",
+          "scripts/ute-cut-closure.mjs --check",
+          "scripts/ute-p0-assets.mjs --check"
+        ]
+      },
+      {
+        "id": "dsh.u6-probe-family",
+        "kind": "test-only-family-lane",
+        "lane": "tests/u6-arc-a-probe-family",
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "governance-closed-world"
+        ],
+        "citations": [
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "§rows-barrel — the reviewed keep/delete entry for this subject (DELETE, wave 1)"
+          },
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/03-RETIRE-KEEP.md",
+            "note": "the keep/delete decision over that inventory list"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#module-rows-barrel — the frozen attestation that licenses this retirement"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "#retiredSubjects — the per-file record of every suite that retired with this subject (round 72)"
+          },
+          {
+            "path": "dev/agent-workflow/evidence/ute-a1/ROUND72-DELETION-AUDIT.md",
+            "note": "§2 — the retired-subject classification that deleted this test-only lane"
+          }
+        ],
+        "successors": [
+          "packages/runtime/test/vnext-admission.test.mjs",
+          "scripts/ute-cut-closure.mjs --check",
+          "scripts/ute-p0-assets.mjs --check"
+        ]
+      },
+      {
+        "id": "tool-acceptance-claims",
+        "kind": "tool-acceptance-claims",
+        "lane": null,
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "family-fs",
+          "family-search",
+          "family-web",
+          "family-process",
+          "family-ui",
+          "family-inspect",
+          "family-agent-control",
+          "family-agent-state",
+          "row-fs",
+          "row-search",
+          "row-web",
+          "row-process",
+          "row-ui",
+          "row-inspect",
+          "row-agent-control",
+          "row-agent-state",
+          "rows-barrel",
+          "governance-closed-world"
+        ],
+        "citations": [
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "the pre-cut claim set is read from the frozen A0 tree (frozenTree): packages/tools/families/manifest.json and the seven `claims:` descriptors it lists, plus the named-bridge trio (packages/runtime/src/plugin/live/jobs-family-bridge.mjs)"
+          },
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "§rows-barrel (the generated barrel = manifest.json + index)"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#module-rows-barrel — the frozen attestation"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "#retiredSubjects — the u7f per-tool suites that retired with this claim set (round 72)"
+          }
+        ],
+        "successors": [
+          "packages/runtime/test/vnext-admission.test.mjs",
+          "tests/ute-g1-fs/lane-suite.test.mjs",
+          "tests/checks/eb3-ute-migrated-suites.txt"
+        ]
+      },
+      {
+        "id": "family-lane-edges",
+        "kind": "family-lane-edges",
+        "lane": null,
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "family-fs",
+          "family-search",
+          "family-web",
+          "family-process",
+          "family-ui",
+          "family-inspect",
+          "family-agent-control",
+          "family-agent-state",
+          "row-fs",
+          "row-search",
+          "row-web",
+          "row-process",
+          "row-ui",
+          "row-inspect",
+          "row-agent-control",
+          "row-agent-state",
+          "rows-barrel",
+          "governance-closed-world"
+        ],
+        "citations": [
+          {
+            "path": "scripts/eb3-family-boundaries.mjs",
+            "note": "the lane-edge law whose subject is the seven family lanes and the family-body barrel"
+          },
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "§family-fs … §family-agent-state — the whole lane set"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#module-family-fs — the frozen attestation"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "#retiredSubjects — the u7-w0b family-seam suites that retired with this subject (round 72)"
+          }
+        ],
+        "successors": [
+          "packages/runtime/test/vnext-admission.test.mjs",
+          "tests/ute-g1-search/lane-suite.test.mjs",
+          "tests/ute-g1-process/lane-suite.test.mjs"
+        ]
+      },
+      {
+        "id": "family-inventory-records",
+        "kind": "family-inventory-records",
+        "lane": null,
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "family-fs",
+          "family-search",
+          "family-web",
+          "family-process",
+          "family-ui",
+          "family-inspect",
+          "family-agent-control",
+          "family-agent-state",
+          "row-fs",
+          "row-search",
+          "row-web",
+          "row-process",
+          "row-ui",
+          "row-inspect",
+          "row-agent-control",
+          "row-agent-state",
+          "rows-barrel",
+          "governance-closed-world"
+        ],
+        "citations": [
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "the whole table — the family-lane implementation files the committed ute-family-inventory.json records"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#modules — the frozen attestation"
+          },
+          {
+            "path": "dev/agent-workflow/evidence/ute-a1/ROUND72-DELETION-AUDIT.md",
+            "note": "§6 — the fixture-base disposition (option (a): grade the A0 frozen tree)"
+          }
+        ],
+        "successors": [
+          "scripts/ute-cut-closure.mjs --check",
+          "scripts/ute-p0-assets.mjs --check",
+          "tests/checks/eb3-ute-migrated-suites.txt"
+        ]
+      }
+    ]
+  }
 }

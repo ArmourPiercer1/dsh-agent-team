@@ -450,17 +450,18 @@ test('W5 malformed provider answers throw: non-object, missing compiledFor, empt
 // =============================================================================
 
 test('W6 the glue call site is guarded, keeps a SAFE row disposer, and imports the helper', () => {
-  const glue = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs'), 'utf8')
+  // ROUND 80: the A1 cut replaced the legacy `live/agent-bindings.mjs` with the vnext assembly (the
+  // survivor is `vnext/agent-bindings.mjs`; the realm row, its mount helper and its disposer factory
+  // were NOT retired). The structural pin follows the call site to its successor — reading a deleted
+  // file would have made this arm silently vacuous, which is what it exists to prevent.
+  const glue = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'vnext', 'agent-bindings.mjs'), 'utf8')
   assert.match(
     glue,
-    // F1 (2026-11-03) added `a5sfToolPlaneOf` to this SAME import: the helper
-    // names the isolated tool-plane scope; the ONE mount + the disposer factory
-    // are unchanged. ROUTE C (2026-11-03) added `attachA5sfNativeToolModules`
-    // the same way (the native shadow is attached after the deny lane, on the
-    // realm this mount returns). The pin tracks the additive import, not a
-    // second path.
-    /import \{ a5sfAgentToolSurface, a5sfAttachedToolNames, a5sfBindableRealmNames, a5sfRealmConfigOf, a5sfToolPlaneOf, attachA5sfNativeToolModules, createA5sfRealmRowDisposer, freshCreateHintAdmits, mountMemberA5sfRealm \} from '\.\/a5sf-realm-row\.mjs'/,
-    'the glue imports the ONE helper + the tool-plane naming + the safe disposer factory',
+    // The ONE mount, the disposer factory AND the post-deny native attach come from the surviving
+    // realm row; `attachA5sfNativeToolModules` is imported here because the attach's ORDER is the
+    // law (route-C N5): it may never be imported by a module that mounts before the deny lane.
+    /import \{\s*a5sfRealmConfigOf,\s*attachA5sfNativeToolModules,\s*compiledAnswerOfRealm,\s*createA5sfRealmRowDisposer,\s*mountMemberA5sfRealm,\s*\} from '\.\.\/live\/a5sf-realm-row\.mjs'/,
+    'the glue imports the ONE helper + the safe disposer factory + the post-deny attach',
   )
   assert.match(glue, /const a5sfRowConfig = a5sfRealmConfigOf\(config\)/, 'the row config is read once at assembly')
   assert.match(
@@ -468,8 +469,18 @@ test('W6 the glue call site is guarded, keeps a SAFE row disposer, and imports t
     /if \(a5sfRowConfig !== undefined && a5sfRealmProvider !== undefined && sessionId !== teamRoot\) \{/,
     'the mount runs only when BOTH halves are present and the session is a member (not a team root)',
   )
+  // The native attach reads the HOISTED realm and runs after the deny; a mount input carrying the
+  // modules would put the shadow back before `tools.restrict` (route-C N5).
+  assert.match(glue, /a5sfMountedRealm = a5sfRealm/, 'the mounted realm is hoisted for the post-deny attach')
+  assert.equal(glue.includes('nativeSpecs:'), false, 'the member-execution composition does not mount the row natives before the deny')
   assert.match(glue, /a5sfRealmDisposers\.push\(disposeRealm\)/, 'the async realm disposal is recorded for the row to await')
-  assert.match(glue, /toolDisposers\.push\(disposeRealm\)/, 'the sync wrapper also rides the row-stop drain')
+  // ONE registration, and the absence is the law: a second `toolDisposers.push(disposeRealm)` started
+  // the realm disposal in the tool-disposer pass (before the native-mount tombstone was awaited).
+  assert.equal(
+    glue.includes('toolDisposers.push(disposeRealm)'),
+    false,
+    'the realm must NOT also ride the sync tool-disposer pass — one registration, awaited in order',
+  )
   assert.match(glue, /await disposeRealm\.settled\(\)/, 'close() AWAITS the disposals it started (no fire-and-forget teardown)')
   assert.match(glue, /createA5sfRealmRowDisposer\(a5sfRealm, \(error\) => \{/, 'a rejected unmount is REPORTED as an observation, never silently swallowed')
   assert.match(glue, /provider: a5sfRealmProvider/, 'the consult observer is wired at the call site')

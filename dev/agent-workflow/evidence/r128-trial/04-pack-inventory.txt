@@ -1,0 +1,12 @@
+package=dsh-agent-team@0.3.0-trial.1
+files=1976 tarball_bytes=3977216 unpacked_bytes=15585286
+OK  cordis.patch.yml count=1
+OK  packages/runtime/dist/ count=1948
+OK  packages/client/composition-shim/ count=3
+OK  packages/runtime/root-binding/ count=19
+OK  packages/runtime/src/plugin/upstream-resolver.mjs count=1
+OK  README.md count=1
+OK  package.json count=1
+OK  .agents/skills/ count=2
+top_level=["README.md","cordis.patch.yml","package.json"]
+exports_missing=[]

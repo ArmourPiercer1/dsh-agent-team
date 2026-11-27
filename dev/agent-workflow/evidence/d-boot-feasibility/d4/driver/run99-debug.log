@@ -1,0 +1,28 @@
+[2026-11-24T03:30:22.642Z] archived previous runs -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T03-30-22-641Z
+[2026-11-24T03:30:23.078Z] host tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use HEAD=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=[]
+[2026-11-24T03:30:23.078Z] started 2026-11-24T03:30:22.593Z boots=1
+[2026-11-24T03:30:23.120Z] [boot1] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-24T03:30:23.121Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=954835b717c6768c6208281f80545af445b164c9
+[2026-11-24T03:30:23.172Z] blueprint main.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T03:30:23.176Z] [boot1] alpha6 config gate (positive): null
+[2026-11-24T03:32:48.947Z] [boot1] host ready on http://127.0.0.1:3195
+[2026-11-24T03:32:48.968Z] [boot1] prompt(d4disc) status=200
+[2026-11-24T03:32:49.168Z] [boot1] discovery answered (mock requests=2)
+[2026-11-24T03:32:49.175Z] [boot1] prompt(d4off) status=200
+[2026-11-24T03:32:49.976Z] [boot1] officer delegated
+[2026-11-24T03:32:49.984Z] [boot1] officer instance=inst-1crltnl0089j childSession=session-team-child-1d56dbb16a118ba3573db3c4b2641997
+[2026-11-24T03:32:50.490Z] [boot1] d4:officer-up=PROVEN d4:officer-binding=PROVEN
+[2026-11-24T03:32:50.498Z] [boot1] prompt(d4wrk) status=200
+[2026-11-24T03:32:50.698Z] [boot1] worker delegated
+[2026-11-24T03:34:50.706Z] [boot1] PROBE FAILED: Error: the worker MemberTemplate never came up as an instance
+    at probeOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs:1800:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs:2650:18)
+[2026-11-24T03:34:50.871Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-24T03:34:51.332Z] host porcelain after: []
+[2026-11-24T03:34:51.334Z] TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)
+fact                              
+
+agreeing=true differing=[]
+[2026-11-24T03:34:51.334Z] RESULT evidence-complete=false allBooted=false blocked=false (1/1 boots; agreeing pair=true)
+exit=1

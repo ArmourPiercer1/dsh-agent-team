@@ -1,0 +1,27 @@
+{
+  "proposition": "a DUPLICATE approval attempt on an already-settled leg yields ONE decision and ONE execution: no second grant is minted and the approved bytes do not change",
+  "verdict": "PROVEN",
+  "clauses": [
+    {
+      "id": "duplicate-attempt-issued",
+      "ok": true,
+      "detail": "callId=call_00_cW2VtRx8MzchCiXLnwLM0652 result={\"status\":\"rejected\",\"code\":\"CONTROL_REQUEST_DECIDED\",\"message\":\"ControlService: request 'ctrl-1r5ddfo1n3mnyd0syy4cu12h' already carries a durable decision (the first decision is authoritative)\",\"details\":{\"rootSessionId\":\"session-real-model-root\",\"requestId\":\"ctrl-1r5ddfo1n3mnyd0syy4cu12h\"}} isError=false"
+    },
+    {
+      "id": "one-decision",
+      "ok": true,
+      "detail": "control-decision-recorded rows for the request=1"
+    },
+    {
+      "id": "one-execution",
+      "ok": true,
+      "detail": "settlements naming the approved call=1"
+    },
+    {
+      "id": "bytes-unchanged",
+      "ok": true,
+      "detail": "before=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3 after=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3 bytes=27"
+    }
+  ],
+  "failing": []
+}

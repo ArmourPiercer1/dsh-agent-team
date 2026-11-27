@@ -38,12 +38,8 @@
       ],
       "test_refs": [
         {
-          "path": "packages/runtime/test/alpha5-g1-deny-lane.test.ts",
+          "path": "packages/runtime/test/vnext-admission.test.mjs",
           "id": "exec.deny-before-effect"
-        },
-        {
-          "path": "packages/domain/test/a5sr3-default-deny-mapping.test.ts",
-          "id": "exec.default-deny-mapping"
         }
       ],
       "witness_type": "E0 deny-lane assertions; effect witness lives in the E2 suites",
@@ -61,12 +57,8 @@
       ],
       "test_refs": [
         {
-          "path": "packages/runtime/test/a4p4-operation-approval-authority.test.ts",
+          "path": "packages/runtime/test/a5p2-grant-oneshot.test.ts",
           "id": "review.approval-authority"
-        },
-        {
-          "path": "packages/runtime/test/a4p3-approval-escalation.test.ts",
-          "id": "review.escalation-vocabulary"
         }
       ],
       "witness_type": "E0 approval-document assertions",
@@ -84,12 +76,8 @@
       ],
       "test_refs": [
         {
-          "path": "packages/runtime/test/a6-stop-fence.test.ts",
+          "path": "packages/runtime/test/vnext-admission.test.mjs",
           "id": "life.stop-fence"
-        },
-        {
-          "path": "packages/tools/test/a6-stop-fence-wiring.test.ts",
-          "id": "life.stop-fence-tool-wiring"
         }
       ],
       "witness_type": "E0 fence assertions",

@@ -100,23 +100,25 @@ export const EXCEPTIONS = Object.freeze({
   'EX-3-TOOL-ASK-DROPPED-BY-INTERSECTION': Object.freeze({
     id: 'EX-3-TOOL-ASK-DROPPED-BY-INTERSECTION',
     summary:
-      'An ask locator the effective lane does not otherwise permit is DROPPED by the intersection, so the admission plane denies '
-      + 'while the legacy tool rule asks.',
+      'An ask locator ONE side of the intersection explicitly DENIES is DROPPED (deny wins), so the admission plane denies while '
+      + 'the legacy tool rule asks.',
     planes: Object.freeze({ plane1: 'ask', plane2: 'deny', plane3: 'deny' }),
     decidedBy: Object.freeze(['IO_READ_DENIED', 'IO_WRITE_DENIED']),
     axes: Object.freeze(['read', 'write']),
     realms: Object.freeze(['binding']),
     citation:
       'packages/runtime/member-io-policy/src/path-rules.ts `intersectPathRuleSets` header ("ask is the STRICTER disposition: an ask '
-      + 'survives if the OTHER lane permits that location, and it is never promoted to allow"); '
+      + 'survives if BOTH lanes PERMIT that location — neither answers deny — and it is never promoted to allow; any surviving ask that '
+      + 'is denied on either axis is dropped"); owner ruling docs/reviews/20261124-0151.txt §2 (G11: a pure ask lane must survive, '
+      + 'deny still wins); '
       + 'packages/runtime/member-io-policy/src/compile.ts "EffectiveIo ⊆ MemberCeiling ∩ ToolRestriction".',
     reason:
-      'The compiled effective lane is the intersection, and the intersection KEEPS an ask only where the permission side still allows '
-      + 'it. Plane 1 is handed the authored tool rule alone and answers ask. This is the FAIL-CLOSED direction (deny, not allow): it '
-      + 'cannot widen anything, but it does mean an author-declared ask for a location outside the allow subtree is never offered as an '
-      + 'approval. The over-permit direction of the same gap (the ask INSIDE the allow) was the open A5-DUAL-PLANE-01 divergence; '
-      + '2026-11-05 admission now refuses it with `IO_ASK_REQUIRES_APPROVAL`, so that direction is no longer an open DISAGREE. '
-      + 'This exception is unchanged: the ask is GONE from the compiled lane here, so the refusal is the ordinary deny.',
+      'Plane 1 is handed the authored tool rule ALONE and answers ask; the compiled effective lane is the intersection, and after the '
+      + 'round-94 G11 fix an ask is dropped ONLY when the MEMBER ceiling answers deny for that locator (deny > ask). That is the '
+      + 'FAIL-CLOSED direction: it cannot widen anything, and the governing member deny is precisely why the call is not offered for '
+      + 'approval. The old shape this exception used to excuse — an ask merely OUTSIDE the allow subtree, with both lanes permitting it '
+      + '— was the G11 defect itself: round 101 moved that case to AGREE (ask/ask/ask) and added the pure-ask and '
+      + 'ask-denied-by-the-ceiling cases so the corrected law is pinned in both directions.',
   }),
 })
 
@@ -568,8 +570,59 @@ export const DUAL_PLANE_CASES = Object.freeze([
     ceiling: { read: rd([inside], ['$B/lane/other']), write: all() },
     restriction: { tool: 'read', read: rd([inside], ['$B/lane/other']), write: all() },
     target: '$B/lane/other/other.txt',
+    // ROUND 101 / G11 (owner ruling docs/reviews/20261124-0151.txt §2; fixed in
+    // round 94): this used to be EX-3 (plane2 deny) because the intersection
+    // required the intersection's ALLOW list to cover the ask. Both declared
+    // lanes PERMIT this locator (their own disposition is ask), so the ask is
+    // preserved as `{allow:[inside], ask:[lane/other]}` — the call asks, it is
+    // never auto-approved, and every other locator is still denied.
+    expect: { plane1: 'ask', plane2: 'ask', plane3: 'ask', verdict: 'AGREE' },
+    note: 'ask-only locator outside the allow: the intersection KEEPS the ask (both lanes permit it), so the call is refused as an ask, exactly as the tool rule says',
+  },
+  {
+    id: 'read-binding-subtree-pure-ask-lane',
+    axis: 'read',
+    realm: 'binding',
+    resourceKind: 'subtree',
+    // G11's own shape: a legal PURE ask lane — no allow locator at all. Before
+    // the round-94 fix the empty allow list intersected to nothing and the lane
+    // collapsed to deny-everything, which blocked the owner-approved R3 receipt
+    // path. The ask must survive as ask; a locator it does not cover is still
+    // denied (asserted below by the DP-PURE-ASK arm).
+    ceiling: { read: rd([], ['$B/lane/only-ask']), write: all() },
+    restriction: { tool: 'read', read: rd([], ['$B/lane/only-ask']), write: all() },
+    target: '$B/lane/only-ask/asked.txt',
+    expect: { plane1: 'ask', plane2: 'ask', plane3: 'ask', verdict: 'AGREE' },
+    note: 'PURE ask lane ({allow:[], ask:[p]}) ∩ a tool restriction: the ask survives (G11) and is still only an ask',
+  },
+  {
+    id: 'read-binding-subtree-pure-ask-lane-outside',
+    axis: 'read',
+    realm: 'binding',
+    resourceKind: 'subtree',
+    // The negative control for the G11 arm: the SAME pure-ask lane, asked about a
+    // locator it does not cover. Preserving the ask widened NOTHING — the rest of
+    // the lane is still an ordinary deny (no allow locator exists at all).
+    ceiling: { read: rd([], ['$B/lane/only-ask']), write: all() },
+    restriction: { tool: 'read', read: rd([], ['$B/lane/only-ask']), write: all() },
+    target: '$B/lane/inside/ok.txt',
+    expect: { plane1: 'deny', plane2: 'deny', plane3: 'deny', verdict: 'AGREE' },
+    note: 'a locator the pure ask does not cover stays DENIED: the G11 fix preserves the ask, it does not widen the lane',
+  },
+  {
+    id: 'read-binding-subtree-ask-dropped-by-ceiling-deny',
+    axis: 'read',
+    realm: 'binding',
+    resourceKind: 'subtree',
+    // The CONTROL for the reduced EX-3: the ceiling ASKS for the locator, the
+    // tool rule asks too, but the MEMBER CEILING also DENIES it. Deny > ask, so
+    // the intersection drops the ask and the call is an ordinary deny — the
+    // corrected law preserves asks only where BOTH lanes permit.
+    ceiling: { read: rd([inLane], ['$B/lane/other'], ['$B/lane/other']), write: all() },
+    restriction: { tool: 'read', read: rd([inLane], ['$B/lane/other']), write: all() },
+    target: '$B/lane/other/other.txt',
     expect: { plane1: 'ask', plane2: 'deny', plane3: 'deny', verdict: 'EXCEPTION', exception: 'EX-3-TOOL-ASK-DROPPED-BY-INTERSECTION' },
-    note: 'ask-only locator outside the allow: the intersection drops the ask (fail-closed deny) while the legacy tool rule asks',
+    note: 'ask dropped by an explicit DENY on the member ceiling: deny wins, plane 1 (tool rule alone) still asks',
   },
   {
     id: 'read-binding-subtree-allow-symlink-inside',

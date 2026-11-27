@@ -1,0 +1,62 @@
+[
+  {
+    "callId": "call-dboot-read-admit",
+    "agentId": "inst-0e23ryd1fmn2",
+    "instanceId": "inst-0e23ryd1fmn2",
+    "sessionId": "session-team-child-56a707050f4095d1acddaa687cf3ed41",
+    "instanceGeneration": 0,
+    "toolName": "read",
+    "axis": "fs.read",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-26-38Z-next/workspace/in-lane.txt",
+    "definitionSource": "",
+    "policyGeneration": "a5sf1:5d220cbd465f6847af8b531e9bb68136",
+    "blueprintRevision": "",
+    "owner": "session-dboot-read-team",
+    "decision": "allow",
+    "overlayOutcome": "no-opinion",
+    "kind": "invocation-authority",
+    "at": "2026-11-24T16:28:17.867Z"
+  },
+  {
+    "callId": "call-dboot-read-admit",
+    "executionId": "exec-7b8250755b26fbcb8228dd4190adf144d9510347",
+    "toolName": "read",
+    "agentId": "session-team-child-56a707050f4095d1acddaa687cf3ed41",
+    "outcome": "completed",
+    "isError": false,
+    "policyGeneration": "a5sf1:5d220cbd465f6847af8b531e9bb68136",
+    "kind": "execution",
+    "at": "2026-11-24T16:28:17.891Z"
+  },
+  {
+    "callId": "call-dboot-read-deny",
+    "agentId": "inst-0e23ryd1fmn2",
+    "instanceId": "inst-0e23ryd1fmn2",
+    "sessionId": "session-team-child-56a707050f4095d1acddaa687cf3ed41",
+    "instanceGeneration": 0,
+    "toolName": "read",
+    "axis": "fs.read",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-26-38Z-next/out-of-lane/secret-out-of-lane.txt",
+    "definitionSource": "",
+    "policyGeneration": "a5sf1:5d220cbd465f6847af8b531e9bb68136",
+    "blueprintRevision": "",
+    "owner": "session-dboot-read-team",
+    "decision": "deny",
+    "refusalCode": "LANE_DENY",
+    "reason": "fs.read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T16-26-38Z-next/out-of-lane/secret-out-of-lane.txt\" is outside the binding's fs.read lane (policy generation a5sf1:5d220cbd465f6847af8b531e9bb68136)",
+    "kind": "invocation-authority",
+    "at": "2026-11-24T16:28:17.929Z"
+  },
+  {
+    "callId": "call-dboot-read-deny",
+    "executionId": "exec-4dacae592099c0ce5143e6836d497861897a1109",
+    "toolName": "read",
+    "agentId": "session-team-child-56a707050f4095d1acddaa687cf3ed41",
+    "outcome": "admission-refusal",
+    "isError": true,
+    "refusalCode": "LANE_DENY",
+    "policyGeneration": "a5sf1:5d220cbd465f6847af8b531e9bb68136",
+    "kind": "execution",
+    "at": "2026-11-24T16:28:17.939Z"
+  }
+]

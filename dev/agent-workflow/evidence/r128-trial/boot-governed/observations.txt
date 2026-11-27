@@ -1,0 +1,9 @@
+boot_url=http://127.0.0.1:3180/?token=<redacted>
+root_status=401
+team_remote_status=401
+cookie_set=1
+catalog_with_cookie:
+{"type":"server-response","rpcId":"smoke-2","result":{"ok":true,"value":{"data":{"blueprints":[{"blueprintId":"my-team-bp-1","revisions":[1],"revisionStates":[{"revision":1,"schemaVersion":3,"migrationState":"current"}]},{"blueprintId":"trial-team","revisions":[1],"revisionStates":[{"revision":1,"schemaVersion":4,"migrationState":"current"}]}]},"provenance":{"origin":"team-remote","method":"catalog.list","endpoint":"catalog.list","contractVersion":4,"requestToken":null,"projectionGeneration":null,"effectSequence":null}}}}
+log_errors=0
+sigterm_exit=0
+process_gone=yes

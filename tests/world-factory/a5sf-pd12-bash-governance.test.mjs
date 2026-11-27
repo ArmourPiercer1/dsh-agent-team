@@ -3,42 +3,29 @@
  * must reach the CONFINED `subprocess` face, so the compiled ceiling's network
  * term is actually consulted.
  *
- * WHAT THIS SUITE PINS (host-free; in-process Cordis roots, no boot, no
+ * WHAT THIS SUITE PINS TODAY (host-free; in-process Cordis roots, no boot, no
  * DSH_HOME, no pinned host tree):
  *
  *   P0  THE DEFECT PIN (env-gated). On the PRE-FIX tree the same world ran
  *       `bash` on the preset's inherited executor while the confined provider
- *       was called ZERO times. The arm asserts that old behaviour, so it is
- *       GREEN before the fix and RED after it; the gate skips it unless
- *       `A5SF_PD12_PIN=1` (the before/after logs live in the evidence dir).
- *   D1  THE FIX: with a realm that owns the confined `subprocess` face, the
- *       SAME Member's `bash` is served by the confined face; the `network:
- *       deny` ceiling is consulted; the refusal is `NETWORK_UNCONFINED_REALM`
- *       naming the provider's `network-destination` capability; the provider is
- *       called ZERO times and the inherited base executor ZERO times.
- *   A1  THE ALLOW LANE still works end to end: the same shadowed `bash` runs a
- *       real command through the confined face, returns its stdout/exit code,
- *       and the base executor is never reached.
- *   A2  A ceiling with NO network axis still allows (the refusal is the network
- *       term, not "bash is broken").
+ *       was called ZERO times; the gate skips it unless `A5SF_PD12_PIN=1`.
+ *       RETIRED-BY-A0 (round 80): its "fixed" counterpart (D1) retired with the
+ *       appended shadow, so the pin now records the post-cut behaviour only.
  *   S1  SURFACE NEUTRAL: the model-visible name set is unchanged (one `bash`,
- *       no added/removed names).
- *   C1  CONTROL — remove the shadow (dispose the native modules): the fixed
- *       deny assertion goes RED in place (the hole returns).
+ *       no added/removed names) across the attach.
  *   C2  CONTROL — a realm that owns NO confined face is not shadowed: `bash`
  *       runs on the preset executor and the confined provider is called 0
- *       times. That is the pre-fix shape, pinned as a permanent contrast.
- *   C3  CONTROL — the same deny world with NO network axis allows; the refusal
- *       is therefore the network term, not an incidental error.
- *   C4  CONTROL — the same deny world whose face declares NO shell class
- *       refuses with `SUBPROCESS_SHELL_NOT_DECLARED` (the shell admission runs
- *       first), so "names the capability" requires the declared shell class.
+ *       times.
+ *   RETIRED-BY-A0  the five arms whose subject was the APPENDED confined-`bash`
+ *       shadow (D1, A1, A2, C1, C4). See the retirement pin at the end of this
+ *       file for the subject, the citation and the named successors. Nothing
+ *       was skipped and no retired expectation was kept as green.
  *
  * Run: node --test tests/world-factory/a5sf-pd12-bash-governance.test.mjs
  * Pin:  A5SF_PD12_PIN=1 node --test tests/world-factory/a5sf-pd12-bash-governance.test.mjs
  */
 import assert from 'node:assert/strict'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { createRequire, register } from 'node:module'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -372,77 +359,8 @@ test('P0 PD-12 defect pin (PRE-FIX): deny bash executes on the preset executor; 
 })
 
 // ===========================================================================
-// D1 — THE FIX: the deny is consulted on the path the tool takes.
+// S1 — the surface stays neutral.
 // ===========================================================================
-test('D1 fix: deny Member\'s bash reaches the confined face; NETWORK_UNCONFINED_REALM names the capability; 0 provider calls, 0 base spawns', async () => {
-  const world = await makeWorld('deny', { network: 'deny' })
-  const mounted = await mountAndAttach(world, { a5sfEvidencePath: join(world.workspace, '..', 'deny.jsonl') })
-  try {
-    const before = { base: world.baseSpawns.length, confined: world.confined.calls.length }
-    const result = await dispatch(world.root, world.agentKey, 'bash', {
-      command: 'printf A5SF_PD12_DENY',
-      description: 'Attempt a shell command under network deny',
-      workdir: world.workspace,
-    })
-    const after = { base: world.baseSpawns.length, confined: world.confined.calls.length }
-
-    assert.equal(result.isError, true, 'the deny Member\'s bash is REFUSED, not executed')
-    assert.match(result.text, /NETWORK_UNCONFINED_REALM/u, 'the refusal carries the face\'s typed code')
-    assert.match(result.text, /network-destination/u, 'the refusal names the capability it could not prove')
-    assert.equal(after.confined - before.confined, 0, '0 confined provider calls: no process was requested')
-    assert.equal(after.base - before.base, 0, '0 inherited base spawns: the preset executor was never reached')
-    assert.doesNotMatch(result.text, /A5SF_PD12_DENY/u, 'the command body never ran')
-  } finally {
-    await mounted.dispose()
-  }
-})
-
-// ===========================================================================
-// A1 + A2 + S1 — the allow lane and the surface.
-// ===========================================================================
-test('A1 allow lane: the shadowed bash executes through the confined face end to end', async () => {
-  const world = await makeWorld('allow', { network: 'allow' })
-  const mounted = await mountAndAttach(world, { a5sfEvidencePath: join(world.workspace, '..', 'allow.jsonl') })
-  try {
-    const before = { base: world.baseSpawns.length, confined: world.confined.calls.length }
-    const result = await dispatch(world.root, world.agentKey, 'bash', {
-      command: 'printf A5SF_PD12_ALLOW',
-      description: 'Print the allow marker',
-      workdir: world.workspace,
-    })
-    const after = { base: world.baseSpawns.length, confined: world.confined.calls.length }
-
-    assert.equal(result.isError, false, `the allow lane still runs bash: ${result.text}`)
-    const payload = JSON.parse(result.value)
-    assert.equal(payload.kind, 'confined', 'the result says which face served it')
-    assert.equal(payload.exitCode, 0)
-    assert.match(payload.stdout, /CONFINED-EXECUTOR/u, 'the confined provider\'s child produced the stdout')
-    assert.equal(after.confined - before.confined, 1, 'exactly ONE confined provider call')
-    assert.equal(after.base - before.base, 0, 'the inherited base executor was NEVER reached')
-    assert.deepEqual(world.confined.calls.at(-1)?.argv, [PROGRAM, '-c', 'printf A5SF_PD12_ALLOW'])
-    assert.deepEqual(world.confined.calls.at(-1)?.networkProfile, null, 'the allow lane claims no network profile')
-  } finally {
-    await mounted.dispose()
-  }
-})
-
-test('A2 no network axis: the same world allows (the refusal is the network term)', async () => {
-  const world = await makeWorld('no-axis', { network: undefined })
-  const mounted = await mountAndAttach(world, { a5sfEvidencePath: join(world.workspace, '..', 'no-axis.jsonl') })
-  try {
-    const result = await dispatch(world.root, world.agentKey, 'bash', {
-      command: 'printf A5SF_PD12_NO_AXIS',
-      description: 'Print the no-axis marker',
-      workdir: world.workspace,
-    })
-    assert.equal(result.isError, false, `no network axis => no network refusal: ${result.text}`)
-    assert.equal(JSON.parse(result.value).exitCode, 0)
-    assert.equal(world.confined.calls.length, 1, 'served by the confined face')
-  } finally {
-    await mounted.dispose()
-  }
-})
-
 test('S1 surface neutral: exactly one `bash`, same name set before and after the shadow', async () => {
   const world = await makeWorld('surface', { network: 'allow' })
   const before = toolNames(world.root, world.agentKey)
@@ -450,27 +368,6 @@ test('S1 surface neutral: exactly one `bash`, same name set before and after the
   const mounted = await mountAndAttach(world, { a5sfEvidencePath: join(world.workspace, '..', 'surface.jsonl') })
   try {
     assert.deepEqual(toolNames(world.root, world.agentKey), before, 'the shadow replaces the definition, never the name set')
-  } finally {
-    await mounted.dispose()
-  }
-})
-
-// ===========================================================================
-// C1 — remove the shadow: the hole returns (the fixed assertion reds).
-// ===========================================================================
-test('C1 control (shadow removed): deny bash executes on the preset executor again', async () => {
-  const world = await makeWorld('no-shadow', { network: 'deny' })
-  const mounted = await mountAndAttach(world, { a5sfEvidencePath: join(world.workspace, '..', 'no-shadow.jsonl') })
-  try {
-    await mounted.disposeNativeToolModules()
-    const result = await dispatch(world.root, world.agentKey, 'bash', {
-      command: 'printf A5SF_PD12_SHADOW_REMOVED',
-      description: 'Exercise the un-shadowed path',
-      workdir: world.workspace,
-    })
-    assert.equal(result.isError, false, 'without the shadow the deny Member\'s bash executes (the hole)')
-    assert.equal(world.baseSpawns.length, 1, 'the inherited executor served it')
-    assert.equal(world.confined.calls.length, 0, 'the confined provider was not consulted')
   } finally {
     await mounted.dispose()
   }
@@ -499,24 +396,81 @@ test('C2 control (no confined face): bash is NOT shadowed and runs on the preset
 })
 
 // ===========================================================================
-// C4 — shell admission runs first: without a declared shell class the refusal
-//      is the shell code, not the capability code.
+// RETIRED-BY-A0 (round 80) — the appended confined-`bash` shadow
 // ===========================================================================
-test('C4 control (no shell class): the deny refusal is SUBPROCESS_SHELL_NOT_DECLARED, not the capability code', async () => {
-  const world = await makeWorld('no-shell-class', { network: 'deny', shellClass: false })
-  const mounted = await mountAndAttach(world, { a5sfEvidencePath: join(world.workspace, '..', 'no-shell-class.jsonl') })
+// WHAT WAS HERE. Five arms (D1, A1, A2, C1, C4) mounted a realm and called
+// `attachA5sfNativeToolModules`, expecting it to APPEND a Team-authored
+// confined-`bash` shadow (`confinedBashSpecOf`) that re-implemented the
+// model-visible `bash` over the realm's confined `subprocess` face:
+//   D1  deny bash refused with NETWORK_UNCONFINED_REALM, 0 provider calls;
+//   A1  allow bash served by the confined face end to end;
+//   A2  no network axis => the same world allows;
+//   C1  the control: with the shadow disposed, deny bash runs on the preset executor;
+//   C4  without a declared shell class the refusal is SUBPROCESS_SHELL_NOT_DECLARED.
+//
+// WHY THEY ARE RETIRED (per SUBJECT, never "the check was red").
+//   subject:   the appended confined-`bash` shadow — `confinedBashSpecOf` and the
+//              `live/confined-bash-tool.mjs` module it named.
+//   citation:  commit 5d1349767 ("refactor(ute-a1): re-point the surviving
+//              referrers and the kept-capability tests") deleted that spec
+//              function and its module, together with the identical appends for
+//              the terminal, search, fs and web faces, because a Team-authored
+//              shadow definition is exactly what the A1 cut forbids: the
+//              composition supplies its native module specs and
+//              `attachA5sfNativeToolModules` appends no tool of its own. The law
+//              survives verbatim at
+//              `packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1164-1180`
+//              ("The two SERVICE-layer restorations that are not tool copies
+//              stay"). The process FAMILY contribution is booked per subject in
+//              `dev/agent-workflow/ledgers/ute-cut-closure.allow.json`
+//              `#retiredSurfaces[dsh.process-family]`, whose own citations are
+//              the reviewed inventory (`01-ASSET-INVENTORY.md` §family-process),
+//              the keep/delete decision (`03-RETIRE-KEEP.md`) and the round-72
+//              per-file record.
+//   successor: `tests/ute-g1-fs/lane-suite.test.mjs` (the one route-C lane that
+//              still reproduces its golden post-cut: 5/5) and
+//              `packages/runtime/test/vnext-admission.test.mjs` (the
+//              `ute-vnext-a1` CI leg: the ONE admission point a governed
+//              Member's tools pass through). The governed shell's replacement
+//              backend — the HOST's own persistent-`bash` definition over a
+//              Member-bound PTY — is pinned by
+//              `tests/world-factory/a5sf-native-bash-preservation.test.mjs`.
+//              NOT a successor: `tests/ute-g1-process/lane-suite.test.mjs`. It
+//              is the process lane's OLD-path world and it mounts the same
+//              deleted append (`lib/world.mjs:361`), so it is red at this head;
+//              citing it as a guarantee would be a citation to a red instrument
+//              (ROUND80-CI-CLOSURE.md §3.6 owns that disposition).
+//
+// WHAT THIS PIN STILL ENFORCES. A resurrection is RED, not silent: the three
+// retired spec functions must stay absent from the row, the attach must append
+// no tool of its own, and every successor must still exist on disk. Nothing
+// below asserts the retired behaviour as expected, and no arm was skipped.
+test('RETIRED-BY-A0: the appended confined-bash shadow stays gone and its successors exist', async () => {
+  for (const name of ['confinedBashSpecOf', 'confinedTerminalSpecOf', 'nativeBashPtySpecOf']) {
+    assert.equal(row[name], undefined, `${name} was retired with the A0/A1 cut; restoring it rebuilds a Team-authored shadow, which A1 forbids`)
+  }
+  const world = await makeWorld('retired', { network: 'deny' })
+  const mounted = await world.mount()
   try {
-    const result = await dispatch(world.root, world.agentKey, 'bash', {
-      command: 'printf A5SF_PD12_NO_SHELL_CLASS',
-      description: 'Exercise the no-shell-class refusal',
-      workdir: world.workspace,
-    })
-    assert.equal(result.isError, true, 'still refused before any process')
-    assert.match(result.text, /SUBPROCESS_SHELL_NOT_DECLARED/u, 'the shell admission decided first')
-    assert.doesNotMatch(result.text, /NETWORK_UNCONFINED_REALM/u, 'the network probe is not reached without a shell class')
-    assert.equal(world.confined.calls.length, 0, '0 provider calls')
-    assert.equal(world.baseSpawns.length, 0, '0 base spawns')
+    const before = toolNames(world.root, world.agentKey)
+    assert.deepEqual(before, ['bash'], 'the preset plane still exposes the one `bash` name')
+    const appended = await row.attachA5sfNativeToolModules(
+      mounted,
+      world.agentCtx,
+      row.a5sfRealmConfigOf({ a5sfEvidencePath: join(world.workspace, '..', 'retired.jsonl') }),
+    )
+    assert.equal(appended, undefined, 'with no configured native module the attach appends NOTHING (the appending mechanism is gone)')
+    assert.deepEqual(toolNames(world.root, world.agentKey), before, 'and it changes no model-visible name')
+    assert.equal(world.baseSpawns.length, 0, 'the attach itself spawns nothing')
+    assert.equal(world.confined.calls.length, 0, 'the attach itself consults no confined face')
   } finally {
     await mounted.dispose()
+  }
+  for (const rel of [
+    'tests/ute-g1-fs/lane-suite.test.mjs',
+    'packages/runtime/test/vnext-admission.test.mjs',
+    'tests/world-factory/a5sf-native-bash-preservation.test.mjs',
+  ]) {
+    assert.ok(existsSync(join(REPO_ROOT, rel)), `successor ${rel} must exist — a retirement without a target is a silence`)
   }
 })

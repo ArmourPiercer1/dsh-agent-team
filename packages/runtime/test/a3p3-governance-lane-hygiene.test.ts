@@ -299,7 +299,7 @@ describe('production consumers: exactly the PR4 assembly layer (PR3 landed dorma
     // mutation symbol, so every hit below is produced by the injected line and
     // nothing else — and the two precision cases are what stop this leg from
     // flagging every barrel consumer in the repository.
-    const barrelHost = readFileSync(join(RUNTIME_ROOT, 'src', 'plugin', 'root.ts'), 'utf8')
+    const barrelHost = readFileSync(join(RUNTIME_ROOT, 'src', 'plugin', 'vnext', 'root.ts'), 'utf8')
     const cases: readonly (readonly [label: string, rel: string, source: string, expected: boolean])[] = [
       ['barrel value import', join('src', 'plugin', 'x.ts'), `${barrelHost}\nimport { planPermissionMutation } from '../../governance/index.js'\n`, true],
       ['barrel TYPE import', join('src', 'plugin', 'x.ts'), `${barrelHost}\nimport type { PermissionMutationPlan } from '../../governance/index.js'\n`, true],
@@ -878,7 +878,10 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
     // that polices it, so the next file that reaches for the ladder still has
     // to arrive as an amendment, and the Control lane's own choice to name the
     // durable owner `ProposalAuthorityPosition` instead of the alias stands.
-    const PA_CONTROL_BRIDGE = join('operation-permission', 'pa-control-bridge.ts')
+    // ROUND 72/A1 CUT: `operation-permission/pa-control-bridge.ts` was deleted with the
+    // retired execution route, so it can no longer be an importer. Its name is REMOVED from
+    // every allow-list below rather than left in place: an allow entry naming a deleted path
+    // would silently admit any future file created at that path.
     // The list's COMPLETENESS is asserted below against the module's own export
     // scan, so this array cannot quietly fall behind the file it polices.
     const SURFACE: readonly (readonly [name: string, allowed: readonly string[]])[] = [
@@ -929,11 +932,11 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       // pa-control-bridge.ts:514) — a second successor/ordering table is what
       // this row exists to keep singular, and the bridge adds no decision path
       // beyond refusing an unusable decision.
-      ['authorityRank', [...CEILING_AND_EVALUATOR, SERVICE, PERMISSION_APPROVAL, join('src', 'plugin', 'root.ts'), A5_TOOL_ADMISSION_CASE, PA_CONTROL_BRIDGE]],
+      ['authorityRank', [...CEILING_AND_EVALUATOR, SERVICE, PERMISSION_APPROVAL, join('src', 'plugin', 'root.ts'), join('src', 'plugin', 'vnext', 'root.ts'), A5_TOOL_ADMISSION_CASE]],
       ['isHigherAuthority', [...CEILING_AND_EVALUATOR, OPERATION_ROUTING]],
       // WHO MAY ACT — the ladder half of "legal approval", never fused with the
       // ceiling half (ADR A3-2, spec §7.4).
-      ['mayReview', [...CEILING_AND_EVALUATOR, A5_TOOL_ADMISSION_CASE, PA_CONTROL_BRIDGE]],
+      ['mayReview', [...CEILING_AND_EVALUATOR, A5_TOOL_ADMISSION_CASE]],
       // The EXPANSION-plane ceiling: the number `grantCeiling` must never be
       // confused with (correction X7-R5). PR2 lane C's mutation gate is its next
       // consumer and must arrive as another amendment to this row.
@@ -951,7 +954,7 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       // rungs into at :678 and the beneficiary/decider refs at :241/:273).
       // Type-only means exactly what it has always meant in this row: no
       // runtime governance→operation-permission edge, no load-order coupling.
-      ['RuntimeAuthority', [RUNTIME_AUTHORITY, 'governance/index.ts', LANE_TYPES, join('src', 'plugin', 'permission-plane.ts'), A5_TOOL_ADMISSION_CASE, A5_TOOL_ADMISSION_KERNEL, PA_CONTROL_BRIDGE]],
+      ['RuntimeAuthority', [RUNTIME_AUTHORITY, 'governance/index.ts', LANE_TYPES, join('src', 'plugin', 'permission-plane.ts'), A5_TOOL_ADMISSION_CASE, A5_TOOL_ADMISSION_KERNEL]],
       ['AuthorityEvaluation', [RUNTIME_AUTHORITY, 'governance/index.ts']],
       ['AuthorityEvaluationEvidence', [RUNTIME_AUTHORITY, 'governance/index.ts', OPERATION_ROUTING]],
       ['AuthorityEvaluationInput', [RUNTIME_AUTHORITY, 'governance/index.ts', PERMISSION_APPROVAL]],
@@ -1182,7 +1185,6 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       join('governance', 'runtime-authority.ts'),
       join('governance', 'service.ts'),
       join('governance', 'types.ts'),
-      join('operation-permission', 'pa-control-bridge.ts'),
       join('src', 'plugin', 'permission-plane.ts'),
       join('tool-admission', 'admission-kernel.ts'),
       join('tool-admission', 'approval-case.ts'),

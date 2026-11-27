@@ -1,0 +1,356 @@
+=== 2026-11-23 repro-run-boot.log ===
+[2026-11-23T09:48:33.073Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/archive/2026-11-23T09-48-33-073Z
+[2026-11-23T09:48:33.077Z] START head=b67a3eb38d617b2aa7dbe0cddd2fb9f2a49e334f hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-23T09:48:33.105Z] host porcelain before: []
+[2026-11-23T09:48:33.162Z] [boot1] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-23T09:48:33.163Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=b67a3eb38d617b2aa7dbe0cddd2fb9f2a49e334f
+[2026-11-23T09:48:33.169Z] [boot1] world=u5u5a5sfdev1-20261123T09-48-33Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T09-48-33Z
+[2026-11-23T09:48:33.188Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,persistent-shell-terminals,p6t6-team-tools
+[2026-11-23T09:49:53.511Z] [boot1] mock on 13056
+[2026-11-23T09:51:07.747Z] [boot1] BOOTED port=3194 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/driver/logs/u5u5a5sfdev1-20261123T09-48-33Z/instance-port3194.log
+[2026-11-23T09:51:08.039Z] [boot1] p6t6 health=true
+[2026-11-23T09:51:08.310Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-23T09:51:08.310Z] [boot1] leader builtinToolDeny:
+[2026-11-23T09:51:08.326Z] [boot1] unauthenticated team.create: status=401 code=null minted=false
+[2026-11-23T09:51:08.329Z] [boot1] cross-team getProjection(session-dboot-foreign-team): status=200 code=TEAM_REMOTE_FOREIGN_TEAM ok=false
+[2026-11-23T09:51:09.182Z] [boot1] remote team.create status=200 ok=true data={"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-dboot-read-team","blueprint":{"blueprintId":"team.dboot.read.main","revision":"1","contentHash":"sha256:20f6e44c8dc6d761e4b4ea13cf192021e1ea73bd710f3c24dfa18185acba2035"},"createdAt":"2026-11-23T09:51:08.349Z",
+[2026-11-23T09:51:09.204Z] [boot1] duplicate team.create: ok=true roots=2 newRoots=["session-dboot-read-team"] mockAdded=0
+[2026-11-23T09:51:09.232Z] [boot1] remote boundary: rootWork=ADMISSION_REMOTE_UNAVAILABLE rootLive=ADMISSION_REMOTE_UNAVAILABLE delivery=TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED mockAdded=0
+[2026-11-23T09:51:10.435Z] [boot1] leader chain closed (DBOOT_L1_DONE)=true
+[2026-11-23T09:51:10.436Z] [boot1] delegate call=true result={"status":"executed","action":"delegate","rootSessionId":"session-dboot-read-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0e23ryd1fmn2","templateId":"worker","childSessionId":"session-team-child-56a707050f4095d1acddaa687cf3ed41","operationId":"op-0i9924504pzw3a1dotivr1jw","replayed":false,"ledgerSequence":2,"admissionCode":"ADMISSION_OPEN","workSequence":3,"workSettled":true,"memberResult":{"requestToken":"dboot-read-turn-delegate","status":"succeeded","body
+[2026-11-23T09:51:10.441Z] [boot1] members=[{"instanceId":"inst-0e23ryd1fmn2","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=session-team-child-56a707050f4095d1acddaa687cf3ed41
+[2026-11-23T09:51:11.047Z] [boot1] case d:member-read-admitted: PASS
+[2026-11-23T09:51:11.047Z] [boot1] case d:member-read-denied: PASS
+[2026-11-23T09:51:11.047Z] [boot1] case d:native-read-surface: PASS
+[2026-11-23T09:51:11.047Z] [boot1] case d:guard-facts: PASS
+[2026-11-23T09:51:11.047Z] [boot1] case d:centre-facts: PASS
+[2026-11-23T09:51:11.047Z] [boot1] case d:remote-creation: FAIL
+[2026-11-23T09:51:11.048Z] [boot1] diagnostics(final): mockRequests=9 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-dboot-read-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0e23ryd1fmn2","templateId":"worker","childSessionId":"session-team-child-56a707050f4095d1acddaa687cf3ed41","operationId":"op-0i9924504pzw3a1 sessions=["session-dboot-read-root","session-dboot-read-team","session-team-child-56a707050f4095d1acddaa687cf3ed41"]
+[2026-11-23T09:51:11.049Z] [boot1] RUN-SUMMARY run=a5sf-live-member-2026-11-23T09-48-33-133Z-b1 suite=a5sf-live-member overall=FAIL cases=6 FAIL:1 PASS:5 worlds=u5u5a5sfdev1-20261123T09-48-33Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-23T09:51:11.164Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":101,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T09-48-33Z","releasedPorts":[3194,13056,3194],"killedPids":[101],"notes":[]}
+[2026-11-23T09:51:11.164Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-23T09:51:11.225Z] [boot2] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-23T09:51:11.225Z] [boot2] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=b67a3eb38d617b2aa7dbe0cddd2fb9f2a49e334f
+[2026-11-23T09:51:11.230Z] [boot2] world=u5u5a5sfdev1-20261123T09-51-11Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T09-51-11Z
+[2026-11-23T09:51:11.233Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,persistent-shell-terminals,p6t6-team-tools
+[2026-11-23T09:52:33.018Z] [boot2] mock on 13056
+[2026-11-23T09:53:47.261Z] [boot2] BOOTED port=3194 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/driver/logs/u5u5a5sfdev1-20261123T09-51-11Z/instance-port3194.log
+[2026-11-23T09:53:47.520Z] [boot2] p6t6 health=true
+[2026-11-23T09:53:47.787Z] [boot2] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-23T09:53:47.787Z] [boot2] leader builtinToolDeny:
+[2026-11-23T09:53:47.798Z] [boot2] unauthenticated team.create: status=401 code=null minted=false
+[2026-11-23T09:53:47.801Z] [boot2] cross-team getProjection(session-dboot-foreign-team): status=200 code=TEAM_REMOTE_FOREIGN_TEAM ok=false
+[2026-11-23T09:53:48.649Z] [boot2] remote team.create status=200 ok=true data={"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-dboot-read-team","blueprint":{"blueprintId":"team.dboot.read.main","revision":"1","contentHash":"sha256:a83bb8360c4fd698032df12e4494fe0ad2c51a5643a38ec38ce8efdb5fe0e3dc"},"createdAt":"2026-11-23T09:53:47.820Z",
+[2026-11-23T09:53:48.669Z] [boot2] duplicate team.create: ok=true roots=2 newRoots=["session-dboot-read-team"] mockAdded=0
+[2026-11-23T09:53:48.697Z] [boot2] remote boundary: rootWork=ADMISSION_REMOTE_UNAVAILABLE rootLive=ADMISSION_REMOTE_UNAVAILABLE delivery=TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED mockAdded=0
+[2026-11-23T09:53:49.900Z] [boot2] leader chain closed (DBOOT_L1_DONE)=true
+[2026-11-23T09:53:49.900Z] [boot2] delegate call=true result={"status":"executed","action":"delegate","rootSessionId":"session-dboot-read-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0e23ryd1fmn2","templateId":"worker","childSessionId":"session-team-child-56a707050f4095d1acddaa687cf3ed41","operationId":"op-0i9924504pzw3a1dotivr1jw","replayed":false,"ledgerSequence":2,"admissionCode":"ADMISSION_OPEN","workSequence":3,"workSettled":true,"memberResult":{"requestToken":"dboot-read-turn-delegate","status":"succeeded","body
+[2026-11-23T09:53:49.905Z] [boot2] members=[{"instanceId":"inst-0e23ryd1fmn2","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=session-team-child-56a707050f4095d1acddaa687cf3ed41
+[2026-11-23T09:53:49.908Z] [boot2] case d:member-read-admitted: PASS
+[2026-11-23T09:53:49.908Z] [boot2] case d:member-read-denied: PASS
+[2026-11-23T09:53:49.908Z] [boot2] case d:native-read-surface: PASS
+[2026-11-23T09:53:49.909Z] [boot2] case d:guard-facts: PASS
+[2026-11-23T09:53:49.909Z] [boot2] case d:centre-facts: PASS
+[2026-11-23T09:53:49.909Z] [boot2] case d:remote-creation: FAIL
+[2026-11-23T09:53:49.909Z] [boot2] diagnostics(final): mockRequests=9 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-dboot-read-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0e23ryd1fmn2","templateId":"worker","childSessionId":"session-team-child-56a707050f4095d1acddaa687cf3ed41","operationId":"op-0i9924504pzw3a1 sessions=["session-dboot-read-root","session-dboot-read-team","session-team-child-56a707050f4095d1acddaa687cf3ed41"]
+[2026-11-23T09:53:49.910Z] [boot2] RUN-SUMMARY run=a5sf-live-member-2026-11-23T09-51-11-193Z-b2 suite=a5sf-live-member overall=FAIL cases=6 FAIL:1 PASS:5 worlds=u5u5a5sfdev1-20261123T09-51-11Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-23T09:53:50.054Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":329,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T09-51-11Z","releasedPorts":[3194,13056,3194],"killedPids":[329],"notes":[]}
+[2026-11-23T09:53:50.054Z] [boot2] dev-live slot released (released=true held=false)
+[2026-11-23T09:53:50.086Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+overall                       FAIL                          FAIL
+admittedVerdict               PROVEN                        PROVEN
+deniedVerdict                 PROVEN                        PROVEN
+surfaceVerdict                PROVEN                        PROVEN
+factsVerdict                  PROVEN                        PROVEN
+centreVerdict                 PROVEN                        PROVEN
+allowFacts                    2                             2
+denyFacts                     0                             0
+centreAdmissions              2                             2
+centreExecutions              2                             2
+governedSurface               true                          true
+admittedBytes                 true                          true
+deniedSecretAbsent            true                          true
+transcriptSourceCount         2                             2
+
+agreeing=true differing=[]
+[2026-11-23T09:53:50.115Z] host porcelain after: []
+[2026-11-23T09:53:50.116Z] RESULT FAIL (2/2 boots; agreeing pair=true)
+EXIT=1
+
+=== 2026-11-23 after-run-boot.log ===
+[2026-11-23T09:54:52.433Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/archive/2026-11-23T09-54-52-433Z
+[2026-11-23T09:54:52.436Z] START head=b67a3eb38d617b2aa7dbe0cddd2fb9f2a49e334f hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-23T09:54:52.464Z] host porcelain before: []
+[2026-11-23T09:54:52.521Z] [boot1] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-23T09:54:52.522Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=b67a3eb38d617b2aa7dbe0cddd2fb9f2a49e334f
+[2026-11-23T09:54:52.528Z] [boot1] world=u5u5a5sfdev1-20261123T09-54-52Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T09-54-52Z
+[2026-11-23T09:54:52.547Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,persistent-shell-terminals,p6t6-team-tools
+[2026-11-23T09:56:07.714Z] [boot1] mock on 13056
+[2026-11-23T09:57:15.087Z] [boot1] BOOTED port=3194 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/driver/logs/u5u5a5sfdev1-20261123T09-54-52Z/instance-port3194.log
+[2026-11-23T09:57:15.358Z] [boot1] p6t6 health=true
+[2026-11-23T09:57:15.629Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-23T09:57:15.629Z] [boot1] leader builtinToolDeny:
+[2026-11-23T09:57:15.643Z] [boot1] unauthenticated team.create: status=401 code=null minted=false
+[2026-11-23T09:57:15.646Z] [boot1] cross-team getProjection(session-dboot-foreign-team): status=200 code=TEAM_REMOTE_FOREIGN_TEAM ok=false
+[2026-11-23T09:57:16.511Z] [boot1] remote team.create status=200 ok=true data={"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-dboot-read-team","blueprint":{"blueprintId":"team.dboot.read.main","revision":"1","contentHash":"sha256:acbff2a2251118717bbf07f6e684fcfd74e15298d5f30fa88456686e14f4b296"},"createdAt":"2026-11-23T09:57:15.666Z",
+[2026-11-23T09:57:16.531Z] [boot1] duplicate team.create: ok=true roots=2 newRoots=["session-dboot-read-team"] mockAdded=0
+[2026-11-23T09:57:16.559Z] [boot1] remote boundary: rootWork=ADMISSION_REMOTE_UNAVAILABLE rootLive=ADMISSION_REMOTE_UNAVAILABLE delivery=TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED mockAdded=0
+[2026-11-23T09:57:17.762Z] [boot1] leader chain closed (DBOOT_L1_DONE)=true
+[2026-11-23T09:57:17.763Z] [boot1] delegate call=true result={"status":"executed","action":"delegate","rootSessionId":"session-dboot-read-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0e23ryd1fmn2","templateId":"worker","childSessionId":"session-team-child-56a707050f4095d1acddaa687cf3ed41","operationId":"op-0i9924504pzw3a1dotivr1jw","replayed":false,"ledgerSequence":2,"admissionCode":"ADMISSION_OPEN","workSequence":3,"workSettled":true,"memberResult":{"requestToken":"dboot-read-turn-delegate","status":"succeeded","body
+[2026-11-23T09:57:17.769Z] [boot1] members=[{"instanceId":"inst-0e23ryd1fmn2","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=session-team-child-56a707050f4095d1acddaa687cf3ed41
+[2026-11-23T09:57:18.382Z] [boot1] case d:member-read-admitted: PASS
+[2026-11-23T09:57:18.382Z] [boot1] case d:member-read-denied: PASS
+[2026-11-23T09:57:18.382Z] [boot1] case d:native-read-surface: PASS
+[2026-11-23T09:57:18.382Z] [boot1] case d:guard-facts: PASS
+[2026-11-23T09:57:18.382Z] [boot1] case d:centre-facts: PASS
+[2026-11-23T09:57:18.382Z] [boot1] case d:remote-creation: PASS
+[2026-11-23T09:57:18.384Z] [boot1] diagnostics(final): mockRequests=9 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-dboot-read-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0e23ryd1fmn2","templateId":"worker","childSessionId":"session-team-child-56a707050f4095d1acddaa687cf3ed41","operationId":"op-0i9924504pzw3a1 sessions=["session-dboot-read-root","session-dboot-read-team","session-team-child-56a707050f4095d1acddaa687cf3ed41"]
+[2026-11-23T09:57:18.384Z] [boot1] RUN-SUMMARY run=a5sf-live-member-2026-11-23T09-54-52-493Z-b1 suite=a5sf-live-member overall=PASS cases=6 PASS:6 worlds=u5u5a5sfdev1-20261123T09-54-52Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-23T09:57:18.515Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":100,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T09-54-52Z","releasedPorts":[3194,13056,3194],"killedPids":[100],"notes":[]}
+[2026-11-23T09:57:18.515Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-23T09:57:18.574Z] [boot2] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-23T09:57:18.575Z] [boot2] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=b67a3eb38d617b2aa7dbe0cddd2fb9f2a49e334f
+[2026-11-23T09:57:18.579Z] [boot2] world=u5u5a5sfdev1-20261123T09-57-18Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T09-57-18Z
+[2026-11-23T09:57:18.582Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,persistent-shell-terminals,p6t6-team-tools
+[2026-11-23T09:58:34.062Z] [boot2] mock on 13056
+[2026-11-23T09:59:41.594Z] [boot2] BOOTED port=3194 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/driver/logs/u5u5a5sfdev1-20261123T09-57-18Z/instance-port3194.log
+[2026-11-23T09:59:41.854Z] [boot2] p6t6 health=true
+[2026-11-23T09:59:42.121Z] [boot2] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-23T09:59:42.121Z] [boot2] leader builtinToolDeny:
+[2026-11-23T09:59:42.132Z] [boot2] unauthenticated team.create: status=401 code=null minted=false
+[2026-11-23T09:59:42.134Z] [boot2] cross-team getProjection(session-dboot-foreign-team): status=200 code=TEAM_REMOTE_FOREIGN_TEAM ok=false
+[2026-11-23T09:59:43.001Z] [boot2] remote team.create status=200 ok=true data={"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-dboot-read-team","blueprint":{"blueprintId":"team.dboot.read.main","revision":"1","contentHash":"sha256:6ea75a596809a2b0a7c16670833bc00e2305398375ed5c2b5de6dae0e96b05db"},"createdAt":"2026-11-23T09:59:42.155Z",
+[2026-11-23T09:59:43.022Z] [boot2] duplicate team.create: ok=true roots=2 newRoots=["session-dboot-read-team"] mockAdded=0
+[2026-11-23T09:59:43.049Z] [boot2] remote boundary: rootWork=ADMISSION_REMOTE_UNAVAILABLE rootLive=ADMISSION_REMOTE_UNAVAILABLE delivery=TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED mockAdded=0
+[2026-11-23T09:59:44.251Z] [boot2] leader chain closed (DBOOT_L1_DONE)=true
+[2026-11-23T09:59:44.252Z] [boot2] delegate call=true result={"status":"executed","action":"delegate","rootSessionId":"session-dboot-read-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0e23ryd1fmn2","templateId":"worker","childSessionId":"session-team-child-56a707050f4095d1acddaa687cf3ed41","operationId":"op-0i9924504pzw3a1dotivr1jw","replayed":false,"ledgerSequence":2,"admissionCode":"ADMISSION_OPEN","workSequence":3,"workSettled":true,"memberResult":{"requestToken":"dboot-read-turn-delegate","status":"succeeded","body
+[2026-11-23T09:59:44.258Z] [boot2] members=[{"instanceId":"inst-0e23ryd1fmn2","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=session-team-child-56a707050f4095d1acddaa687cf3ed41
+[2026-11-23T09:59:44.261Z] [boot2] case d:member-read-admitted: PASS
+[2026-11-23T09:59:44.261Z] [boot2] case d:member-read-denied: PASS
+[2026-11-23T09:59:44.261Z] [boot2] case d:native-read-surface: PASS
+[2026-11-23T09:59:44.261Z] [boot2] case d:guard-facts: PASS
+[2026-11-23T09:59:44.261Z] [boot2] case d:centre-facts: PASS
+[2026-11-23T09:59:44.261Z] [boot2] case d:remote-creation: PASS
+[2026-11-23T09:59:44.262Z] [boot2] diagnostics(final): mockRequests=9 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-dboot-read-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0e23ryd1fmn2","templateId":"worker","childSessionId":"session-team-child-56a707050f4095d1acddaa687cf3ed41","operationId":"op-0i9924504pzw3a1 sessions=["session-dboot-read-root","session-dboot-read-team","session-team-child-56a707050f4095d1acddaa687cf3ed41"]
+[2026-11-23T09:59:44.262Z] [boot2] RUN-SUMMARY run=a5sf-live-member-2026-11-23T09-57-18-545Z-b2 suite=a5sf-live-member overall=PASS cases=6 PASS:6 worlds=u5u5a5sfdev1-20261123T09-57-18Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-23T09:59:44.408Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":328,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T09-57-18Z","releasedPorts":[3194,13056,3194],"killedPids":[328],"notes":[]}
+[2026-11-23T09:59:44.408Z] [boot2] dev-live slot released (released=true held=false)
+[2026-11-23T09:59:44.445Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+overall                       PASS                          PASS
+admittedVerdict               PROVEN                        PROVEN
+deniedVerdict                 PROVEN                        PROVEN
+surfaceVerdict                PROVEN                        PROVEN
+factsVerdict                  PROVEN                        PROVEN
+centreVerdict                 PROVEN                        PROVEN
+allowFacts                    2                             2
+denyFacts                     0                             0
+centreAdmissions              2                             2
+centreExecutions              2                             2
+governedSurface               true                          true
+admittedBytes                 true                          true
+deniedSecretAbsent            true                          true
+transcriptSourceCount         2                             2
+
+agreeing=true differing=[]
+[2026-11-23T09:59:44.481Z] host porcelain after: []
+[2026-11-23T09:59:44.481Z] RESULT PASS (2/2 boots; agreeing pair=true)
+EXIT=0
+
+=== 2026-11-23 after-run-boot-d2.log ===
+[2026-11-23T10:00:33.054Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d2/archive/2026-11-23T10-00-33-054Z
+[2026-11-23T10:00:33.058Z] START head=b67a3eb38d617b2aa7dbe0cddd2fb9f2a49e334f hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-23T10:00:33.085Z] host porcelain before: []
+[2026-11-23T10:00:33.145Z] [boot1] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-23T10:00:33.146Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=b67a3eb38d617b2aa7dbe0cddd2fb9f2a49e334f
+[2026-11-23T10:00:33.152Z] [boot1] world=u5u5a5sfdev1-20261123T10-00-33Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-00-33Z
+[2026-11-23T10:00:33.174Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,persistent-shell-terminals,p6t6-team-tools
+[2026-11-23T10:01:48.645Z] [boot1] mock on 13056
+[2026-11-23T10:02:56.155Z] [boot1] BOOTED port=3194 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d2/driver/logs/u5u5a5sfdev1-20261123T10-00-33Z/instance-port3194.log
+[2026-11-23T10:02:56.674Z] [boot1] health ok
+[2026-11-23T10:02:56.950Z] [boot1] leader surface (43): team=team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message
+[2026-11-23T10:02:58.211Z] [boot1] member first turns closed: A1=true B1=true
+[2026-11-23T10:02:58.216Z] [boot1] instances A=inst-1235q1w1rd1u B=inst-12x4j4t1rn1g lives=["worker-a:inst-1235q1w1rd1u:SETTLED","worker-b:inst-12x4j4t1rn1g:SETTLED","leader:inst-leader:undefined"]
+[2026-11-23T10:02:58.757Z] [boot1] pending ask={"requestId":"ctrl-1uotk6813a7all00kru1a0cm","target":"inst-1235q1w1rd1u","toolName":"read","status":"pending"}
+[2026-11-23T10:02:58.762Z] [boot1] session/cancel(member A)=200
+[2026-11-23T10:03:02.136Z] [boot1] member.send ack: status=200 ok=true code=null deliveredSeq=40 facts=18 admissions=0 executions=0
+[2026-11-23T10:03:02.400Z] [boot1] member.send unknown member: ok=false code=TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED requestsAdded=0
+[2026-11-23T10:03:02.455Z] [boot1] member.send duplicate: ok=true distinct=true requestsAdded=0
+[2026-11-23T10:03:02.581Z] [boot1] member.send archived: lifecycle=ARCHIVED ok=false code=TEAM_RUNTIME_WORK_STATE_REJECTED requestsAdded=0
+[2026-11-23T10:03:02.744Z] [boot1] member.send restored: lifecycle=SETTLED ok=true code=null
+[2026-11-23T10:03:03.240Z] [boot1] delivered-stop: ackOk=true pending=true landed=true state=REFUSED refusal=ADMISSION_STOPPED
+[2026-11-23T10:03:03.249Z] [boot1] case d2:multi-member-concurrency: PASS
+[2026-11-23T10:03:03.249Z] [boot1] case d2:revocation: PASS
+[2026-11-23T10:03:03.249Z] [boot1] case d2:stop: PASS
+[2026-11-23T10:03:03.249Z] [boot1] case d2:remote-delivery: PASS
+[2026-11-23T10:03:03.250Z] [boot1] RUN-SUMMARY run=a5sf-live-member-2026-11-23T10-00-33-115Z-b1 suite=a5sf-live-member overall=PASS cases=4 PASS:4 worlds=u5u5a5sfdev1-20261123T10-00-33Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-23T10:03:03.392Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":100,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-00-33Z","releasedPorts":[3194,13056,3194],"killedPids":[100],"notes":[]}
+[2026-11-23T10:03:03.392Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-23T10:03:03.452Z] [boot2] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-23T10:03:03.452Z] [boot2] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=b67a3eb38d617b2aa7dbe0cddd2fb9f2a49e334f
+[2026-11-23T10:03:03.458Z] [boot2] world=u5u5a5sfdev1-20261123T10-03-03Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-03-03Z
+[2026-11-23T10:03:03.463Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,persistent-shell-terminals,p6t6-team-tools
+[2026-11-23T10:04:18.444Z] [boot2] mock on 13056
+[2026-11-23T10:05:25.708Z] [boot2] BOOTED port=3194 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d2/driver/logs/u5u5a5sfdev1-20261123T10-03-03Z/instance-port3194.log
+[2026-11-23T10:05:26.223Z] [boot2] health ok
+[2026-11-23T10:05:26.488Z] [boot2] leader surface (43): team=team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message
+[2026-11-23T10:05:27.746Z] [boot2] member first turns closed: A1=true B1=true
+[2026-11-23T10:05:27.751Z] [boot2] instances A=inst-1235q1w1rd1u B=inst-12x4j4t1rn1g lives=["worker-a:inst-1235q1w1rd1u:SETTLED","worker-b:inst-12x4j4t1rn1g:SETTLED","leader:inst-leader:undefined"]
+[2026-11-23T10:05:28.277Z] [boot2] pending ask={"requestId":"ctrl-1uotk6813a7all00kru1a0cm","target":"inst-1235q1w1rd1u","toolName":"read","status":"pending"}
+[2026-11-23T10:05:28.281Z] [boot2] session/cancel(member A)=200
+[2026-11-23T10:05:31.633Z] [boot2] member.send ack: status=200 ok=true code=null deliveredSeq=40 facts=18 admissions=0 executions=0
+[2026-11-23T10:05:31.896Z] [boot2] member.send unknown member: ok=false code=TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED requestsAdded=0
+[2026-11-23T10:05:31.951Z] [boot2] member.send duplicate: ok=true distinct=true requestsAdded=0
+[2026-11-23T10:05:32.082Z] [boot2] member.send archived: lifecycle=ARCHIVED ok=false code=TEAM_RUNTIME_WORK_STATE_REJECTED requestsAdded=0
+[2026-11-23T10:05:32.235Z] [boot2] member.send restored: lifecycle=SETTLED ok=true code=null
+[2026-11-23T10:05:32.729Z] [boot2] delivered-stop: ackOk=true pending=true landed=true state=REFUSED refusal=ADMISSION_STOPPED
+[2026-11-23T10:05:32.735Z] [boot2] case d2:multi-member-concurrency: PASS
+[2026-11-23T10:05:32.735Z] [boot2] case d2:revocation: PASS
+[2026-11-23T10:05:32.735Z] [boot2] case d2:stop: PASS
+[2026-11-23T10:05:32.735Z] [boot2] case d2:remote-delivery: PASS
+[2026-11-23T10:05:32.735Z] [boot2] RUN-SUMMARY run=a5sf-live-member-2026-11-23T10-03-03-420Z-b2 suite=a5sf-live-member overall=PASS cases=4 PASS:4 worlds=u5u5a5sfdev1-20261123T10-03-03Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-23T10:05:32.884Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":1392,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-03-03Z","releasedPorts":[3194,13056,3194],"killedPids":[1392],"notes":[]}
+[2026-11-23T10:05:32.884Z] [boot2] dev-live slot released (released=true held=false)
+[2026-11-23T10:05:32.916Z] TWO-RUN AGREEMENT (the same command, two boots; every measured row must be identical)
+fact                                     boot1                                    boot2
+overall                                  PASS                                     PASS
+multiMemberVerdict                       PROVEN                                   PROVEN
+revocationVerdict                        PROVEN                                   PROVEN
+stopVerdict                              PROVEN                                   PROVEN
+remoteDeliveryVerdict                    PROVEN                                   PROVEN
+aAdmissions                              10                                       10
+bAdmissions                              10                                       10
+aGuardFacts                              14                                       14
+bGuardFacts                              16                                       16
+windowsOverlap                           true                                     true
+crossRefused                             true                                     true
+stopSettlementState                      REFUSED                                  REFUSED
+revocationDenyRefused                    true                                     true
+revocationRestored                       true                                     true
+revocationWideningNotMinted              true                                     true
+bAfterStopCompleted                      true                                     true
+deliveryAckIsNotAnExecution              true                                     true
+deliveredTurnAdmittedUnderMemberBinding  true                                     true
+memberAdmissionFacts                     1                                        1
+
+agreeing=true differing=[]
+[2026-11-23T10:05:32.943Z] host porcelain after: []
+[2026-11-23T10:05:32.943Z] RESULT PASS (2/2 boots; agreeing pair=true)
+EXIT=0
+
+=== 2026-11-23 after-run-boot-d3.log ===
+[2026-11-23T10:06:07.790Z] archived previous runs -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/archive/2026-11-23T10-06-07-790Z
+[2026-11-23T10:06:07.791Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/archive/2026-11-23T10-06-07-790Z
+[2026-11-23T10:06:07.793Z] START head=b67a3eb38d617b2aa7dbe0cddd2fb9f2a49e334f hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-23T10:06:07.820Z] host porcelain before: []
+[2026-11-23T10:06:07.878Z] [boot1] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-23T10:06:07.879Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=b67a3eb38d617b2aa7dbe0cddd2fb9f2a49e334f
+[2026-11-23T10:06:07.895Z] [boot1] alpha6 config gate: ADMISSION_ALPHA6_UNAVAILABLE: ADMISSION_ALPHA6_ROUTING_REQUIRED — alpha6ReviewRouting needs a v5 Blueprint whose authored `reviewRouting` block is enabled — with no authored policy there is no routing decision to take, and Alpha.6 has no implicit default. a coherent configuration (ADMISSION_ALPHA6_R
+[2026-11-23T10:06:07.906Z] blueprint alpha6.yaml accepted: schemaVersion=4 id=team.dboot.d3.alpha6
+[2026-11-23T10:08:30.306Z] [boot1] world=u5u5a5sfdev1-20261123T10-08-30Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-08-30Z
+[2026-11-23T10:08:34.161Z] [boot1] grep corpus built in 3853ms (50000 small + 64 big + 8 huge files)
+[2026-11-23T10:08:34.166Z] blueprint main.yaml accepted: schemaVersion=4 id=team.dboot.d3.main
+[2026-11-23T10:10:58.100Z] [boot1] host ready on http://127.0.0.1:3194; health={"ok":true,"boot":1,"ready":true,"rootSessionId":"session-dboot-d3-root","liveSessions":["session-dboot-d3-root"],"toolCount":15}
+[2026-11-23T10:10:58.321Z] [boot1] leader surface tools=43 team=15
+[2026-11-23T10:10:59.334Z] [boot1] member A instance=inst-1vd6cy21kl6k childSession=session-team-child-cdf16bb82ce585d862f447bf6cd8c80f
+[2026-11-23T10:10:59.397Z] [boot1] confinement probe: refusal=true wrote=false outOfLaneExists=false bytes=0 inLaneState=true
+[2026-11-23T10:11:00.578Z] [boot1] member B instance=inst-1v36r931jr7r childSession=session-team-child-6788a23a6d1be9784107fcb7631d08f9
+[2026-11-23T10:11:03.947Z] [boot1] in-flight settlement state=ADMITTED executionId=exec-c7761249d1064b23c36e5e4f76a48778dd895896
+[2026-11-23T10:11:03.993Z] [boot] SIGKILL pid=112 exit={"code":null,"signal":"SIGKILL"} pidGone=true portFree=true
+[2026-11-23T10:11:06.055Z] [boot1] restarted host ready on http://127.0.0.1:3194
+[2026-11-23T10:11:08.105Z] [boot1] case d3:persistent-subprocess: PASS (PROVEN)
+[2026-11-23T10:11:08.105Z] [boot1] case d3:crash-cold-recovery: PASS (PROVEN)
+[2026-11-23T10:11:08.105Z] [boot1] case d3:work-delivery: PASS (PROVEN)
+[2026-11-23T10:11:08.105Z] [boot1] case d3:alpha6: PASS (PROVEN)
+[2026-11-23T10:11:08.106Z] [boot1] RUN-SUMMARY run=a5sf-live-d3-2026-11-23T10-06-07-850Z-b1 suite=a5sf-live-d3 overall=PASS cases=4 PASS:4 worlds=u5u5a5sfdev1-20261123T10-08-30Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-23T10:11:09.086Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":532,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-08-30Z","releasedPorts":[3194,13056,3194],"killedPids":[532],"notes":[]}
+[2026-11-23T10:11:09.087Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-23T10:11:09.157Z] [boot2] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-23T10:11:09.157Z] [boot2] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=b67a3eb38d617b2aa7dbe0cddd2fb9f2a49e334f
+[2026-11-23T10:11:09.158Z] [boot2] alpha6 config gate: ADMISSION_ALPHA6_UNAVAILABLE: ADMISSION_ALPHA6_ROUTING_REQUIRED — alpha6ReviewRouting needs a v5 Blueprint whose authored `reviewRouting` block is enabled — with no authored policy there is no routing decision to take, and Alpha.6 has no implicit default. a coherent configuration (ADMISSION_ALPHA6_R
+[2026-11-23T10:11:09.166Z] blueprint alpha6.yaml accepted: schemaVersion=4 id=team.dboot.d3.alpha6
+[2026-11-23T10:13:32.562Z] [boot2] world=u5u5a5sfdev1-20261123T10-13-32Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-13-32Z
+[2026-11-23T10:13:36.382Z] [boot2] grep corpus built in 3818ms (50000 small + 64 big + 8 huge files)
+[2026-11-23T10:13:36.386Z] blueprint main.yaml accepted: schemaVersion=4 id=team.dboot.d3.main
+[2026-11-23T10:16:00.580Z] [boot2] host ready on http://127.0.0.1:3194; health={"ok":true,"boot":1,"ready":true,"rootSessionId":"session-dboot-d3-root","liveSessions":["session-dboot-d3-root"],"toolCount":15}
+[2026-11-23T10:16:00.797Z] [boot2] leader surface tools=43 team=15
+[2026-11-23T10:16:01.809Z] [boot2] member A instance=inst-1vd6cy21kl6k childSession=session-team-child-cdf16bb82ce585d862f447bf6cd8c80f
+[2026-11-23T10:16:01.865Z] [boot2] confinement probe: refusal=true wrote=false outOfLaneExists=false bytes=0 inLaneState=true
+[2026-11-23T10:16:03.054Z] [boot2] member B instance=inst-1v36r931jr7r childSession=session-team-child-6788a23a6d1be9784107fcb7631d08f9
+[2026-11-23T10:16:06.430Z] [boot2] in-flight settlement state=ADMITTED executionId=exec-c7761249d1064b23c36e5e4f76a48778dd895896
+[2026-11-23T10:16:06.469Z] [boot] SIGKILL pid=794 exit={"code":null,"signal":"SIGKILL"} pidGone=true portFree=true
+[2026-11-23T10:16:08.547Z] [boot2] restarted host ready on http://127.0.0.1:3194
+[2026-11-23T10:16:10.574Z] [boot2] case d3:persistent-subprocess: PASS (PROVEN)
+[2026-11-23T10:16:10.574Z] [boot2] case d3:crash-cold-recovery: PASS (PROVEN)
+[2026-11-23T10:16:10.574Z] [boot2] case d3:work-delivery: PASS (PROVEN)
+[2026-11-23T10:16:10.574Z] [boot2] case d3:alpha6: PASS (PROVEN)
+[2026-11-23T10:16:10.574Z] [boot2] RUN-SUMMARY run=a5sf-live-d3-2026-11-23T10-11-09-120Z-b2 suite=a5sf-live-d3 overall=PASS cases=4 PASS:4 worlds=u5u5a5sfdev1-20261123T10-13-32Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-23T10:16:11.551Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":1210,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-13-32Z","releasedPorts":[3194,13056,3194],"killedPids":[1210],"notes":[]}
+[2026-11-23T10:16:11.552Z] [boot2] dev-live slot released (released=true held=false)
+[2026-11-23T10:16:11.584Z] TWO-RUN AGREEMENT (the same command, two boots; every measured row must be identical)
+fact                                boot1                               boot2
+overall                             PASS                                PASS
+persistent                          PROVEN                              PROVEN
+crash                               PROVEN                              PROVEN
+work                                PROVEN                              PROVEN
+alpha6                              PROVEN                              PROVEN
+aAdmissions                         4                                   4
+bAdmissions                         3                                   3
+inflightBefore                      open                                open
+inflightAfter                       UNKNOWN                             UNKNOWN
+collectStatus                       succeeded                           succeeded
+bash1State                          COMPLETED                           COMPLETED
+bash2State                          COMPLETED                           COMPLETED
+
+agreeing=true differing=[]
+[2026-11-23T10:16:11.617Z] host porcelain after: []
+[2026-11-23T10:16:11.617Z] RESULT evidence-complete=true allProven=true (2/2 boots; agreeing pair=true)
+EXIT=0
+
+=== 2026-11-23 after-probe-d4.log ===
+[2026-11-23T10:17:42.677Z] archived previous runs -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-23T10-17-42-677Z
+[2026-11-23T10:17:42.712Z] host tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use HEAD=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=[]
+[2026-11-23T10:17:42.712Z] started 2026-11-23T10:17:42.651Z boots=1
+[2026-11-23T10:17:42.743Z] [boot1] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-23T10:17:42.747Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=b67a3eb38d617b2aa7dbe0cddd2fb9f2a49e334f
+[2026-11-23T10:17:42.772Z] blueprint main.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-23T10:17:42.774Z] [boot1] alpha6 config gate (positive): null
+[2026-11-23T10:20:05.551Z] [boot1] host ready on http://127.0.0.1:3194
+[2026-11-23T10:20:05.570Z] [boot1] prompt(d4disc) status=200
+[2026-11-23T10:20:05.770Z] [boot1] discovery answered (mock requests=2)
+[2026-11-23T10:20:05.791Z] [boot1] prompt(d4off) status=200
+[2026-11-23T10:20:06.191Z] [boot1] officer delegated
+[2026-11-23T10:20:06.210Z] [boot1] officer instance=inst-1crltnl0089j childSession=session-team-child-1d56dbb16a118ba3573db3c4b2641997
+[2026-11-23T10:20:06.715Z] [boot1] d4:officer-up=PROVEN d4:officer-binding=PROVEN
+[2026-11-23T10:20:06.722Z] [boot1] prompt(d4wrk) status=200
+[2026-11-23T10:20:07.123Z] [boot1] worker delegated
+[2026-11-23T10:20:07.172Z] [boot1] worker ask appeared=true requestId=ctrl-1xxrzo21k29yc31rawhls0qn
+[2026-11-23T10:20:07.176Z] [boot1] prompt(d4res) status=200
+[2026-11-23T10:22:07.201Z] [boot1] leader resolve result: {"status":"control-resolved","decision":{"requestId":"ctrl-1xxrzo21k29yc31rawhls0qn","decision":"allow","decider":{"kind":"instance","instanceId":"inst-leader","role":"leader"},"scope":{"rootSessionId
+[2026-11-23T10:22:08.724Z] [boot1] d4:routed-wake=REFUTED failing=["row-carries-approval-case","wake-intent-fact-routed","wake-confirmed-delivered","wake-intent-file-written","officer-woken-in-its-session","wake-has-machine-attribution"]
+[2026-11-23T10:22:08.729Z] blueprint incoherent.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting=null
+[2026-11-23T10:24:31.492Z] [boot1] d4:refusal=PROVEN failing=[]
+[2026-11-23T10:24:31.494Z] [boot1] d4:enablement=PROVEN failing=[]
+[2026-11-23T10:24:31.495Z] [boot1] overall=BLOCKED (408734ms)
+[2026-11-23T10:24:31.733Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-23T10:24:31.763Z] host porcelain after: []
+[2026-11-23T10:24:31.764Z] TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)
+fact                              boot1                               
+overall                              "BLOCKED"                           
+enablement                           "PROVEN"                            
+officerUp                            "PROVEN"                            
+officerBinding                       "PROVEN"                            
+routedWake                           "REFUTED"                           
+refusal                              "PROVEN"                            
+askAppeared                          true                                
+pendingRequestId                     "ctrl-1xxrzo21k29yc31rawhls0qn"     
+wakeFacts                            0                                   
+wakeIntentFiles                      0                                   
+reviewWakeHits                       0                                   
+officerAllowFacts                    1                                   
+
+agreeing=true differing=[]
+[2026-11-23T10:24:31.764Z] RESULT evidence-complete=true allBooted=true blocked=true (1/1 boots; agreeing pair=true)
+EXIT=3
+

@@ -44,8 +44,9 @@ import { createHash } from 'node:crypto'
 import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { createConnection } from 'node:net'
 import { dirname, join, resolve, sep } from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
-import { CLIENT_COMMIT_HASH, HOST_PORT_BANDS, homeDir, MOCK_PORT_BANDS, portsOfBands, STABLE_INSTANCE_PORT, TEST_USE_BASELINE_SHA, testUseTree } from '../../paths.mjs'
+import { fileURLToPath } from 'node:url'
+import { homeDir, MOCK_PORT_BANDS, portsOfBands, STABLE_INSTANCE_PORT } from '../../paths.mjs'
+import { selectedHostHomeSuffix, selectedHostPin, selectedHostPortBands, selectedHostTree, testHostMode } from '../../next-host/host-select.mjs'
 import { DshInstance, redactLaunchToken } from '../../characterization/lib/instance.mjs'
 import { logTail, portInUse, waitForPortFree } from '../../characterization/lib/util.mjs'
 import { startMockModel } from '../../../packages/tools/harness/mock-deepseek.mjs'
@@ -67,14 +68,18 @@ export const CANARY_ROW_ID = 'u5-canary'
 export const CANARY_TOOL_NAME = 'u5_canary'
 export const WORLD_PREFIX = 'u5'
 /**
- * U6 PR1 shadow-parity support: the test-only row that mounts the PRODUCT
+ * U6 PR1 shadow-parity support: the test-only row that mounted the PRODUCT
  * shadow row (`packages/runtime/src/plugin/live/center-shadow-row.mjs`, from
  * its DIST face) over the plugin-fiber context — the same public-seam shape
  * the sealed sup-a `g1fa-center` fixture proved on this Host. Mounted ONLY
  * when a World is created with `centerAssembly: 'off' | 'shadow'`; both
  * worlds of the parity run mount the SAME row (the OFF world's row installs
- * nothing and records `center-skipped`), so the only delta between the two
- * Worlds is the shadow assembly itself.
+ * nothing and records `center-skipped`).
+ *
+ * A1 CUT: the product row retired with the old execution route, so no
+ * U6_CENTER_ROW_URL is handed down any more — a 'shadow' World's row records
+ * `center-error` (nothing to import) instead of a mount. The parity delta
+ * stays visible; it is no longer a product-row delta.
  */
 export const U6_SHADOW_HOST_SRC = resolve(HERE, '..', 'canary', 'u6-shadow-host.mjs')
 export const U6_SHADOW_ROW_ID = 'u6-shadow-host'
@@ -107,7 +112,6 @@ export const U6ARCD_PROBE_SRC = probeOf('u6ArcD').src
 export const U6ARCD_PROBE_ROW_ID = probeOf('u6ArcD').rowId
 export const U7C_PROBE_SRC = probeOf('u7Census').src
 export const U7C_PROBE_ROW_ID = probeOf('u7Census').rowId
-export const U6_CENTER_SHADOW_ROW_REL = 'packages/runtime/dist/packages/runtime/src/plugin/live/center-shadow-row.mjs'
 /**
  * PROFILE DISCLOSURE (s1-h0-m1 noext precedent, root-sanctioned differential
  * probe): on a FRESH unauthenticated DSH_HOME the two base-bundle
@@ -133,7 +137,9 @@ export const EXT_CONTRIBUTOR_DISABLE = [
   '    enabled: false',
   '',
 ].join('\n')
-const HOME_RE = new RegExp(`^${WORLD_PREFIX}[a-z0-9-]*-\\d{8}T\\d{2}-\\d{2}-\\d{2}Z(?:-r\\d+)?$`)
+// A next-host World carries the `-next` suffix (docs/TEST_METHODS.md §11.4), so
+// a next-host home can never be mistaken for (or collide with) a legacy one.
+const HOME_RE = new RegExp(`^${WORLD_PREFIX}[a-z0-9-]*-\\d{8}T\\d{2}-\\d{2}-\\d{2}Z(?:-r\\d+)?(?:-next)?$`)
 
 /** Real provider credential keys removed from the child env before spawn
  *  (names only are ever logged; s1-h0-m1 precedent). */
@@ -230,13 +236,22 @@ export class TestWorldFactory {
    * @param {string} opts.repoRoot   team-repo root (worktree) holding tests/
    * @param {string} opts.evidenceRoot  gitignored dir for raw logs/RUN records
    * @param {string} [opts.leaseRoot]   shared port-lease dir (cross-worktree)
-   * @param {string} [opts.hostTree]    defaults to <repoRoot>/tests/deepseek-harness-test-use
+   * @param {string} [opts.hostTree]    defaults to the SELECTED host tree
+   *   (`tests/next-host/host-select.mjs`): rc.2 at
+   *   <repoRoot>/tests/deepseek-harness-test-use, or the rc.5 tree when
+   *   `TEAM_TEST_HOST=next`. The generation, its pin and its port band are read
+   *   from that ONE selector, so a caller cannot mix an rc.5 tree with an rc.2
+   *   pin or a legacy port.
    */
   constructor({ repoRoot, evidenceRoot, leaseRoot, hostTree }) {
     this.repoRoot = resolve(repoRoot)
     this.evidenceRoot = resolve(evidenceRoot)
     this.homeRoot = join(this.repoRoot, 'tests', 'homes')
-    this.hostTree = resolve(hostTree ?? testUseTree(this.repoRoot))
+    /** The selected generation: 'legacy' (default, rc.2) or 'next' (rc.5). */
+    this.hostMode = testHostMode()
+    /** The selected generation's pin, from tests/paths.mjs (never re-typed). */
+    this.hostPin = selectedHostPin(this.repoRoot, this.hostMode)
+    this.hostTree = resolve(hostTree ?? selectedHostTree(this.repoRoot, this.hostMode))
     // Default lease root: the MAIN checkout's .artifacts/tmp so Worlds
     // created from sibling worktrees contend on the SAME lease files.
     this.leaseRoot = resolve(leaseRoot ?? this.#defaultLeaseRoot())
@@ -282,7 +297,12 @@ export class TestWorldFactory {
    */
   async preflightHostSandbox({ provision = true, force = false } = {}) {
     if (this.sandboxPreflight !== null && force !== true) return this.sandboxPreflight
-    const record = await measureSandboxPreflight({ runtimeTree: this.hostTree, repoRoot: this.repoRoot, provision })
+    // `host` selects the MANIFEST/PIN entry the pre-flight is measured
+    // against: legacy (default) or next. Without it an rc.5 tree would be
+    // graded against the rc.2 baseline row and its provenance would be wrong.
+    const record = await measureSandboxPreflight({
+      runtimeTree: this.hostTree, repoRoot: this.repoRoot, provision, host: this.hostMode,
+    })
     this.sandboxPreflight = record
     for (const r of this.runRecords) bindSandboxPreflight(r?.record?.bindings, record)
     this.onSandboxPreflight?.(record)
@@ -296,13 +316,20 @@ export class TestWorldFactory {
     return join(main, '.artifacts', 'tmp', 'port-leases')
   }
 
-  /** git HEAD + porcelain of the pristine host base. Throws on drift. */
+  /**
+   * git HEAD + porcelain of the pristine host base. Throws on drift.
+   *
+   * The expected HEAD is the SELECTED generation's pin (`this.hostPin`, read
+   * from `tests/paths.mjs`): rc.2 by default, rc.5 under `TEAM_TEST_HOST=next`.
+   * The law is unchanged — a tree at any other commit refuses — only its
+   * authority follows the tree the World is actually built from.
+   */
   assertHostBase(phase = 'check') {
     const head = spawnSync('git', ['-C', this.hostTree, 'rev-parse', 'HEAD'], { encoding: 'utf8' })
     if (head.status !== 0) throw new HostBaseError(`${phase}: git rev-parse failed (exit ${String(head.status)})`)
     const headSha = String(head.stdout ?? '').trim()
-    if (headSha !== TEST_USE_BASELINE_SHA) {
-      throw new HostBaseError(`${phase}: HEAD ${headSha} != TEST_USE_BASELINE_SHA ${TEST_USE_BASELINE_SHA}`)
+    if (headSha !== this.hostPin.sha) {
+      throw new HostBaseError(`${phase}: HEAD ${headSha} != ${this.hostPin.host} pin ${this.hostPin.sha} (${this.hostPin.host === 'next' ? 'tests/paths.mjs#NEXT_HOST' : 'tests/paths.mjs#TEST_USE_BASELINE_SHA'})`)
     }
     const st = spawnSync('git', ['-C', this.hostTree, 'status', '--porcelain'], { encoding: 'utf8' })
     if (st.status !== 0) throw new HostBaseError(`${phase}: git status failed (exit ${String(st.status)})`)
@@ -362,10 +389,11 @@ export class TestWorldFactory {
     // natural name is taken, move the stamp forward a second at a time (the §7 name grammar is
     // `u5<line>-<UTC>`, so the discriminator has to be the clock, not a suffix). A genuine leftover
     // from an earlier run still refuses after the bounded search.
-    let name = validateWorldName(`${WORLD_PREFIX}${line}-${utcStamp()}${suffix}`)
+    const hostSuffix = selectedHostHomeSuffix(this.hostMode)
+    let name = validateWorldName(`${WORLD_PREFIX}${line}-${utcStamp()}${suffix}${hostSuffix}`)
     let home = homeDir(this.repoRoot, name)
     for (let bump = 1; bump <= 5 && (existsSync(home) || lstatSafe(home) !== null); bump += 1) {
-      name = validateWorldName(`${WORLD_PREFIX}${line}-${utcStamp(new Date(Date.now() + bump * 1_000))}${suffix}`)
+      name = validateWorldName(`${WORLD_PREFIX}${line}-${utcStamp(new Date(Date.now() + bump * 1_000))}${suffix}${hostSuffix}`)
       home = homeDir(this.repoRoot, name)
     }
     if (existsSync(home) || lstatSafe(home) !== null) {
@@ -516,6 +544,10 @@ export class TestWorld {
     }
     this.instance = null
     this.mock = null
+    // A REAL provider route (no in-process mock). `null` = the scripted mock is
+    // the only model; a set value = the Host talks to a real endpoint and the
+    // run is labelled by its caller. Set by `startRealProvider()` only.
+    this.realProvider = null
     this.hostLease = null
     this.mockLease = null
     this.token = undefined
@@ -566,6 +598,33 @@ export class TestWorld {
     this.mock = await startMockModel({ port: lease.port, decide, log: () => {} })
     lease.note({ mockListeningOn: this.mock.port })
     return { port: this.mock.port }
+  }
+
+  /**
+   * Bind this World to a REAL provider route instead of the in-process mock.
+   *
+   * WHY IT EXISTS: every booted-host proof so far ran the scripted mock as the
+   * model. A real-model acceptance run needs the SAME boot/teardown/lifecycle
+   * code while the Host talks to a real endpoint — not a second launcher. This
+   * method only declares the route; `startHost` writes it into the child env
+   * (`DEEPSEEK_BASE_URL` / `DEEPSEEK_API_KEY`, the two names the pinned host's
+   * `llm-deepseek-api-key` adapter resolves).
+   *
+   * It is deliberately NOT usable together with `startMock`: a World has
+   * exactly ONE model route, so a caller cannot half-run a real endpoint and
+   * fall back to the script without saying so.
+   *
+   * @param {{baseUrl?: string|null, apiKey: string}} opts
+   *   `apiKey` is the credential VALUE; the caller owns it and must never log
+   *   it. `baseUrl` null = the host's public default endpoint.
+   */
+  async startRealProvider({ baseUrl = null, apiKey } = {}) {
+    if (typeof apiKey !== 'string' || apiKey.trim() === '') {
+      throw new Error('startRealProvider needs a non-empty apiKey (the caller reads it; this module never invents one)')
+    }
+    if (this.mock !== null) throw new Error('startRealProvider after startMock: a World has ONE model route')
+    this.realProvider = { baseUrl: baseUrl === null ? null : String(baseUrl), apiKey: String(apiKey) }
+    return { mode: 'real', baseUrl: this.realProvider.baseUrl, keyConfigured: true }
   }
 
   /**
@@ -672,26 +731,41 @@ export class TestWorld {
         leaseRoot: this.factory.leaseRoot,
         world: this.id,
         purpose: 'host',
-        include: portsOfBands(HOST_PORT_BANDS),
+        // The selected generation's OWN band (legacy 3181-3199; next
+        // 13000-13049). The 2026-11-16 partition is a law, not a convention.
+        include: portsOfBands(selectedHostPortBands(this.factory.hostMode)),
         preferred: [],
       })
       this.hostLease = lease
     }
     // Reboot on a held lease: the holder is us (restart leg keeps the port).
     // Provider env: injected into process.env (DshInstance spreads it).
-    if (this.mock === null) throw new Error('startMock before startHost (provider env)')
-    process.env.DEEPSEEK_BASE_URL = `http://127.0.0.1:${this.mock.port}`
-    process.env.DEEPSEEK_API_KEY = 'u5-fake-key'
+    if (this.realProvider !== null) {
+      // REAL route: the caller already proved the credential exists. `baseUrl`
+      // null means "the pinned adapter's own public default", so the variable
+      // is removed rather than set to an empty string (an empty value would be
+      // read as a URL).
+      if (this.realProvider.baseUrl === null) delete process.env.DEEPSEEK_BASE_URL
+      else process.env.DEEPSEEK_BASE_URL = this.realProvider.baseUrl
+      process.env.DEEPSEEK_API_KEY = this.realProvider.apiKey
+    } else if (this.mock === null) {
+      throw new Error('startMock before startHost (provider env)')
+    } else {
+      process.env.DEEPSEEK_BASE_URL = `http://127.0.0.1:${this.mock.port}`
+      process.env.DEEPSEEK_API_KEY = 'u5-fake-key'
+    }
     process.env.U5_CANARY_LEDGER = this.ledgerPath
     process.env.U5_CANARY_MARKER_DIR = this.markerDir
     process.env.U5_CANARY_VISIBLE = this.visible ? '1' : '0'
     process.env.U5_CANARY_WORLD = this.id
     // U6 PR1 shadow-parity env (set on EVERY boot of a centerAssembly World;
-    // DshInstance spreads process.env into the child).
+    // DshInstance spreads process.env into the child). The product shadow row
+    // (center-shadow-row.mjs) retired at the A1 cut, so no U6_CENTER_ROW_URL
+    // is handed down: a 'shadow' World's mount row records `center-error`
+    // (nothing to import) rather than a fake mount.
     const shadowWorld = this.centerAssembly === 'off' || this.centerAssembly === 'shadow'
     if (shadowWorld) {
       process.env.U6_CENTER_ASSEMBLY = this.centerAssembly
-      process.env.U6_CENTER_ROW_URL = pathToFileURL(join(this.factory.repoRoot, U6_CENTER_SHADOW_ROW_REL)).href
       process.env.U6_CENTER_SHADOW_LEDGER = this.shadowLedgerPath
     } else {
       delete process.env.U6_CENTER_ASSEMBLY
@@ -708,7 +782,10 @@ export class TestWorld {
       hostTree: this.factory.hostTree,
       dshHome: this.home,
       port: lease.port,
-      clientCommitHash: CLIENT_COMMIT_HASH,
+      // The SELECTED host's revision (rc.2 by default, rc.5 under
+      // TEAM_TEST_HOST=next) — a mismatched rev stamps the client bundle with
+      // another generation's commit.
+      clientCommitHash: this.factory.hostPin.clientCommitHash,
       logDir: this.logDir,
     })
     // Public seam mount: one plugin row beside the patch file (never the
@@ -732,8 +809,9 @@ export class TestWorld {
       // U6 PR1 shadow-parity: the SAME test row mounts in BOTH worlds; the
       // row itself installs the product shadow assembly only when
       // U6_CENTER_ASSEMBLY='shadow' (the OFF world records `center-skipped`
-      // and installs nothing). The product row is imported from the DIST
-      // face — the exact file the shipped glue's dynamic import resolves to.
+      // and installs nothing). The product row retired at the A1 cut, so
+      // U6_CENTER_ROW_URL is unset and the shadow world records
+      // `center-error` — the honest state, not a mounted assembly.
       copyFileSync(U6_SHADOW_HOST_SRC, join(this.instance.profileDir, 'u6-shadow-host.mjs'))
       rows.push({ id: U6_SHADOW_ROW_ID, name: './u6-shadow-host.mjs' })
     }

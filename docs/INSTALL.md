@@ -2,6 +2,11 @@
 
 > **性质**：`0.1.0-rc.1` stable 基线的安装指南。权威状态见 `docs/STATUS.md`；
 > 本文件是快照，与 graph.yaml + 日志冲突时以后者为准。开发预览可跟踪 `master`，RC 安装应固定到 `stable` 或明确的版本 tag。
+>
+> **Trial 候选（2026-11-27，round 128）**：owner 试用装
+> `github:ArmourPiercer1/dsh-agent-team#v0.3.0-trial.1` 的逐步操作、受治 blueprint、耐久产物位置、
+> 回滚与 `:3080` 安全声明在 `docs/TRIAL-GUIDE.md`。**它是 trial，不是 release**：不产生
+> `PRODUCT-PROVEN`，也不改变本文件的 release 安装语义。
 
 ## 1. 前提
 
@@ -26,6 +31,9 @@ machine-agnostic：host 行 `name: "dsh-agent-team/host"` 子路径包、client 
 
 ```bash
 pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team#0.1.0-rc.1
+
+# 或者安装 owner trial 候选（trial ≠ release；操作见 docs/TRIAL-GUIDE.md）
+pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team#v0.3.0-trial.1
 ```
 
 如需跟踪最新 RC 修复，也可使用 `#stable`；不带 ref 时会安装 `master` 的 alpha 开发线

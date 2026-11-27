@@ -1,0 +1,13 @@
+{
+  "schema": "dist-placements/1",
+  "family": "round84-alpha6-wake",
+  "summary": "Round 84 (Alpha.6 formal routing): the review wake is now a GOVERNED DELIVERY, implemented in packages/runtime/src/plugin/vnext/review-wake-delivery.mjs. tsc never emits .mjs and the live glue (agent-bindings.mjs) imports it by a relative specifier at module scope, so the file must ride the byte-identical dist mirror or the shipped `files: [\"dist\"]` install face fails with ERR_MODULE_NOT_FOUND the first time the glue module is loaded - the GLUE-6 RED-A class the ute-vnext-centre family note describes.",
+  "note": "ORDER: agent-bindings.mjs (the glue) stays PLACEMENTS[0] in 010; this entry joins after the 240 ute-vnext-centre family (prefix 250, so it sorts last and moves no existing entry).",
+  "placements": [
+    {
+      "src": "packages/runtime/src/plugin/vnext/review-wake-delivery.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/review-wake-delivery.mjs",
+      "note": "The governed review-wake delivery: durable intent + confirmation facts in the row's own TeamDomain ledger, the P6-T3 SessionInputPort as the ONLY channel to the recipient's session, the correlation token, and a typed refusal for an unknown recipient. The glue imports it, so the shipped face must carry it."
+    }
+  ]
+}

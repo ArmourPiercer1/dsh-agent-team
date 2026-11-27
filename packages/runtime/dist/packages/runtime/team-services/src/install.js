@@ -231,7 +231,7 @@ export async function installMemberIoProviders(input) {
         const scoped = input.terminal === undefined
             ? withWeb
             : withWeb.isolate('terminals', Symbol(`member-terminals:${spec.identity.memberInstanceId}`));
-        const guard = createMemberFsGuard(policy);
+        const guard = createMemberFsGuard(policy, undefined, input.approvedAskAuthority);
         // DEFAULT PATH = the original guard object (no wrapper, no extra call).
         const observed = input.onGuardConsult === undefined
             ? guard
@@ -241,7 +241,7 @@ export async function installMemberIoProviders(input) {
                 toolBindingIdentity: null,
                 policyRevision: policy.revision,
             });
-        const Confined = createConfinedFileSystemClass(Base, observed);
+        const Confined = createConfinedFileSystemClass(Base, observed, spec.identity.memberInstanceId);
         let disposeMount;
         try {
             const fiber = await scoped.plugin(Confined, spec.config ?? {});
@@ -267,6 +267,10 @@ export async function installMemberIoProviders(input) {
             const ConfinedSubprocess = createConfinedSubprocessClass(SubprocessBase, {
                 ...input.subprocess,
                 onGuardConsult: input.onGuardConsult,
+                // ROUND 99 — the SAME binder the centre spends grants through, so a process `ask` can
+                // prove its receipt is still live at the governed spawn point. Omitted = the face refuses
+                // a process `ask` it cannot prove (fail-closed).
+                ...(input.approvedAskAuthority === undefined ? {} : { approvedAskAuthority: input.approvedAskAuthority }),
             });
             try {
                 // Cordis' `plugin` overloads are keyed on the plugin's literal shape;
@@ -322,6 +326,8 @@ export async function installMemberIoProviders(input) {
                 sandboxProvider: () => root.get('sandbox'),
                 ...(ptyTerminalSpec.backendConfig === undefined ? {} : { backendConfig: ptyTerminalSpec.backendConfig }),
                 ...(ptyTerminalSpec.revisionNow === undefined ? {} : { revisionNow: ptyTerminalSpec.revisionNow }),
+                ...(ptyTerminalSpec.processAuthority === undefined ? {} : { processAuthority: ptyTerminalSpec.processAuthority }),
+                ...(input.approvedAskAuthority === undefined ? {} : { approvedAskAuthority: input.approvedAskAuthority }),
             });
             try {
                 const mountPlugin = scoped.plugin;
@@ -522,7 +528,7 @@ export async function installToolBindingRealm(input) {
     if (!capability.ok) {
         throw new TeamServiceInstallError('PROVIDER_INCOMPATIBLE', capability.detail);
     }
-    const guard = createMemberFsGuard(spec.effective);
+    const guard = createMemberFsGuard(spec.effective, undefined, input.approvedAskAuthority);
     // DEFAULT PATH = the original guard object (no wrapper, no extra call).
     const observed = input.onGuardConsult === undefined
         ? guard
@@ -532,7 +538,7 @@ export async function installToolBindingRealm(input) {
             toolBindingIdentity: spec.toolBindingIdentity,
             policyRevision: spec.effective.policyRevision,
         });
-    const Confined = createConfinedFileSystemClass(Base, observed);
+    const Confined = createConfinedFileSystemClass(Base, observed, spec.identity.memberInstanceId);
     const scoped = root.isolate('fs', Symbol(`binding:${key}`));
     let fiber;
     try {

@@ -1,0 +1,38 @@
+# 02a — profile state after the LOCAL-SPEC install (file:$PWD)
+
+## profile package.json
+{
+  "name": "dsh-profile-web",
+  "private": true,
+  "dependencies": {
+    "dsh-agent-team": "file:/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut"
+  },
+  "dsh": {
+    "profile": {
+      "bundles": [
+        "@deepseek-ai/dsh-base",
+        "@deepseek-ai/dsh-web-app",
+        "dsh-agent-team"
+      ]
+    }
+  }
+}
+
+## pnpm-lock importer for dsh-agent-team
+11:      dsh-agent-team:
+12:        specifier: file:/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut
+13-        version: file:../../../..
+14-
+--
+33:  dsh-agent-team@file:../../../..:
+34-    resolution: {directory: ../../../.., type: directory}
+35-    engines: {dsh: 0.2.0-rc.2 || 0.2.2-rc.5, node: ^22.19.0 || >=24.0.0}
+--
+116:  dsh-agent-team@file:../../../..:
+117-    dependencies:
+118-      '@deepseek-ai/dsh-web-search-exa': 0.2.0-rc.2
+
+## profile node_modules/@deepseek-ai
+cosmokit
+dsh-web-search-exa
+schemastery

@@ -1,0 +1,4 @@
+{
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"d4wrk-ask-stopped-5m1htv7uxh\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}"
+}

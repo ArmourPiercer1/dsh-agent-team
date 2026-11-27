@@ -95,7 +95,7 @@ import * as hostEntry from '../src/plugin/host.js'
 import { createBlueprintSourceIndex } from '../src/plugin/blueprint-source-index.js'
 import type { BlueprintSourceIndex } from '../src/plugin/blueprint-source-index.js'
 import { createLiveBlueprintCatalog } from '../src/plugin/blueprint-live-catalog.js'
-import { createTeamProductionRoot } from '../src/plugin/root.js'
+import { createTeamProductionRoot } from '../src/plugin/vnext/root.js'
 import type { TeamAgentBindings, TeamPluginConfig } from '../src/plugin/types.js'
 import { createAgentBindings as createStubBindings } from './p8s5a-stub-glue.mjs'
 

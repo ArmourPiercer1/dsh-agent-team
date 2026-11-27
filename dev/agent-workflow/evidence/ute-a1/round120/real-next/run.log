@@ -1,0 +1,313 @@
+[2026-11-25T20:13:07.370Z] model probe: level=REAL-ROUTE-AVAILABLE available=true missing=null
+[2026-11-25T20:13:07.371Z] archived previous runs -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/real-model/archive/2026-11-25T20-13-07-371Z
+[2026-11-25T20:13:07.443Z] discovery self-test: zero-turns expected=DISCOVERY-MISS observed=DISCOVERY-MISS pass=true (DISCOVERY-MISS(worker-write): name=write && file_path="/lane/worker-ask.txt" matched no observed tool_use block in 0 observed turn(s))
+[2026-11-25T20:13:07.443Z] discovery self-test: right-tool-wrong-argument expected=DISCOVERY-MISS observed=DISCOVERY-MISS pass=true (DISCOVERY-MISS(worker-write): name=write && file_path="/lane/worker-ask.txt" matched no observed tool_use block in 1 observed turn(s))
+[2026-11-25T20:13:07.443Z] discovery self-test: right-tool-wrong-occurrence expected=DISCOVERY-MISS observed=DISCOVERY-MISS pass=true (DISCOVERY-MISS(duplicate-resolve): name=team_resolve_control && requestId="ctrl-abc" && occurrence #2 matched no observed tool_use block in 1 observed turn(s))
+[2026-11-25T20:13:07.443Z] discovery self-test: right-tool-right-argument expected=MATCH observed=MATCH pass=true
+[2026-11-25T20:13:07.443Z] discovery self-test: turn-gate-zero-tool-use expected=0 observed=0 pass=true
+[2026-11-25T20:13:07.443Z] discovery self-test: turn-gate-one-tool-use expected=1 observed=1 pass=true
+[2026-11-25T20:13:07.443Z] discovery self-test: pass=true mode=real
+[2026-11-25T20:13:07.485Z] host tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next HEAD=9c2670d3bce5275e0d1610272958121af87787bb pin=9c2670d3bce5275e0d1610272958121af87787bb porcelain=[]
+[2026-11-25T20:13:07.486Z] started 2026-11-25T20:13:07.325Z boots=2
+[2026-11-25T20:13:07.535Z] [boot1] candidate: {"host":"next","pin":"9c2670d3bce5275e0d1610272958121af87787bb","source":"tests/paths.mjs#NEXT_HOST","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next","asserted":true,"head":"9c2670d3bce5275e0d1610272958121af87787bb"}
+[2026-11-25T20:13:07.536Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=1a3a79c4c16943ebb61ad8e4621551bf8c1a99f2
+[2026-11-25T20:13:07.565Z] blueprint main.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-25T20:13:07.569Z] [boot1] alpha6 config gate (positive): null
+[2026-11-25T20:13:07.575Z] [boot1] recorder listening on http://127.0.0.1:45273/anthropic -> https://api.deepseek.com/anthropic
+[2026-11-25T20:13:07.575Z] [boot1] model recorder: http://127.0.0.1:45273/anthropic -> https://api.deepseek.com/anthropic (sink=model-calls-positive.jsonl)
+[2026-11-25T20:13:07.575Z] [boot1] model route: REAL (recorder=http://127.0.0.1:45273/anthropic upstream=https://api.deepseek.com/anthropic)
+[2026-11-25T20:13:12.543Z] [boot1] host ready on http://127.0.0.1:13000
+[2026-11-25T20:13:12.565Z] [boot1] prompt(d4disc) status=200
+[2026-11-25T20:13:13.125Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=0 tool_uses=0
+[2026-11-25T20:13:13.297Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:13:14.013Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=0
+[2026-11-25T20:13:14.573Z] [boot1] prompt(d4disc) turn settled=true
+[2026-11-25T20:13:14.574Z] [boot1] discovery answered (observed turns=3, surface=49)
+[2026-11-25T20:13:14.586Z] [boot1] prompt(d4off) status=200
+[2026-11-25T20:13:18.998Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:13:19.102Z] [boot1] prompt(d4off) turn settled=true
+[2026-11-25T20:13:19.102Z] [boot1] officer delegated (call call_00_zEyqWIGI3fnWbubVFNRM3960 at turn 3)
+[2026-11-25T20:13:19.427Z] [boot1] officer instance=inst-0hvc2y01v51z childSession=session-team-child-7e63fa40dcc75f1f9cf85433b7357426
+[2026-11-25T20:13:19.777Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=0 tool_uses=0
+[2026-11-25T20:13:19.983Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=0
+[2026-11-25T20:13:20.050Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:13:20.737Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=0
+[2026-11-25T20:13:21.035Z] [boot1] d4:officer-up=PROVEN d4:officer-binding=PROVEN
+[2026-11-25T20:13:21.043Z] [boot1] prompt(d4wrk) status=200
+[2026-11-25T20:13:22.422Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:13:22.548Z] [boot1] prompt(d4wrk) turn settled=true
+[2026-11-25T20:13:23.587Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=0
+[2026-11-25T20:13:25.464Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:13:25.553Z] [boot1] worker delegated (call call_00_ET_GlV4eb57UICLQzkoO2dG2939 at turn 10)
+[2026-11-25T20:13:26.083Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=0
+[2026-11-25T20:13:26.419Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=0 tool_uses=0
+[2026-11-25T20:13:26.814Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:13:26.964Z] [boot1] worker write discovered id=call_00_ET_90571fjmqaPvDbnngnVY3533 turn=13
+[2026-11-25T20:13:26.972Z] [boot1] worker ask appeared=true requestId=ctrl-0izoysy11eyo531i72p3c0bx
+[2026-11-25T20:13:28.044Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:13:28.177Z] [boot1] officer resolve(first) seen=true id=call_00_2bqDvvcckAWSlVrGi0w83045 settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-0izoysy11eyo531i72p3c0bx","decision":"allow","decider":{"kind":"instance","instanceId":"inst-0hvc2y01
+[2026-11-25T20:13:28.681Z] [boot1] d4:ask-execute=PROVEN failing=[]
+[2026-11-25T20:13:28.927Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:13:28.981Z] [boot1] second worker ask appeared=true requestId=ctrl-0n4qm7704rmy3s1vqxjep1cr
+[2026-11-25T20:13:29.084Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=0
+[2026-11-25T20:13:30.170Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:13:30.587Z] [boot1] officer resolve(second) seen=true id=call_00_ET_v3pN9QRTMLjJwC8vh3fq8436 settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-0n4qm7704rmy3s1vqxjep1cr","decision":"allow","decider":{"kind":"instance","instanceId":"inst-0hvc2y01
+[2026-11-25T20:13:30.768Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=0
+[2026-11-25T20:13:30.840Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=0
+[2026-11-25T20:13:31.091Z] [boot1] d4:ask-execute-2=PROVEN failing=[]
+[2026-11-25T20:13:31.216Z] [boot1] sticky: holdLanded=true hold=true cancelStatus=200 stopSeen=true markers=["stopped-be6cf2ae.json"]
+[2026-11-25T20:13:32.336Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:13:32.337Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:13:32.391Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=2
+[2026-11-25T20:13:34.425Z] [boot1] sticky: thirdAsk=true requestId=ctrl-1lljmox083bo9k1phscef1ta markersAfter=["stopped-be6cf2ae.json"] wakeInputsWhileStopped=0
+[2026-11-25T20:13:35.191Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:13:37.860Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=0
+[2026-11-25T20:13:40.242Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:13:47.269Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:13:49.215Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=0
+[2026-11-25T20:13:49.868Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=0
+[2026-11-25T20:13:50.152Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:13:50.350Z] [boot1] officer resolve(third) seen=true id=call_00_ET_GZ0i0Esy7PRJW4ycL4Vl2476 settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-1lljmox083bo9k1phscef1ta","decision":"allow","decider":{"kind":"instance","instanceId":"inst-0hvc2y01
+[2026-11-25T20:13:50.353Z] [boot1] sticky: resumeCleared=true resolve3=true write3Settled=true
+[2026-11-25T20:13:50.357Z] [boot1] process ask appeared=true requestId=ctrl-1ez4vzh1ab4yf20n8ax3f1en
+[2026-11-25T20:13:50.365Z] [boot1] prompt(d4res3) status=200
+[2026-11-25T20:13:51.203Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=0
+[2026-11-25T20:13:51.224Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=0
+[2026-11-25T20:13:52.590Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:13:53.744Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:13:54.554Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=0
+[2026-11-25T20:13:54.954Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=0
+[2026-11-25T20:13:56.389Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:13:56.894Z] [boot1] prompt(d4res3) turn settled=true
+[2026-11-25T20:13:57.399Z] [boot1] d4:ask-execute-process=REFUTED failing=["approved-through-real-control-path","bash-tool-result-not-an-error","in-lane-write-lands","settlement-completed"]
+[2026-11-25T20:13:57.403Z] [boot1] duplicate: intents=1 delivered=1 inputs=1
+[2026-11-25T20:13:58.938Z] [boot1] d4:case-created=PROVEN failing=[]
+[2026-11-25T20:13:58.939Z] [boot1] d4:router-officer=PROVEN failing=[]
+[2026-11-25T20:13:58.939Z] [boot1] d4:wake-delivered=PROVEN failing=[]
+[2026-11-25T20:13:58.939Z] [boot1] d4:officer-decides=PROVEN failing=[]
+[2026-11-25T20:13:58.939Z] [boot1] d4:ask-executes-after-review=PROVEN failing=[]
+[2026-11-25T20:13:58.939Z] [boot1] d4:duplicate-route=PROVEN failing=[]
+[2026-11-25T20:13:58.939Z] [boot1] d4:sticky-stop=PROVEN failing=[]
+[2026-11-25T20:13:58.939Z] [boot1] d4:routed-wake=PROVEN failing=[]
+[2026-11-25T20:13:58.945Z] [boot1] prompt(rm-collect) status=200
+[2026-11-25T20:13:59.324Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=0
+[2026-11-25T20:13:59.952Z] [boot1] prompt(rm-collect) turn settled=true
+[2026-11-25T20:14:00.198Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:14:00.610Z] [boot1] rm:collect=PROVEN failing=[]
+[2026-11-25T20:14:00.621Z] [boot1] prompt(rm-duplicate) status=200
+[2026-11-25T20:14:01.464Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=0
+[2026-11-25T20:14:02.682Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:14:03.132Z] [boot1] prompt(rm-duplicate) turn settled=true
+[2026-11-25T20:14:03.165Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=0
+[2026-11-25T20:14:04.139Z] [boot1] rm:duplicate-approval=PROVEN failing=[]
+[2026-11-25T20:14:12.466Z] [boot1] rm:restart-no-replay=PROVEN failing=[]
+[2026-11-25T20:14:12.470Z] blueprint incoherent.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting=null
+[2026-11-25T20:14:17.004Z] [boot1] d4:refusal=PROVEN failing=[]
+[2026-11-25T20:14:17.007Z] [boot1] d4:enablement=PROVEN failing=[]
+[2026-11-25T20:14:23.934Z] blueprint ask-denied.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-25T20:14:23.936Z] [boot1] recorder listening on http://127.0.0.1:45151/anthropic -> https://api.deepseek.com/anthropic
+[2026-11-25T20:14:23.936Z] [boot1] model recorder: http://127.0.0.1:45151/anthropic -> https://api.deepseek.com/anthropic (sink=model-calls-negative-ask-denied.jsonl)
+[2026-11-25T20:14:27.722Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=0 tool_uses=0
+[2026-11-25T20:14:29.656Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:14:30.396Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=0 tool_uses=0
+[2026-11-25T20:14:30.601Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=0
+[2026-11-25T20:14:30.762Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:14:32.233Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:14:32.708Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=0
+[2026-11-25T20:14:33.085Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:14:33.368Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:14:33.697Z] [boot1] d4:ask-denied=PROVEN failing=[]
+[2026-11-25T20:14:33.822Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=0
+[2026-11-25T20:14:35.908Z] blueprint ask-stopped.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-25T20:14:35.910Z] [boot1] recorder listening on http://127.0.0.1:45723/anthropic -> https://api.deepseek.com/anthropic
+[2026-11-25T20:14:35.910Z] [boot1] model recorder: http://127.0.0.1:45723/anthropic -> https://api.deepseek.com/anthropic (sink=model-calls-negative-ask-stopped.jsonl)
+[2026-11-25T20:14:39.919Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=0 tool_uses=0
+[2026-11-25T20:14:41.188Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:14:41.819Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=0 tool_uses=0
+[2026-11-25T20:14:41.976Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=0
+[2026-11-25T20:14:42.511Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:14:43.905Z] [boot1] d4:ask-stopped=PROVEN failing=[]
+[2026-11-25T20:14:46.099Z] [boot1] negative dev-live slot released (released=true held=false)
+[2026-11-25T20:14:46.101Z] [boot1] overall=PASS (98549ms)
+[2026-11-25T20:14:46.105Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-25T20:14:46.111Z] [boot1] RUN-RECORD SELF-CHECK pass (dev/agent-workflow/evidence/d-boot-feasibility/real-model/runs/boot01/run-record.json: schema=u5-run-record/1 cases=20 subset=false overall=PASS)
+[2026-11-25T20:14:46.160Z] [boot2] candidate: {"host":"next","pin":"9c2670d3bce5275e0d1610272958121af87787bb","source":"tests/paths.mjs#NEXT_HOST","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next","asserted":true,"head":"9c2670d3bce5275e0d1610272958121af87787bb"}
+[2026-11-25T20:14:46.160Z] [boot2] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=1a3a79c4c16943ebb61ad8e4621551bf8c1a99f2
+[2026-11-25T20:14:46.168Z] blueprint main.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-25T20:14:46.170Z] [boot2] alpha6 config gate (positive): null
+[2026-11-25T20:14:46.172Z] [boot2] recorder listening on http://127.0.0.1:45831/anthropic -> https://api.deepseek.com/anthropic
+[2026-11-25T20:14:46.172Z] [boot2] model recorder: http://127.0.0.1:45831/anthropic -> https://api.deepseek.com/anthropic (sink=model-calls-positive.jsonl)
+[2026-11-25T20:14:46.172Z] [boot2] model route: REAL (recorder=http://127.0.0.1:45831/anthropic upstream=https://api.deepseek.com/anthropic)
+[2026-11-25T20:14:49.336Z] [boot2] host ready on http://127.0.0.1:13000
+[2026-11-25T20:14:49.354Z] [boot2] prompt(d4disc) status=200
+[2026-11-25T20:14:49.870Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=0 tool_uses=0
+[2026-11-25T20:14:50.629Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:14:50.857Z] [boot2] prompt(d4disc) turn settled=true
+[2026-11-25T20:14:50.858Z] [boot2] discovery answered (observed turns=3, surface=49)
+[2026-11-25T20:14:50.865Z] [boot2] prompt(d4off) status=200
+[2026-11-25T20:14:51.431Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=0
+[2026-11-25T20:14:51.869Z] [boot2] prompt(d4off) turn settled=true
+[2026-11-25T20:14:52.471Z] [boot1] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:14:52.969Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:14:53.122Z] [boot2] officer delegated (call call_00_2XwuUxplNCSk3141elTV3254 at turn 3)
+[2026-11-25T20:14:53.129Z] [boot2] officer instance=inst-0hvc2y01v51z childSession=session-team-child-7e63fa40dcc75f1f9cf85433b7357426
+[2026-11-25T20:14:53.694Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=0
+[2026-11-25T20:14:53.787Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=0 tool_uses=0
+[2026-11-25T20:14:53.992Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:14:54.446Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=0
+[2026-11-25T20:14:54.738Z] [boot2] d4:officer-up=PROVEN d4:officer-binding=PROVEN
+[2026-11-25T20:14:54.743Z] [boot2] prompt(d4wrk) status=200
+[2026-11-25T20:14:55.496Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:14:55.747Z] [boot2] prompt(d4wrk) turn settled=true
+[2026-11-25T20:14:56.117Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=0
+[2026-11-25T20:14:57.779Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:14:57.998Z] [boot2] worker delegated (call call_00_ET_sq9ShAR9R4V3M3jJasMS9065 at turn 10)
+[2026-11-25T20:14:58.534Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=0
+[2026-11-25T20:14:58.584Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=0 tool_uses=0
+[2026-11-25T20:14:59.397Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:14:59.509Z] [boot2] worker write discovered id=call_00_ET_AINAX1V9JfzHrLYjOY8R7017 turn=13
+[2026-11-25T20:14:59.518Z] [boot2] worker ask appeared=true requestId=ctrl-0es02ly0tszz6z0d7dj2c1hz
+[2026-11-25T20:15:00.274Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:15:00.423Z] [boot2] officer resolve(first) seen=true id=call_00_ET_IyW8AiUpt6zdKDvmPvBB1506 settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-0es02ly0tszz6z0d7dj2c1hz","decision":"allow","decider":{"kind":"instance","instanceId":"inst-0hvc2y01
+[2026-11-25T20:15:00.929Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=0
+[2026-11-25T20:15:01.217Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:15:01.327Z] [boot2] d4:ask-execute=PROVEN failing=[]
+[2026-11-25T20:15:01.328Z] [boot2] second worker ask appeared=true requestId=ctrl-0g896jq0qfjfkx0fevznc01k
+[2026-11-25T20:15:02.392Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:15:02.532Z] [boot2] officer resolve(second) seen=true id=call_00_ET_FDS3EBfZEzyEhugFRWdl8678 settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-0g896jq0qfjfkx0fevznc01k","decision":"allow","decider":{"kind":"instance","instanceId":"inst-0hvc2y01
+[2026-11-25T20:15:03.104Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=0
+[2026-11-25T20:15:03.318Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=0
+[2026-11-25T20:15:03.438Z] [boot2] d4:ask-execute-2=PROVEN failing=[]
+[2026-11-25T20:15:03.660Z] [boot2] sticky: holdLanded=true hold=true cancelStatus=200 stopSeen=true markers=["stopped-be6cf2ae.json"]
+[2026-11-25T20:15:04.392Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:15:04.594Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:15:05.046Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:15:05.618Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=0
+[2026-11-25T20:15:06.872Z] [boot2] sticky: thirdAsk=true requestId=ctrl-0d2a02r0hin7ra0hdd1l105t markersAfter=["stopped-be6cf2ae.json"] wakeInputsWhileStopped=0
+[2026-11-25T20:15:07.642Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:15:13.749Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:15:15.241Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=0
+[2026-11-25T20:15:17.746Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=0
+[2026-11-25T20:15:18.669Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:15:18.892Z] [boot2] officer resolve(third) seen=true id=call_00_ET_LeAahXla5xHUwSQgATlg6520 settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-0d2a02r0hin7ra0hdd1l105t","decision":"allow","decider":{"kind":"instance","instanceId":"inst-0hvc2y01
+[2026-11-25T20:15:19.297Z] [boot2] sticky: resumeCleared=true resolve3=true write3Settled=true
+[2026-11-25T20:15:19.303Z] [boot2] process ask appeared=true requestId=ctrl-1k3kbd90zgejhu01qlvgb03n
+[2026-11-25T20:15:19.312Z] [boot2] prompt(d4res3) status=200
+[2026-11-25T20:15:19.399Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=0
+[2026-11-25T20:15:19.466Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=0
+[2026-11-25T20:15:20.471Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:15:21.298Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:15:21.530Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:15:21.823Z] [boot2] prompt(d4res3) turn settled=true
+[2026-11-25T20:15:21.992Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=0
+[2026-11-25T20:15:22.256Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=0
+[2026-11-25T20:15:22.330Z] [boot2] d4:ask-execute-process=REFUTED failing=["approved-through-real-control-path","bash-tool-result-not-an-error","in-lane-write-lands","settlement-completed"]
+[2026-11-25T20:15:22.333Z] [boot2] duplicate: intents=1 delivered=1 inputs=1
+[2026-11-25T20:15:22.379Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=0
+[2026-11-25T20:15:23.856Z] [boot2] d4:case-created=PROVEN failing=[]
+[2026-11-25T20:15:23.857Z] [boot2] d4:router-officer=PROVEN failing=[]
+[2026-11-25T20:15:23.857Z] [boot2] d4:wake-delivered=PROVEN failing=[]
+[2026-11-25T20:15:23.857Z] [boot2] d4:officer-decides=PROVEN failing=[]
+[2026-11-25T20:15:23.857Z] [boot2] d4:ask-executes-after-review=PROVEN failing=[]
+[2026-11-25T20:15:23.857Z] [boot2] d4:duplicate-route=PROVEN failing=[]
+[2026-11-25T20:15:23.857Z] [boot2] d4:sticky-stop=PROVEN failing=[]
+[2026-11-25T20:15:23.857Z] [boot2] d4:routed-wake=PROVEN failing=[]
+[2026-11-25T20:15:23.867Z] [boot2] prompt(rm-collect) status=200
+[2026-11-25T20:15:24.733Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:15:25.578Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=0
+[2026-11-25T20:15:25.878Z] [boot2] prompt(rm-collect) turn settled=true
+[2026-11-25T20:15:25.881Z] [boot2] rm:collect=PROVEN failing=[]
+[2026-11-25T20:15:25.889Z] [boot2] prompt(rm-duplicate) status=200
+[2026-11-25T20:15:26.770Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:15:26.894Z] [boot2] prompt(rm-duplicate) turn settled=true
+[2026-11-25T20:15:27.900Z] [boot2] rm:duplicate-approval=PROVEN failing=[]
+[2026-11-25T20:15:29.547Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=0
+[2026-11-25T20:15:34.733Z] [boot2] rm:restart-no-replay=PROVEN failing=[]
+[2026-11-25T20:15:34.737Z] blueprint incoherent.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting=null
+[2026-11-25T20:15:39.020Z] [boot2] d4:refusal=PROVEN failing=[]
+[2026-11-25T20:15:39.023Z] [boot2] d4:enablement=PROVEN failing=[]
+[2026-11-25T20:15:42.777Z] blueprint ask-denied.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-25T20:15:42.779Z] [boot2] recorder listening on http://127.0.0.1:44719/anthropic -> https://api.deepseek.com/anthropic
+[2026-11-25T20:15:42.779Z] [boot2] model recorder: http://127.0.0.1:44719/anthropic -> https://api.deepseek.com/anthropic (sink=model-calls-negative-ask-denied.jsonl)
+[2026-11-25T20:15:46.508Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=0 tool_uses=0
+[2026-11-25T20:15:50.266Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:15:50.976Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=0 tool_uses=0
+[2026-11-25T20:15:51.118Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=0
+[2026-11-25T20:15:52.178Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:15:54.210Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:15:54.700Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=0
+[2026-11-25T20:15:55.352Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:15:55.354Z] [boot2] d4:ask-denied=PROVEN failing=[]
+[2026-11-25T20:15:57.585Z] blueprint ask-stopped.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-25T20:15:57.586Z] [boot2] recorder listening on http://127.0.0.1:45797/anthropic -> https://api.deepseek.com/anthropic
+[2026-11-25T20:15:57.587Z] [boot2] model recorder: http://127.0.0.1:45797/anthropic -> https://api.deepseek.com/anthropic (sink=model-calls-negative-ask-stopped.jsonl)
+[2026-11-25T20:16:01.273Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=0 tool_uses=0
+[2026-11-25T20:16:02.939Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+[2026-11-25T20:16:03.610Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=0 tool_uses=0
+[2026-11-25T20:16:03.825Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=0
+[2026-11-25T20:16:04.199Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=34 tool_uses=1
+[2026-11-25T20:16:05.575Z] [boot2] d4:ask-stopped=PROVEN failing=[]
+[2026-11-25T20:16:07.774Z] [boot2] negative dev-live slot released (released=true held=false)
+[2026-11-25T20:16:07.776Z] [boot2] overall=PASS (81614ms)
+[2026-11-25T20:16:07.779Z] [boot2] dev-live slot released (released=true held=false)
+[2026-11-25T20:16:07.785Z] [boot2] RUN-RECORD SELF-CHECK pass (dev/agent-workflow/evidence/d-boot-feasibility/real-model/runs/boot02/run-record.json: schema=u5-run-record/1 cases=20 subset=false overall=PASS)
+[2026-11-25T20:16:07.825Z] host porcelain after: []
+[2026-11-25T20:16:07.827Z] TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)
+fact                              boot1                               boot2                               
+overall                              "PASS"                               "PASS"                              
+enablement                           "PROVEN"                             "PROVEN"                            
+officerUp                            "PROVEN"                             "PROVEN"                            
+officerBinding                       "PROVEN"                             "PROVEN"                            
+routedWake                           "PROVEN"                             "PROVEN"                            
+caseCreated                          "PROVEN"                             "PROVEN"                            
+routerOfficer                        "PROVEN"                             "PROVEN"                            
+wakeDelivered                        "PROVEN"                             "PROVEN"                            
+officerDecides                       "PROVEN"                             "PROVEN"                            
+askExecutesAfterReview               "PROVEN"                             "PROVEN"                            
+duplicateRoute                       "PROVEN"                             "PROVEN"                            
+stickyStop                           "PROVEN"                             "PROVEN"                            
+refusal                              "PROVEN"                             "PROVEN"                            
+askExecute                           "PROVEN"                             "PROVEN"                            
+askExecute2                          "PROVEN"                             "PROVEN"                            
+askDenied                            "PROVEN"                             "PROVEN"                            
+askStopped                           "PROVEN"                             "PROVEN"                            
+leaderCreatesWorker                  "PROVEN"                             "PROVEN"                            
+collect                              "PROVEN"                             "PROVEN"                            
+duplicateApproval                    "PROVEN"                             "PROVEN"                            
+restartNoReplay                      "PROVEN"                             "PROVEN"                            
+askAppeared                          true                                 true                                
+wakeFacts                            8                                    8                                   
+wakeIntentFiles                      0                                    0                                   
+reviewWakeHits                       0                                    0                                   
+officerAllowFacts                    1                                    1                                   
+askExecuteBytes                      27                                   27                                  
+askExecuteSha256                     "ced10112e5b82a2b1b6bca1b85b1dff24   "ced10112e5b82a2b1b6bca1b85b1dff24  
+askExecuteSettlement                 "COMPLETED"                          "COMPLETED"                         
+askExecute2Bytes                     29                                   29                                  
+askExecute2Sha256                    "2d71ffdd499955a34ec86af1c25c00f83   "2d71ffdd499955a34ec86af1c25c00f83  
+askExecute2Settlement                "COMPLETED"                          "COMPLETED"                         
+askExecuteProcessRequestIdKnown      true                                 true                                
+askExecuteProcessInLaneBytes         null                                 null                                
+askExecuteProcessInLaneSha256        null                                 null                                
+askExecuteProcessOutLaneExists       false                                false                               
+askExecuteProcessSettlement          "FAILED"                             "FAILED"                            
+askDeniedBytes                       null                                 null                                
+askDeniedSettlement                  "REFUSED"                            "REFUSED"                           
+askStoppedBytes                      null                                 null                                
+askStoppedSettlement                 "REFUSED"                            "REFUSED"                           
+legOrdinal                           1                                    1                                   
+routeKind                            "recipient"                          "recipient"                         
+routeRole                            "officer"                            "officer"                           
+selfAskRouteKind                     "recipient"                          "recipient"                         
+selfAskRouteRole                     "leader"                             "leader"                            
+routedWakes                          4                                    4                                   
+deliveredWakes                       4                                    4                                   
+managementExecutions                 0                                    0                                   
+officerResolveSettlement             "COMPLETED"                          "COMPLETED"                         
+duplicateWakeInputs                  1                                    1                                   
+stickyStopMarkerCount                1                                    1                                   
+
+agreeing=true differing=[]
+[2026-11-25T20:16:07.827Z] RESULT evidence-complete=true allBooted=true blocked=false runRecordsValid=true (2/2 boots; agreeing pair=true)
+[2026-11-25T20:16:09.572Z] [boot2] recorder: POST /anthropic/v1/messages -> 200 model=deepseek-flash tools=49 tool_uses=1
+EXIT=0

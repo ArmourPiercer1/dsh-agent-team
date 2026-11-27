@@ -1,0 +1,130 @@
+{
+  "ask": {
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/centre/settlement/inst-1235q1w1rd1u/exec-04b0e782097c0c3d2e673b13a70c5fc9614c82d7.settlement.json",
+    "state": "REFUSED",
+    "dispatch": "not-started",
+    "bodyOutcome": "not-started",
+    "stops": [],
+    "transitions": [
+      "ADMITTED",
+      "REFUSED"
+    ]
+  },
+  "bAfter": {
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/centre/settlement/inst-12x4j4t1rn1g/exec-6a8bcbb3a209d1577586ece4733f12de6cbd88a7.settlement.json",
+    "state": "COMPLETED",
+    "dispatch": "quiesced",
+    "bodyOutcome": "completed",
+    "stops": [],
+    "transitions": [
+      "ADMITTED",
+      "RUNNING",
+      "COMPLETED"
+    ]
+  },
+  "bPre": {
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/centre/settlement/inst-12x4j4t1rn1g/exec-abc884630a66aab326a2226182b1165e6d760c43.settlement.json",
+    "state": "COMPLETED",
+    "dispatch": "quiesced",
+    "bodyOutcome": "completed",
+    "stops": [],
+    "transitions": [
+      "ADMITTED",
+      "RUNNING",
+      "COMPLETED"
+    ]
+  },
+  "bMid": {
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/centre/settlement/inst-12x4j4t1rn1g/exec-f0c4ee02b77f020428f8515e8710879a264aa14a.settlement.json",
+    "state": "REFUSED",
+    "dispatch": "not-started",
+    "bodyOutcome": "not-started",
+    "stops": [],
+    "transitions": [
+      "ADMITTED",
+      "REFUSED"
+    ]
+  },
+  "bPost": {
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/centre/settlement/inst-12x4j4t1rn1g/exec-b1ad937f25224023dda0ea66f789e52e8e0a45e6.settlement.json",
+    "state": "COMPLETED",
+    "dispatch": "quiesced",
+    "bodyOutcome": "completed",
+    "stops": [],
+    "transitions": [
+      "ADMITTED",
+      "RUNNING",
+      "COMPLETED"
+    ]
+  },
+  "bPreInLane": {
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/centre/settlement/inst-12x4j4t1rn1g/exec-9ecb5313932715788169a24b8929ea3289f6a126.settlement.json",
+    "state": "COMPLETED",
+    "dispatch": "quiesced",
+    "bodyOutcome": "completed",
+    "stops": [],
+    "transitions": [
+      "ADMITTED",
+      "RUNNING",
+      "COMPLETED"
+    ]
+  },
+  "bMidInLane": {
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/centre/settlement/inst-12x4j4t1rn1g/exec-62aca8f157f9edaa8987dde8d3c121e192f8a74c.settlement.json",
+    "state": "COMPLETED",
+    "dispatch": "quiesced",
+    "bodyOutcome": "completed",
+    "stops": [],
+    "transitions": [
+      "ADMITTED",
+      "RUNNING",
+      "COMPLETED"
+    ]
+  },
+  "bPostInLane": {
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/centre/settlement/inst-12x4j4t1rn1g/exec-37b1cca37be15722f6b3ef7c0502aafc263bc49f.settlement.json",
+    "state": "COMPLETED",
+    "dispatch": "quiesced",
+    "bodyOutcome": "completed",
+    "stops": [],
+    "transitions": [
+      "ADMITTED",
+      "RUNNING",
+      "COMPLETED"
+    ]
+  },
+  "bWiden": {
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/centre/settlement/inst-12x4j4t1rn1g/exec-35d5cae6a9c97b5a12156bccabf6e0f9281fbccd.settlement.json",
+    "state": "REFUSED",
+    "dispatch": "not-started",
+    "bodyOutcome": "not-started",
+    "stops": [],
+    "transitions": [
+      "ADMITTED",
+      "REFUSED"
+    ]
+  },
+  "delivery": {
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/centre/settlement/inst-12x4j4t1rn1g/exec-b7da47d13cfb9caa5f86436b73bcc8e7e019da51.settlement.json",
+    "state": "COMPLETED",
+    "dispatch": "quiesced",
+    "bodyOutcome": "completed",
+    "stops": [],
+    "transitions": [
+      "ADMITTED",
+      "RUNNING",
+      "COMPLETED"
+    ]
+  },
+  "deliveryStop": {
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T18-15-50Z-next/centre/settlement/inst-1235q1w1rd1u/exec-d227aa2fd63013fbd14639118d2ef095440213f8.settlement.json",
+    "state": "REFUSED",
+    "dispatch": "not-started",
+    "bodyOutcome": "not-started",
+    "stops": [],
+    "transitions": [
+      "ADMITTED",
+      "REFUSED"
+    ]
+  }
+}

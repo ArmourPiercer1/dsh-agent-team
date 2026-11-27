@@ -1,0 +1,14 @@
+{
+  "attempted": true,
+  "via": "request-creation notifier + reviewer turn/end re-collection (the product's own two route call sites)",
+  "intentFacts": 1,
+  "deliveredFacts": 1,
+  "wakeInputs": 1,
+  "converged": true,
+  "detail": {
+    "requestId": "ctrl-1i1f74c1u124jr1r3whke15t",
+    "requestToken": "review-wake:session-dboot-d4-root:inst-1crltnl0089j:1:a6wake%3Av1%3A1%3A60be49b5",
+    "intentAt": "2026-11-24T08:39:30.172Z",
+    "decisionAt": "2026-11-24T08:39:30.314Z"
+  }
+}

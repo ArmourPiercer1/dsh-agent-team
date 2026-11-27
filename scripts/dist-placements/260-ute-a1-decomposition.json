@@ -1,0 +1,28 @@
+{
+  "schema": "dist-placements/1",
+  "family": "ute-a1-decomposition",
+  "summary": "Round 90 (UTE vNext A1, behaviour-preserving decomposition): four cohesive spans of packages/runtime/src/plugin/vnext/agent-bindings.mjs moved VERBATIM into sibling modules under the same directory and are imported back by relative `.mjs` specifiers. tsc never emits .mjs, so each of the four must ride the byte-identical dist mirror or the shipped `files: [\"dist\"]` install face fails with ERR_MODULE_NOT_FOUND the first time the glue module is loaded - the GLUE-6 RED-A class recorded in 010/240/250.",
+  "note": "ORDER: agent-bindings.mjs (the glue) stays PLACEMENTS[0] in 010; this entry uses prefix 260 so it sorts after 250-round84-alpha6-wake and moves no existing entry. Every file is a pure MOVE (no byte of the extracted text changed); the gate D src-vs-dist drift comparison therefore holds for them exactly as it holds for the glue itself.",
+  "placements": [
+    {
+      "src": "packages/runtime/src/plugin/vnext/governed-preset-modules.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/governed-preset-modules.mjs",
+      "note": "The governed preset's enabled row module specifiers + each row's own declared config (the SHAPE A derivation). Imported by the glue at module scope."
+    },
+    {
+      "src": "packages/runtime/src/plugin/vnext/mcp-witness-lane.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/mcp-witness-lane.mjs",
+      "note": "The MCP capability witness: capability telemetry, the F15 public tool-surface readers and fiber retirement. Imported by the glue at module scope. The mount transaction itself stays in the glue (the F15 §9.2 static call-site witness reads agent-bindings.mjs)."
+    },
+    {
+      "src": "packages/runtime/src/plugin/vnext/root-delivery.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/root-delivery.mjs",
+      "note": "The Root (Leader) input delivery ports: the ONE shared real-input path plus the B6 context, TCM-M3 initial work and C1 control-notification callers. Imported by the glue at module scope."
+    },
+    {
+      "src": "packages/runtime/src/plugin/vnext/stop-drain-lane.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/stop-drain-lane.mjs",
+      "note": "The Member stop lane: interrupt + PD-29 goal disarm, the recursive descendant drain and the live-residency port. Imported by the glue at module scope."
+    }
+  ]
+}

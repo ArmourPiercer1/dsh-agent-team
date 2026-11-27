@@ -39,7 +39,7 @@
 
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { appendFile, readFile } from 'node:fs/promises'
-import type { FsGuard } from './fs.js'
+import type { FsGuard, FsGuardOperation } from './fs.js'
 import { TeamIoDenial, type TeamIoDenialCode } from './types.js'
 
 /** The one record schema. A reader that does not know it must fail loud. */
@@ -71,6 +71,17 @@ export type GuardConsultRealm = 'member' | 'binding'
  * the fact must report `ask` (not `deny`) so the three-way comparison sees the
  * lane the author declared while the effect still shows a refusal. It is a
  * MAPPING of the guard's own code, not a new decision.
+ *
+ * `IO_ASK_RECEIPT_REFUSED` is the SAME mapping for the native FS mutation face:
+ * an `ask` there is satisfied ONLY by the R3 ApprovedAskReceipt (owner ruling
+ * `docs/reviews/20261124-0151.txt` §2), so with no receipt in scope the guard
+ * refuses the ask — it never promotes it to a lane `allow`, and it is not a
+ * declared `deny` either. Reporting that refusal as `deny` erased the lane the
+ * author declared and made the three-way comparison read a lane loss (round
+ * 101, `write-*-ask-under-allow` / `write-binding-subtree-allow-symlink-into-ask`).
+ * Every receipt refusal in `APPROVED_ASK_RECEIPT_REFUSAL_CODES` is reached only
+ * from `decision.decision === 'ask'` in `fs.ts`; a `deny` is thrown earlier and
+ * keeps its own code.
  */
 export type GuardConsultDecision = 'allow' | 'deny' | 'ask'
 
@@ -259,7 +270,9 @@ export class GuardConsultTransportError extends Error {
 
 /** Map a guard refusal code to the lane it reports (see the type's doc). */
 function laneOfRefusal(code: TeamIoDenialCode): GuardConsultDecision {
-  return code === 'IO_POLICY_UNSUPPORTED' || code === 'IO_ASK_REQUIRES_APPROVAL' ? 'ask' : 'deny'
+  return code === 'IO_POLICY_UNSUPPORTED' || code === 'IO_ASK_REQUIRES_APPROVAL' || code === 'IO_ASK_RECEIPT_REFUSED'
+    ? 'ask'
+    : 'deny'
 }
 
 /**
@@ -277,17 +290,25 @@ export function observeGuard(
   context: GuardConsultContext,
 ): FsGuard {
   let sequence = 0
-  return async function observedGuard(method: string, hostPath: string, annotations?: readonly string[]): Promise<void> {
+  return async function observedGuard(method: string, hostPath: string, annotations?: readonly string[], operation?: FsGuardOperation): Promise<void> {
     // PD-19: the dispatch this consultation belongs to, read ONCE at entry from
     // the async context the `tools/execute` waterfall established. Reading it is
     // the only thing attribution does here — `guard(method, hostPath, …)` below
     // is the same call, on the same inputs, as before this field existed.
+    //
+    // R3 (round 95): the OPTIONAL operation context is forwarded VERBATIM too.
+    // The observer is a pass-through, not a decision point; dropping the
+    // `writeText` content here made a governed realm (which always supplies an
+    // evidence sink) refuse an otherwise valid approved-ask receipt with
+    // `RECEIPT_CONTENT_UNAVAILABLE`. Forwarding it changes no decision: the
+    // inner guard still decides on `(method, hostPath)` and the operation is
+    // only the effect a receipt is checked against.
     const attribution = TOOL_CALL_ATTRIBUTION.getStore()
     let decision: GuardConsultDecision
     let decidedBy: string
     let denial: TeamIoDenial | null = null
     try {
-      await guard(method, hostPath, annotations)
+      await guard(method, hostPath, annotations, operation)
       decision = 'allow'
       decidedBy = GUARD_ALLOW_DECIDED_BY
     } catch (error) {

@@ -1,0 +1,66 @@
+{
+  "proposition": "the routed review decision is taken from the durable control row and the wake is DELIVERED through the governed delivery (team-review-wake-routed intent + team-review-wake-delivered confirmation, machine attribution), with the Officer woken in its own session",
+  "verdict": "REFUTED",
+  "clauses": [
+    {
+      "id": "ordinary-tool-ask-created",
+      "ok": true,
+      "detail": "durable row={\"requestId\":\"ctrl-1xxrzo21k29yc31rawhls0qn\",\"kind\":\"leader-approval\",\"actionName\":\"admission-ask\",\"targetInstanceId\":\"inst-0ty67u70r99a\",\"toolName\":\"write\",\"summary\":\"admission ask: write (fs.write \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T23-41-39Z/workspace/lane/worker-ask.txt\\\" requires approval under policy generation a5sf1:5f841655f3b566a4da0523448c33c12d)\",\"approvalCaseId\":null,\"legOrdinal\":null,\"reviewAuthority\":null,\"operationFingerprint\":null,\"requestedEffect\":null,\"blueprintContentHash\":null}"
+    },
+    {
+      "id": "row-carries-approval-case",
+      "ok": false,
+      "detail": "approvalCaseId=null legOrdinal=null reviewAuthority=null"
+    },
+    {
+      "id": "product-router-selects-the-officer",
+      "ok": false,
+      "detail": "createAlpha6RootRouter.route()=null expectedOfficerInstanceId=\"inst-1crltnl0089j\" memberListCalls=0 error=null"
+    },
+    {
+      "id": "wake-intent-fact-routed",
+      "ok": false,
+      "detail": "wake facts=[]"
+    },
+    {
+      "id": "wake-confirmed-delivered",
+      "ok": false,
+      "detail": "wake facts=[]"
+    },
+    {
+      "id": "wake-intent-file-written",
+      "ok": false,
+      "detail": "intent files=[]"
+    },
+    {
+      "id": "officer-woken-in-its-session",
+      "ok": false,
+      "detail": "officer user text=\"[team-work requestToken=dboot-d4-delegate-officer] dboot-d4-officer-work DBOOT_D4_OFFICER_DELEGATED: perform the ONE tool call your instructions name, then report DBOOT_D4_OFFICER_DELEGATED.\\n<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance whe\""
+    },
+    {
+      "id": "wake-has-machine-attribution",
+      "ok": false,
+      "detail": "wake facts=0; no wake ⇒ no machine input to attribute"
+    },
+    {
+      "id": "no-plain-c1-ask-to-the-leader",
+      "ok": false,
+      "detail": "leader notification=\"[team-control requestId=ctrl-1xxrzo21k29yc31rawhls0qn]\\nA Team member operation is waiting for Leader approval.\\n\\nrequestId: ctrl-1xxrzo21k29yc31rawhls0qn\\nrequester: inst-0ty67u70r99a\\nsubject: instance inst-0ty67u70r99a\\ntarget: inst-0ty67u70r99a\\ntool: write\\nsummary: admission ask: write (fs.write \\\"/ho\""
+    },
+    {
+      "id": "no-review-wake-to-the-leader",
+      "ok": true,
+      "detail": "leader got a review wake=false"
+    }
+  ],
+  "failing": [
+    "row-carries-approval-case",
+    "product-router-selects-the-officer",
+    "wake-intent-fact-routed",
+    "wake-confirmed-delivered",
+    "wake-intent-file-written",
+    "officer-woken-in-its-session",
+    "wake-has-machine-attribution",
+    "no-plain-c1-ask-to-the-leader"
+  ]
+}

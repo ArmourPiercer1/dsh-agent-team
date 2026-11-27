@@ -1,0 +1,278 @@
+## population runtime+testkit, rc.5 (TEAM_TEST_HOST=next) — 18 files
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut
+
+stdout | packages/testkit/test/m2-scripted-model.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/a5sf-provider-composition.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/u6-mcp-017-regression.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/team-spill-local-composition.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/mcp-blueprint-initial-grant.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/a5sf-bl16-grep-realm.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/a3p5-permission-delivery-binding.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/a3p5-permission-notification-lane-hygiene.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/a5sf-service-install.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/a5sf-pd17-fs-policy.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/team-spill-local.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/f1-webserver-shim-isolation.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/f15-mcp-live-loss.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/rc2-persona-probe.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+ ✓ packages/runtime/test/rc2-persona-probe.test.ts (13 tests) 9ms
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 87, column 24:
+
+        testEndpoints: !!js (process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split('…
+                       ^^^^
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 89, column 20:
+
+          baseURL: !!js process.env.A5SF_WEB_SEARCH_BASE_URL ?? 'https://api.ex…
+                   ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 90, column 19:
+
+          apiKey: !!js process.env.A5SF_WEB_SEARCH_API_KEY ?? process.env.EXA_A…
+                  ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 366, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 379, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 87, column 24:
+
+        testEndpoints: !!js (process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split('…
+                       ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 89, column 20:
+
+          baseURL: !!js process.env.A5SF_WEB_SEARCH_BASE_URL ?? 'https://api.ex…
+                   ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 90, column 19:
+
+          apiKey: !!js process.env.A5SF_WEB_SEARCH_API_KEY ?? process.env.EXA_A…
+                  ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 366, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 379, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+ ✓ packages/runtime/test/a5sf-provider-composition.test.ts (9 tests) 27ms
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 87, column 24:
+
+        testEndpoints: !!js (process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split('…
+                       ^^^^
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 89, column 20:
+
+          baseURL: !!js process.env.A5SF_WEB_SEARCH_BASE_URL ?? 'https://api.ex…
+                   ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 90, column 19:
+
+          apiKey: !!js process.env.A5SF_WEB_SEARCH_API_KEY ?? process.env.EXA_A…
+                  ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 366, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 379, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 87, column 24:
+
+        testEndpoints: !!js (process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split('…
+                       ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 89, column 20:
+
+          baseURL: !!js process.env.A5SF_WEB_SEARCH_BASE_URL ?? 'https://api.ex…
+                   ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 90, column 19:
+
+          apiKey: !!js process.env.A5SF_WEB_SEARCH_API_KEY ?? process.env.EXA_A…
+                  ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 366, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 379, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 87, column 24:
+
+        testEndpoints: !!js (process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split('…
+                       ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 89, column 20:
+
+          baseURL: !!js process.env.A5SF_WEB_SEARCH_BASE_URL ?? 'https://api.ex…
+                   ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 90, column 19:
+
+          apiKey: !!js process.env.A5SF_WEB_SEARCH_API_KEY ?? process.env.EXA_A…
+                  ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 366, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 379, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 87, column 24:
+
+        testEndpoints: !!js (process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split('…
+                       ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 89, column 20:
+
+          baseURL: !!js process.env.A5SF_WEB_SEARCH_BASE_URL ?? 'https://api.ex…
+                   ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 90, column 19:
+
+          apiKey: !!js process.env.A5SF_WEB_SEARCH_API_KEY ?? process.env.EXA_A…
+                  ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 366, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+(node:2231) [TAG_RESOLVE_FAILED] YAMLWarning: Unresolved tag: tag:yaml.org,2002:js at line 379, column 23:
+
+            disabled: !!js process.platform === 'win32'
+                      ^^^^
+
+ ✓ packages/runtime/test/team-spill-local-composition.test.ts (3 tests) 39ms
+stdout | packages/runtime/test/team-skills.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+stdout | packages/runtime/test/issue2-real-preset-restriction.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+ ✓ packages/runtime/test/a5sf-pd17-fs-policy.test.ts (5 tests) 50ms
+stdout | packages/runtime/test/f15-mcp-live-loss-characterization.test.ts
+HOST-VERSION-GUARD ok host=next resolved=0.2.2-rc.5 pin=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next
+
+ ✓ packages/testkit/test/m2-scripted-model.test.ts (11 tests) 10ms
+(node:2231) TimeoutNaNWarning: NaN is not a number.
+Timeout duration was set to 1.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | packages/runtime/test/team-skills.test.ts
+[dsh-agent-team] bundled team skill "bad-name" skipped: the frontmatter name "Bad_Name" is not a valid kebab-case skill name
+[dsh-agent-team] bundled team skill "missing-description" skipped: SKILL.md frontmatter must carry a kebab-case "name" and a non-empty "description"
+
+stdout | packages/runtime/test/team-skills.test.ts
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+
+stderr | packages/runtime/test/team-skills.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/team-skills.test.ts
+[dsh-agent-team] no bundled skills directory is resolvable from the host entry location — the bundled team skills are NOT registered (install-surface anomaly); the team core proceeds
+
+ ✓ packages/runtime/test/team-skills.test.ts (9 tests) 5ms
+ ✓ packages/runtime/test/u6-mcp-017-regression.test.ts (5 tests) 79ms
+ ✓ packages/runtime/test/a3p5-permission-notification-lane-hygiene.test.ts (9 tests) 51ms
+ ✓ packages/runtime/test/a5sf-service-install.test.ts (20 tests) 94ms
+ ✓ packages/runtime/test/team-spill-local.test.ts (10 tests) 16ms
+ ✓ packages/runtime/test/a3p5-permission-delivery-binding.test.ts (18 tests) 187ms
+ ✓ packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts (4 tests) 199ms
+ ✓ packages/runtime/test/issue2-real-preset-restriction.test.ts (13 tests) 4ms
+ ✓ packages/runtime/test/f15-mcp-live-loss-characterization.test.ts (2 tests) 3ms
+ ✓ packages/runtime/test/f15-mcp-live-loss.test.ts (10 tests) 9ms
+stderr | packages/runtime/test/f1-webserver-shim-isolation.test.ts > F1 the scoped webServer compatibility seam (host.ts internal/get) > F1-T1: the team remote registration is served by the scoped shim (0.1.5 topology)
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/mcp-blueprint-initial-grant.test.ts (32 tests) 7ms
+stderr | packages/runtime/test/f1-webserver-shim-isolation.test.ts > F1 the scoped webServer compatibility seam (host.ts internal/get) > F1-T1: the team remote registration is served by the scoped shim (0.1.5 topology)
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+stderr | packages/runtime/test/f1-webserver-shim-isolation.test.ts > F1 the scoped webServer compatibility seam (host.ts internal/get) > F1-T2: unrelated contexts keep the native Cordis failure (the key regression)
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/f1-webserver-shim-isolation.test.ts > F1 the scoped webServer compatibility seam (host.ts internal/get) > F1-T2: unrelated contexts keep the native Cordis failure (the key regression)
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+stderr | packages/runtime/test/f1-webserver-shim-isolation.test.ts > F1 the scoped webServer compatibility seam (host.ts internal/get) > F1-T3: 0.1.2-era behavior is unchanged (the native walk resolves)
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/f1-webserver-shim-isolation.test.ts > F1 the scoped webServer compatibility seam (host.ts internal/get) > F1-T3: 0.1.2-era behavior is unchanged (the native walk resolves)
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+ ✓ packages/runtime/test/f1-webserver-shim-isolation.test.ts (3 tests) 168ms
+ ✓ packages/runtime/test/a5sf-bl16-grep-realm.test.ts (14 tests) 46171ms
+     ✓ R0/R1: the preset definition reaches the INHERITED service; the shadow reaches the confined one  3368ms
+     ✓ R3: an in-lane search with no match is NOT an error — exit code 1 survives the handle adaptation  3324ms
+     ✓ R4: an invalid pattern is a failure (rg exit 2) carrying the REAL rg stderr  3308ms
+     ✓ G1/G2: glob rides the SAME confined face — in-lane lists, out-of-lane is refused with a fact  3293ms
+     ✓ R5: a shell body is refused at ADMISSION (0 spawns, one fact), and the KERNEL allowance is measured directly  3293ms
+     ✓ R6: live row 1 through the REAL grep tool — an in-lane worktree search returns the match (one allow fact, disclosure recorded)  6552ms
+     ✓ R6m: MUTATION — stripping the two flags at the provider boundary reproduces the LIVE row-1 tool error verbatim  6536ms
+     ✓ R7: a lane that includes the worktree root keeps ordinary .gitignore semantics (no silent global change)  6542ms
+     ✓ R7m: MUTATION — forcing the flags onto that lane loses .gitignore semantics (why the change is conditional)  6549ms
+     ✓ C1a: a governed member call reaches the MOUNTED host executor, and the centre records the allow  3295ms
+
+ Test Files  18 passed (18)
+      Tests  190 passed (190)
+   Start at  08:05:14
+   Duration  48.33s (transform 21.51s, setup 3.00s, import 26.42s, tests 47.13s, environment 1ms)
+

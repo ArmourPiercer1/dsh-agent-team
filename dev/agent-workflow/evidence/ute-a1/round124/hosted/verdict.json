@@ -1,0 +1,810 @@
+{
+  "schema": "candidate-acceptance-gate/1",
+  "at": "2026-11-26T01:13:44.043Z",
+  "head": "cd08f90c2b87d875d65f427c9f2753b6710638e9",
+  "branch": "HEAD",
+  "hosts": [
+    "legacy",
+    "next"
+  ],
+  "verdict": "fail",
+  "layer": "candidate-acceptance (VERSION GATE: required only at a frozen candidate SHA, never a per-PR required context)",
+  "bootsPerDriver": 2,
+  "timeoutMs": 2700000,
+  "knownRefuted": {
+    "d4:ask-execute-process": {
+      "citation": "dev/agent-workflow/evidence/ute-a1/SCOPE-subprocess-ask.md — STATUS: APPROVED BY OWNER (2026-11-24), §2 (what is explicitly NOT promised) and §4 (the exact current refusal evidence, both hosts)",
+      "review": "docs/reviews/20261124-2120.txt ruling 1 — the owner formally APPROVED the Subprocess/PTY scope (product scope only): Process Ask is `UNSUPPORTED BY PRODUCT RULING`, the same class as PTC (review `20261124-1341` §3.1 proposed the wording; §4.3 closed the product-scope question)",
+      "reason": "APPROVED BY PRODUCT RULING (2026-11-24): this generation promises `allow`/`deny` for Subprocess/PTY; per-call `ask` for process execution is NOT supported and remains fail-closed. The process ask chain really did run — a real durable ask, a real Officer allow, a consumed one-shot grant — then the persistent-bash backend lookup failed with the host's NO_BACKEND because the v5 per-tool bash binding realm carries no PTY terminal spec: the spawn failed BEFORE any process existed, zero bytes were produced, settlement is FAILED, and the receipt verifier was never reached. That is the approved promise, not a pending product fix; the refutation is preserved as REFUTED (never rewritten as a positive test, and never REFUSED/not-started)."
+    }
+  },
+  "drivers": [
+    {
+      "id": "d",
+      "script": "tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs",
+      "judges": [
+        "d:member-read-admitted",
+        "d:member-read-denied",
+        "d:native-read-surface",
+        "d:guard-facts",
+        "d:centre-facts",
+        "d:remote-creation"
+      ]
+    },
+    {
+      "id": "d2",
+      "script": "tests/world-factory/drivers/d-boot-feasibility/run-boot-d2.mjs",
+      "judges": [
+        "d2:multi-member-concurrency",
+        "d2:revocation",
+        "d2:stop",
+        "d2:remote-delivery"
+      ]
+    },
+    {
+      "id": "d3",
+      "script": "tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs",
+      "judges": [
+        "d3:persistent-subprocess",
+        "d3:crash-cold-recovery",
+        "d3:work-delivery",
+        "d3:alpha6"
+      ]
+    },
+    {
+      "id": "d4",
+      "script": "tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs",
+      "judges": [
+        "d4:enablement",
+        "d4:officer-up",
+        "d4:officer-binding",
+        "d4:routed-wake",
+        "d4:case-created",
+        "d4:router-officer",
+        "d4:wake-delivered",
+        "d4:officer-decides",
+        "d4:ask-executes-after-review",
+        "d4:duplicate-route",
+        "d4:sticky-stop",
+        "d4:refusal",
+        "d4:ask-execute",
+        "d4:ask-execute-2",
+        "d4:ask-execute-process",
+        "d4:ask-denied",
+        "d4:ask-stopped"
+      ]
+    }
+  ],
+  "totals": {
+    "judges": 58,
+    "proven": 56,
+    "knownRefuted": 2,
+    "envLimited": 0
+  },
+  "perHost": [
+    {
+      "host": "legacy",
+      "selectorEnv": "TEAM_TEST_HOST=legacy",
+      "verdict": "fail",
+      "reasons": [
+        "d3: agreement.json agreeing=false (must be true) differing=[]",
+        "d3: RUN record is partial/subset: boot2",
+        "d3: driver exit=1 signal=null (accepted: 0)"
+      ],
+      "drivers": [
+        {
+          "id": "d",
+          "script": "tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs",
+          "evidence": "dev/agent-workflow/evidence/d-boot-feasibility",
+          "command": "TEAM_TEST_HOST=legacy node tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs --boots 2",
+          "resultLine": "[2026-11-26T01:14:00.254Z] RESULT PASS (2/2 boots; agreeing pair=true)",
+          "verdict": "pass",
+          "reasons": [],
+          "agreement": {
+            "agreeing": true,
+            "boots": 2,
+            "differing": []
+          },
+          "records": [
+            {
+              "boot": 1,
+              "path": "dev/agent-workflow/evidence/d-boot-feasibility/runs/boot01/run-record.json",
+              "valid": true,
+              "fresh": true,
+              "findings": []
+            },
+            {
+              "boot": 2,
+              "path": "dev/agent-workflow/evidence/d-boot-feasibility/runs/boot02/run-record.json",
+              "valid": true,
+              "fresh": true,
+              "findings": []
+            }
+          ],
+          "judges": [
+            {
+              "id": "d:member-read-admitted",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d:member-read-denied",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d:native-read-surface",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d:guard-facts",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d:centre-facts",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d:remote-creation",
+              "verdict": "PROVEN"
+            }
+          ],
+          "counts": {
+            "judges": 6,
+            "proven": 6,
+            "knownRefuted": 0,
+            "envLimited": 0
+          },
+          "routed": null,
+          "snapshot": [
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d/agreement.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d/agreement.txt",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d/driver-digest.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d/driver.log",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d/host-tree-porcelain.txt",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d/runs/boot01/run-record.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d/runs/boot02/run-record.json"
+          ],
+          "exitCode": 0,
+          "signal": null,
+          "timedOut": false,
+          "timeoutMs": 2700000,
+          "log": "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/logs/d.log"
+        },
+        {
+          "id": "d2",
+          "script": "tests/world-factory/drivers/d-boot-feasibility/run-boot-d2.mjs",
+          "evidence": "dev/agent-workflow/evidence/d-boot-feasibility/d2",
+          "command": "TEAM_TEST_HOST=legacy node tests/world-factory/drivers/d-boot-feasibility/run-boot-d2.mjs --boots 2",
+          "resultLine": "[2026-11-26T01:14:58.898Z] RESULT PASS (2/2 boots; agreeing pair=true)",
+          "verdict": "pass",
+          "reasons": [],
+          "agreement": {
+            "agreeing": true,
+            "boots": 2,
+            "differing": []
+          },
+          "records": [
+            {
+              "boot": 1,
+              "path": "dev/agent-workflow/evidence/d-boot-feasibility/d2/runs/boot01/run-record.json",
+              "valid": true,
+              "fresh": true,
+              "findings": []
+            },
+            {
+              "boot": 2,
+              "path": "dev/agent-workflow/evidence/d-boot-feasibility/d2/runs/boot02/run-record.json",
+              "valid": true,
+              "fresh": true,
+              "findings": []
+            }
+          ],
+          "judges": [
+            {
+              "id": "d2:multi-member-concurrency",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d2:revocation",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d2:stop",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d2:remote-delivery",
+              "verdict": "PROVEN"
+            }
+          ],
+          "counts": {
+            "judges": 4,
+            "proven": 4,
+            "knownRefuted": 0,
+            "envLimited": 0
+          },
+          "routed": null,
+          "snapshot": [
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d2/agreement.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d2/agreement.txt",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d2/driver-digest.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d2/driver.log",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d2/host-tree-porcelain.txt",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d2/runs/boot01/run-record.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d2/runs/boot02/run-record.json"
+          ],
+          "exitCode": 0,
+          "signal": null,
+          "timedOut": false,
+          "timeoutMs": 2700000,
+          "log": "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/logs/d2.log"
+        },
+        {
+          "id": "d3",
+          "script": "tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs",
+          "evidence": "dev/agent-workflow/evidence/d-boot-feasibility/d3",
+          "command": "TEAM_TEST_HOST=legacy node tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs --boots 2",
+          "resultLine": "[2026-11-26T01:16:03.011Z] RESULT evidence-complete=false allProven=false (2/2 boots; agreeing pair=false)",
+          "verdict": "fail",
+          "reasons": [
+            "agreement.json agreeing=false (must be true) differing=[]",
+            "RUN record is partial/subset: boot2",
+            "driver exit=1 signal=null (accepted: 0)"
+          ],
+          "agreement": {
+            "agreeing": false,
+            "error": "agreement.json agreeing=false (must be true) differing=[]"
+          },
+          "records": [],
+          "judges": [],
+          "counts": {
+            "judges": 0,
+            "proven": 0,
+            "knownRefuted": 0,
+            "envLimited": 0
+          },
+          "routed": null,
+          "snapshot": [
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d3/agreement.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d3/agreement.txt",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d3/driver-digest.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d3/driver.log",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d3/host-tree-porcelain.txt",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d3/runs/boot01/run-record.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d3/runs/boot02/run-record.json"
+          ],
+          "exitCode": 1,
+          "signal": null,
+          "timedOut": false,
+          "timeoutMs": 2700000,
+          "log": "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/logs/d3.log"
+        },
+        {
+          "id": "d4",
+          "script": "tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs",
+          "evidence": "dev/agent-workflow/evidence/d-boot-feasibility/d4",
+          "command": "TEAM_TEST_HOST=legacy node tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs --boots 2",
+          "resultLine": "[2026-11-26T01:17:25.626Z] RESULT evidence-complete=true allBooted=true blocked=true runRecordsValid=true (2/2 boots; agreeing pair=true)",
+          "verdict": "pass",
+          "reasons": [],
+          "agreement": {
+            "agreeing": true,
+            "boots": 2,
+            "differing": []
+          },
+          "records": [
+            {
+              "boot": 1,
+              "path": "dev/agent-workflow/evidence/d-boot-feasibility/d4/runs/boot01/run-record.json",
+              "valid": true,
+              "fresh": true,
+              "findings": []
+            },
+            {
+              "boot": 2,
+              "path": "dev/agent-workflow/evidence/d-boot-feasibility/d4/runs/boot02/run-record.json",
+              "valid": true,
+              "fresh": true,
+              "findings": []
+            }
+          ],
+          "judges": [
+            {
+              "id": "d4:enablement",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:officer-up",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:officer-binding",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:routed-wake",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:case-created",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:router-officer",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:wake-delivered",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:officer-decides",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:ask-executes-after-review",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:duplicate-route",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:sticky-stop",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:refusal",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:ask-execute",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:ask-execute-2",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:ask-execute-process",
+              "verdict": "REFUTED"
+            },
+            {
+              "id": "d4:ask-denied",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:ask-stopped",
+              "verdict": "PROVEN"
+            }
+          ],
+          "counts": {
+            "judges": 17,
+            "proven": 16,
+            "knownRefuted": 1,
+            "envLimited": 0
+          },
+          "routed": {
+            "subJudges": [
+              "caseCreated",
+              "routerOfficer",
+              "wakeDelivered",
+              "officerDecides",
+              "askExecutesAfterReview",
+              "duplicateRoute",
+              "stickyStop"
+            ],
+            "boots": [
+              {
+                "boot": 1,
+                "routedWake": "PROVEN"
+              },
+              {
+                "boot": 2,
+                "routedWake": "PROVEN"
+              }
+            ]
+          },
+          "snapshot": [
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d4/agreement.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d4/agreement.txt",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d4/results.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d4/probe-digest.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d4/probe.log",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d4/run-record-self-check.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d4/runs/boot01/run-record.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d4/runs/boot01/routed-judges.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d4/runs/boot02/run-record.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/legacy/d4/runs/boot02/routed-judges.json"
+          ],
+          "exitCode": 3,
+          "signal": null,
+          "timedOut": false,
+          "timeoutMs": 2700000,
+          "log": "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/logs/d4.log"
+        }
+      ],
+      "counts": {
+        "judges": 27,
+        "proven": 26,
+        "knownRefuted": 1,
+        "envLimited": 0
+      },
+      "startedAt": "2026-11-26T01:13:44.052Z"
+    },
+    {
+      "host": "next",
+      "selectorEnv": "TEAM_TEST_HOST=next",
+      "verdict": "pass",
+      "reasons": [],
+      "drivers": [
+        {
+          "id": "d",
+          "script": "tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs",
+          "evidence": "dev/agent-workflow/evidence/d-boot-feasibility",
+          "command": "TEAM_TEST_HOST=next node tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs --boots 2",
+          "resultLine": "[2026-11-26T01:18:04.706Z] RESULT PASS (2/2 boots; agreeing pair=true)",
+          "verdict": "pass",
+          "reasons": [],
+          "agreement": {
+            "agreeing": true,
+            "boots": 2,
+            "differing": []
+          },
+          "records": [
+            {
+              "boot": 1,
+              "path": "dev/agent-workflow/evidence/d-boot-feasibility/runs/boot01/run-record.json",
+              "valid": true,
+              "fresh": true,
+              "findings": []
+            },
+            {
+              "boot": 2,
+              "path": "dev/agent-workflow/evidence/d-boot-feasibility/runs/boot02/run-record.json",
+              "valid": true,
+              "fresh": true,
+              "findings": []
+            }
+          ],
+          "judges": [
+            {
+              "id": "d:member-read-admitted",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d:member-read-denied",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d:native-read-surface",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d:guard-facts",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d:centre-facts",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d:remote-creation",
+              "verdict": "PROVEN"
+            }
+          ],
+          "counts": {
+            "judges": 6,
+            "proven": 6,
+            "knownRefuted": 0,
+            "envLimited": 0
+          },
+          "routed": null,
+          "snapshot": [
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d/agreement.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d/agreement.txt",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d/driver-digest.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d/driver.log",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d/host-tree-porcelain.txt",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d/runs/boot01/run-record.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d/runs/boot02/run-record.json"
+          ],
+          "exitCode": 0,
+          "signal": null,
+          "timedOut": false,
+          "timeoutMs": 2700000,
+          "log": "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/logs/d.log"
+        },
+        {
+          "id": "d2",
+          "script": "tests/world-factory/drivers/d-boot-feasibility/run-boot-d2.mjs",
+          "evidence": "dev/agent-workflow/evidence/d-boot-feasibility/d2",
+          "command": "TEAM_TEST_HOST=next node tests/world-factory/drivers/d-boot-feasibility/run-boot-d2.mjs --boots 2",
+          "resultLine": "[2026-11-26T01:19:09.007Z] RESULT PASS (2/2 boots; agreeing pair=true)",
+          "verdict": "pass",
+          "reasons": [],
+          "agreement": {
+            "agreeing": true,
+            "boots": 2,
+            "differing": []
+          },
+          "records": [
+            {
+              "boot": 1,
+              "path": "dev/agent-workflow/evidence/d-boot-feasibility/d2/runs/boot01/run-record.json",
+              "valid": true,
+              "fresh": true,
+              "findings": []
+            },
+            {
+              "boot": 2,
+              "path": "dev/agent-workflow/evidence/d-boot-feasibility/d2/runs/boot02/run-record.json",
+              "valid": true,
+              "fresh": true,
+              "findings": []
+            }
+          ],
+          "judges": [
+            {
+              "id": "d2:multi-member-concurrency",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d2:revocation",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d2:stop",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d2:remote-delivery",
+              "verdict": "PROVEN"
+            }
+          ],
+          "counts": {
+            "judges": 4,
+            "proven": 4,
+            "knownRefuted": 0,
+            "envLimited": 0
+          },
+          "routed": null,
+          "snapshot": [
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d2/agreement.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d2/agreement.txt",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d2/driver-digest.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d2/driver.log",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d2/host-tree-porcelain.txt",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d2/runs/boot01/run-record.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d2/runs/boot02/run-record.json"
+          ],
+          "exitCode": 0,
+          "signal": null,
+          "timedOut": false,
+          "timeoutMs": 2700000,
+          "log": "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/logs/d2.log"
+        },
+        {
+          "id": "d3",
+          "script": "tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs",
+          "evidence": "dev/agent-workflow/evidence/d-boot-feasibility/d3",
+          "command": "TEAM_TEST_HOST=next node tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs --boots 2",
+          "resultLine": "[2026-11-26T01:20:40.432Z] RESULT evidence-complete=true allProven=true (2/2 boots; agreeing pair=true)",
+          "verdict": "pass",
+          "reasons": [],
+          "agreement": {
+            "agreeing": true,
+            "boots": 2,
+            "differing": []
+          },
+          "records": [
+            {
+              "boot": 1,
+              "path": "dev/agent-workflow/evidence/d-boot-feasibility/d3/runs/boot01/run-record.json",
+              "valid": true,
+              "fresh": true,
+              "findings": []
+            },
+            {
+              "boot": 2,
+              "path": "dev/agent-workflow/evidence/d-boot-feasibility/d3/runs/boot02/run-record.json",
+              "valid": true,
+              "fresh": true,
+              "findings": []
+            }
+          ],
+          "judges": [
+            {
+              "id": "d3:persistent-subprocess",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d3:crash-cold-recovery",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d3:work-delivery",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d3:alpha6",
+              "verdict": "PROVEN"
+            }
+          ],
+          "counts": {
+            "judges": 4,
+            "proven": 4,
+            "knownRefuted": 0,
+            "envLimited": 0
+          },
+          "routed": null,
+          "snapshot": [
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d3/agreement.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d3/agreement.txt",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d3/driver-digest.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d3/driver.log",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d3/host-tree-porcelain.txt",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d3/runs/boot01/run-record.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d3/runs/boot02/run-record.json"
+          ],
+          "exitCode": 0,
+          "signal": null,
+          "timedOut": false,
+          "timeoutMs": 2700000,
+          "log": "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/logs/d3.log"
+        },
+        {
+          "id": "d4",
+          "script": "tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs",
+          "evidence": "dev/agent-workflow/evidence/d-boot-feasibility/d4",
+          "command": "TEAM_TEST_HOST=next node tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs --boots 2",
+          "resultLine": "[2026-11-26T01:22:25.298Z] RESULT evidence-complete=true allBooted=true blocked=true runRecordsValid=true (2/2 boots; agreeing pair=true)",
+          "verdict": "pass",
+          "reasons": [],
+          "agreement": {
+            "agreeing": true,
+            "boots": 2,
+            "differing": []
+          },
+          "records": [
+            {
+              "boot": 1,
+              "path": "dev/agent-workflow/evidence/d-boot-feasibility/d4/runs/boot01/run-record.json",
+              "valid": true,
+              "fresh": true,
+              "findings": []
+            },
+            {
+              "boot": 2,
+              "path": "dev/agent-workflow/evidence/d-boot-feasibility/d4/runs/boot02/run-record.json",
+              "valid": true,
+              "fresh": true,
+              "findings": []
+            }
+          ],
+          "judges": [
+            {
+              "id": "d4:enablement",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:officer-up",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:officer-binding",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:routed-wake",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:case-created",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:router-officer",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:wake-delivered",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:officer-decides",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:ask-executes-after-review",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:duplicate-route",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:sticky-stop",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:refusal",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:ask-execute",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:ask-execute-2",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:ask-execute-process",
+              "verdict": "REFUTED"
+            },
+            {
+              "id": "d4:ask-denied",
+              "verdict": "PROVEN"
+            },
+            {
+              "id": "d4:ask-stopped",
+              "verdict": "PROVEN"
+            }
+          ],
+          "counts": {
+            "judges": 17,
+            "proven": 16,
+            "knownRefuted": 1,
+            "envLimited": 0
+          },
+          "routed": {
+            "subJudges": [
+              "caseCreated",
+              "routerOfficer",
+              "wakeDelivered",
+              "officerDecides",
+              "askExecutesAfterReview",
+              "duplicateRoute",
+              "stickyStop"
+            ],
+            "boots": [
+              {
+                "boot": 1,
+                "routedWake": "PROVEN"
+              },
+              {
+                "boot": 2,
+                "routedWake": "PROVEN"
+              }
+            ]
+          },
+          "snapshot": [
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d4/agreement.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d4/agreement.txt",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d4/results.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d4/probe-digest.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d4/probe.log",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d4/run-record-self-check.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d4/runs/boot01/run-record.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d4/runs/boot01/routed-judges.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d4/runs/boot02/run-record.json",
+            "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/next/d4/runs/boot02/routed-judges.json"
+          ],
+          "exitCode": 3,
+          "signal": null,
+          "timedOut": false,
+          "timeoutMs": 2700000,
+          "log": "dev/agent-workflow/evidence/candidate-acceptance-gate/2026-11-26T01-13-44-043Z/logs/d4.log"
+        }
+      ],
+      "counts": {
+        "judges": 31,
+        "proven": 30,
+        "knownRefuted": 1,
+        "envLimited": 0
+      },
+      "startedAt": "2026-11-26T01:17:40.417Z"
+    }
+  ],
+  "note": "No row becomes PRODUCT-PROVEN from a green run alone. PRODUCT-PROVEN means gate-backed at the FROZEN candidate SHA of a version, with the version gate Required and green at that SHA (owner ruling 2026-11-25). Never a per-PR required context."
+}

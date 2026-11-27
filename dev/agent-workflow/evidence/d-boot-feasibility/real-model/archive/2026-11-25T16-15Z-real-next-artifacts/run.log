@@ -1,0 +1,347 @@
+[2026-11-24T20:26:25.713Z] model probe: level=ENV-LIMITED available=false missing="DEEPSEEK_API_KEY"
+[2026-11-24T20:26:25.713Z] ENV-LIMITED (review 20261125-0058 Stage B, second item)
+
+The harness is executable and complete; the ENVIRONMENT has no real model route for a test host.
+Missing item: DEEPSEEK_API_KEY (a real credential; see probe.json).
+Supplied by: export DEEPSEEK_API_KEY=<real key> (optionally DEEPSEEK_BASE_URL=<endpoint>) for the driver process, or add a DEEPSEEK_API_KEY record to the test World's .credentials.yaml
+
+Nothing was booted, nothing was simulated, and no real-model claim is made.
+Run the harness itself against the scripted model (labelled SCRIPTED-ONLY):
+  node tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs --model scripted --boots 2
+[2026-11-24T20:26:39.139Z] model probe: level=ENV-LIMITED available=false missing="DEEPSEEK_API_KEY"
+[2026-11-24T20:26:39.173Z] host tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use HEAD=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=[]
+[2026-11-24T20:26:39.173Z] started 2026-11-24T20:26:39.108Z boots=2
+[2026-11-24T20:26:39.205Z] [boot1] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-24T20:26:39.206Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=82da9ca9f9a85b83506b6c170c1659867729882b
+[2026-11-24T20:26:39.238Z] blueprint main.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T20:26:39.241Z] [boot1] alpha6 config gate (positive): null
+[2026-11-24T20:29:31.074Z] [boot1] host ready on http://127.0.0.1:3195
+[2026-11-24T20:29:31.093Z] [boot1] prompt(d4disc) status=200
+[2026-11-24T20:29:31.294Z] [boot1] discovery answered (mock requests=2)
+[2026-11-24T20:29:31.301Z] [boot1] prompt(d4off) status=200
+[2026-11-24T20:29:32.101Z] [boot1] officer delegated
+[2026-11-24T20:29:32.121Z] [boot1] officer instance=inst-0hvc2y01v51z childSession=session-team-child-7e63fa40dcc75f1f9cf85433b7357426
+[2026-11-24T20:29:32.625Z] [boot1] d4:officer-up=PROVEN d4:officer-binding=PROVEN
+[2026-11-24T20:29:32.646Z] [boot1] prompt(d4wrk) status=200
+[2026-11-24T20:29:33.047Z] [boot1] worker delegated
+[2026-11-24T20:29:33.062Z] [boot1] worker ask appeared=true requestId=ctrl-0r9k7h51hqhyei0gnw5o31cc
+[2026-11-24T20:29:33.467Z] [boot1] officer resolve(first) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-0r9k7h51hqhyei0gnw5o31cc","decision":"allow","decider":{"kind":"instance","instanceId":"inst-0hvc2y01
+[2026-11-24T20:29:33.970Z] [boot1] d4:ask-execute=PROVEN failing=[]
+[2026-11-24T20:29:33.970Z] [boot1] second worker ask appeared=true requestId=ctrl-0ejyomf1u0rlec1hzghxt1mk
+[2026-11-24T20:29:33.972Z] [boot1] officer resolve(second) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-0ejyomf1u0rlec1hzghxt1mk","decision":"allow","decider":{"kind":"instance","instanceId":"inst-0hvc2y01
+[2026-11-24T20:29:34.476Z] [boot1] d4:ask-execute-2=PROVEN failing=[]
+[2026-11-24T20:29:34.796Z] [boot1] sticky: holdLanded=true hold=true cancelStatus=200 stopSeen=true markers=["stopped-be6cf2ae.json"]
+[2026-11-24T20:29:37.119Z] [boot1] sticky: thirdAsk=true requestId=ctrl-1ybybnp0jj6bee15kp1a30ws markersAfter=["stopped-be6cf2ae.json"] wakeInputsWhileStopped=0
+[2026-11-24T20:29:37.531Z] [boot1] officer resolve(third) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-1ybybnp0jj6bee15kp1a30ws","decision":"allow","decider":{"kind":"instance","instanceId":"inst-0hvc2y01
+[2026-11-24T20:29:37.534Z] [boot1] sticky: resumeCleared=true resolve3=true write3Settled=true
+[2026-11-24T20:29:37.855Z] [boot1] process ask appeared=true requestId=ctrl-1qpkyuy1cv7do91foek4k1l7
+[2026-11-24T20:29:37.865Z] [boot1] prompt(d4res3) status=200
+[2026-11-24T20:29:38.771Z] [boot1] d4:ask-execute-process=REFUTED failing=["bash-tool-result-not-an-error","in-lane-write-lands","settlement-completed"]
+[2026-11-24T20:29:38.774Z] [boot1] duplicate: intents=1 delivered=1 inputs=1
+[2026-11-24T20:29:40.305Z] [boot1] d4:case-created=PROVEN failing=[]
+[2026-11-24T20:29:40.305Z] [boot1] d4:router-officer=PROVEN failing=[]
+[2026-11-24T20:29:40.305Z] [boot1] d4:wake-delivered=PROVEN failing=[]
+[2026-11-24T20:29:40.305Z] [boot1] d4:officer-decides=PROVEN failing=[]
+[2026-11-24T20:29:40.305Z] [boot1] d4:ask-executes-after-review=PROVEN failing=[]
+[2026-11-24T20:29:40.305Z] [boot1] d4:duplicate-route=PROVEN failing=[]
+[2026-11-24T20:29:40.305Z] [boot1] d4:sticky-stop=PROVEN failing=[]
+[2026-11-24T20:29:40.305Z] [boot1] d4:routed-wake=PROVEN failing=[]
+[2026-11-24T20:29:40.332Z] [boot1] prompt(rm-collect) status=200
+[2026-11-24T20:29:40.737Z] [boot1] rm:collect=PROVEN failing=[]
+[2026-11-24T20:29:40.747Z] [boot1] prompt(rm-duplicate) status=200
+[2026-11-24T20:29:42.156Z] [boot1] rm:duplicate-approval=REFUTED failing=["duplicate-attempt-issued","one-execution"]
+[2026-11-24T20:29:45.862Z] [boot1] rm:restart-no-replay=REFUTED failing=["no-second-execution"]
+[2026-11-24T20:29:45.866Z] blueprint incoherent.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting=null
+[2026-11-24T20:32:36.593Z] [boot1] d4:refusal=PROVEN failing=[]
+[2026-11-24T20:32:36.595Z] [boot1] d4:enablement=PROVEN failing=[]
+[2026-11-24T20:32:36.766Z] blueprint ask-denied.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T20:34:36.296Z] model probe: level=ENV-LIMITED available=false missing="DEEPSEEK_API_KEY"
+[2026-11-24T20:34:36.297Z] archived previous runs -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/real-model/archive/2026-11-24T20-34-36-297Z
+[2026-11-24T20:34:36.330Z] host tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use HEAD=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=[]
+[2026-11-24T20:34:36.331Z] started 2026-11-24T20:34:36.267Z boots=2
+[2026-11-24T20:34:36.363Z] [boot1] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-24T20:34:36.365Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=82da9ca9f9a85b83506b6c170c1659867729882b
+[2026-11-24T20:34:36.394Z] blueprint main.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T20:34:36.397Z] [boot1] alpha6 config gate (positive): null
+[2026-11-24T20:37:21.650Z] [boot1] host ready on http://127.0.0.1:3195
+[2026-11-24T20:37:21.670Z] [boot1] prompt(d4disc) status=200
+[2026-11-24T20:37:21.870Z] [boot1] discovery answered (mock requests=2)
+[2026-11-24T20:37:21.879Z] [boot1] prompt(d4off) status=200
+[2026-11-24T20:37:22.280Z] [boot1] officer delegated
+[2026-11-24T20:37:22.292Z] [boot1] officer instance=inst-0hvc2y01v51z childSession=session-team-child-7e63fa40dcc75f1f9cf85433b7357426
+[2026-11-24T20:37:22.798Z] [boot1] d4:officer-up=PROVEN d4:officer-binding=PROVEN
+[2026-11-24T20:37:22.819Z] [boot1] prompt(d4wrk) status=200
+[2026-11-24T20:37:23.221Z] [boot1] worker delegated
+[2026-11-24T20:37:23.236Z] [boot1] worker ask appeared=true requestId=ctrl-0n30x6y1f9r2ol0x9n7qc1d2
+[2026-11-24T20:37:23.640Z] [boot1] officer resolve(first) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-0n30x6y1f9r2ol0x9n7qc1d2","decision":"allow","decider":{"kind":"instance","instanceId":"inst-0hvc2y01
+[2026-11-24T20:37:24.143Z] [boot1] d4:ask-execute=PROVEN failing=[]
+[2026-11-24T20:37:24.143Z] [boot1] second worker ask appeared=true requestId=ctrl-0cd67sj0noygpw1go1q351j0
+[2026-11-24T20:37:24.145Z] [boot1] officer resolve(second) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-0cd67sj0noygpw1go1q351j0","decision":"allow","decider":{"kind":"instance","instanceId":"inst-0hvc2y01
+[2026-11-24T20:37:24.649Z] [boot1] d4:ask-execute-2=PROVEN failing=[]
+[2026-11-24T20:37:24.970Z] [boot1] sticky: holdLanded=true hold=true cancelStatus=200 stopSeen=true markers=["stopped-be6cf2ae.json"]
+[2026-11-24T20:37:27.280Z] [boot1] sticky: thirdAsk=true requestId=ctrl-0mgevzr0lsqcs805a213t18e markersAfter=["stopped-be6cf2ae.json"] wakeInputsWhileStopped=0
+[2026-11-24T20:37:27.693Z] [boot1] officer resolve(third) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-0mgevzr0lsqcs805a213t18e","decision":"allow","decider":{"kind":"instance","instanceId":"inst-0hvc2y01
+[2026-11-24T20:37:27.696Z] [boot1] sticky: resumeCleared=true resolve3=true write3Settled=true
+[2026-11-24T20:37:28.009Z] [boot1] process ask appeared=true requestId=ctrl-0qb3sok125rz430qiso8u1jq
+[2026-11-24T20:37:28.016Z] [boot1] prompt(d4res3) status=200
+[2026-11-24T20:37:28.921Z] [boot1] d4:ask-execute-process=REFUTED failing=["bash-tool-result-not-an-error","in-lane-write-lands","settlement-completed"]
+[2026-11-24T20:37:28.925Z] [boot1] duplicate: intents=1 delivered=1 inputs=1
+[2026-11-24T20:37:30.454Z] [boot1] d4:case-created=PROVEN failing=[]
+[2026-11-24T20:37:30.454Z] [boot1] d4:router-officer=PROVEN failing=[]
+[2026-11-24T20:37:30.454Z] [boot1] d4:wake-delivered=PROVEN failing=[]
+[2026-11-24T20:37:30.454Z] [boot1] d4:officer-decides=PROVEN failing=[]
+[2026-11-24T20:37:30.454Z] [boot1] d4:ask-executes-after-review=PROVEN failing=[]
+[2026-11-24T20:37:30.454Z] [boot1] d4:duplicate-route=PROVEN failing=[]
+[2026-11-24T20:37:30.454Z] [boot1] d4:sticky-stop=PROVEN failing=[]
+[2026-11-24T20:37:30.454Z] [boot1] d4:routed-wake=PROVEN failing=[]
+[2026-11-24T20:37:30.462Z] [boot1] prompt(rm-collect) status=200
+[2026-11-24T20:37:30.867Z] [boot1] rm:collect=PROVEN failing=[]
+[2026-11-24T20:37:30.875Z] [boot1] prompt(rm-duplicate) status=200
+[2026-11-24T20:37:32.283Z] [boot1] rm:duplicate-approval=PROVEN failing=[]
+[2026-11-24T20:37:36.003Z] [boot1] rm:restart-no-replay=PROVEN failing=[]
+[2026-11-24T20:37:36.006Z] blueprint incoherent.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting=null
+[2026-11-24T20:40:20.979Z] [boot1] d4:refusal=PROVEN failing=[]
+[2026-11-24T20:40:20.982Z] [boot1] d4:enablement=PROVEN failing=[]
+[2026-11-24T20:40:21.160Z] blueprint ask-denied.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T20:43:08.117Z] [boot1] d4:ask-denied ARM FAILED: workerDelegateResult is not defined
+[2026-11-24T20:43:08.259Z] blueprint ask-stopped.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T20:46:28.958Z] model probe: level=ENV-LIMITED available=false missing="DEEPSEEK_API_KEY"
+[2026-11-24T20:46:28.959Z] archived previous runs -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/real-model/archive/2026-11-24T20-46-28-959Z
+[2026-11-24T20:46:28.993Z] host tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use HEAD=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=[]
+[2026-11-24T20:46:28.994Z] started 2026-11-24T20:46:28.929Z boots=2
+[2026-11-24T20:46:29.025Z] [boot1] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-24T20:46:29.025Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=82da9ca9f9a85b83506b6c170c1659867729882b
+[2026-11-24T20:46:29.054Z] blueprint main.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T20:46:29.058Z] [boot1] alpha6 config gate (positive): null
+[2026-11-24T20:49:14.129Z] [boot1] host ready on http://127.0.0.1:3196
+[2026-11-24T20:49:14.150Z] [boot1] prompt(d4disc) status=200
+[2026-11-24T20:49:14.351Z] [boot1] discovery answered (mock requests=2)
+[2026-11-24T20:49:14.360Z] [boot1] prompt(d4off) status=200
+[2026-11-24T20:49:14.761Z] [boot1] officer delegated
+[2026-11-24T20:49:14.770Z] [boot1] officer instance=inst-0hvc2y01v51z childSession=session-team-child-7e63fa40dcc75f1f9cf85433b7357426
+[2026-11-24T20:49:15.275Z] [boot1] d4:officer-up=PROVEN d4:officer-binding=PROVEN
+[2026-11-24T20:49:15.284Z] [boot1] prompt(d4wrk) status=200
+[2026-11-24T20:49:15.685Z] [boot1] worker delegated
+[2026-11-24T20:49:15.714Z] [boot1] worker ask appeared=true requestId=ctrl-1in1zj10x7jhdm0nfx2ej0jn
+[2026-11-24T20:49:16.118Z] [boot1] officer resolve(first) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-1in1zj10x7jhdm0nfx2ej0jn","decision":"allow","decider":{"kind":"instance","instanceId":"inst-0hvc2y01
+[2026-11-24T20:49:16.621Z] [boot1] d4:ask-execute=PROVEN failing=[]
+[2026-11-24T20:49:16.621Z] [boot1] second worker ask appeared=true requestId=ctrl-0r3iv77018bxo8000oj9x1ch
+[2026-11-24T20:49:16.624Z] [boot1] officer resolve(second) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-0r3iv77018bxo8000oj9x1ch","decision":"allow","decider":{"kind":"instance","instanceId":"inst-0hvc2y01
+[2026-11-24T20:49:17.127Z] [boot1] d4:ask-execute-2=PROVEN failing=[]
+[2026-11-24T20:49:17.445Z] [boot1] sticky: holdLanded=true hold=true cancelStatus=200 stopSeen=true markers=["stopped-be6cf2ae.json"]
+[2026-11-24T20:49:19.754Z] [boot1] sticky: thirdAsk=true requestId=ctrl-0bhom6o0ki6cqj0zbqv1i0ce markersAfter=["stopped-be6cf2ae.json"] wakeInputsWhileStopped=0
+[2026-11-24T20:49:20.167Z] [boot1] officer resolve(third) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-0bhom6o0ki6cqj0zbqv1i0ce","decision":"allow","decider":{"kind":"instance","instanceId":"inst-0hvc2y01
+[2026-11-24T20:49:20.170Z] [boot1] sticky: resumeCleared=true resolve3=true write3Settled=true
+[2026-11-24T20:49:20.494Z] [boot1] process ask appeared=true requestId=ctrl-1yu29f01fh708z1p2c18m13o
+[2026-11-24T20:49:20.502Z] [boot1] prompt(d4res3) status=200
+[2026-11-24T20:49:21.407Z] [boot1] d4:ask-execute-process=REFUTED failing=["bash-tool-result-not-an-error","in-lane-write-lands","settlement-completed"]
+[2026-11-24T20:49:21.410Z] [boot1] duplicate: intents=1 delivered=1 inputs=1
+[2026-11-24T20:49:22.939Z] [boot1] d4:case-created=PROVEN failing=[]
+[2026-11-24T20:49:22.940Z] [boot1] d4:router-officer=PROVEN failing=[]
+[2026-11-24T20:49:22.940Z] [boot1] d4:wake-delivered=PROVEN failing=[]
+[2026-11-24T20:49:22.940Z] [boot1] d4:officer-decides=PROVEN failing=[]
+[2026-11-24T20:49:22.940Z] [boot1] d4:ask-executes-after-review=PROVEN failing=[]
+[2026-11-24T20:49:22.940Z] [boot1] d4:duplicate-route=PROVEN failing=[]
+[2026-11-24T20:49:22.940Z] [boot1] d4:sticky-stop=PROVEN failing=[]
+[2026-11-24T20:49:22.940Z] [boot1] d4:routed-wake=PROVEN failing=[]
+[2026-11-24T20:49:22.949Z] [boot1] prompt(rm-collect) status=200
+[2026-11-24T20:49:23.355Z] [boot1] rm:collect=PROVEN failing=[]
+[2026-11-24T20:49:23.364Z] [boot1] prompt(rm-duplicate) status=200
+[2026-11-24T20:49:24.772Z] [boot1] rm:duplicate-approval=PROVEN failing=[]
+[2026-11-24T20:49:28.489Z] [boot1] rm:restart-no-replay=PROVEN failing=[]
+[2026-11-24T20:49:28.493Z] blueprint incoherent.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting=null
+[2026-11-24T20:52:12.935Z] [boot1] d4:refusal=PROVEN failing=[]
+[2026-11-24T20:52:12.938Z] [boot1] d4:enablement=PROVEN failing=[]
+[2026-11-24T20:52:13.119Z] blueprint ask-denied.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T20:55:01.759Z] [boot1] d4:ask-denied=PROVEN failing=[]
+[2026-11-24T20:55:01.927Z] blueprint ask-stopped.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T20:57:49.282Z] [boot1] d4:ask-stopped=PROVEN failing=[]
+[2026-11-24T20:57:49.439Z] [boot1] negative dev-live slot released (released=true held=false)
+[2026-11-24T20:57:49.440Z] [boot1] overall=PASS (680400ms)
+[2026-11-24T20:57:49.440Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-24T20:57:49.449Z] [boot1] RUN-RECORD SELF-CHECK pass (dev/agent-workflow/evidence/d-boot-feasibility/real-model/runs/boot01/run-record.json: schema=u5-run-record/1 cases=20 subset=false overall=PASS)
+[2026-11-24T20:57:49.489Z] [boot2] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-24T20:57:49.490Z] [boot2] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=82da9ca9f9a85b83506b6c170c1659867729882b
+[2026-11-24T20:57:49.498Z] blueprint main.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T20:57:49.501Z] [boot2] alpha6 config gate (positive): null
+[2026-11-24T21:00:35.119Z] [boot2] host ready on http://127.0.0.1:3196
+[2026-11-24T21:00:35.135Z] [boot2] prompt(d4disc) status=200
+[2026-11-24T21:00:35.336Z] [boot2] discovery answered (mock requests=2)
+[2026-11-24T21:00:35.344Z] [boot2] prompt(d4off) status=200
+[2026-11-24T21:00:35.745Z] [boot2] officer delegated
+[2026-11-24T21:00:35.766Z] [boot2] officer instance=inst-0hvc2y01v51z childSession=session-team-child-7e63fa40dcc75f1f9cf85433b7357426
+[2026-11-24T21:00:36.270Z] [boot2] d4:officer-up=PROVEN d4:officer-binding=PROVEN
+[2026-11-24T21:00:36.291Z] [boot2] prompt(d4wrk) status=200
+[2026-11-24T21:00:36.691Z] [boot2] worker delegated
+[2026-11-24T21:00:36.718Z] [boot2] worker ask appeared=true requestId=ctrl-1t1xcby1q7lw310romm681np
+[2026-11-24T21:00:37.121Z] [boot2] officer resolve(first) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-1t1xcby1q7lw310romm681np","decision":"allow","decider":{"kind":"instance","instanceId":"inst-0hvc2y01
+[2026-11-24T21:00:37.624Z] [boot2] d4:ask-execute=PROVEN failing=[]
+[2026-11-24T21:00:37.625Z] [boot2] second worker ask appeared=true requestId=ctrl-0gvezn41bhd3hr0qvmpsq1d7
+[2026-11-24T21:00:37.626Z] [boot2] officer resolve(second) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-0gvezn41bhd3hr0qvmpsq1d7","decision":"allow","decider":{"kind":"instance","instanceId":"inst-0hvc2y01
+[2026-11-24T21:00:38.130Z] [boot2] d4:ask-execute-2=PROVEN failing=[]
+[2026-11-24T21:00:38.449Z] [boot2] sticky: holdLanded=true hold=true cancelStatus=200 stopSeen=true markers=["stopped-be6cf2ae.json"]
+[2026-11-24T21:00:40.759Z] [boot2] sticky: thirdAsk=true requestId=ctrl-1junwp90nofwoy08j273r1t4 markersAfter=["stopped-be6cf2ae.json"] wakeInputsWhileStopped=0
+[2026-11-24T21:00:41.171Z] [boot2] officer resolve(third) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-1junwp90nofwoy08j273r1t4","decision":"allow","decider":{"kind":"instance","instanceId":"inst-0hvc2y01
+[2026-11-24T21:00:41.173Z] [boot2] sticky: resumeCleared=true resolve3=true write3Settled=true
+[2026-11-24T21:00:41.486Z] [boot2] process ask appeared=true requestId=ctrl-14gdxdy0rhnvnd18hc71801s
+[2026-11-24T21:00:41.505Z] [boot2] prompt(d4res3) status=200
+[2026-11-24T21:00:42.410Z] [boot2] d4:ask-execute-process=REFUTED failing=["bash-tool-result-not-an-error","in-lane-write-lands","settlement-completed"]
+[2026-11-24T21:00:42.413Z] [boot2] duplicate: intents=1 delivered=1 inputs=1
+[2026-11-24T21:00:43.930Z] [boot2] d4:case-created=PROVEN failing=[]
+[2026-11-24T21:00:43.930Z] [boot2] d4:router-officer=PROVEN failing=[]
+[2026-11-24T21:00:43.930Z] [boot2] d4:wake-delivered=PROVEN failing=[]
+[2026-11-24T21:00:43.930Z] [boot2] d4:officer-decides=PROVEN failing=[]
+[2026-11-24T21:00:43.931Z] [boot2] d4:ask-executes-after-review=PROVEN failing=[]
+[2026-11-24T21:00:43.931Z] [boot2] d4:duplicate-route=PROVEN failing=[]
+[2026-11-24T21:00:43.931Z] [boot2] d4:sticky-stop=PROVEN failing=[]
+[2026-11-24T21:00:43.931Z] [boot2] d4:routed-wake=PROVEN failing=[]
+[2026-11-24T21:00:43.938Z] [boot2] prompt(rm-collect) status=200
+[2026-11-24T21:00:44.342Z] [boot2] rm:collect=PROVEN failing=[]
+[2026-11-24T21:00:44.351Z] [boot2] prompt(rm-duplicate) status=200
+[2026-11-24T21:00:45.757Z] [boot2] rm:duplicate-approval=PROVEN failing=[]
+[2026-11-24T21:00:49.515Z] [boot2] rm:restart-no-replay=PROVEN failing=[]
+[2026-11-24T21:00:49.518Z] blueprint incoherent.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting=null
+[2026-11-24T21:03:33.690Z] [boot2] d4:refusal=PROVEN failing=[]
+[2026-11-24T21:03:33.692Z] [boot2] d4:enablement=PROVEN failing=[]
+[2026-11-24T21:03:33.866Z] blueprint ask-denied.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T21:06:22.005Z] [boot2] d4:ask-denied=PROVEN failing=[]
+[2026-11-24T21:06:22.180Z] blueprint ask-stopped.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T21:09:10.118Z] [boot2] d4:ask-stopped=PROVEN failing=[]
+[2026-11-24T21:09:10.285Z] [boot2] negative dev-live slot released (released=true held=false)
+[2026-11-24T21:09:10.285Z] [boot2] overall=PASS (680795ms)
+[2026-11-24T21:09:10.286Z] [boot2] dev-live slot released (released=true held=false)
+[2026-11-24T21:09:10.294Z] [boot2] RUN-RECORD SELF-CHECK pass (dev/agent-workflow/evidence/d-boot-feasibility/real-model/runs/boot02/run-record.json: schema=u5-run-record/1 cases=20 subset=false overall=PASS)
+[2026-11-24T21:09:10.331Z] host porcelain after: []
+[2026-11-24T21:09:10.333Z] TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)
+fact                              boot1                               boot2                               
+overall                              "PASS"                               "PASS"                              
+enablement                           "PROVEN"                             "PROVEN"                            
+officerUp                            "PROVEN"                             "PROVEN"                            
+officerBinding                       "PROVEN"                             "PROVEN"                            
+routedWake                           "PROVEN"                             "PROVEN"                            
+caseCreated                          "PROVEN"                             "PROVEN"                            
+routerOfficer                        "PROVEN"                             "PROVEN"                            
+wakeDelivered                        "PROVEN"                             "PROVEN"                            
+officerDecides                       "PROVEN"                             "PROVEN"                            
+askExecutesAfterReview               "PROVEN"                             "PROVEN"                            
+duplicateRoute                       "PROVEN"                             "PROVEN"                            
+stickyStop                           "PROVEN"                             "PROVEN"                            
+refusal                              "PROVEN"                             "PROVEN"                            
+askExecute                           "PROVEN"                             "PROVEN"                            
+askExecute2                          "PROVEN"                             "PROVEN"                            
+askDenied                            "PROVEN"                             "PROVEN"                            
+askStopped                           "PROVEN"                             "PROVEN"                            
+leaderCreatesWorker                  "PROVEN"                             "PROVEN"                            
+collect                              "PROVEN"                             "PROVEN"                            
+duplicateApproval                    "PROVEN"                             "PROVEN"                            
+restartNoReplay                      "PROVEN"                             "PROVEN"                            
+askAppeared                          true                                 true                                
+wakeFacts                            8                                    8                                   
+wakeIntentFiles                      0                                    0                                   
+reviewWakeHits                       0                                    0                                   
+officerAllowFacts                    1                                    1                                   
+askExecuteBytes                      27                                   27                                  
+askExecuteSha256                     "ced10112e5b82a2b1b6bca1b85b1dff24   "ced10112e5b82a2b1b6bca1b85b1dff24  
+askExecuteSettlement                 "COMPLETED"                          "COMPLETED"                         
+askExecute2Bytes                     29                                   29                                  
+askExecute2Sha256                    "2d71ffdd499955a34ec86af1c25c00f83   "2d71ffdd499955a34ec86af1c25c00f83  
+askExecute2Settlement                "COMPLETED"                          "COMPLETED"                         
+askExecuteProcessRequestIdKnown      true                                 true                                
+askExecuteProcessInLaneBytes         null                                 null                                
+askExecuteProcessInLaneSha256        null                                 null                                
+askExecuteProcessOutLaneExists       false                                false                               
+askExecuteProcessSettlement          "FAILED"                             "FAILED"                            
+askDeniedBytes                       null                                 null                                
+askDeniedSettlement                  "REFUSED"                            "REFUSED"                           
+askStoppedBytes                      null                                 null                                
+askStoppedSettlement                 "REFUSED"                            "REFUSED"                           
+legOrdinal                           1                                    1                                   
+routeKind                            "recipient"                          "recipient"                         
+routeRole                            "officer"                            "officer"                           
+selfAskRouteKind                     "recipient"                          "recipient"                         
+selfAskRouteRole                     "leader"                             "leader"                            
+routedWakes                          4                                    4                                   
+deliveredWakes                       4                                    4                                   
+managementExecutions                 0                                    0                                   
+officerResolveSettlement             "COMPLETED"                          "COMPLETED"                         
+duplicateWakeInputs                  1                                    1                                   
+stickyStopMarkerCount                1                                    1                                   
+
+agreeing=true differing=[]
+[2026-11-24T21:09:10.333Z] RESULT evidence-complete=true allBooted=true blocked=false runRecordsValid=true (2/2 boots; agreeing pair=true)
+[2026-11-25T16:07:08.688Z] model probe: level=REAL-ROUTE-AVAILABLE available=true missing=null
+[2026-11-25T16:07:08.689Z] archived previous runs -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/real-model/archive/2026-11-25T16-07-08-689Z
+[2026-11-25T16:07:08.733Z] host tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use HEAD=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=[]
+[2026-11-25T16:07:08.733Z] started 2026-11-25T16:07:08.657Z boots=2
+[2026-11-25T16:07:08.765Z] [boot1] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-25T16:07:08.766Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=b2f4b1a08bd9728b907bbc122f338c12c40be783
+[2026-11-25T16:07:08.795Z] blueprint main.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-25T16:07:08.799Z] [boot1] alpha6 config gate (positive): null
+[2026-11-25T16:07:08.800Z] [boot1] model route: REAL (baseUrl=<provider default>)
+[2026-11-25T16:08:37.911Z] [boot1] host ready on http://127.0.0.1:3195
+[2026-11-25T16:08:37.932Z] [boot1] prompt(d4disc) status=200
+[2026-11-25T16:08:39.941Z] [boot1] prompt(d4disc) turn settled=true
+[2026-11-25T16:08:39.942Z] [boot1] discovery answered (mock requests=0)
+[2026-11-25T16:08:39.942Z] [boot1] PROBE FAILED: Error: the Leader surface lost 'team_delegate'
+    at probeOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs:2160:52)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs:3363:18)
+[2026-11-25T16:08:40.059Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-25T16:08:40.067Z] [boot1] RUN-RECORD SELF-CHECK pass (dev/agent-workflow/evidence/d-boot-feasibility/real-model/runs/boot01/run-record.json: schema=u5-run-record/1 cases=20 subset=false overall=FAIL)
+[2026-11-25T16:08:40.106Z] [boot2] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-25T16:08:40.107Z] [boot2] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=b2f4b1a08bd9728b907bbc122f338c12c40be783
+[2026-11-25T16:08:40.121Z] blueprint main.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-25T16:08:40.125Z] [boot2] alpha6 config gate (positive): null
+[2026-11-25T16:08:40.126Z] [boot2] model route: REAL (baseUrl=<provider default>)
+[2026-11-25T16:10:11.978Z] [boot2] host ready on http://127.0.0.1:3195
+[2026-11-25T16:10:11.998Z] [boot2] prompt(d4disc) status=200
+[2026-11-25T16:10:13.505Z] [boot2] prompt(d4disc) turn settled=true
+[2026-11-25T16:10:13.505Z] [boot2] discovery answered (mock requests=0)
+[2026-11-25T16:10:13.505Z] [boot2] PROBE FAILED: Error: the Leader surface lost 'team_delegate'
+    at probeOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs:2160:52)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs:3363:18)
+[2026-11-25T16:10:13.682Z] [boot2] dev-live slot released (released=true held=false)
+[2026-11-25T16:10:13.690Z] [boot2] RUN-RECORD SELF-CHECK pass (dev/agent-workflow/evidence/d-boot-feasibility/real-model/runs/boot02/run-record.json: schema=u5-run-record/1 cases=20 subset=false overall=FAIL)
+[2026-11-25T16:10:13.727Z] host porcelain after: []
+[2026-11-25T16:10:13.728Z] TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)
+fact                              
+
+agreeing=true differing=[]
+[2026-11-25T16:10:13.728Z] RESULT evidence-complete=false allBooted=false blocked=false runRecordsValid=true (2/2 boots; agreeing pair=true)
+[2026-11-25T16:15:36.219Z] model probe: level=REAL-ROUTE-AVAILABLE available=true missing=null
+[2026-11-25T16:15:36.220Z] archived previous runs -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/real-model/archive/2026-11-25T16-15-36-219Z
+[2026-11-25T16:15:36.287Z] host tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next HEAD=9c2670d3bce5275e0d1610272958121af87787bb pin=9c2670d3bce5275e0d1610272958121af87787bb porcelain=[]
+[2026-11-25T16:15:36.287Z] started 2026-11-25T16:15:36.179Z boots=2
+[2026-11-25T16:15:36.335Z] [boot1] candidate: {"host":"next","pin":"9c2670d3bce5275e0d1610272958121af87787bb","source":"tests/paths.mjs#NEXT_HOST","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next","asserted":true,"head":"9c2670d3bce5275e0d1610272958121af87787bb"}
+[2026-11-25T16:15:36.336Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=b2f4b1a08bd9728b907bbc122f338c12c40be783
+[2026-11-25T16:15:36.365Z] blueprint main.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-25T16:15:36.369Z] [boot1] alpha6 config gate (positive): null
+[2026-11-25T16:15:36.370Z] [boot1] model route: REAL (baseUrl=<provider default>)
+[2026-11-25T16:15:41.313Z] [boot1] host ready on http://127.0.0.1:13000
+[2026-11-25T16:15:41.336Z] [boot1] prompt(d4disc) status=200
+[2026-11-25T16:15:43.848Z] [boot1] prompt(d4disc) turn settled=true
+[2026-11-25T16:15:43.848Z] [boot1] discovery answered (mock requests=0)
+[2026-11-25T16:15:43.848Z] [boot1] PROBE FAILED: Error: the Leader surface lost 'team_delegate'
+    at probeOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs:2160:52)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs:3363:18)
+[2026-11-25T16:15:45.945Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-25T16:15:45.951Z] [boot1] RUN-RECORD SELF-CHECK pass (dev/agent-workflow/evidence/d-boot-feasibility/real-model/runs/boot01/run-record.json: schema=u5-run-record/1 cases=20 subset=false overall=FAIL)
+[2026-11-25T16:15:45.999Z] [boot2] candidate: {"host":"next","pin":"9c2670d3bce5275e0d1610272958121af87787bb","source":"tests/paths.mjs#NEXT_HOST","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next","asserted":true,"head":"9c2670d3bce5275e0d1610272958121af87787bb"}
+[2026-11-25T16:15:45.999Z] [boot2] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=b2f4b1a08bd9728b907bbc122f338c12c40be783
+[2026-11-25T16:15:46.008Z] blueprint main.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-25T16:15:46.012Z] [boot2] alpha6 config gate (positive): null
+[2026-11-25T16:15:46.013Z] [boot2] model route: REAL (baseUrl=<provider default>)
+[2026-11-25T16:15:49.219Z] [boot2] host ready on http://127.0.0.1:13000
+[2026-11-25T16:15:49.238Z] [boot2] prompt(d4disc) status=200
+[2026-11-25T16:15:52.250Z] [boot2] prompt(d4disc) turn settled=true
+[2026-11-25T16:15:52.250Z] [boot2] discovery answered (mock requests=0)
+[2026-11-25T16:15:52.250Z] [boot2] PROBE FAILED: Error: the Leader surface lost 'team_delegate'
+    at probeOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs:2160:52)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs:3363:18)
+[2026-11-25T16:15:54.285Z] [boot2] dev-live slot released (released=true held=false)
+[2026-11-25T16:15:54.290Z] [boot2] RUN-RECORD SELF-CHECK pass (dev/agent-workflow/evidence/d-boot-feasibility/real-model/runs/boot02/run-record.json: schema=u5-run-record/1 cases=20 subset=false overall=FAIL)
+[2026-11-25T16:15:54.331Z] host porcelain after: []
+[2026-11-25T16:15:54.332Z] TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)
+fact                              
+
+agreeing=true differing=[]
+[2026-11-25T16:15:54.332Z] RESULT evidence-complete=false allBooted=false blocked=false runRecordsValid=true (2/2 boots; agreeing pair=true)

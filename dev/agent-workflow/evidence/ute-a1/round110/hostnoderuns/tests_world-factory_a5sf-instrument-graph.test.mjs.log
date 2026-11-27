@@ -1,0 +1,15 @@
+✔ PD32-GRAPH: a World provisions the tree's own package into its profile module graph (15.011674ms)
+✔ PD32-GRAPH: verification is per-subpath and names the one that fails (0.977119ms)
+✔ PD32-GRAPH: the negative control disables provisioning, and is the only thing that does (0.506108ms)
+✔ PD32-GRAPH: an installed directory is never written over (0.305117ms)
+✔ PD32-PRECONDITION: `never started` throws a named error carrying the audit line (0.293846ms)
+✔ PD32-PRECONDITION: a healthy boot passes; no Member and no surface are DIFFERENT codes (0.469879ms)
+✔ PD32-PRECONDITION: the preconditions run BEFORE any arm — a dead preset cannot yield green arms (0.926453ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 83.339202

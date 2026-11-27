@@ -31,6 +31,7 @@ import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { register } from 'node:module'
 
+import { hostToolExecutorSpecifier } from '../../next-host/host-executor.mjs'
 import { loadNextHostSurface } from './host.mjs'
 import { createNativeFsBindingScope } from '../../../packages/tools/src/native-fs-binding.ts'
 
@@ -137,6 +138,10 @@ export async function makeAssembledMemberWorld({
 
     const evidencePath = join(dir, 'guard-consult.jsonl')
     realm = await row.mountMemberA5sfRealm({
+      // ROUND 121: this is a bare `ToolRuntime` assembly on the pinned rc.5
+      // host (no deployment bundle), so the composition names the host's own
+      // executor module; rc.5 has no built-in dispatch to fall back on.
+      hostToolExecutorSpecifier: hostToolExecutorSpecifier(process.cwd(), 'next'),
       root: agent.ctx,
       a5sfConfig: row.a5sfRealmConfigOf({ a5sfEvidencePath: evidencePath }),
       provider: () => ({

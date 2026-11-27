@@ -23,9 +23,9 @@
  */
 import { createHash } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, statSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, statSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { join, resolve } from 'node:path'
+import { join, resolve, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 import { HOST_PORT_BANDS, NEXT_HOST, nextHostTree, portsOfBands } from '../paths.mjs'
@@ -227,23 +227,151 @@ export function assertNextHostAssets(repoRoot = NEXT_LANE_REPO_ROOT, pinned = NE
  * here rather than as a silent private-path import).
  */
 const PER_SPEC_ANCHORS = [
+  'packages/fs/tool-fs/package.json',
+  'packages/fs/tool-fs-search/package.json',
+  'packages/fs/fs-local/package.json',
+  'packages/fs/fs-observation-policy/package.json',
+  'packages/fs/fs-patch/package.json',
+  'packages/fs/fs-sandbox/package.json',
+  'packages/shell/tool-bash-persistent/package.json',
+  'packages/sandbox/sandbox/package.json',
+  'packages/sandbox/sandbox-local/package.json',
+  'packages/sandbox/sandbox-policy/package.json',
+  'packages/web/tool-web/package.json',
+  'packages/web/web/package.json',
+  'packages/spill/spill-local/package.json',
+  'packages/subprocess/subprocess-local/package.json',
   'packages/core/tools/package.json',
+  'packages/core/scope/package.json',
+  'packages/core/tool-executor-native/package.json',
+  'packages/core/session/package.json',
+  'packages/core/agent/package.json',
+  'packages/llm/llm/package.json',
+  'packages/attachment/attachment-local/package.json',
   'packages/test-support/agent-loop-testkit/package.json',
   'packages/test-support/tool-testkit/package.json',
   'packages/ptc-runtime/ptc-runtime/package.json',
-  'packages/core/agent/package.json',
+  'apps/cli/package.json',
 ]
 
-/** Resolve one host package entry to an absolute file path. */
-export function resolveHostModule(spec, tree = nextTree()) {
-  for (const rel of PER_SPEC_ANCHORS) {
+/**
+ * Resolve one package specifier to a file INSIDE the pinned next tree.
+ *
+ * WHY CONTAINMENT IS PART OF RESOLUTION (measured 2026-11-22): Node's resolver
+ * walks UP, so `createRequire(<tree>/packages/fs/fs-local/package.json)`
+ * resolves `@deepseek-ai/dsh-tool-fs` — which fs-local does not depend on — by
+ * climbing out of the host tree into the Team repo's own `node_modules` and
+ * returning the 0.2.0-rc.2 copy. That is a FALSE GREEN of exactly the kind this
+ * lane exists to prevent: the test would claim rc.5 while executing rc.2. An
+ * out-of-tree hit is therefore not a resolution; the next anchor is tried, and
+ * if every anchor escapes or misses, the lane refuses with the escape evidence.
+ *
+ * The tree may be a SYMLINK shared with other worktrees, so containment is
+ * checked against its realpath: resolving through the symlink is not an escape.
+ */
+/**
+ * The tree's OWN workspace package index (`name` -> package directory), built
+ * once per tree and cached.
+ *
+ * WHY THIS EXISTS, measured 2026-11-22 booting the Team product on rc.5: the
+ * fixed anchor list above covers the packages the SLICE imports. A BOOTED host
+ * loads the product's whole graph, which imports packages no anchor declares
+ * (the first was `@deepseek-ai/dsh-storage-domain`). Node's resolver then
+ * walked OUT of the tree into the Team repo's rc.2 `node_modules` from three
+ * anchors at once and the lane refused — correctly: that is the false green it
+ * exists to prevent. The fix is not a longer hand-written list (it would drift
+ * with every import); it is the host's OWN package graph: the package that
+ * DECLARES a workspace name is inside the tree, and Node's self-reference
+ * resolution resolves the name from that package's `package.json` inside the
+ * tree. Still one resolver, still host-anchored.
+ */
+const workspaceIndexCache = new Map()
+function workspacePackageIndex(tree) {
+  let index = workspaceIndexCache.get(tree)
+  if (index !== undefined) return index
+  index = new Map()
+  const groups = [
+    ['apps', 1],
+    ['packages', 2],
+    ['vendor', 1],
+    ['native', 3],
+  ]
+  for (const [top, depth] of groups) {
+    const root = join(tree, top)
+    if (!existsSync(root)) continue
+    const walk = (dir, remaining) => {
+      let entries
+      try {
+        entries = readdirSync(dir, { withFileTypes: true })
+      } catch {
+        return
+      }
+      if (remaining === 0) {
+        const manifest = join(dir, 'package.json')
+        if (!existsSync(manifest)) return
+        try {
+          const name = JSON.parse(readFileSync(manifest, 'utf8')).name
+          if (typeof name === 'string' && name !== '' && !index.has(name)) index.set(name, dir)
+        } catch { /* an unreadable manifest is not a workspace member */ }
+        return
+      }
+      for (const entry of entries) {
+        if (!entry.isDirectory() || entry.name === 'node_modules' || entry.name === 'lib') continue
+        walk(join(dir, entry.name), remaining - 1)
+      }
+    }
+    walk(root, depth)
+  }
+  workspaceIndexCache.set(tree, index)
+  return index
+}
+
+/** The package name a bare specifier starts with (`@scope/name/sub` -> `@scope/name`). */
+function packageNameOf(spec) {
+  const parts = spec.split('/')
+  return spec.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0]
+}
+
+export function resolveInsideTree(spec, tree = nextTree(), anchors = PER_SPEC_ANCHORS) {
+  const resolvedTree = realpathSync(tree)
+  const escapes = []
+  for (const rel of anchors) {
+    let require
     try {
-      return createRequire(join(tree, rel)).resolve(spec)
+      require = createRequire(join(tree, rel))
+    } catch {
+      continue
+    }
+    let file
+    try {
+      file = realpathSync(require.resolve(spec))
+    } catch (error) {
+      if (error?.code !== 'MODULE_NOT_FOUND') throw error
+      continue
+    }
+    if (file === resolvedTree || file.startsWith(`${resolvedTree}${sep}`)) return file
+    escapes.push(`${rel} -> ${file}`)
+  }
+  // GENERIC FALLBACK: the tree's own package that declares this name. A package
+  // resolves its own name through the self-reference rule, inside the tree.
+  const owner = workspacePackageIndex(tree).get(packageNameOf(spec))
+  if (owner !== undefined) {
+    try {
+      const file = realpathSync(createRequire(resolve(owner, 'package.json')).resolve(spec))
+      if (file === resolvedTree || file.startsWith(`${resolvedTree}${sep}`)) return file
+      escapes.push(`${owner}/package.json -> ${file}`)
     } catch (error) {
       if (error?.code !== 'MODULE_NOT_FOUND') throw error
     }
   }
-  throw new NextHostMissingError('MODULE_UNRESOLVED', `the next host tree at ${tree} does not resolve ${spec} — is the tree installed (pnpm install --ignore-scripts --frozen-lockfile)?`)
+  throw new NextHostMissingError('MODULE_UNRESOLVED', `the next host tree at ${tree} does not resolve ${spec} inside itself`
+    + `${escapes.length === 0 ? '' : `; ${String(escapes.length)} anchor(s) escaped into another tree (${escapes.slice(0, 3).join(' | ')})`}`
+    + ' — an out-of-tree hit is the LEGACY host, not this one; is the tree installed (pnpm install --ignore-scripts --frozen-lockfile)?')
+}
+
+/** Resolve one host package entry to an absolute file path (contained in the tree). */
+export function resolveHostModule(spec, tree = nextTree()) {
+  return resolveInsideTree(spec, tree)
 }
 
 /** Dynamic-import one host public package entry by package name. */

@@ -133,6 +133,19 @@ jobs:
       - name: "EB3-A: family boundaries (a sibling lane's internals and the centre are not edges)"
         run: node scripts/eb3-family-boundaries.mjs
 
+      - name: "UTE-A1: the A0 retirement record is earned (per-subject citation, frozen modules, named successors)"
+        # Round 80: the family-definitions leg reports its retired surface as per-subject
+        # dispositions. The licence they cite is validated HERE, by the instrument that owns
+        # the allow ledger: a subject whose citations are not tracked, whose frozen modules are
+        # not delete/replace in the A0 snapshot, or whose successors do not exist is a RED.
+        run: node scripts/ute-cut-closure.mjs --check
+
+      - name: "UTE-A1: the A0 frozen deletion list still holds (146 deleted + 2 replaced, nothing restored)"
+        # The named successor of the retired Family Contribution surface on the deletion side.
+        # Until round 80 this check ran in NO CI layer: the guarantee the retirement cites was
+        # only ever exercised locally. It is required now, with the closure check above.
+        run: node scripts/ute-p0-assets.mjs --check
+
       - name: "EB3-D: RUN Manifest (sources, host pin, authority generation, case algebra, evidence)"
         shell: bash
         # ONE simple command (R2 F-2 allowlist): the script computes this PR's new records
@@ -141,10 +154,12 @@ jobs:
           set -euo pipefail
           node scripts/eb3-run-manifest.mjs --new-since "$CI_BASE"
 
-      - name: "EB3 evidence guard (no raw census capture, no unexempted file > 1 MiB added under evidence/)"
+      - name: "EB3 evidence guard (no raw capture, no post-rule verbatim run artifact, no unexempted file > 1 MiB added under evidence/)"
         shell: bash
         # ONE simple command, same base as the RUN Manifest step: the added set is
         # `git diff --diff-filter=A $CI_BASE...HEAD -- dev/agent-workflow/evidence/`.
+        # The verbatim-artifact rule is not retroactive: evidence committed at or before
+        # 2026-11-27T00:00:00Z is grandfathered (docs/TEST_METHODS.md §8).
         run: |
           set -euo pipefail
           node scripts/eb3-evidence-guard.mjs --new-since "$CI_BASE"
@@ -296,6 +311,15 @@ jobs:
         # refuses CONTRACT_TIER_UNMET / CONTRACT_ORACLE_UNPLANNED. Synthetic data cannot satisfy it:
         # the derivation reads dev/ci/eb3-ci-manifest.json and the census planner's root discovery.
         run: node scripts/contract-tiers.mjs --check
+
+      - name: "UTE vNext A1 migrated capability suites (vitest, host-free)"
+        # The A1 cut re-pointed sixteen preserved-capability suites at the new entry. They are vitest, so
+        # they cannot ride the node:test `ute-vnext-a1` leg - and NOTHING ran them for nine days: the first
+        # real execution found 8 failures, including a live ReferenceError on the authority-generation
+        # publish path. An import migration that nothing executes is not a migration. Population declared
+        # ONCE in tests/checks/eb3-ute-migrated-suites.txt; the token runner refuses an absent listed file,
+        # a report with fewer files than listed, and an empty run, so a shorter list can never be green.
+        run: node scripts/eb3-security-run.mjs --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt --timeout 30000
 
       - name: "a5sf harness C1 (R2/BL-10 — node:test, zero Host boots, host-free)"
         # BL-10/R2: the Sandbox-First suites ride the pre-existing factory/oracle/CI

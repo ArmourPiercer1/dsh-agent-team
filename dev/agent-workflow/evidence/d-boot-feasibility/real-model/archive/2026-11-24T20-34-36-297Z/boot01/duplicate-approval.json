@@ -1,0 +1,58 @@
+{
+  "measurement": {
+    "requestId": "ctrl-0r9k7h51hqhyei0gnw5o31cc",
+    "attempt": {
+      "callId": "call-rm-officer-resolve-duplicate-ctrl-0r9k7h51hqhyei0gnw5o31cc",
+      "arguments": {
+        "rootSessionId": "session-real-model-root",
+        "requestToken": "rm-dup-resolve-ctrl-0r9k7h51hqhyei0gnw5o31cc",
+        "requestId": "ctrl-0r9k7h51hqhyei0gnw5o31cc",
+        "decision": "allow"
+      },
+      "result": "{\"status\":\"rejected\",\"code\":\"CONTROL_REQUEST_DECIDED\",\"message\":\"ControlService: request 'ctrl-0r9k7h51hqhyei0gnw5o31cc' already carries a durable decision (the first decision is authoritative)\",\"details\":{\"rootSessionId\":\"session-real-model-root\",\"requestId\":\"ctrl-0r9k7h51hqhyei0gnw5o31cc\"}}",
+      "isError": false
+    },
+    "decisionsBefore": 1,
+    "executionsBefore": 3,
+    "decisions": 1,
+    "executions": 3,
+    "fileBefore": {
+      "sha256": "ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3",
+      "bytes": 27
+    },
+    "fileAfter": {
+      "sha256": "ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3",
+      "bytes": 27
+    }
+  },
+  "verdict": {
+    "proposition": "a DUPLICATE approval attempt on an already-settled leg yields ONE decision and ONE execution: no second grant is minted and the approved bytes do not change",
+    "verdict": "REFUTED",
+    "clauses": [
+      {
+        "id": "duplicate-attempt-issued",
+        "ok": false,
+        "detail": "call result={\"status\":\"rejected\",\"code\":\"CONTROL_REQUEST_DECIDED\",\"message\":\"ControlService: request 'ctrl-0r9k7h51hqhyei0gnw5o31cc' already carries a durable decision (the first decision is authoritative)\",\"details\":{\"rootSessionId\":\"session-real-model-root\",\"requestId\":\"ctrl-0r9k7h51hqhyei0gnw5o31cc\"}} isError=false"
+      },
+      {
+        "id": "one-decision",
+        "ok": true,
+        "detail": "control-decision-recorded rows for the request=1"
+      },
+      {
+        "id": "one-execution",
+        "ok": false,
+        "detail": "settlements naming the approved call=3"
+      },
+      {
+        "id": "bytes-unchanged",
+        "ok": true,
+        "detail": "before=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3 after=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3 bytes=27"
+      }
+    ],
+    "failing": [
+      "duplicate-attempt-issued",
+      "one-execution"
+    ]
+  }
+}

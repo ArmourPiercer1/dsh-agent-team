@@ -1,0 +1,18 @@
+{
+  "aAdmissions": 4,
+  "bAdmissions": 3,
+  "aExecutions": 4,
+  "bExecutions": 2,
+  "mockRequests": 29,
+  "memberModelRequests": 10,
+  "inflightBefore": "RUNNING",
+  "inflightAfter": "UNKNOWN",
+  "inflightMode": "blocked",
+  "inflightBytesObserved": 30184,
+  "inflightBlockedInKernel": true,
+  "collectStatus": "succeeded",
+  "bash1State": "COMPLETED",
+  "bash2State": "COMPLETED",
+  "restartAt": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261126T02-14-28Z/instance-port3187.log",
+  "elapsedMs": 258785
+}

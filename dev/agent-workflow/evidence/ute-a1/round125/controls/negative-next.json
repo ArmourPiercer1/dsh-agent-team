@@ -1,0 +1,42 @@
+{
+  "schema": "dboot-d3/inflight-negative-control/1",
+  "at": "2026-11-26T02:36:11.053Z",
+  "mode": "fast",
+  "provider": "fast-completing bash write (no FIFO)",
+  "bootDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/control-runs/boot01",
+  "checks": [
+    {
+      "id": "boot-failed-at-sigkill-restart",
+      "ok": true,
+      "detail": "failed=true stage=sigkill-restart error=no genuine in-flight call at crash time: call-d3-b-inflight settlement state=\"COMPLETED\" fact=[{\"decision\":\"allow\",\"axis\":\"process.exec\",\"code\":null,\"reason\":\"\"},{\"code\":null,\"reason\":\"\"}] (the crash judge cannot fake an in-flight call)"
+    },
+    {
+      "id": "refusal-reason-is-the-named-reason",
+      "ok": true,
+      "detail": "reason=no genuine in-flight call at crash time: call-d3-b-inflight settlement state=\"COMPLETED\" fact=[{\"decision\":\"allow\",\"axis\":\"process.exec\",\"code\":null,\"reason\":\"\"},{\"code\":null,\"reason\":\"\"}] (the crash judge cannot fake an in-flight call)"
+    },
+    {
+      "id": "settlement-was-not-running",
+      "ok": true,
+      "detail": "state=COMPLETED"
+    },
+    {
+      "id": "no-sigkill-issued",
+      "ok": true,
+      "detail": "sigkillIssued=false killRefused=true"
+    },
+    {
+      "id": "host-left-alive",
+      "ok": true,
+      "detail": "hostPid=14205 alive=true"
+    },
+    {
+      "id": "no-restart-recorded",
+      "ok": true,
+      "detail": "crash.json exists=false (a killed boot writes it)"
+    }
+  ],
+  "verdict": "PASS",
+  "failing": [],
+  "note": "the SAME judge that passes with the blocking provider must refuse here, with no SIGKILL: the arm is not vacuous"
+}

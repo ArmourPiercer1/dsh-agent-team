@@ -28,7 +28,8 @@
  *          table (it was 0 before the fix) and both axes × both realms must
  *          produce a refused ask call.
  *   DP-REFUSE the typed refusal of the ask lane: exactly ONE guard fact with
- *          `decision: 'ask'` / `decidedBy: 'IO_ASK_REQUIRES_APPROVAL'`, zero
+ *          `decision: 'ask'` and the face's own code (`IO_ASK_REQUIRES_APPROVAL`
+ *          on read = R4, `IO_ASK_RECEIPT_REFUSED` on write = R3), zero
  *          bytes through the base Provider, zero writes, unchanged bytes on
  *          disk, and no over-refusal (allow still allows, deny keeps its code).
  *   DP-PROJ the REAL product projection (`a5sfRealmConfigOf` →
@@ -200,7 +201,7 @@ after(() => {
  *   outside/secret.txt        SECRET
  */
 function buildFixture(base) {
-  for (const sub of ['lane/inside', 'lane/inside/askdir/deep', 'lane/other', 'lane/blocked', 'lane/new', 'outside']) {
+  for (const sub of ['lane/inside', 'lane/inside/askdir/deep', 'lane/other', 'lane/blocked', 'lane/new', 'lane/only-ask', 'outside']) {
     mkdirSync(join(base, sub), { recursive: true })
   }
   writeFileSync(join(base, 'lane/inside/ok.txt'), 'OK\n', 'utf8')
@@ -208,6 +209,7 @@ function buildFixture(base) {
   writeFileSync(join(base, 'lane/inside/askdir/deep/ask.txt'), 'ASK-DEEP\n', 'utf8')
   writeFileSync(join(base, 'lane/other/other.txt'), 'OTHER\n', 'utf8')
   writeFileSync(join(base, 'lane/blocked/deny.txt'), 'DENY\n', 'utf8')
+  writeFileSync(join(base, 'lane/only-ask/asked.txt'), 'PURE-ASK\n', 'utf8')
   writeFileSync(join(base, 'outside/secret.txt'), 'SECRET\n', 'utf8')
   linkSync(join(base, 'outside/secret.txt'), join(base, 'lane/inside/alias.txt'))
   symlinkSync(join(base, 'lane/inside/ok.txt'), join(base, 'lane/inside/link-in'))
@@ -556,8 +558,19 @@ test('DP-REFUSE every ask-covered call is a typed refusal: ONE ask fact, zero by
 
   for (const entry of refusals) {
     assert.equal(entry.fact.decision, 'ask', `${entry.id}: the fact reports the lane the guard decided on`)
-    assert.equal(entry.fact.decidedBy, 'IO_ASK_REQUIRES_APPROVAL', `${entry.id}: the typed refusal code`)
-    assert.equal(entry.errorCode, 'IO_ASK_REQUIRES_APPROVAL', `${entry.id}: the thrown refusal carries the same code`)
+    // TWO honest refusal codes, split by FACE — both are the ASK lane.
+    //   read      -> IO_ASK_REQUIRES_APPROVAL (R4 fail-closed: no approval
+    //                consumer on the read face);
+    //   write     -> IO_ASK_RECEIPT_REFUSED   (R3: the native FS mutation face
+    //                accepts ONLY an ApprovedAskReceipt; no receipt in scope is
+    //                a refusal, not a lane allow and not a declared deny).
+    // Owner ruling docs/reviews/20261124-0151.txt §2; ADR-approved-ask-receipt.md.
+    // The LANE (`ask`) and the EFFECT (a refusal, zero bytes) are identical on
+    // both faces; only the typed code differs, and pinning it per axis keeps the
+    // R3 receipt path from being relabelled a lane deny (round 101 regression).
+    const expectedCode = entry.axis === 'write' ? 'IO_ASK_RECEIPT_REFUSED' : 'IO_ASK_REQUIRES_APPROVAL'
+    assert.equal(entry.fact.decidedBy, expectedCode, `${entry.id}: the typed refusal code for the ${entry.axis} face`)
+    assert.equal(entry.errorCode, expectedCode, `${entry.id}: the thrown refusal carries the same code`)
     assert.equal(
       entry.fact.sequence,
       1,

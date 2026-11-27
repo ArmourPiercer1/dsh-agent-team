@@ -1,0 +1,1 @@
+RUN-SUMMARY run=a5sf-live-d3-2026-11-26T02-35-18-586Z-b1 suite=a5sf-live-d3 overall=FAIL cases=4 FAIL:4 worlds=u5u5a5sfdev1-20261126T02-35-36Z-next partial=true abortedAt=sigkill-restart recordClass=DEV-LIVE (not candidate evidence)

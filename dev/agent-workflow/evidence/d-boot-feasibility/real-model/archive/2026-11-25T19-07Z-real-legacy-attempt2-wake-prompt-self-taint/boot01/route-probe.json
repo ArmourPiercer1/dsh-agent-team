@@ -1,0 +1,28 @@
+{
+  "route": {
+    "kind": "recipient",
+    "target": {
+      "kind": "instance",
+      "instanceId": "inst-0hvc2y01v51z",
+      "templateId": "officer",
+      "routeRole": "officer"
+    },
+    "reason": "closed ordinary tool ask delegated to the dedicated Officer",
+    "currentLegId": "ctrl-0qtp67j1iolmxg133xeeh0x7"
+  },
+  "selfAskRoute": {
+    "kind": "recipient",
+    "target": {
+      "kind": "instance",
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "routeRole": "leader"
+    },
+    "reason": "actual OperationOwner is the Officer; self-ask routes to Leader",
+    "currentLegId": "ctrl-0qtp67j1iolmxg133xeeh0x7"
+  },
+  "memberListCalls": 1,
+  "officerInstanceId": "inst-0hvc2y01v51z",
+  "officerCandidateCount": 1,
+  "requesterInstanceId": "inst-1q9ehvo0zb4o"
+}

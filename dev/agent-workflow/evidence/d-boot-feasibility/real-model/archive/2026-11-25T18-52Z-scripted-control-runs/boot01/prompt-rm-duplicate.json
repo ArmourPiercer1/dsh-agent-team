@@ -1,0 +1,4 @@
+{
+  "status": 200,
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"rm-duplicate-rssn9k8rex\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}"
+}

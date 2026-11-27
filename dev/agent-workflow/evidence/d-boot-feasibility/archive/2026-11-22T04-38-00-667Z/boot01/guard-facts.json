@@ -1,0 +1,32 @@
+[
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-0pe2z220bhfb",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf1:0a75ebf2a4889bc68ce99f16c58a2239",
+    "method": "stat",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-33-05Z/workspace/in-lane.txt",
+    "decision": "allow",
+    "decidedBy": "ALLOW",
+    "sequence": 1,
+    "observedAt": "2026-11-22T04:34:54.788Z",
+    "tool": "read",
+    "callId": "call-dboot-read-admit"
+  },
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-0pe2z220bhfb",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf1:0a75ebf2a4889bc68ce99f16c58a2239",
+    "method": "readText",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-33-05Z/workspace/in-lane.txt",
+    "decision": "allow",
+    "decidedBy": "ALLOW",
+    "sequence": 2,
+    "observedAt": "2026-11-22T04:34:54.793Z",
+    "tool": "read",
+    "callId": "call-dboot-read-admit"
+  }
+]

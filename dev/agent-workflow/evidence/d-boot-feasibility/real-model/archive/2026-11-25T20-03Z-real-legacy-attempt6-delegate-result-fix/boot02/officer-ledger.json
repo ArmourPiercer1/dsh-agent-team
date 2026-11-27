@@ -1,0 +1,31 @@
+[
+  {
+    "callId": "call_00_ET_qwmM5OEiqD8yrSraT5tS2366",
+    "agentId": "inst-0hvc2y01v51z",
+    "instanceId": "inst-0hvc2y01v51z",
+    "sessionId": "session-team-child-7e63fa40dcc75f1f9cf85433b7357426",
+    "instanceGeneration": 0,
+    "toolName": "read",
+    "axis": "fs.read",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T19-52-38Z/workspace/lane/officer-read.txt",
+    "definitionSource": "",
+    "policyGeneration": "a5sf1:4db10e9a75f3916a0496570d5996cabd",
+    "blueprintRevision": "",
+    "owner": "session-real-model-root",
+    "decision": "allow",
+    "overlayOutcome": "no-opinion",
+    "kind": "invocation-authority",
+    "at": "2026-11-25T19:54:10.870Z"
+  },
+  {
+    "callId": "call_00_ET_qwmM5OEiqD8yrSraT5tS2366",
+    "executionId": "exec-379b7e27e1facfc08e64fd0afa057d68dfe893f2",
+    "toolName": "read",
+    "agentId": "session-team-child-7e63fa40dcc75f1f9cf85433b7357426",
+    "outcome": "completed",
+    "isError": false,
+    "policyGeneration": "a5sf1:4db10e9a75f3916a0496570d5996cabd",
+    "kind": "execution",
+    "at": "2026-11-25T19:54:10.902Z"
+  }
+]

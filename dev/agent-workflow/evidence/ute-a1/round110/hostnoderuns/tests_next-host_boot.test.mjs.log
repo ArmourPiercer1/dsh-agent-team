@@ -1,0 +1,14 @@
+NEXT-SMOKE BANDS ok legacy=3181-3199(19) next=13000-13049(50) overlap=0
+✔ host port bands are disjoint by generation: legacy 3181-3199, next host 13000-13049 only (1.384951ms)
+NEXT-SMOKE BOOT ok ms=2758 port=13000 treeHead=9c2670d3bce5275e0d1610272958121af87787bb version=0.2.2-rc.5 line="dsh web: http://127.0.0.1:13000/?token=<redacted>"
+NEXT-SMOKE SESSION ok sessionId=session-dcb4852d-9ec5-4c17-bb07-0679a0f99303 createStatus=200 promptStatus=200 modelRequests=2
+NEXT-SMOKE SERVED ok home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/next-boot-2026-11-24T19-40-20-074Z-next sessionFiles=sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-.artifacts-tmp-next-host-lane-cwd-kbT3hH--/session-dcb4852d-9ec5-4c17-bb07-0679a0f99303/session.lock,sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-.artifacts-tmp-next-host-lane-cwd-kbT3hH--/session-dcb4852d-9ec5-4c17-bb07-0679a0f99303/session.v4.jsonl.zstd hostLogs=absent modelReplies=2
+✔ the pinned next host boots, serves a session, and its wire traffic is the scripted model (7282.868418ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7367.569629

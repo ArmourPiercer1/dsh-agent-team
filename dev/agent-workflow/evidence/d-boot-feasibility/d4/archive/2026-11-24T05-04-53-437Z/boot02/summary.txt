@@ -1,0 +1,23 @@
+# D4 routed-wake probe — boot 2
+world=u5u5a5sfdev1-20261124T04-49-21Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T04-49-21Z port=3195 elapsedMs=770357
+
+judge                verdict    failing
+enablement           PROVEN     []
+officerUp            PROVEN     []
+officerBinding       PROVEN     []
+routedWake           REFUTED    ["d4:case-created-proven","d4:router-officer-proven","d4:wake-delivered-proven","d4:officer-decides-proven","d4:ask-executes-after-review-proven"]
+caseCreated          REFUTED    ["read-back-from-the-ledger","durable-row-is-an-approval-ask","approval-case-id-present","leg-ordinal-present","case-rung-is-the-leader","frozen-operation-identity","frozen-tool-coordinate","frozen-blueprint-and-generation"]
+routerOfficer        REFUTED    ["route-is-the-officer-instance","requester-is-not-the-reviewer","self-ask-never-routed-to-the-officer"]
+wakeDelivered        REFUTED    ["one-routed-intent-for-the-leg","one-correlated-confirmation","intent-names-the-officer-session","intent-carries-the-review-action"]
+officerDecides       REFUTED    ["officer-issued-its-own-resolve","resolve-admitted-under-its-own-binding","settlement-completed"]
+askExecutesAfterReview REFUTED    ["review-decision-is-durable","decision-precedes-execution"]
+duplicateRoute       PROVEN     []
+stickyStop           PROVEN     []
+refusal              PROVEN     []
+askExecute           REFUTED    ["control-request-raised","approved-through-real-control-path"]
+askExecute2          PROVEN     []
+askExecuteProcess    REFUTED    ["bash-tool-result-not-an-error","in-lane-write-lands","settlement-completed"]
+askDenied            PROVEN     []
+askStopped           PROVEN     []
+
+counters: {"askAppeared":false,"wakeFacts":8,"wakeIntentFiles":0,"reviewWakeHits":0,"officerAllowFacts":1,"askExecuteBytes":27,"askExecuteSha256":"ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3","askExecuteSettlement":"COMPLETED","askExecute2Bytes":29,"askExecute2Sha256":"2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f","askExecute2Settlement":"COMPLETED","askExecuteProcessRequestIdKnown":true,"askExecuteProcessInLaneBytes":null,"askExecuteProcessInLaneSha256":null,"askExecuteProcessOutLaneExists":false,"askExecuteProcessSettlement":"FAILED","askDeniedBytes":null,"askDeniedSettlement":"REFUSED","askStoppedBytes":null,"askStoppedSettlement":"REFUSED","legOrdinal":null,"routeKind":null,"routeRole":null,"selfAskRouteKind":null,"selfAskRouteRole":null,"routedWakes":4,"deliveredWakes":4,"managementExecutions":0,"officerResolveSettlement":null,"duplicateWakeInputs":1,"stickyStopMarkerCount":1}

@@ -1,0 +1,52 @@
+{
+  "at": "2026-11-22T01:05:05.245Z",
+  "callId": "call-d3-b-inflight-grep",
+  "state": "REFUSED",
+  "settlement": {
+    "executionId": "exec-bdf96394a06b7038bc3074f886bc40bb34d71629",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-03-09Z/centre/settlement/inst-1v36r931jr7r/exec-bdf96394a06b7038bc3074f886bc40bb34d71629.settlement.json",
+    "present": true,
+    "state": "REFUSED",
+    "dispatch": "not-started",
+    "bodyOutcome": "not-started",
+    "stops": [],
+    "transitions": [
+      "ADMITTED",
+      "REFUSED"
+    ]
+  },
+  "admissions": [
+    {
+      "callId": "call-d3-b-inflight-grep",
+      "agentId": "inst-1v36r931jr7r",
+      "instanceId": "inst-1v36r931jr7r",
+      "sessionId": "session-team-child-6788a23a6d1be9784107fcb7631d08f9",
+      "instanceGeneration": 0,
+      "toolName": "grep",
+      "axis": "fs.read",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-03-09Z/workspace/team-b/corpus",
+      "definitionSource": "",
+      "policyGeneration": "a5sf1:4f93b749881b6a4106753b01bfcdd033",
+      "blueprintRevision": "",
+      "owner": "session-dboot-d3-root",
+      "decision": "deny",
+      "laneDecision": "allow",
+      "refusalCode": "ADMISSION_OVERLAY_FAULT",
+      "reason": "the durable overlay could not be consulted (canonicalization failed for tool \"grep\": tool-unsupported); a fault is a refusal, never an absence of opinion",
+      "kind": "invocation-authority",
+      "at": "2026-11-22T01:05:05.235Z"
+    },
+    {
+      "callId": "call-d3-b-inflight-grep",
+      "executionId": "exec-bdf96394a06b7038bc3074f886bc40bb34d71629",
+      "toolName": "grep",
+      "agentId": "session-team-child-6788a23a6d1be9784107fcb7631d08f9",
+      "outcome": "admission-refusal",
+      "isError": true,
+      "refusalCode": "ADMISSION_OVERLAY_FAULT",
+      "policyGeneration": "a5sf1:4f93b749881b6a4106753b01bfcdd033",
+      "kind": "execution",
+      "at": "2026-11-22T01:05:05.244Z"
+    }
+  ]
+}

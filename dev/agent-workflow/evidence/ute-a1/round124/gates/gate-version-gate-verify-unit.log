@@ -1,0 +1,36 @@
+▶ version-gate verifier — positive control
+  ✔ accepts a receipt the real writer published from a green verdict (4.179385ms)
+  ✔ binds the verdict file by path + sha256 digest, not by a copy (0.445614ms)
+  ✔ the writer refuses to publish a receipt for a failed verdict (0.674837ms)
+✔ version-gate verifier — positive control (5.790966ms)
+▶ version-gate verifier — negative controls (each names its own code)
+  ✔ NC-1 missing receipt (0.278868ms)
+  ✔ NC-2 wrong head (the receipt speaks only for its own frozen SHA) (0.472995ms)
+  ✔ NC-3 receipt says verdict != pass (tampered after publication) (0.477844ms)
+  ✔ NC-4 an unexpected known-refuted id may not travel with the receipt (0.61252ms)
+  ✔ NC-4b a verdict that refutes a judge outside the enumeration is refused (0.490589ms)
+  ✔ NC-5 schema drift: an unknown key (0.528791ms)
+  ✔ NC-5b schema drift: a missing key (0.387653ms)
+  ✔ NC-5c schema drift: a wrong type and a non-ISO time (0.583665ms)
+  ✔ NC-5d an unsupported schemaVersion is not silently accepted (0.386231ms)
+  ✔ NC-6 tampered verdict bytes (digest mismatch) (0.263218ms)
+  ✔ NC-7 the referenced verdict file is gone (0.225597ms)
+  ✔ NC-8 envLimited > 0 is never a version-gate pass (0.410617ms)
+  ✔ NC-9 an enumerated known-refuted id may not be dropped from the set (0.253991ms)
+  ✔ NC-10 a receipt whose head is not a SHA is refused before any comparison (0.767463ms)
+  ✔ NC-11 the receipt judges must partition (judges = proven + knownRefuted + envLimited) (0.225256ms)
+✔ version-gate verifier — negative controls (each names its own code) (6.985192ms)
+▶ version-gate verifier — pure surface
+  ✔ the schema validator rejects a non-object and a null (0.108786ms)
+  ✔ the receipt schema constant is the one the writer emits (0.20046ms)
+  ✔ verifyValues is total: no receipt/verdict pair throws (0.178628ms)
+  ✔ a receipt built by the pure builder is schema-valid (0.179269ms)
+✔ version-gate verifier — pure surface (0.942864ms)
+ℹ tests 22
+ℹ suites 3
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 68.819597

@@ -1,0 +1,42 @@
+[2026-11-24T03:42:46.583Z] archived previous runs -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-24T03-42-46-581Z
+[2026-11-24T03:42:46.933Z] host tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use HEAD=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=[]
+[2026-11-24T03:42:46.933Z] started 2026-11-24T03:42:46.557Z boots=1
+[2026-11-24T03:42:46.976Z] [boot1] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-24T03:42:46.977Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=954835b717c6768c6208281f80545af445b164c9
+[2026-11-24T03:42:47.017Z] blueprint main.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-24T03:42:47.022Z] [boot1] alpha6 config gate (positive): null
+[2026-11-24T03:45:11.558Z] [boot1] host ready on http://127.0.0.1:3195
+[2026-11-24T03:45:11.579Z] [boot1] prompt(d4disc) status=200
+[2026-11-24T03:45:11.779Z] [boot1] discovery answered (mock requests=2)
+[2026-11-24T03:45:11.786Z] [boot1] prompt(d4off) status=200
+[2026-11-24T03:45:12.788Z] [boot1] officer delegated
+[2026-11-24T03:45:12.796Z] [boot1] officer instance=inst-1crltnl0089j childSession=session-team-child-1d56dbb16a118ba3573db3c4b2641997
+[2026-11-24T03:45:13.301Z] [boot1] d4:officer-up=PROVEN d4:officer-binding=PROVEN
+[2026-11-24T03:45:13.308Z] [boot1] prompt(d4wrk) status=200
+[2026-11-24T03:45:13.708Z] [boot1] worker delegated
+[2026-11-24T03:45:13.748Z] [boot1] worker ask appeared=true requestId=ctrl-0acqaca10be6yp0chq2lg0nc
+[2026-11-24T03:45:14.153Z] [boot1] officer resolve(first) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-0acqaca10be6yp0chq2lg0nc","decision":"allow","decider":{"kind":"instance","instanceId":"inst-1crltnl0
+[2026-11-24T03:45:14.656Z] [boot1] d4:ask-execute=REFUTED failing=["write-tool-result-not-an-error","real-bytes-on-disk","settlement-completed"]
+[2026-11-24T03:45:14.657Z] [boot1] second worker ask appeared=true requestId=ctrl-0pfukk21mhg8650rf3tmg0av
+[2026-11-24T03:45:14.659Z] [boot1] officer resolve(second) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-0pfukk21mhg8650rf3tmg0av","decision":"allow","decider":{"kind":"instance","instanceId":"inst-1crltnl0
+[2026-11-24T03:45:15.163Z] [boot1] d4:ask-execute-2=REFUTED failing=["second-write-tool-result-not-an-error","second-real-bytes-on-disk","first-file-unchanged-by-second-approval","content-binding-distinguishes-the-two-approvals","second-settlement-completed"]
+[2026-11-24T03:45:15.500Z] [boot1] sticky: holdLanded=true hold=true cancelStatus=200 stopSeen=true markers=["stopped-20765e07.json"]
+[2026-11-24T03:45:17.809Z] [boot1] sticky: thirdAsk=true requestId=ctrl-1i4269d05bvoqi0dwifrb0rs markersAfter=["stopped-20765e07.json"] wakeInputsWhileStopped=0
+[2026-11-24T03:45:18.221Z] [boot1] officer resolve(third) seen=true settlement=COMPLETED result={"status":"control-resolved","decision":{"requestId":"ctrl-1i4269d05bvoqi0dwifrb0rs","decision":"allow","decider":{"kind":"instance","instanceId":"inst-1crltnl0
+[2026-11-24T03:45:18.224Z] [boot1] sticky: resumeCleared=true resolve3=true write3Settled=true
+[2026-11-24T03:45:18.554Z] [boot1] process ask appeared=true requestId=ctrl-1uj1hn30outn8g1movvu91t6
+[2026-11-24T03:45:18.565Z] [boot1] prompt(d4res3) status=200
+[2026-11-24T03:45:19.471Z] [boot1] d4:ask-execute-process=REFUTED failing=["bash-tool-result-not-an-error","in-lane-write-lands","settlement-completed"]
+[2026-11-24T03:45:19.474Z] [boot1] duplicate: intents=1 delivered=1 inputs=1
+[2026-11-24T03:45:21.001Z] [boot1] PROBE FAILED: Error: the durable reader is not reading the TeamDomain ledger: control-request-recorded count=4 (observed 3), control-decision-recorded count=4 (observed 3) census={"provision-member-instance":2,"team-work-admitted":2,"activity-interval-opened":2,"activity-interval-closed":2,"member-lifecycle-changed":2,"control-request-recorded":4,"team-review-wake-routed":4,"team-review-wake-delivered":4,"control-decision-recorded":4}
+    at probeOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs:2297:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs:2661:18)
+[2026-11-24T03:45:21.185Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-24T03:45:21.562Z] host porcelain after: []
+[2026-11-24T03:45:21.564Z] TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)
+fact                              
+
+agreeing=true differing=[]
+[2026-11-24T03:45:21.564Z] RESULT evidence-complete=false allBooted=false blocked=false (1/1 boots; agreeing pair=true)
+exit=1

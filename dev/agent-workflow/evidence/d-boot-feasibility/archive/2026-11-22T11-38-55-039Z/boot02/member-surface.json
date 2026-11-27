@@ -1,0 +1,68 @@
+{
+  "tools": [
+    "bash",
+    "read",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message"
+  ],
+  "read": {
+    "name": "read",
+    "description": "Read a UTF-8 text file and return line-numbered content.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "file_path": {
+          "type": "string",
+          "description": "Path to read, resolved by the filesystem backend."
+        },
+        "offset": {
+          "type": "number",
+          "description": "1-based first line to return. Defaults to 1."
+        },
+        "limit": {
+          "type": "number",
+          "description": "Maximum number of lines to return. Defaults to 2000."
+        }
+      },
+      "required": [
+        "file_path"
+      ]
+    },
+    "schemaKeys": [
+      "name",
+      "description",
+      "input_schema"
+    ]
+  },
+  "note": "the model-visible schema captured from the mock provider request, i.e. what the model actually saw",
+  "shadowModules": [],
+  "presetPlugins": [
+    "persona",
+    "agent-instructions",
+    "tool-bash",
+    "tool-fs",
+    "tool-fs-search",
+    "tool-jobs",
+    "tool-skill",
+    "tool-present",
+    "command-goal",
+    "tool-goal",
+    "planning",
+    "compaction",
+    "tool-todo",
+    "tool-plugin-manager"
+  ]
+}

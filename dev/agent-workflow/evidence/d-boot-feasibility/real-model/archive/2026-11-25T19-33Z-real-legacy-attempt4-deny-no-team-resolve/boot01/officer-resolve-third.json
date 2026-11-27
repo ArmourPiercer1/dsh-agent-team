@@ -1,0 +1,17 @@
+{
+  "seen": false,
+  "callId": "call_01_saxMePjNc4ZNt7KViLvZ1525",
+  "call": null,
+  "result": null,
+  "isError": null,
+  "settlement": {
+    "executionId": "exec-9e2f728136fd167c0e65ed7b642a5f73681a5f29",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T19-15-54Z/centre/settlement/inst-0hvc2y01v51z/exec-9e2f728136fd167c0e65ed7b642a5f73681a5f29.settlement.json",
+    "present": false,
+    "state": null,
+    "bodyOutcome": null,
+    "dispatch": null,
+    "transitions": [],
+    "terminalAt": null
+  }
+}

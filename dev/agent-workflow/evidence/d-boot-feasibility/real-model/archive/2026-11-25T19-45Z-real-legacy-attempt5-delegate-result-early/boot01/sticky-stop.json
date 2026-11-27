@@ -1,0 +1,59 @@
+{
+  "stoppedBefore": true,
+  "stoppedMarkersBefore": [
+    "stopped-be6cf2ae.json"
+  ],
+  "machineAttempted": true,
+  "machineAttempt": {
+    "holdLanded": true,
+    "holdStatus": 200,
+    "cancelStatus": 200,
+    "resumeStatus": 200,
+    "thirdRequestId": "ctrl-07izy7v15ov8j01c2rqmd1s5"
+  },
+  "stoppedAfter": true,
+  "stoppedMarkersAfter": [
+    "stopped-be6cf2ae.json"
+  ],
+  "wakeInputsWhileStopped": 0,
+  "humanResumeCleared": true,
+  "humanResume": {
+    "status": 200,
+    "markersAfterResume": 0
+  },
+  "resumedWakeDelivered": false,
+  "write3": {
+    "settled": true,
+    "file": {
+      "exists": true,
+      "bytes": 29,
+      "sha256": "2b28991b1453c91d156a15f550556549cbdbcb5856aa833b3fcfa7d5b3d1ea0e"
+    },
+    "settlement": "COMPLETED",
+    "result": false
+  },
+  "discovery": {
+    "worker-write-3": {
+      "slot": "worker-write-3",
+      "predicate": "name=write && file_path=\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T19-33-29Z/workspace/lane/worker-ask-3.txt\"",
+      "matched": {
+        "id": "call_00_9xwWiY1wIglPX41YTyew1400",
+        "name": "write",
+        "turnIndex": 21,
+        "input": "{\"content\":\"DBOOT_D4_WORKER_ASK_CALLED_3\\n\",\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T19-33-29Z/workspace/lane/worker-ask-3.txt\"}"
+      },
+      "at": "2026-11-25T19:37:47.431Z"
+    },
+    "officer-resolve-third": {
+      "slot": "officer-resolve-third",
+      "predicate": "name=team_resolve_control && requestId=\"ctrl-07izy7v15ov8j01c2rqmd1s5\" && occurrence #1",
+      "matched": {
+        "id": "call_01_dEaydlEyyIsdkDt9bEvp2204",
+        "name": "team_resolve_control",
+        "turnIndex": 24,
+        "input": "{\"rootSessionId\":\"session-real-model-root\",\"requestToken\":\"dboot-d4-leader-resolve-worker-write\",\"requestId\":\"ctrl-07izy7v15ov8j01c2rqmd1s5\",\"decision\":\"allow\",\"note\":\"Leader allow: worker fs.write inside workspace lane/ (dboot d4 probe)\"}"
+      },
+      "at": "2026-11-25T19:35:47.172Z"
+    }
+  }
+}

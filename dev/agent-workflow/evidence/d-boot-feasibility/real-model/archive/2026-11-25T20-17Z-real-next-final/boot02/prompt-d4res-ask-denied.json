@@ -1,0 +1,5 @@
+{
+  "status": 200,
+  "text": "Call the `team_resolve_control` tool exactly once with these exact arguments: {\"rootSessionId\":\"session-real-model-root\",\"requestToken\":\"dboot-d4-resolve-ctrl-107zupt1bfs9z41lku18f0v0\",\"requestId\":\"ctrl-107zupt1bfs9z41lku18f0v0\",\"decision\":\"deny\"} After it returns, reply with the single token DBOOT_D4_RESOLVE_DONE and nothing else.",
+  "body": "{\"type\":\"server-response\",\"rpcId\":\"d4res-ask-denied-224ipm273m\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}"
+}

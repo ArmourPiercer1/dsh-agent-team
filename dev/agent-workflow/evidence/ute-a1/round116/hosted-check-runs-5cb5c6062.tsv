@@ -1,0 +1,22 @@
+138881480131	pr-settlement-gate	success	completed	2026-11-25T00:23:52Z	2026-11-25T00:24:06Z
+138881479801	candidate-protection	success	completed	2026-11-25T00:23:52Z	2026-11-25T00:24:08Z
+138881480001	synthesize-merge-tree	success	completed	2026-11-25T00:23:52Z	2026-11-25T00:24:09Z
+138881479726	pr-gate	success	completed	2026-11-25T00:23:52Z	2026-11-25T00:25:33Z
+138882850386	ci-required-deferred	skipped	completed	2026-11-25T00:26:54Z	2026-11-25T00:26:53Z
+138891893317	ci-required	success	completed	2026-11-25T00:47:30Z	2026-11-25T00:47:43Z
+138892295689	pr-settlement-gate	success	completed	2026-11-25T00:48:26Z	2026-11-25T00:48:38Z
+138892295597	synthesize-merge-tree	success	completed	2026-11-25T00:48:26Z	2026-11-25T00:48:45Z
+138892295224	pr-gate	success	completed	2026-11-25T00:48:26Z	2026-11-25T00:50:29Z
+138892449982	ci-census	skipped	completed	2026-11-25T00:48:45Z	2026-11-25T00:48:45Z
+138893567437	ci-required-deferred	success	completed	2026-11-25T00:51:19Z	2026-11-25T00:51:33Z
+138893567473	ci-required	failure	completed	2026-11-25T00:51:20Z	2026-11-25T00:51:45Z
+138881626116	ci-product / ci-product	success	completed	2026-11-25T00:24:11Z	2026-11-25T00:26:14Z
+138881626234	ci-integration / ci-integration	success	completed	2026-11-25T00:24:11Z	2026-11-25T00:26:53Z
+138881626146	ci-fast / ci-fast	success	completed	2026-11-25T00:24:12Z	2026-11-25T00:24:50Z
+138881626166	ci-security / ci-security	success	completed	2026-11-25T00:24:12Z	2026-11-25T00:25:13Z
+138881626487	ci-census / census-runtime	success	completed	2026-11-25T00:24:12Z	2026-11-25T00:47:27Z
+138892448290	ci-security / ci-security	success	completed	2026-11-25T00:48:47Z	2026-11-25T00:49:37Z
+138892448127	ci-integration / ci-integration	success	completed	2026-11-25T00:48:47Z	2026-11-25T00:51:17Z
+138892448237	ci-fast / ci-fast	success	completed	2026-11-25T00:48:48Z	2026-11-25T00:49:25Z
+138892448151	ci-product / ci-product	success	completed	2026-11-25T00:48:48Z	2026-11-25T00:50:32Z
+138881531364	candidate-acceptance (NOT Required) head=${{ github.sha }}	skipped	completed	2026-11-25T00:23:56Z	2026-11-25T00:23:49Z

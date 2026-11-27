@@ -1,0 +1,7 @@
+governed-preset-modules.mjs old-lines 534-660: lines=127 bytes=6863 verbatim_in_module=True absent_from_glue=True
+mcp-witness-lane.mjs old-lines 1366-1523: lines=158 bytes=7952 verbatim_in_module=True absent_from_glue=True
+root-delivery.mjs old-lines 3811-4018: lines=208 bytes=11601 verbatim_in_module=True absent_from_glue=True
+stop-drain-lane.mjs old-lines 4279-4373: lines=95 bytes=5862 verbatim_in_module=True absent_from_glue=True
+stop-drain-lane.mjs old-lines 4375-4386: lines=12 bytes=756 verbatim_in_module=True absent_from_glue=True
+stop-drain-lane.mjs old-lines 4420-4517: lines=98 bytes=4673 verbatim_in_module=True absent_from_glue=True
+ALL_MOVED_BYTES_IDENTICAL_AND_ABSENT_FROM_GLUE=True

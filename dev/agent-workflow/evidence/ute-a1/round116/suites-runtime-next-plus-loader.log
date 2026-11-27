@@ -1,0 +1,17 @@
+# same 3 suites under TEAM_TEST_HOST=next + the SAME Node host-loader used by live drivers
+# cmd: TEAM_TEST_HOST=next NODE_OPTIONS=--import=$PWD/tests/next-host/host-loader.mjs node node_modules/vitest/vitest.mjs run ...
+
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut
+
+ ✓ packages/runtime/test/a5sf-service-install.test.ts (20 tests) 61ms
+ ✓ packages/runtime/test/f15-mcp-live-loss.test.ts (10 tests) 8ms
+ ✓ packages/runtime/test/mcp-blueprint-initial-grant.test.ts (32 tests) 7ms
+
+ Test Files  3 passed (3)
+      Tests  62 passed (62)
+   Start at  09:05:09
+   Duration  2.30s (transform 2.55s, setup 0ms, import 4.71s, tests 76ms, environment 0ms)
+
+
+[exit 0]

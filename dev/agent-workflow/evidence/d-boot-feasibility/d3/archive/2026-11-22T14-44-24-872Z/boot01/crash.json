@@ -1,0 +1,32 @@
+{
+  "at": "2026-11-22T13:54:07.832Z",
+  "pid": 112,
+  "exit": {
+    "code": null,
+    "signal": "SIGKILL"
+  },
+  "pidGone": true,
+  "portFree": true,
+  "settlementBefore": {
+    "aRead": {
+      "state": "COMPLETED",
+      "transitions": [
+        "ADMITTED",
+        "RUNNING",
+        "COMPLETED"
+      ]
+    },
+    "bOpen": {
+      "state": "ADMITTED",
+      "transitions": [
+        "ADMITTED"
+      ],
+      "executionId": "exec-c7761249d1064b23c36e5e4f76a48778dd895896",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T13-51-52Z/centre/settlement/inst-1v36r931jr7r/exec-c7761249d1064b23c36e5e4f76a48778dd895896.settlement.json"
+    }
+  },
+  "restart": {
+    "url": "http://127.0.0.1:3193/?token=<redacted>",
+    "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261122T13-51-52Z/instance-port3193.log"
+  }
+}

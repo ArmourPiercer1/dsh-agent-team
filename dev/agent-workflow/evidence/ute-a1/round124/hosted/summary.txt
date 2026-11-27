@@ -1,0 +1,19 @@
+CANDIDATE-GATE FAIL at 2026-11-26T01:13:44.043Z
+head=cd08f90c2b87d875d65f427c9f2753b6710638e9 hosts=legacy,next timeout=2700000ms boots=2
+
+CANDIDATE-GATE fail host=legacy judges=27 proven=26 known-refuted=1 env-limited=0 drivers=4 records=6 agreement=false reasons=d3: agreement.json agreeing=false (must be true) differing=[] | d3: RUN record is partial/subset: boot2 | d3: driver exit=1 signal=null (accepted: 0)
+  d   pass judges=6 proven=6 known-refuted=0 env-limited=0 exit=0 [2026-11-26T01:14:00.254Z] RESULT PASS (2/2 boots; agreeing pair=true)
+  d2  pass judges=4 proven=4 known-refuted=0 env-limited=0 exit=0 [2026-11-26T01:14:58.898Z] RESULT PASS (2/2 boots; agreeing pair=true)
+  d3  fail judges=0 proven=0 known-refuted=0 env-limited=0 exit=1 [2026-11-26T01:16:03.011Z] RESULT evidence-complete=false allProven=false (2/2 boots; agreeing pair=false)
+        reason: agreement.json agreeing=false (must be true) differing=[]
+        reason: RUN record is partial/subset: boot2
+        reason: driver exit=1 signal=null (accepted: 0)
+  d4  pass judges=17 proven=16 known-refuted=1 env-limited=0 exit=3 [2026-11-26T01:17:25.626Z] RESULT evidence-complete=true allBooted=true blocked=true runRecordsValid=true (2/2 boots; agreeing pair=true)
+
+CANDIDATE-GATE pass host=next judges=31 proven=30 known-refuted=1 env-limited=0 drivers=4 records=8 agreement=true
+  d   pass judges=6 proven=6 known-refuted=0 env-limited=0 exit=0 [2026-11-26T01:18:04.706Z] RESULT PASS (2/2 boots; agreeing pair=true)
+  d2  pass judges=4 proven=4 known-refuted=0 env-limited=0 exit=0 [2026-11-26T01:19:09.007Z] RESULT PASS (2/2 boots; agreeing pair=true)
+  d3  pass judges=4 proven=4 known-refuted=0 env-limited=0 exit=0 [2026-11-26T01:20:40.432Z] RESULT evidence-complete=true allProven=true (2/2 boots; agreeing pair=true)
+  d4  pass judges=17 proven=16 known-refuted=1 env-limited=0 exit=3 [2026-11-26T01:22:25.298Z] RESULT evidence-complete=true allBooted=true blocked=true runRecordsValid=true (2/2 boots; agreeing pair=true)
+
+CANDIDATE-GATE fail hosts=legacy,next judges=58 proven=56 known-refuted=2 env-limited=0

@@ -1,132 +1,52 @@
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { configDefaults, defineConfig } from 'vitest/config'
+import { createHostVitePlugin } from '../../tests/next-host/host-vite-adapter.mjs'
+import { selectedHostTree } from '../../tests/next-host/host-select.mjs'
 
 const req = createRequire(import.meta.url)
 
+/** This package's root; the Team checkout is two levels up. */
+const PACKAGE_ROOT = fileURLToPath(new URL('.', import.meta.url))
+const REPO_ROOT = fileURLToPath(new URL('../..', import.meta.url))
+
 /**
- * The pristine upstream test-use checkout (tests/deepseek-harness-test-use —
- * canonical location per tests/paths.mjs). Resolved by walking up from this
- * config file until the marker is found, so it works both from the main
- * checkout (<repo>/packages/client) and from task worktrees
- * (<repo>/.worktrees/<task>/packages/client). The pre-standardization
- * four-levels-up assumption only worked from worktrees and silently
- * degraded to an empty srcMap from the main tree.
+ * THE SELECTED HOST TREE (rc.2 by default, rc.5 under `TEAM_TEST_HOST=next`).
+ * The old config discovered `tests/deepseek-harness-test-use` by walking up
+ * from this file and scanned it into a package→src map; that was an rc.2-only
+ * resolution rule living outside the one selector. The tree now comes from
+ * `tests/next-host/host-select.mjs`, and the redirect comes from the shared
+ * Vite adapter (`tests/next-host/host-vite-adapter.mjs`), which holds no pin,
+ * no tree and no package table of its own.
+ *
+ * Why SOURCE and not the built `lib/`: the built entry of a dynamic client
+ * package is a Cordis module factory registered on the browser shell's
+ * `window.__ModuleLoader__`, so it cannot execute outside the browser. The
+ * adapter re-points the built target the host's OWN `exports` map chose at its
+ * sibling TypeScript source inside the SAME selected tree (never a
+ * hand-written path table), so `TEAM_TEST_HOST=legacy` reproduces the previous
+ * rc.2 source redirect byte-for-byte and `next` gets the rc.5 source graph.
  */
-const referencesRoot = (() => {
-  let dir = fileURLToPath(new URL('.', import.meta.url))
-  for (let i = 0; i < 6; i += 1) {
-    const candidate = join(dir, 'tests', 'deepseek-harness-test-use')
-    if (existsSync(candidate)) return candidate
-    const parent = join(dir, '..')
-    if (parent === dir) break
-    dir = parent
-  }
-  return join(fileURLToPath(new URL('.', import.meta.url)), '..', '..', 'tests', 'deepseek-harness-test-use')
-})()
+const hostTree = selectedHostTree(REPO_ROOT)
 
 /**
- * Build the package-name → src-directory map for every workspace package
- * (packages/<group>/<pkg>) and vendored package (vendor/<pkg>) that exposes
- * a TypeScript source entry. Mirrors the tsconfig paths map the test-use
- * repo generates for its own vitest runs.
- */
-function buildSrcMap(): Record<string, string> {
-  const map: Record<string, string> = {}
-  const roots: Array<[string, string[]]> = [
-    ['packages', (() => {
-      try { return readdirSync(join(referencesRoot, 'packages')) } catch { return [] }
-    })()],
-    ['vendor', (() => {
-      try { return readdirSync(join(referencesRoot, 'vendor')) } catch { return [] }
-    })()],
-  ]
-  for (const [root, entries] of roots) {
-    for (const entry of entries) {
-      const entryDir = join(referencesRoot, root, entry)
-      let members: string[] = []
-      try {
-        if (!statSync(entryDir).isDirectory()) continue
-        // packages/ is grouped (packages/<group>/<pkg>): entries are the
-        // groups, their subdirectories are the packages. vendor/ is flat:
-        // entries are the packages themselves.
-        if (root === 'packages') {
-          members = readdirSync(entryDir).map((pkg) => join(entryDir, pkg))
-        } else {
-          members = [entryDir]
-        }
-      } catch { /* unreadable root entry: skip */ }
-      for (const pkgDir of members) {
-        const pkgJson = join(pkgDir, 'package.json')
-        if (!existsSync(pkgJson)) continue
-        try {
-          const name = JSON.parse(readFileSync(pkgJson, 'utf8')).name
-          const src = join(pkgDir, 'src')
-          if (name && (existsSync(join(src, 'index.ts')) || existsSync(join(src, 'index.tsx')))) {
-            map[name] = src
-          }
-        } catch { /* malformed manifest: skip */ }
-      }
-    }
-  }
-  return map
-}
-
-const srcMap = buildSrcMap()
-
-/**
- * use-sync-external-store 1.2.0 ships no `exports` map, and the linked
+ * use-sync-external-store 1.2.0 ships no `exports` map, and the host's
  * ui-renderer source imports its single consumed entry without an extension
- * ('use-sync-external-store/shim/with-selector'). Strict ESM resolution
- * refuses the extensionless subpath, so the alias below completes it to the
- * real .js file. That file stays EXTERNAL (nothing inlines it), so Node
- * loads it natively — its CJS require chain and cjs-module-lexer
- * named-export detection both resolve it (verified: the namespace exposes
- * useSyncExternalStoreWithSelector).
+ * ('use-sync-external-store/shim/with-selector'). Strict ESM resolution refuses
+ * the extensionless subpath, so the alias below completes it to the real .js
+ * file. The file stays EXTERNAL (nothing inlines it), so Node loads it
+ * natively — its CJS require chain and cjs-module-lexer named-export detection
+ * both resolve it. Read from the SELECTED tree, so the alias cannot silently
+ * point the rc.5 run at the rc.2 copy.
  */
 const uesWithSelector = join(
-  referencesRoot,
+  hostTree,
   'packages/client/ui-renderer/node_modules/use-sync-external-store/shim/with-selector.js',
 )
 
-/**
- * Source redirect for the linked DSH packages (package.json link:
- * devDependencies). Mirrors the upstream resolution facade: the test-use
- * repo's vitest runs vite-tsconfig-paths over tsconfig.base.json, which maps
- * every @deepseek-ai/* to its src/ — "paths must win over package exports so
- * built lib/ never loads a second module-singleton copy". The built
- * lib/client.js of a dynamic client (or api) package is a Cordis module
- * factory registered on window.__ModuleLoader__, which cannot execute
- * outside the browser shell, so every workspace-package entry must resolve
- * to source here. The chain through the linked test-runtime reaches
- * workspace packages that are not direct devDependencies of this package
- * (they resolve through the test-use pnpm layout), so the redirect covers
- * ALL @deepseek-ai/* names via the srcMap scan. When the mapped source
- * target does not exist (notably the packages' own ./src/* export
- * subpaths), the redirect declines and normal resolution (package exports)
- * takes over.
- */
-function resolveWorkspaceSource(source: string): string | undefined {
-  if (source.includes('?')) return
-  const m = source.match(/^(@deepseek-ai\/[\w.-]+)(?:\/(.*))?$/)
-  if (!m) return
-  const pkg = m[1]
-  if (pkg === undefined) return
-  const base = srcMap[pkg]
-  if (!base) return
-  const sub = m[2]
-  const target = sub === undefined ? base : join(base, sub)
-  for (const candidate of [target, `${target}.ts`, `${target}.tsx`, join(target, 'index.ts'), join(target, 'index.tsx')]) {
-    try {
-      if (existsSync(candidate) && statSync(candidate).isFile()) return candidate
-    } catch {
-      return
-    }
-  }
-  return
-}
+/** Escape a literal path for use inside a RegExp. */
+const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')
 
 /**
  * Runner is kept fully in-process: worker_threads pool (no child_process
@@ -134,21 +54,16 @@ function resolveWorkspaceSource(source: string): string | undefined {
  * Sandboxed Windows environments deny child spawning with piped stdio
  * (EPERM); these settings make the suite pass there and everywhere else.
  *
- * React dedupe: the linked DSH client packages (see package.json link:
- * devDependencies) resolve 'react' from the test-use pnpm store. Alias every
- * react entry to the single copy installed in this package so the linked
- * libraries, @testing-library/react, and the migrated specs share one React
- * instance (same 18.3.1 version as the test-use store).
+ * React dedupe: the linked DSH client packages resolve 'react' from the
+ * test-use pnpm store. Alias every react entry to the single copy installed in
+ * this package so the linked libraries, @testing-library/react, and the
+ * migrated specs share one React instance (same version as the host store).
  */
 export default defineConfig({
   plugins: [
-    {
-      name: 'linked-dsh-source-redirect',
-      enforce: 'pre',
-      resolveId(source) {
-        return resolveWorkspaceSource(source)
-      },
-    },
+    // The shared host adapter: same resolver the Node ESM hook calls, in its
+    // source-preference mode (see the module docstring above).
+    createHostVitePlugin({ repoRoot: REPO_ROOT, source: true }),
   ],
   resolve: {
     preserveSymlinks: true,
@@ -163,22 +78,25 @@ export default defineConfig({
   },
   test: {
     // 0.1.7: jsdom lacks ResizeObserver (the upstream Tooltip primitive now
-    // uses it) — see test/setup-jsdom.ts.
-    setupFiles: ['test/setup-jsdom.ts'],
+    // uses it) — see test/setup-jsdom.ts. The second entry is the per-worker
+    // false-green guard: it imports a bare host package through this same
+    // adapter and REFUSES a run whose loaded host version differs from the pin.
+    setupFiles: [join(PACKAGE_ROOT, 'test/setup-jsdom.ts'), join(REPO_ROOT, 'tests/next-host/host-version-guard.mjs')],
     server: {
       deps: {
         // Safety net for anything that still resolves through the
-        // node_modules symlink paths: the linked DSH packages' TypeScript
-        // sources (and vendored cordis) must be transformed by Vite. Node
-        // >=22.18 would load externalized .ts sources natively (type
-        // stripping), which breaks the extensionless uSES entry import.
-        // The negative lookahead keeps the packages' own node_modules
-        // dependencies (e.g. use-sync-external-store) EXTERNAL so Node
-        // loads those ordinary CJS/ESM modules natively — Vite 8 would
-        // evaluate the CJS file as ESM if it were inlined.
+        // node_modules symlink paths: the selected host's TypeScript sources
+        // (and vendored cordis) must be transformed by Vite. Node >=22.18
+        // would load externalized .ts sources natively (type stripping), which
+        // breaks the extensionless uSES entry import. The negative lookahead
+        // keeps the host's own node_modules dependencies
+        // (e.g. use-sync-external-store) EXTERNAL so Node loads those ordinary
+        // CJS/ESM modules natively — Vite 8 would evaluate the CJS file as ESM
+        // if it were inlined. The tree half of the pattern is DERIVED from the
+        // selector, not a second hard-coded tree name.
         inline: [
           /@deepseek-ai[\\/](?:dsh-client-[\w-]+|cordis)(?![\s\S]*[\\/]node_modules[\\/])/,
-          /deepseek-harness-test-use[\\/](?:packages|vendor)(?![\s\S]*[\\/]node_modules[\\/])/,
+          new RegExp(`${escapeRegExp(hostTree)}[\\\\/](?:packages|vendor)(?![\\s\\S]*[\\\\/]node_modules[\\\\/])`),
         ],
       },
     },

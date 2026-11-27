@@ -1,0 +1,67 @@
+# 12 — install FROM THE TAG (profile wiped first): dependency, bundles, lock commit, compatibility
+
+## profile package.json
+{
+  "name": "dsh-profile-web",
+  "private": true,
+  "dependencies": {
+    "dsh-agent-team": "github:ArmourPiercer1/dsh-agent-team#v0.3.0-trial.1"
+  },
+  "dsh": {
+    "profile": {
+      "bundles": [
+        "@deepseek-ai/dsh-base",
+        "@deepseek-ai/dsh-web-app",
+        "dsh-agent-team"
+      ]
+    }
+  }
+}
+
+## lockfile dsh-agent-team entries
+11:      dsh-agent-team:
+12:        specifier: github:ArmourPiercer1/dsh-agent-team#v0.3.0-trial.1
+13:        version: https://codeload.github.com/ArmourPiercer1/dsh-agent-team/tar.gz/c11ac09a3c74a8e9452ca6a9adf817511c5d07e9
+33:  dsh-agent-team@https://codeload.github.com/ArmourPiercer1/dsh-agent-team/tar.gz/c11ac09a3c74a8e9452ca6a9adf817511c5d07e9:
+34:    resolution: {gitHosted: true, integrity: sha512-4+GXCLgV0h+fGl31Dw9tMRKij/h3TFyJnuWFAAIkETtWUuNyTN9oH71LBS1Z+YZMUsFr+EYoSa9R5Jy4L4jsXA==, tarball: https://codeload.github.com/ArmourPiercer1/dsh-agent-team/tar.gz/c11ac09a3c74a8e9452ca6a9adf817511c5d07e9}
+117:  dsh-agent-team@https://codeload.github.com/ArmourPiercer1/dsh-agent-team/tar.gz/c11ac09a3c74a8e9452ca6a9adf817511c5d07e9:
+
+## installed package identity
+{
+ "name": "dsh-agent-team",
+ "version": "0.3.0-trial.1",
+ "engines": {
+  "node": "^22.19.0 || >=24.0.0",
+  "dsh": "0.2.0-rc.2 || 0.2.2-rc.5"
+ },
+ "peers": [
+  "0.2.0-rc.2 || 0.2.2-rc.5"
+ ],
+ "bundle": {
+  "bundle": {
+   "patch": "./cordis.patch.yml"
+  },
+  "client": {
+   "platform": "web"
+  }
+ }
+}
+
+## tag peel + lock-resolved commit
+tag_peel=c11ac09a3c74a8e9452ca6a9adf817511c5d07e9
+lock_resolved=
+
+## profile node_modules/@deepseek-ai
+cosmokit
+dsh-web-search-exa
+schemastery
+
+## dump-config rows
+1263:# == dsh-agent-team
+1265:  name: dsh-agent-team/web-transport
+1274:  name: dsh-agent-team/host
+
+## corrected resolution check (the lock records a codeload tarball URL, not user/repo/<sha>)
+lock_resolved_commit=c11ac09a3c74a8e9452ca6a9adf817511c5d07e9
+tag_peel=c11ac09a3c74a8e9452ca6a9adf817511c5d07e9
+match=yes

@@ -15,7 +15,7 @@
  *
  * @module test/a5p7-lane-hygiene
  */
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
@@ -109,13 +109,16 @@ describe('a5p7 lane hygiene — DORMANT means DORMANT', () => {
         // below (the entry's new bridge import names plane-effect-backends,
         // never the lane).
         'runtime/test/a5p7-jobs-assembly.test.ts',
-        'runtime/test/a5p7-jobs-assembly-actuator.test.ts',
+        // ROUND 72 (2026-11-22): `a5p7-jobs-assembly-actuator.test.ts` was deleted by 6f0dd3f1b
+        // ("delete the legacy center hub plane-effect-backends", U6 PR6 scope B) and this pin was never
+        // updated, so the leg had been RED since that merge. A pin names files that exist; the behaviour
+        // spec `a5p7-jobs-assembly.test.ts` above still carries the durable-identity legs.
         'runtime/test/a5p7-lane-hygiene.test.ts',
         'runtime/test/a5p7-lease-cancellation.test.ts',
         'runtime/test/a5p7-mcp-rebind-chain.test.ts',
       ].sort(),
     )
-    expect(LANE_SOURCE_FILES.length).toBe(17)
+    expect(LANE_SOURCE_FILES.length).toBe(16)
   })
 
   // Reviewed NAMES-ONLY exception — the G-d integration wiring round paid
@@ -272,15 +275,26 @@ describe('a5p7 lane hygiene — DORMANT means DORMANT', () => {
       // jobOwnerKey precedent above: list grew, edge shape did not move.
       `import { createJobsGateway, createLeaseWindow, jobOwnerKey, jobsBridgeScopeKey } from '../../../jobs-gateway/index.js'`,
     ])
-    const entry = readFileSync(join(REPO_PACKAGES, 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs'), 'utf8')
-    const entryEdges = entry.split('\n').filter((line) => /^\s*import\b.*jobs-gateway/.test(line))
-    expect(entryEdges.map((l) => l.trim())).toEqual([
-      // Same law on the entry edge: still EXACTLY ONE line importing the
-      // live row (never the barrel - pinned below again); the line grew by
-      // the row-re-exported jobsBridgeScopeKey helper, not by an edge.
-      `import { createLiveJobsGatewayAssembly, jobsBridgeScopeKey } from './jobs-gateway-assembly.mjs'`,
-    ])
-    expect(entry).not.toContain("jobs-gateway/index.js'")
+    // (b) ROUND 72 (2026-11-22): the PRODUCTION ENTRY this leg pinned — `live/agent-bindings.mjs` — was
+    // retired by the UTE A0/A1 cut, and the centre's replacement bindings do NOT mount the jobs gateway,
+    // so the reviewed "entry reaches the row, never the barrel" edge no longer exists on this tree. The
+    // law it protected (the row is reachable ONLY through its one reviewed edge, never around it) is
+    // asserted in the shape that is still true: the row is mounted by NOBODY, and the barrel string never
+    // appears in any production file. Re-mounting the row is a design change that must re-pin this leg.
+    expect(existsSync(join(REPO_PACKAGES, 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs')),
+      'the retired production entry must not be resurrected (the centre owns the bindings)').toBe(false)
+    const rowImporters: string[] = []
+    const walk = (dir: string): void => {
+      for (const name of readdirSync(dir)) {
+        const abs = join(dir, name)
+        if (statSync(abs).isDirectory()) { walk(abs); continue }
+        if (!/\.(mjs|ts)$/.test(name) || /\.test\./.test(name)) continue
+        if (abs === join(REPO_PACKAGES, 'runtime', 'src', 'plugin', 'live', 'jobs-gateway-assembly.mjs')) continue
+        if (/from ['"]\.\/jobs-gateway-assembly\.mjs['"]/.test(readFileSync(abs, 'utf8'))) rowImporters.push(abs)
+      }
+    }
+    walk(join(REPO_PACKAGES, 'runtime', 'src'))
+    expect(rowImporters, 'the live jobs row is mounted by no production file after the cut: a new mounter must re-pin this leg').toEqual([])
   })
 
   it('the p4t6 census names the lane ONLY as quoted ledger paths, never as an edge', () => {

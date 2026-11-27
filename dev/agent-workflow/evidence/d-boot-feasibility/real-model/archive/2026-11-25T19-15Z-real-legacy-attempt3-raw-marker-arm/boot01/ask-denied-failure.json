@@ -1,0 +1,3 @@
+{
+  "error": "Error: the ask-denied worker instance never came up\n    at runAskNegativeArm (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs:2171:26)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async probeOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs:3507:23)\n    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs:3999:18)"
+}

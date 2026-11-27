@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "ROUND94APPROVEDASKRECEIPT",
+  "paths": [
+    "packages/runtime/member-io-policy/src/approved-ask-receipt.ts"
+  ],
+  "expectedDelta": {
+    "from": 1319,
+    "to": 1320
+  },
+  "reason": "Round 94 (UTE vNext A1, the R3 PoC of owner ruling 20261124-0151 §2) adds ONE scannable production module: packages/runtime/member-io-policy/src/approved-ask-receipt.ts — the execution-scoped ApprovedAskReceipt (mint after the one-shot grant is consumed, execution-object/scoped delivery, canonical operation + content digest, policy-generation and binder/member-epoch liveness, lane-snapshot bounds, single-use). NEW work in this tree, zero legacy SessionEvent vocabulary; the denylist hit set is measured unchanged.",
+  "tieNote": "MEASURED on this tree with the file on disk and no booking: the scan arithmetic is 1319 + 1 = 1320 (base 0 + sum of booked lanes). Same law, no tolerance; the round-93 lane (1318 -> 1319) is untouched and still counted."
+}

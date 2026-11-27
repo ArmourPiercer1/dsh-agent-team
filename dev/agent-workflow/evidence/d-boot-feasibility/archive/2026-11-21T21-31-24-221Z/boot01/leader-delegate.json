@@ -1,0 +1,20 @@
+{
+  "call": {
+    "id": "call-a5sflm-delegate",
+    "name": "team_delegate",
+    "arguments": {
+      "rootSessionId": "session-dboot-read-team",
+      "requestToken": "dboot-read-turn-delegate",
+      "delegationTemplateId": "worker",
+      "label": "a5sflm-worker",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-21-06Z/workspace",
+      "prompt": "dboot-read-turn: call the native read tool twice, exactly once per probe, one tool call at a time, then report. Probe A: the in-lane fixture. Probe B: the out-of-lane fixture.",
+      "async": false
+    }
+  },
+  "result": {
+    "source": "model",
+    "isError": false,
+    "text": "{\"status\":\"rejected\",\"code\":\"TEAM_RUNTIME_DURABLE_WRITE_FAILED\",\"message\":\"activation: child-session creation failed for member 'inst-0e23ryd1fmn2': Error: member-execution: Member 'inst-0e23ryd1fmn2' mounts a compiled realm but this row sets no config.centreStatePath; a governed member whose admission/execution facts and settlements cannot be written is refused rather than run unrecorded (set centreStatePath to a directory this deployment owns)\",\"details\":{\"source\":\"activation-provider\",\"providerCode\":\"ACTIVATION_CHILD_SESSION_CREATION_FAILED\",\"rootSessionId\":\"session-dboot-read-team\",\"instanceId\":\"inst-0e23ryd1fmn2\"}}"
+  }
+}

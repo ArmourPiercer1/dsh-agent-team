@@ -1,0 +1,22 @@
+# Leakage self-check — round 120 (2026-11-26)
+
+The key was loaded per shell with `set -a; . /home/armourpiercer/projects/dsh-agent-team/.env; set +a`
+and unset afterwards. It was never `cat`-ed, `echo`-ed, `set -x`-ed, or written into any file, log,
+commit message, evidence artifact or PR comment. The driver reads it by NAME (`DEEPSEEK_API_KEY`);
+the recorder records request/response bodies and a systemHead, never headers.
+
+Mechanical checks (value compared literally, never printed):
+
+```
+tracked_hits=0                 # git grep -l -F -- "$K" -- .         → no tracked file contains it
+evidence_hits=0                # grep -rl -F -- "$K" dev/agent-workflow/evidence .artifacts → none
+git status --porcelain | grep -c '\.env'  → 0
+git ls-files | grep -c '^\.env$'          → 0
+```
+
+Header check over the committed evidence (`round120/`): the only occurrence of `x-api-key` is the
+README sentence that says headers are **not** recorded; no `"authorization"` header value exists in
+any sink. The recorder's records carry `messages` summaries and reply bodies only.
+
+Sinks examined: `real-legacy/boot0{1,2}/model-calls-*.jsonl`, `model-calls.snapshot.json`,
+`real-next/boot0{1,2}/model-calls-*.jsonl`, `scripted-control/`.

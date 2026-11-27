@@ -1,0 +1,54 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/client
+
+ ✓ test/team-creation-panel.client.spec.tsx (19 tests) 1395ms
+ ❯ test/team-governance.client.spec.tsx (28 tests | 1 failed) 2303ms
+     ✓ renders the Projection-driven compatibility badge (the §10.2 four admission states) 24ms
+     ✓ renders an unknown future compatibility status verbatim (loud, never silent) 3ms
+     ✓ renders the aggregate counts and generation from the Projection 3ms
+     ✓ keeps the ack control disabled with the explicit wire-gap reason (UI §38) 12ms
+     ✓ a compat review is a read: it never pulls the projection 13ms
+     ✓ renders a compat review typed failure verbatim as a local note (no projection pull) 58ms
+     ✓ renders the compat review fresh-read detail on success (labeled, not authority) 55ms
+     ✓ the human Recheck re-probes with the closed CAPABILITY_GENERATION_CHANGE trigger and pulls once on success 56ms
+     ✓ a Recheck typed failure renders verbatim (code + message + token echo) and never pulls 55ms
+     ✓ a Recheck transport loss (the only rejection kind) records the local transport-loss note 55ms
+     ✓ a policy review loads the cell view (a read: no projection pull) 56ms
+     ✓ a policy commit sends a PARTIAL cell map on the projection state id (never invented) and pulls once 111ms
+     ✓ keeps the policy commit inert (no command, no preview) when the only draft is an allow with no items 56ms
+     ✓ a policy commit typed failure renders verbatim and never pulls 108ms
+     ✓ an override set targets the member instance (scope instance) and pulls once on success 56ms
+     ✓ keeps the override set inert until an allow cell has items (no empty allow commit) 3ms
+     × an override reset targets the member instance (scope instance) and pulls once on success 1008ms
+     ✓ an override set typed failure renders verbatim and never pulls 57ms
+     ✓ an override show is a read (no projection pull) and renders the recorded override verbatim 55ms
+     ✓ an override show renders the no-override note when the record is null (a read) 55ms
+     ✓ renders the effective-config lanes (model/workspace/permissions-sorted/autonomy) with the §18.3 state words 3ms
+     ✓ renders the §19 hard-policy display for a denied lane (never pretend an override wins) 3ms
+     ✓ shows the effective-config empty note when no member carries a config DTO 3ms
+     ✓ a SUCCESSFUL recheck whose pull fails shows the split result on its own lane and never re-fires the mutation (S1-C2) 64ms
+     ✓ a SUCCESSFUL recheck whose pull returns a typed rpc-error shows the split result with the typed code (S1-C2) 54ms
+     ✓ a SUCCESSFUL command whose pull is a VALID round trip (apply / duplicate / stale) shows NO pull-error lane (S1-C2) 163ms
+     ✓ the pull-error lane is cleared by the NEXT dispatch on the same command key (the note is per-invocation, not sticky) (S1-C2) 106ms
+     ✓ pairs the zh and en dictionaries for the governance surface 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/team-governance.client.spec.tsx > TeamGovernance > an override reset targets the member instance (scope instance) and pulls once on success
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ test/team-governance.client.spec.tsx:556:35
+    554|     } satisfies RemoteOverrideResetParams)
+    555|     await vi.waitFor(() => {
+    556|       expect(face.pullProjection).toHaveBeenCalledTimes(1)
+       |                                   ^
+    557|       expect(memberBlock.querySelector('[data-governance-override-rese…
+    558|     })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 46 passed (47)
+   Start at  06:55:33
+   Duration  4.60s (transform 2.40s, setup 24ms, import 3.61s, tests 3.70s, environment 634ms)
+

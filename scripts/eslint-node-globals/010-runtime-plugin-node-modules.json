@@ -5,7 +5,7 @@
   "globals": [
     "packages/runtime/test/t12a-live-bridge.mjs",
     "packages/runtime/src/plugin/upstream-resolver.mjs",
-    "packages/runtime/src/plugin/live/agent-bindings.mjs",
+    "packages/runtime/src/plugin/vnext/agent-bindings.mjs",
     "packages/runtime/src/plugin/live/jobs-background-producer.mjs"
   ]
 }

@@ -1,0 +1,20 @@
+{
+  "call": {
+    "id": "call-a5sflm-delegate",
+    "name": "team_delegate",
+    "arguments": {
+      "rootSessionId": "session-dboot-read-root",
+      "requestToken": "dboot-read-turn-delegate",
+      "delegationTemplateId": "worker",
+      "label": "a5sflm-worker",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-28-44Z/workspace",
+      "prompt": "dboot-read-turn: call the native read tool twice, exactly once per probe, one tool call at a time, then report. Probe A: the in-lane fixture. Probe B: the out-of-lane fixture.",
+      "async": false
+    }
+  },
+  "result": {
+    "source": "model",
+    "isError": false,
+    "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-dboot-read-root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0pe2z220bhfb\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-958e43cfa98d7ec99ae2b757f53d2c7a\",\"operationId\":\"op-0jkcq8g1vzs5c30bu29uq0g0\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":2,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"dboot-read-turn-delegate\",\"status\":\"succeeded\",\"body\":\"DBOOT_MEMBER_DONE Error: LANE_DENY: fs.read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-28-44Z/out-of-lane/secret-out-of-lane.txt\\\" is outside the binding's \"}},\"requestToken\":\"dboot-read-turn-delegate\"}"
+  }
+}

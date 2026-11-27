@@ -1,0 +1,14 @@
+{
+  "executionId": "exec-6b050a64bcb815cfc197b1c00e3c115e0b2f8715",
+  "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T20-26-07Z/centre/settlement/inst-0hvc2y01v51z/exec-6b050a64bcb815cfc197b1c00e3c115e0b2f8715.settlement.json",
+  "present": true,
+  "state": "COMPLETED",
+  "bodyOutcome": "completed",
+  "dispatch": "quiesced",
+  "transitions": [
+    "ADMITTED",
+    "RUNNING",
+    "COMPLETED"
+  ],
+  "terminalAt": "2026-11-25T20:27:31.790Z"
+}

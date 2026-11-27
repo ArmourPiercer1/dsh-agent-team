@@ -731,7 +731,7 @@ describe('a4p7 7.1 C2: a frozen row is classified by the version its document de
 // was never parsed.
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { createTeamProductionRoot } from '../src/plugin/root.js'
+import { createTeamProductionRoot } from '../src/plugin/vnext/root.js'
 import type { TeamAgentBindings, TeamPluginConfig, TeamProductionRoot } from '../src/plugin/types.js'
 import type { GovernanceStartOutcome, GovernanceWarningService } from '../governance-warning/index.js'
 import { createTeamDomain, openTeamDomain } from '../../storage/repositories/index.js'

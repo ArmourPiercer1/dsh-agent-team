@@ -387,19 +387,27 @@ describe('TeamTimeline', () => {
     const bars = view.container.querySelectorAll<HTMLElement>('[data-team-timeline-bar]')
     const runningBar = bars[2]
     if (runningBar === undefined) throw new Error('the running bar did not render')
-    fireEvent.mouseOver(runningBar)
+    // HOST-OBSERVATION ADAPTATION (2026-11-25, P0): the tooltip is the HOST's
+    // public `Tooltip` primitive. 0.2.0-rc.2 opens on mouse enter/leave;
+    // 0.2.2-rc.5 opens on POINTER enter/leave. Firing the family the selected
+    // host listens to keeps the assertion (the tooltip's content) unchanged
+    // and stops the arm from pinning one host's event vocabulary. The product
+    // component (TeamTimeline) is identical in both cases.
+    const hover = (element: HTMLElement) => { fireEvent.mouseOver(element); fireEvent.pointerEnter(element) }
+    const unhover = (element: HTMLElement) => { fireEvent.mouseOut(element, { relatedTarget: view.container }); fireEvent.pointerLeave(element) }
+    hover(runningBar)
     act(() => { vi.advanceTimersByTime(250) })
     const tooltip = screen.getByRole('tooltip')
     expect(tooltip.textContent).toContain('Beta')
     expect(tooltip.textContent).toContain(' → ')
     expect(tooltip.textContent).toContain('3分20秒')
     expect(tooltip.textContent).toContain('（进行中）')
-    fireEvent.mouseOut(runningBar, { relatedTarget: view.container })
+    unhover(runningBar)
     expect(screen.queryByRole('tooltip')).toBeNull()
 
     const settledBar = bars[0]
     if (settledBar === undefined) throw new Error('the settled bar did not render')
-    fireEvent.mouseOver(settledBar)
+    hover(settledBar)
     act(() => { vi.advanceTimersByTime(250) })
     const settledTooltip = screen.getByRole('tooltip')
     expect(settledTooltip.textContent).toContain('Alpha')

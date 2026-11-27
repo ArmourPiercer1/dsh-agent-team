@@ -163,7 +163,12 @@ function makeFace(overrides: Partial<TeamGovernanceFace> = {}): TeamGovernanceFa
     policyStateSet: vi.fn(() => Promise.resolve(okResponse(null, 'policyState.set'))),
     overrideGet: vi.fn(() => Promise.resolve(okResponse(null, 'override.get'))),
     overrideSet: vi.fn(() => Promise.resolve(okResponse(null, 'override.set'))),
-    overrideReset: vi.fn(() => Promise.resolve(okResponse(null, 'override.reset'))),
+    // `override.reset` (contract v7 / `RemoteOverrideResetValue`): the value is
+    // `{ removed: boolean }` — the handler answers `{ data: { removed } }`. The
+    // pre-round-127 fixture answered `null`, which the product never sends while
+    // `TeamGovernance` reads the value as a record (`data['removed']`); the stale
+    // null made the arm red without a product bug. The assertion is unchanged.
+    overrideReset: vi.fn(() => Promise.resolve(okResponse({ removed: true }, 'override.reset'))),
     pullProjection: vi.fn(() => Promise.resolve({ status: 'duplicate', receivedGeneration: 1 } as const)),
     ...overrides,
   }

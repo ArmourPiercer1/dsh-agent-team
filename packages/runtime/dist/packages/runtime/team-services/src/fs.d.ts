@@ -17,6 +17,18 @@
  * provider-resolved real path, so a symlink that escapes the authorized subtree
  * is refused even though its authored name is inside.
  *
+ * THE 0.2.2-rc.5 ADDITIONS (`patchText`, `deleteFile`, `moveFile`) are confined
+ * the same way and are the B5 closure of the rc.5 review: before them,
+ * `apply_patch`, delete and move reached the base Provider with the Member's
+ * lane never consulted. `patchText` is judged like `editText`, `deleteFile`
+ * like a write of the file it removes, and `moveFile` judges BOTH paths (the
+ * source being removed and the destination being published) before either
+ * effect. Because this repo compiles against rc.2's provider type, the three
+ * are declared as extra methods reached through one local, commented cast, and
+ * a base that implements none of them is a TYPED `IO_POLICY_UNSUPPORTED`
+ * refusal rather than an untyped crash or a fallthrough (see
+ * {@link FsNewMethodSurface} and `team-services/src/fs.ts` in the factory).
+ *
  * `ask` IS A REFUSAL HERE (A5-DUAL-PLANE-01, 2026-11-05): the compiled lane can
  * carry the disposition `ask`, and this plane owns no approval consumer
  * (`resolveAskClassCall` is the designed seam and has no production caller), so
@@ -38,6 +50,7 @@
  */
 import type { Context } from '@deepseek-ai/cordis';
 import { type PathIdentityResolver } from '../../member-io-policy/src/provider-capabilities.js';
+import { type AuthorizeAskWithReceiptInput } from '../../member-io-policy/src/approved-ask-receipt.js';
 import type { EffectiveIoPolicy, MemberPolicy } from '../../member-io-policy/src/types.js';
 /**
  * The structural Provider surface the confined subclass relies on. The LIVE
@@ -60,6 +73,25 @@ export interface FsProviderSurface {
     writeText(target: unknown, content: string, expected?: unknown, signal?: AbortSignal, policy?: unknown): Promise<unknown>;
     editText(target: unknown, edit: unknown, expected?: unknown, signal?: AbortSignal, policy?: unknown): Promise<unknown>;
 }
+/**
+ * The THREE `FileSystem` methods 0.2.2-rc.5 added — `patchText`, `deleteFile`,
+ * `moveFile` (`@deepseek-ai/dsh-fs`'s abstract class).
+ *
+ * WHY THEY ARE NOT ON {@link FsProviderSurface}: this repo compiles against
+ * 0.2.0-rc.2's provider type, which has none of them. Declaring them on the
+ * surface the subclass `extends` would make the repo's tsc demand them from
+ * every rc.2 provider AND would turn the subclass's own declarations into
+ * `noImplicitOverride` violations. A separate, minimal surface keeps the
+ * version reality explicit: on rc.2 these are EXTRA methods the subclass
+ * declares; on rc.5 they override the base's. The ONE cast that reaches the
+ * base implementation is local to the factory below (see `baseNew`), and a
+ * base that does not implement a method is a TYPED refusal, never a fallthrough.
+ */
+export interface FsNewMethodSurface {
+    patchText(target: unknown, hunks: unknown, expected?: unknown, signal?: AbortSignal, sandboxPolicy?: unknown): Promise<unknown>;
+    deleteFile(target: unknown, expected?: unknown, signal?: AbortSignal, sandboxPolicy?: unknown): Promise<unknown>;
+    moveFile(source: unknown, destination: unknown, options: unknown, signal?: AbortSignal, sandboxPolicy?: unknown): Promise<unknown>;
+}
 /** A Provider constructor that Cordis can mount as the `fs` service. */
 export type FsProviderConstructor = new (ctx: Context, config?: Record<string, unknown>) => FsProviderSurface;
 /**
@@ -67,7 +99,38 @@ export type FsProviderConstructor = new (ctx: Context, config?: Record<string, u
  * share exactly this shape, so the SAME guard enforces either one (the tool
  * factor of the invariant is not allowed to be decorative).
  */
-export type PolicyLanes = Pick<MemberPolicy | EffectiveIoPolicy, 'memberIdentity' | 'read' | 'write'>;
+export type PolicyLanes = Pick<MemberPolicy | EffectiveIoPolicy, 'memberIdentity' | 'read' | 'write'> & {
+    /** The compiled policy revision, when the lane object carries it. */
+    readonly revision?: string;
+    /** The effective policy's revision field (EffectiveIoPolicy spelling). */
+    readonly policyRevision?: string;
+    /** The compiled tool binding identity, when the realm has one. */
+    readonly toolBindingIdentity?: string;
+};
+/**
+ * The operation context a Provider method adds to its admission call. It is NOT a decision input:
+ * it is the effect the approved-ask receipt is checked against, one evidence field per method
+ * (round 96 — the owner-ruled extension from `writeText` to every FS mutation):
+ *
+ *  - `content`     `writeText`  — the exact bytes;
+ *  - `edit`        `editText`   — the exact literal transformation;
+ *  - `hunks`       `patchText`  — the exact hunk payload;
+ *  - (nothing)     `deleteFile` — the path IS the whole scope; no bytes are read back;
+ *  - `destinationPath` `moveFile` — the SECOND path (the admission `hostPath` is the source).
+ *
+ * A method that supplies nothing for a receipt-bearing kind can only ever get the refusal: the
+ * verifier refuses missing evidence rather than checking it against nothing.
+ */
+export interface FsGuardOperation {
+    readonly content?: string;
+    readonly edit?: {
+        readonly oldString: string;
+        readonly newString: string;
+        readonly replaceAll: boolean;
+    };
+    readonly hunks?: unknown;
+    readonly destinationPath?: string;
+}
 /**
  * The per-call admission function the subclass calls before delegating.
  *
@@ -77,8 +140,18 @@ export type PolicyLanes = Pick<MemberPolicy | EffectiveIoPolicy, 'memberIdentity
  * root's ancestors are outside the lane). It is not a decision input: the
  * guard still decides on `(method, hostPath)` alone, and the note is recorded
  * on the SAME fact the decision produced, so the fact count never changes.
+ *
+ * `operation` is NOT a decision input either: it is the effect the receipt is
+ * checked against (content digest). A caller that omits it can only ever get
+ * the pre-receipt refusal.
  */
-export type FsGuard = (method: string, hostPath: string, annotations?: readonly string[]) => Promise<void>;
+export type FsGuard = (method: string, hostPath: string, annotations?: readonly string[], operation?: FsGuardOperation) => Promise<void>;
+/**
+ * The trusted, read-only authority the Provider needs to prove a receipt is
+ * still live. Deliberately only the binder's epoch surface: no approval store,
+ * no second policy, no writer.
+ */
+export type ApprovedAskProviderAuthority = NonNullable<AuthorizeAskWithReceiptInput['authority']>;
 /**
  * Build the admission function for one Member. All checks are fail-closed:
  * a resolver failure, an unsupported destination or an uncovered target, a
@@ -98,12 +171,6 @@ export type FsGuard = (method: string, hostPath: string, annotations?: readonly 
  * turn kept obtaining new confined terminal sessions until it ended (measured
  * window 8.56 s / 8.72 s, a second `bash` 290/427 ms before the commit).
  */
-export declare function createMemberFsGuard(policy: PolicyLanes, resolver?: PathIdentityResolver): FsGuard;
-/**
- * Create the confined Provider class for one Member: the live Provider class is
- * the base, every target-bearing method guards first and delegates second.
- * The returned constructor is mountable through Cordis (`ctx.plugin`) and
- * registers the same `fs` service name in the context it is mounted under.
- */
-export declare function createConfinedFileSystemClass(Base: FsProviderConstructor, guard: FsGuard): FsProviderConstructor;
+export declare function createMemberFsGuard(policy: PolicyLanes, resolver?: PathIdentityResolver, authority?: ApprovedAskProviderAuthority): FsGuard;
+export declare function createConfinedFileSystemClass(Base: FsProviderConstructor, guard: FsGuard, memberIdentity?: string): FsProviderConstructor;
 //# sourceMappingURL=fs.d.ts.map

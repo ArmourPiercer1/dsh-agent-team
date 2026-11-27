@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "ROUND92PTCRULING",
+  "paths": [
+    "packages/runtime/src/plugin/vnext/ptc-product-ruling.mjs"
+  ],
+  "expectedDelta": {
+    "from": 1317,
+    "to": 1318
+  },
+  "reason": "Round 92 (UTE vNext A1, owner ruling docs/reviews/20261124-0151.txt §PTC) adds ONE scannable production module under packages/runtime/src/plugin/vnext: ptc-product-ruling.mjs, the machine declaration of the ruled PTC scope (marker, status unsupported-by-product-ruling, the CLOSED not-applicable arm list, the refusal controls, the amended positive ladder, and the report emitter the marker arms assert). It is NEW work in this tree, not a migrated straggler, and it carries no denylist vocabulary; the denylist hit set is measured unchanged. Recorded rather than hidden: the fence/scan should see a new source file and the booking is where a reviewer checks why it exists.",
+  "tieNote": "MEASURED on this tree, not copied: with the file on disk and no booking, `packages/testkit/test/p4t6-session-event-scan.test.ts` printed detail `scanner counts 1318, ledger derives 0 + 1317 = 1317` and `expected 1317 to be 1318`; the one unbooked scanned path was exactly the path above. 1317 + 1 = 1318."
+}

@@ -90,40 +90,12 @@ import {
   parseProductRealmDeclaration,
 } from '../../../team-services/src/product-assembly.js'
 import { TeamServiceInstallError } from '../../../team-services/src/types.js'
+import { mountHostToolExecutor } from '../vnext/tool-executor-mount.mjs'
 import { skillCatalogOf } from './a5sf-skill-provider.mjs'
 
 /** The row-config key carrying the JSONL evidence path (JSON-safe string). */
 export const A5SF_EVIDENCE_PATH_KEY = 'a5sfEvidencePath'
 
-/**
- * THE FRESH-CREATE HINT GATE — the ONE rule saying when a setup may stand in a
- * not-yet-durable fact with the value the activation contract is about to
- * commit (WINDOW-HUNT, 2026-11-12).
- *
- * The activation order (`activation/provider.ts` steps 13→14→15) runs the
- * child's setup BEFORE the MemberInstance row is durably written:
- *
- *     createChildSession (the setup runs inside it)
- *       -> bindChildSession
- *       -> commitInstance     (the MemberInstance row)
- *
- * So a member setup legitimately sees NO durable roster row for the very
- * instance it is composing. The child factory carries the two values the flow
- * commits moments later (`instanceId`, `templateId`) and names the call path
- * with `bindPath`. The hint may bridge ONLY `fresh-member`; a cold resume, a
- * request boundary or any other path reads the row it resumed and fails closed
- * when it is absent (P0-1 §3.4: a hint is never an authorization fallback).
- *
- * It lives HERE (not in the glue) so the rule is importable by the host-free
- * suites without loading the whole agent-bindings module graph; the glue's two
- * consumers both spell it through this ONE function.
- * @param {string} [bindPath] - the T1 bind path (fresh-member / cold-member /
- *   fresh-root / cold-root), `undefined` for the state route.
- * @returns {boolean} true only for the fresh member creation window.
- */
-export function freshCreateHintAdmits(bindPath) {
-  return bindPath === 'fresh-member'
-}
 
 /**
  * The row-config key carrying the PRODUCT declaration that gives declared
@@ -381,6 +353,42 @@ export function a5sfToolPlaneOf(realm) {
  *   a confined web face factory, `skillCatalog` only when the row declares a
  *   non-empty skill catalog (PD-26). Keys are omitted, never `undefined`-valued.
  */
+/** The compiled answer behind a mounted realm (see the mount call at the bottom of the row). */
+const COMPILED_REALM_ANSWERS = new WeakMap()
+
+/**
+ * The exact compiled answer a mounted realm enforces, or `undefined` for an
+ * object this row did not produce. The centre builds its admission binding from
+ * THIS value: re-compiling would be a second policy.
+ * @param realm - a realm returned by {@link mountMemberA5sfRealm}.
+ */
+export function compiledAnswerOfRealm(realm) {
+  return realm === null || typeof realm !== 'object' ? undefined : COMPILED_REALM_ANSWERS.get(realm)
+}
+
+/** The host-dispatch record behind a mounted realm (round 121, see `tool-executor-mount.mjs`). */
+const HOST_TOOL_EXECUTORS = new WeakMap()
+
+/**
+ * The host dispatch shape a mounted realm was given, or `undefined` for an
+ * object this row did not produce.
+ *
+ * Shape of the answer: `{ shape, mounted, name, plugin?, dispose? }` —
+ * `shape` is `'executor-mount'` (rc.5), `'registry-dispatch'` (rc.2) or
+ * `undefined` (a tools double with NO dispatch contract: the mount records the
+ * absence and the first governed call refuses by name); `mounted` says whether
+ * THIS row mounted the host executor, and `name` is the host plugin's own name
+ * (`native-tool-executor`) or the shape marker. A control that wants to prove
+ * dispatch reaches the host's executor resolves it through
+ * `governedToolExecutorOf(tools, agent)` (`tool-executor-mount.mjs`), which
+ * names the executor's class; this record names what the row did.
+ *
+ * @param realm - a realm returned by {@link mountMemberA5sfRealm}.
+ */
+export function hostToolExecutorOfRealm(realm) {
+  return realm === null || typeof realm !== 'object' ? undefined : HOST_TOOL_EXECUTORS.get(realm)
+}
+
 export function a5sfRealmConfigOf(config) {
   const settings = config === undefined || config === null ? undefined : config
   const rawEvidence = settings === undefined ? undefined : settings[A5SF_EVIDENCE_PATH_KEY]
@@ -840,10 +848,23 @@ export function a5sfAgentToolSurface(root, runtimeAgent) {
  *   unconfigured.
  * @param {object} input.member - the admitted member descriptor forwarded to
  *   `compiledFor`.
+ * @param {object} [input.approvedAskAuthority] - R3 PRODUCTION WIRING (round
+ *   95): the SAME invocation binder the centre spends one-shot grants through,
+ *   forwarded to the realm mount so the confined Provider can verify a receipt
+ *   minted for THIS execution. Omitted = default-preserving fail-closed asks.
+ *   It is a liveness reader, never an allow source.
+ * @param {string} [input.hostToolExecutorSpecifier] - ROUND 121: WHERE the
+ *   host's own tool-executor plugin module lives, when the composition knows
+ *   better than plain Node resolution (a synthetic world that assembles a bare
+ *   `ToolRuntime` without the deployment bundle; a bundler-injected URL). It is
+ *   forwarded verbatim to the executor seam, which imports exactly that
+ *   module - the package is never guessed from a version. Omitted = the
+ *   package name, which is the right answer inside a real deployment whose
+ *   bundle mounts the executor already (then nothing is mounted here at all).
  * @returns {Promise<object | undefined>} the mounted realm (`dispose()` must be
  *   kept on the row), or `undefined` when not configured / nothing compiled.
  */
-export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member }) {
+export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member, approvedAskAuthority, hostToolExecutorSpecifier }) {
   if (a5sfConfig === undefined || a5sfConfig === null) return undefined
   // GOVERNED REALM (2026-11-11): the neutral key promised that the COMPOSITION
   // provides the compiled realm. A row that carries it and finds no provider
@@ -976,214 +997,77 @@ export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member 
     ...(compiled.terminal === undefined ? {} : { terminal: compiled.terminal }),
     ...(web === undefined ? {} : { web }),
     ...(sink === undefined ? {} : { onGuardConsult: (fact) => sink.record(fact) }),
+    ...(approvedAskAuthority === undefined ? {} : { approvedAskAuthority }),
   }
   // The realm mount is UNCHANGED and does NOT create the native shadow. ROUTE C
   // attaches the shadow LATER, through `attachA5sfNativeToolModules`, called by
   // the glue AFTER its capability deny lane: a shadow created first would sit
   // OUTSIDE the `tools.restrict` filter and survive the deny (measured).
-  return await mountA5sfRealm(mountInput)
-}
-
-/**
- * The confined `bash` native module (PD-12), resolved from THIS file's own
- * location: the row rides the dist mirror beside it, so source and installed
- * faces use the same relative specifier. Never a host path, never a guess.
- */
-const A5SF_CONFINED_BASH_TOOL = new URL('./confined-bash-tool.mjs', import.meta.url).href
-
-/**
- * PD-12 — decide whether THIS realm's `bash` must be shadowed onto the
- * confined `subprocess` face, and answer the module spec to append.
- *
- * The three conditions are each a refusal to guess:
- *   1. the agent can SEE `bash` (the attach is surface-neutral: it may replace
- *      the preset definition, never add or remove a name);
- *   2. the realm OWNS a confined `subprocess` face (`faces.subprocess` is not
- *      null). Without it the mount seam would refuse a subprocess-consuming
- *      module — and there would be no confined face to route the call to;
- *   3. the composition has not already configured a `bash` owner (the same
- *      module, or an entry that declares `expectedTools: ['bash']`). Auto-adding
- *      beside a declared owner would register the name twice, so the declared
- *      composition wins and this seam stays silent.
- *
- * @param {object} realm - the mounted realm (`installation.members[].faces`).
- * @param {readonly object[]} nativeSpecs - the configured module specs.
- * @param {ReadonlySet<string>} surface - the POST-DENY tool names.
- * @returns {{url: string, expectedTools: readonly string[]} | undefined}
- */
-function confinedBashSpecOf(realm, nativeSpecs, surface) {
-  if (!surface.has('bash')) return undefined
-  const faces = realm?.installation?.members?.[0]?.faces
-  if (faces === undefined || faces === null || faces.subprocess === undefined || faces.subprocess === null) return undefined
-  for (const spec of nativeSpecs) {
-    if (spec?.url === A5SF_CONFINED_BASH_TOOL) return undefined
-    if (Array.isArray(spec?.expectedTools) && spec.expectedTools.includes('bash')) return undefined
+  //
+  // ADDITIVE (C, 2026-11-21): the caller gets the COMPILED answer back. The
+  // centre's admission binding must be built from the SAME compiled policy the
+  // realm enforces - re-compiling it in the glue would be a second policy, and
+  // a binding that disagrees with the face is worse than no binding.
+  const mounted = await mountA5sfRealm(mountInput)
+  // ROUND 121 — THE GOVERNED SCOPE OWNS ITS DISPATCH SHAPE.
+  //
+  // rc.5 deleted `ToolRuntime.mode` and made `tools.execute` delegate to a
+  // per-scope EXECUTOR (`selectExecutor(agent)`); a composition that mounted
+  // none throws the host's TOOL_EXECUTOR_UNAVAILABLE on every governed call.
+  // The realm is mounted ON the Member's agent Context, so THIS is the scope
+  // the centre judges and the scope a governed call dispatches in: ensure it
+  // has the host's own dispatch contract, resolved by PUBLIC CAPABILITY PROBE
+  // (`tools.setExecutor` -> rc.5 mount; `tools.modeFor`/`defaultMode` -> rc.2
+  // registry dispatch, nothing to mount; neither -> typed refusal). No removed
+  // API is emulated, and no executor is written here: the host's own plugin is
+  // mounted, so every call still passes the centre's pre-execute/guard stages
+  // that the host pipeline dispatches.
+  //
+  // A failure here ABANDONS the mount: the realm was already installed, so it
+  // is disposed before the typed refusal travels (a half-mounted Member with no
+  // dispatch is worse than a refused one).
+  let hostToolExecutor
+  try {
+    hostToolExecutor = await mountHostToolExecutor({
+      scope: root,
+      tools: root.get('tools'),
+      ...(hostToolExecutorSpecifier === undefined ? {} : { specifier: hostToolExecutorSpecifier }),
+    })
+  } catch (error) {
+    try {
+      await mounted.dispose()
+    } catch {
+      // The mount/dispatch refusal is the failure that must be reported.
+    }
+    throw error
   }
-  return Object.freeze({ url: A5SF_CONFINED_BASH_TOOL, expectedTools: Object.freeze(['bash']) })
+  // The executor record rides the SAME object identity the caller holds (a
+  // WeakMap, never a spread: the realm's surface is live). `mounted: false` is
+  // the rc.2 registry-dispatch answer or "the deployment already selected one",
+  // never a degraded mode — see `tool-executor-mount.mjs`.
+  HOST_TOOL_EXECUTORS.set(mounted, hostToolExecutor)
+  // A WeakMap, not a spread: the mounted realm's surface is a live object with methods, and copying
+  // it would produce a husk whose `dispose()` is detached from the fibers it describes. The compiled
+  // answer is attached to the SAME object identity the caller already holds.
+  //
+  // ROUND 76 — THE FACES ARE PART OF THE ANSWER. The centre derives its EXECUTOR READINESS from the
+  // answer's own faces (`executorReadinessOf`: `confined-subprocess` is ready iff the answer carries
+  // a `subprocess` face whose provider has `spawnStreaming`). Storing only `{members, bindings}`
+  // dropped them, so a process-class declaration this realm DOES execute (it mounts the governed
+  // subprocess + PTY faces) was adjudicated `ADMISSION_EXECUTOR_UNAVAILABLE` — measured live this
+  // round on the realm-mounted persistent `bash`, whose refusal named the executor while the face
+  // was mounted. The faces are handed through verbatim; no default is invented here.
+  COMPILED_REALM_ANSWERS.set(mounted, Object.freeze({
+    members: compiled.members,
+    ...(compiled.bindings === undefined ? {} : { bindings: compiled.bindings }),
+    ...(compiled.subprocess === undefined ? {} : { subprocess: compiled.subprocess }),
+    ...(compiled.terminal === undefined ? {} : { terminal: compiled.terminal }),
+    ...(compiled.web === undefined ? {} : { web: compiled.web }),
+  }))
+  return mounted
 }
 
-/**
- * The confined terminal `bash` native module (PD-13), resolved from THIS file's
- * own location: the row rides the dist mirror beside it, so source and
- * installed faces use the same relative specifier. Never a host path.
- */
-const A5SF_CONFINED_TERMINAL_TOOL = new URL('./confined-terminal-tool.mjs', import.meta.url).href
 
-/**
- * PD-13 — decide whether THIS realm's shell must be shadowed onto the confined
- * `terminals` face, and answer the module spec to append.
- *
- * A confined terminal face SUPERSEDES the PD-12 `subprocess` shadow: both
- * register the single name `bash`, so exactly one may run, and the terminal
- * face is the stronger one (it admits each command's reads, compiles the same
- * effective lane, and executes through the same confined process face). The
- * conditions mirror PD-12's, each a refusal to guess:
- *   1. the agent can SEE `bash` (the attach is surface-neutral: it replaces the
- *      preset definition, never adds or removes a name);
- *   2. the realm OWNS a confined `terminals` face. Without it the mount seam
- *      would refuse a terminals-consuming module, and there would be no
- *      confined face to route the call to;
- *   3. the composition has not already configured a `bash` owner (this module,
- *      the PD-12 module, or an entry declaring `expectedTools: ['bash']`).
- *
- * @param {object} realm - the mounted realm (`installation.members[].faces`).
- * @param {readonly object[]} nativeSpecs - the configured module specs.
- * @param {ReadonlySet<string>} surface - the POST-DENY tool names.
- * @returns {{url: string, expectedTools: readonly string[]} | undefined}
- */
-function confinedTerminalSpecOf(realm, nativeSpecs, surface) {
-  if (!surface.has('bash')) return undefined
-  const faces = realm?.installation?.members?.[0]?.faces
-  if (faces === undefined || faces === null || faces.terminals === undefined || faces.terminals === null) return undefined
-  for (const spec of nativeSpecs) {
-    if (spec?.url === A5SF_CONFINED_TERMINAL_TOOL) return undefined
-    if (spec?.url === A5SF_CONFINED_BASH_TOOL) return undefined
-    if (Array.isArray(spec?.expectedTools) && spec.expectedTools.includes('bash')) return undefined
-  }
-  return Object.freeze({ url: A5SF_CONFINED_TERMINAL_TOOL, expectedTools: Object.freeze(['bash']) })
-}
-
-/**
- * The NATIVE persistent-`bash` module (NATIVE-BASH-PRESERVATION, 2026-11-11),
- * resolved from THIS file's own location: it rides the dist mirror beside this
- * row, so source and installed faces use the same relative specifier. The
- * module itself imports the PINNED host `@deepseek-ai/dsh-tool-bash-persistent`
- * and registers that package's own definition — this seam adds no tool body.
- */
-const A5SF_NATIVE_BASH_TOOL = new URL('./native-bash-tool.mjs', import.meta.url).href
-
-/**
- * NATIVE-BASH-PRESERVATION — decide whether THIS realm's `bash` must be the
- * PINNED host persistent-shell definition over the governed PTY face, and
- * answer the module spec to append.
- *
- * WHY THIS SUPERSEDES PD-12/PD-13 (A5-NATIVE-01/02). PD-12 and PD-13 were Team
- * ToolDefinitions that re-implemented the model-visible `bash`; the invariant
- * allows replacing a native tool's EXECUTION BACKEND, never the tool. The
- * governed PTY face (`team-services/terminal-pty.ts`) is that backend: the
- * pinned definition is registered unchanged, and `ctx.terminals` on this scope
- * is the Member's own confined PTY.
- *
- * The conditions mirror PD-13's, each a refusal to guess:
- *   1. the agent can SEE `bash` (the attach is surface-neutral);
- *   2. the realm OWNS a GOVERNED PTY terminal face (`faces.terminals` carries
- *      the `governedPty` marker). A PD-13-style confined (non-PTY) face does not
- *      qualify — this spec must never select the native tool over a face that
- *      cannot keep its state contract;
- *   3. the composition has not already configured a `bash` owner (this module,
- *      PD-12's, PD-13's, or any entry declaring `expectedTools: ['bash']`).
- *
- * @param {object} realm - the mounted realm (`installation.members[].faces`).
- * @param {readonly object[]} nativeSpecs - the configured module specs.
- * @param {ReadonlySet<string>} surface - the POST-DENY tool names.
- * @returns {{url: string, expectedTools: readonly string[]} | undefined}
- */
-function nativeBashPtySpecOf(realm, nativeSpecs, surface) {
-  if (!surface.has('bash')) return undefined
-  const faces = realm?.installation?.members?.[0]?.faces
-  if (faces === undefined || faces === null) return undefined
-  const terminals = faces.terminals
-  if (terminals === undefined || terminals === null || terminals.governedPty === undefined) return undefined
-  for (const spec of nativeSpecs) {
-    if (spec?.url === A5SF_NATIVE_BASH_TOOL) return undefined
-    if (spec?.url === A5SF_CONFINED_TERMINAL_TOOL) return undefined
-    if (spec?.url === A5SF_CONFINED_BASH_TOOL) return undefined
-    if (Array.isArray(spec?.expectedTools) && spec.expectedTools.includes('bash')) return undefined
-  }
-  return Object.freeze({ url: A5SF_NATIVE_BASH_TOOL, expectedTools: Object.freeze(['bash']) })
-}
-
-/**
- * The confined SEARCH native module (PD-16), resolved from THIS file's own
- * location: the row rides the dist mirror beside it, so source and installed
- * faces use the same relative specifier. Never a host path, never a guess.
- */
-const A5SF_CONFINED_SEARCH_TOOL = new URL('./confined-search-tool.mjs', import.meta.url).href
-
-/**
- * The pinned host package the governed preset mounts as its own `grep`/`glob`
- * row. A configured entry naming this specifier is a DECLARED search owner:
- * the composition already routed (or explicitly placed) the host module, so
- * this seam must not add a second registration beside it.
- */
-const A5SF_HOST_SEARCH_PACKAGE = '@deepseek-ai/dsh-tool-fs-search'
-
-/** The two model-visible search names this shadow can place (shipped spellings). */
-const A5SF_SEARCH_TOOL_NAMES = Object.freeze(['grep', 'glob'])
-
-/**
- * PD-16 — decide whether THIS realm's `grep`/`glob` must be shadowed onto the
- * confined `subprocess` face, and answer the module spec to append.
- *
- * THE MEASURED HOLE (`a5sf-recon-search`, PR #655): the preset's host search
- * row injects `subprocess`, NOT `fs`. The realm shadowed `bash` (PD-12) and the
- * terminal (PD-13) but never search, so `grep`/`glob` resolved the INHERITED
- * base service — `rg` as a direct child of the Host, no lane consult, zero
- * `a5sf-guard-consult/1` facts — and a one-workspace Member read `..` and an
- * absolute out-of-lane directory.
- *
- * The conditions are each a refusal to guess:
- *   1. at least one of `grep`/`glob` is on the POST-DENY surface. The attach is
- *      surface-neutral: it may replace the preset definition, never add a name,
- *      and the tool's own package registers BOTH names from one `apply`, so the
- *      placed subset is the visible subset (never the host module's full set);
- *   2. the realm OWNS a confined `subprocess` face (`faces.subprocess` is not
- *      null). Without it there is no confined face to route the call to, and
- *      the mount seam would refuse a subprocess-consuming module anyway;
- *   3. the composition has not already configured a search owner — this module,
- *      the host search package, or any entry declaring `expectedTools` that
- *      names `grep`/`glob`. Auto-adding beside a declared owner would register
- *      the name twice.
- *
- * @param {object} realm - the mounted realm (`installation.members[].faces`).
- * @param {readonly object[]} nativeSpecs - the configured module specs.
- * @param {ReadonlySet<string>} surface - the POST-DENY tool names.
- * @returns {{url: string, config: object, expectedTools: readonly string[]} | undefined}
- */
-function confinedSearchSpecOf(realm, nativeSpecs, surface) {
-  const faces = realm?.installation?.members?.[0]?.faces
-  if (faces === undefined || faces === null || faces.subprocess === undefined || faces.subprocess === null) return undefined
-  const tools = A5SF_SEARCH_TOOL_NAMES.filter((name) => surface.has(name))
-  if (tools.length === 0) return undefined
-  for (const spec of nativeSpecs) {
-    if (spec?.url === A5SF_CONFINED_SEARCH_TOOL) return undefined
-    if (spec?.url === A5SF_HOST_SEARCH_PACKAGE) return undefined
-    if (Array.isArray(spec?.expectedTools)
-      && spec.expectedTools.some((name) => A5SF_SEARCH_TOOL_NAMES.includes(name))) return undefined
-  }
-  return Object.freeze({
-    url: A5SF_CONFINED_SEARCH_TOOL,
-    config: Object.freeze({ tools: Object.freeze([...tools]) }),
-    expectedTools: Object.freeze([...tools]),
-  })
-}
-
-/**
- * The confined FILESYSTEM native module (PD-17), resolved from THIS file's own
- * location: the row rides the dist mirror beside it, so source and installed
- * faces use the same relative specifier. Never a host path, never a guess.
- */
-const A5SF_CONFINED_FS_TOOL = new URL('./confined-fs-tool.mjs', import.meta.url).href
 
 /** PD-29: the Team `skills` PROVIDER, resolved from this file's own location (dist mirror included). */
 const A5SF_SKILL_PROVIDER = new URL('./a5sf-skill-provider.mjs', import.meta.url).href
@@ -1194,76 +1078,6 @@ const A5SF_HOST_SKILL_PACKAGE = '@deepseek-ai/dsh-tool-skill'
 /** PD-29: the pinned host package whose `present` row is re-mounted on the realm's confined `fs`. */
 const A5SF_HOST_PRESENT_PACKAGE = '@deepseek-ai/dsh-tool-present'
 
-/**
- * PD-27: the Team-owned `web_fetch`/`web_search` shadow. The module delegates the
- * DEFINITIONS to the pinned host package's public `apply` (so they are the
- * shipped ones, byte for byte) and contributes a CONTEXT: on the realm's
- * isolated scope its `ctx.web` IS the confined face, so every call is decided by
- * the compiled `network` axis before the composition's transport is entered.
- */
-const A5SF_CONFINED_WEB_TOOL = new URL('./confined-web-tool.mjs', import.meta.url).href
-
-/** PD-27: the pinned host package whose definitions the web shadow re-serves. */
-const A5SF_HOST_WEB_PACKAGE = '@deepseek-ai/dsh-tool-web'
-
-/** PD-27: the two model-visible network names this shadow can place. */
-const A5SF_WEB_TOOL_NAMES = Object.freeze(['web_fetch', 'web_search'])
-
-/**
- * The pinned host package the governed preset mounts as its own `read`/`write`/
- * `edit`/`read_image` row. A configured entry naming this specifier is a
- * DECLARED filesystem owner: the composition already routed (or explicitly
- * placed) the host module, so this seam must not add a second registration
- * beside it.
- */
-const A5SF_HOST_FS_PACKAGE = '@deepseek-ai/dsh-tool-fs'
-
-/** The four model-visible filesystem names this shadow can place (shipped spellings). */
-const A5SF_FS_TOOL_NAMES = Object.freeze(['read', 'write', 'edit', 'read_image'])
-
-/**
- * PD-17 — decide whether THIS realm's `read`/`write`/`edit`/`read_image` must
- * be shadowed onto the confined `fs` face, and answer the module spec to
- * append.
- *
- * THE MEASURED HOLE (`a5sf-recon-fs`, PR #657; two-Member confirmation
- * `a5sf-recon-review`, PR #662): the preset's host `tool-fs` row is mounted by
- * `@deepseek-ai/dsh-agent-preset-registry` on a scope ABOVE every agent
- * context, so its injected `fs` resolves the INHERITED base `fs-sandbox`
- * service. The realm shadowed the shell (PD-12/PD-13) and search (PD-16)
- * faces but never the filesystem tools: twelve locators produced ZERO
- * `a5sf-guard-consult/1` facts, `read` returned the HOST file etc/hostname
- * and a SIBLING Member's lane bytes, and the write/edit tools touched any
- * workspace path. The read
- * half has no service-level fence in `fs-sandbox` at all ("Reads pass through
- * untouched"), while the realm's confined provider refuses before the base
- * Provider runs — so placing the SAME host definitions on the realm scope is
- * the fix, not a new policy.
- *
- * The conditions are each a refusal to guess:
- *   1. at least one of the four names is on the POST-DENY surface. The attach
- *      is surface-neutral: it may replace the preset definition, never add or
- *      remove a name, so the placed subset is the VISIBLE subset (the module
- *      narrows its own registration to it);
- *   2. the realm answers a confined `fs` face. The face is TOTAL by type
- *      (`RealmServiceFaces.fs: 'confined'`), so this is a shape check, not a
- *      preference: a realm that cannot answer one is not a realm this row
- *      mounted;
- *   3. the composition has not already configured a filesystem owner — this
- *      module, the host `tool-fs` package (by specifier), any entry declaring
- *      `expectedTools` that names one of the four, or a MODULE whose Cordis
- *      name is the host package's (`tool-fs`) or this shadow's. Auto-adding
- *      beside a declared owner would register the name twice.
- *
- * @param {object} realm - the mounted realm (`installation.members[].faces`).
- * @param {readonly object[]} nativeSpecs - the configured module specs.
- * @param {ReadonlySet<string>} surface - the POST-DENY tool names.
- * @param {readonly object[]} configuredModules - the ALREADY-IMPORTED configured
- *   modules (`{ module, specifier }`), so a specifier this seam cannot spell
- *   (an absolute path to the pinned package, a re-export) is still recognised
- *   by the module's own exported `name`.
- * @returns {{url: string, config: object, expectedTools: readonly string[]} | undefined}
- */
 /**
  * The service names a plugin module DECLARES it will inject, in the shapes
  * Cordis accepts (an array, or a name→config object). Used only to answer "is
@@ -1277,33 +1091,49 @@ function declaredInjectNamesOf(module) {
   return Object.keys(declared)
 }
 
-function confinedFsSpecOf(realm, nativeSpecs, surface, configuredModules) {
-  const faces = realm?.installation?.members?.[0]?.faces
-  if (faces === undefined || faces === null || faces.fs !== 'confined') return undefined
-  const tools = A5SF_FS_TOOL_NAMES.filter((name) => surface.has(name))
-  if (tools.length === 0) return undefined
-  for (const spec of nativeSpecs) {
-    if (spec?.url === A5SF_CONFINED_FS_TOOL) return undefined
-    if (spec?.url === A5SF_HOST_FS_PACKAGE) return undefined
-    if (Array.isArray(spec?.expectedTools)
-      && spec.expectedTools.some((name) => A5SF_FS_TOOL_NAMES.includes(name))) return undefined
+/**
+ * ROUND 121 — the MISSING-INJECTION pre-check (the empty-forward root cause).
+ *
+ * Cordis SILENTLY DEFERS a plugin whose static `inject` is unmet: `apply` never
+ * runs, the module registers NOTHING, and a managed attach then observes an
+ * empty frontier. On rc.5 the pinned fs/search/shell modules statically inject
+ * `workingDirectory` (rc.2 did not), so a host-free world that never mounted it
+ * got `A5SF_EXPECTED_TOOLS_UNSHADOWED … forwarded []` — a refusal that named
+ * the SYMPTOM. This check answers the CAUSE, before the ownership probe runs,
+ * and only for entries that DECLARE `expectedTools`: those are the managed
+ * names whose absence is a governance hazard. Undeclared entries keep the
+ * documented "a module may forward nothing" behaviour exactly.
+ *
+ * It names the service and the entry; it never supplies a provider (a synthetic
+ * `workingDirectory` in product code would be a second cwd authority, and the
+ * host-free harness is where a labelled double belongs).
+ *
+ * @param {readonly object[]} modules - the imported `{ module, specifier, expectedTools? }` entries.
+ * @param {object} root - the agent Context the realm is mounted on.
+ * @returns {{module: string, service: string, expected: readonly string[]}[]}
+ */
+function unmetManagedInjections(modules, root) {
+  const unmet = []
+  for (const entry of modules) {
+    const expected = entry?.expectedTools
+    if (expected === undefined || expected === null || expected.length === 0) continue
+    for (const service of declaredInjectNamesOf(entry.module)) {
+      let present
+      try {
+        present = typeof root?.get === 'function' ? root.get(service) : undefined
+      } catch {
+        present = undefined
+      }
+      if (present === undefined || present === null) {
+        unmet.push({
+          module: String(entry?.module?.name ?? entry?.specifier ?? 'configured module'),
+          service,
+          expected: Object.freeze([...expected]),
+        })
+      }
+    }
   }
-  for (const entry of configuredModules) {
-    const moduleName = entry?.module?.name
-    if (moduleName === 'tool-fs' || moduleName === 'a5sf-confined-fs') return undefined
-    // A module that DECLARES `fs` is a filesystem-face module: it resolves the
-    // confined provider itself and may register any of these names. Registering
-    // a second copy in the same scope is not a shadow (Cordis refuses the
-    // duplicate prompt section and tool row), so the composition that owns the
-    // face keeps this seam silent. A module that declares no `fs` (a shell or
-    // search module) does not suppress the shadow.
-    if (declaredInjectNamesOf(entry?.module).includes('fs')) return undefined
-  }
-  return Object.freeze({
-    url: A5SF_CONFINED_FS_TOOL,
-    config: Object.freeze({ tools: Object.freeze([...tools]) }),
-    expectedTools: Object.freeze([...tools]),
-  })
+  return unmet
 }
 
 /**
@@ -1422,68 +1252,6 @@ function hostPresentSpecOf(realm, nativeSpecs, surface, configuredModules) {
 }
 
 /**
- * PD-27 — decide whether THIS realm's `web_fetch`/`web_search` must be shadowed
- * onto the confined `web` face, and answer the module spec to append.
- *
- * THE MEASURED HOLE (PD-18, 2026-11-13): on the shipped governed preset the host
- * `tool-web` row resolved the INHERITED `ctx.web` — the real HTTP provider and
- * the process-wide proxy dispatcher — so `web_fetch`/`web_search` ran with ZERO
- * `a5sf-guard-consult` facts. The row was removed fail-closed: the shipped layer
- * carries no transport, and the preset scope cannot be handed the realm's
- * confined provider.
- *
- * This shadow is the route-C restoration. It is SURFACE-NEUTRAL by construction
- * (the same two names the preset's placeholder already places, narrowed to the
- * visible subset) and it contributes a CONTEXT, not a tool implementation: the
- * definitions are the pinned host package's own `apply`, executed against the
- * confined `web` face the realm mounted on this scope.
- *
- * The conditions are each a refusal to guess:
- *   1. the realm OWNS a confined `web` face (`faces.web` is not null). Without
- *      it there is no confined face to route the call to, and the mount seam
- *      would refuse a `web`-consuming module anyway;
- *   2. at least one of the two names is on the POST-DENY surface. The module
- *      narrows its own registration to that subset (`fetch`/`search` toggles),
- *      because a scoped registration sits outside the inherited `tools.restrict`
- *      filter: placing a denied name would re-enable it;
- *   3. the composition has not already configured a web owner — this module, the
- *      host package by specifier, an entry declaring one of the two names, a
- *      MODULE whose Cordis name is the host package's or this shadow's, or a
- *      module that DECLARES a `web` injection (it owns the face itself).
- *
- * @param {object} realm - the mounted realm (`installation.members[].faces`).
- * @param {readonly object[]} nativeSpecs - the configured module specs.
- * @param {ReadonlySet<string>} surface - the POST-DENY tool names.
- * @param {readonly object[]} configuredModules - the ALREADY-IMPORTED specs.
- * @returns {{url: string, config: object, expectedTools: readonly string[]} | undefined}
- */
-function confinedWebSpecOf(realm, nativeSpecs, surface, configuredModules) {
-  const faces = realm?.installation?.members?.[0]?.faces
-  if (faces === undefined || faces === null || faces.web === undefined || faces.web === null) return undefined
-  const tools = A5SF_WEB_TOOL_NAMES.filter((name) => surface.has(name))
-  if (tools.length === 0) return undefined
-  for (const spec of nativeSpecs) {
-    if (spec?.url === A5SF_CONFINED_WEB_TOOL) return undefined
-    if (spec?.url === A5SF_HOST_WEB_PACKAGE) return undefined
-    if (Array.isArray(spec?.expectedTools)
-      && spec.expectedTools.some((name) => A5SF_WEB_TOOL_NAMES.includes(name))) return undefined
-  }
-  for (const entry of configuredModules) {
-    const moduleName = entry?.module?.name
-    if (moduleName === 'tool-web' || moduleName === 'a5sf-confined-web') return undefined
-    if (declaredInjectNamesOf(entry?.module).includes('web')) return undefined
-  }
-  return Object.freeze({
-    url: A5SF_CONFINED_WEB_TOOL,
-    config: Object.freeze({
-      fetch: tools.includes('web_fetch'),
-      search: tools.includes('web_search'),
-    }),
-    expectedTools: Object.freeze([...tools]),
-  })
-}
-
-/**
  * ROUTE C — create the NATIVE tool shadow on an ALREADY-MOUNTED realm, after
  * the Member capability deny lane, and refuse if it changes the surface.
  *
@@ -1520,41 +1288,20 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
   }
   // The POST-DENY surface: this is the baseline the shadow must not change.
   const before = a5sfAgentToolSurface(root, runtimeAgent)
-  // PD-12 (2026-11-10): the model-visible `bash` must ride the confined
-  // `subprocess` face the ceiling term is compiled for. A realm that owns that
-  // face, and whose agent can already see `bash`, gets the surface-neutral
-  // shadow appended here (see `confinedBashSpecOf`). A realm WITHOUT the face,
-  // or an agent without `bash`, is left byte-identically alone: adding a name
-  // would be a governance change this wiring must not make, and there is no
-  // confined face to route the call to anyway.
-  // PD-13 (2026-11-11): a confined terminal face supersedes the PD-12 bash
-  // shadow — one `bash` name, one serving face, and the terminal face is the
-  // one with a read axis.
-  // NATIVE-BASH-PRESERVATION (2026-11-11): the governed PTY face takes
-  // precedence over both Team-authored shadows — one `bash` name, and the
-  // native definition is the only one the invariant permits.
-  const nativeBashSpec = nativeBashPtySpecOf(realm, nativeSpecs, before)
-  const terminalSpec = nativeBashSpec === undefined ? confinedTerminalSpecOf(realm, nativeSpecs, before) : undefined
-  const bashSpec = (nativeBashSpec ?? terminalSpec) === undefined ? confinedBashSpecOf(realm, nativeSpecs, before) : undefined
-  // PD-16 (2026-11-13): the model-visible `grep`/`glob` must ride the confined
-  // `subprocess` face too. The 2026-11 `a5sf-recon-search` measurement is the
-  // reason: the host search row injects `subprocess` (not `fs`), the realm
-  // shadowed only the shell, and both search tools executed on the inherited
-  // base service with zero guard facts — a one-workspace Member read `..` and
-  // an absolute out-of-lane directory. Search and shell are independent names,
-  // so BOTH shadows may be appended in one attach.
-  const searchSpec = confinedSearchSpecOf(realm, nativeSpecs, before)
-  const shellSpec = nativeBashSpec ?? terminalSpec ?? bashSpec
-  // PD-17 (2026-11-13): the model-visible `read`/`write`/`edit`/`read_image`
-  // must ride the confined `fs` face. The 2026-11 `a5sf-recon-fs` measurement
-  // (confirmed across two Members by `a5sf-recon-review`) is the reason: the
-  // preset's host `tool-fs` row injects `fs`, its scope sits ABOVE the agent, so
-  // it resolved the inherited base `fs-sandbox` service — twelve locators, zero
-  // guard facts, the host file etc/hostname and a sibling Member's lane bytes
-  // returned.
-  // The configured modules are imported FIRST so a specifier this seam cannot
-  // spell (an absolute path to the pinned package) is still recognised by the
-  // module's own exported `name`; a declared FS owner keeps this seam silent.
+  // A1: the realm is HOST-MODULES-ONLY. The composition supplies its native
+  // module specs (`nativeToolModules`); no Team-authored shadow spec is appended.
+  // The two SERVICE-layer restorations that are not tool copies stay: the Team
+  // `skills` provider and the pinned host `present` module on the confined fs.
+  //
+  // ORDER IS PART OF THE CONTRACT, and it is why these lines sit HERE rather than
+  // beside the helpers: the configured modules are imported FIRST, because a
+  // specifier this seam cannot spell (an absolute path to the pinned package, a
+  // re-export) must still be recognised by the module's own exported `name`
+  // before either restoration asks whether the composition already owns that
+  // service. Both helpers then read the SAME inputs the surface gate reads: the
+  // mounted realm (its confined `fs` face), the configured specs, the POST-DENY
+  // surface, those already-imported modules and — for `skill` only — the row's
+  // declared catalog, whose absence means "no consumer", not "empty provider".
   const loadNativeModule = async (spec) => {
     // Imported by the ROW COMPOSITION's specifier; the mount seam forwards it.
     // WRAPPED: a resolution failure must name the configured entry, not surface
@@ -1581,7 +1328,6 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
     })
   }
   const configuredModules = await Promise.all(nativeSpecs.map(loadNativeModule))
-  const fsSpec = confinedFsSpecOf(realm, nativeSpecs, before, configuredModules)
   // PD-29 (2026-11-14): the two capabilities are restored at the SERVICE layer
   // they were always missing. `skill` keeps the pinned host tool row and gains a
   // Team `skills` provider (`a5sfSkillProviderSpecOf`) whose body read rides the
@@ -1590,13 +1336,7 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
   // Neither is a Team copy of a tool.
   const skillSpec = a5sfSkillProviderSpecOf(realm, nativeSpecs, before, configuredModules, a5sfConfig?.skillCatalog)
   const presentSpec = hostPresentSpecOf(realm, nativeSpecs, before, configuredModules)
-  // PD-27 (2026-11-14): `web_fetch`/`web_search` ride the confined `web` face the
-  // same way. PD-18 removed the rows because the preset scope cannot be handed
-  // that face; this shadow places the HOST definitions on the realm scope, where
-  // `ctx.web` IS the face, so the compiled `network` axis decides before the
-  // composition's transport is entered.
-  const webSpec = confinedWebSpecOf(realm, nativeSpecs, before, configuredModules)
-  const appended = [shellSpec, searchSpec, fsSpec, skillSpec, presentSpec, webSpec].filter((spec) => spec !== undefined)
+  const appended = [skillSpec, presentSpec].filter((spec) => spec !== undefined)
   if (nativeSpecs.length === 0 && appended.length === 0) return undefined
   // The baseline DEFINITIONS, by name: the coverage check below needs identity,
   // not just the name set (a module that registers nothing, or registers late,
@@ -1619,6 +1359,22 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
   }
   const beforeDefinitions = new Map([...before].map((name) => [name, toolsService.get(name, coverageScope)]))
   const nativeToolModules = [...configuredModules, ...await Promise.all(appended.map(loadNativeModule))]
+  // ROUND 121 — name the CAUSE of an empty managed frontier before the probe
+  // observes it. A declared `expectedTools` entry whose required inject is
+  // absent from this scope can only be DEFERRED by Cordis, so the attach would
+  // otherwise report "declared X but forwarded []" and hide which host
+  // capability the composition failed to mount. Refuse, naming the service.
+  const unmetInjections = unmetManagedInjections(nativeToolModules, root)
+  if (unmetInjections.length > 0) {
+    throw new A5sfNativeAssemblyError(
+      'A5SF_NATIVE_MODULE_INJECTION_UNMET',
+      `the configured ${A5SF_NATIVE_TOOL_MODULES_KEY} declare expectedTools but their required host services are absent from this`
+      + ` scope (${unmetInjections.map((entry) => `${entry.module} expects ${JSON.stringify(entry.expected)} but the scope provides no '${entry.service}'`).join('; ')});`
+      + ' Cordis SILENTLY DEFERS a plugin whose static inject is unmet, so it would register nothing and the managed names would fall back'
+      + ' to the PRESET definitions with zero guard facts — mount the host service (e.g. the 0.2.2-rc.5 `workingDirectory`) instead of'
+      + ' mounting an empty shadow (fail closed)',
+    )
+  }
   const expansion = await nativeToolMountsOf(nativeToolModules, realm)
   const fibers = await realm.mountNativeToolModules(
     expansion.mounts,

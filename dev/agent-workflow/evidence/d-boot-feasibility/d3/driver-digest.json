@@ -1,0 +1,31 @@
+{
+  "at": "2026-11-26T02:35:18.438Z",
+  "head": "b1b6a047811a41422481cea2558f618406ec2ad6",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next",
+  "hostSha": "9c2670d3bce5275e0d1610272958121af87787bb",
+  "pin": "9c2670d3bce5275e0d1610272958121af87787bb",
+  "driverSha256": "08651504f81623fd99e02d6fab99e9f894dacc14551cd8994002c7f5b699d842",
+  "jsSubstitutions": [
+    {
+      "expression": "(process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split(',').map((entry) => entry.trim()).filter((entry) => entry !== '')",
+      "value": []
+    },
+    {
+      "expression": "process.env.A5SF_WEB_SEARCH_BASE_URL ?? 'https://api.exa.ai'",
+      "value": "https://api.exa.ai"
+    },
+    {
+      "expression": "process.env.A5SF_WEB_SEARCH_API_KEY ?? process.env.EXA_API_KEY ?? ''",
+      "value": ""
+    },
+    {
+      "expression": "process.platform === 'win32'",
+      "value": false
+    },
+    {
+      "expression": "process.platform === 'win32'",
+      "value": false
+    }
+  ],
+  "command": "node tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs --boots 1"
+}

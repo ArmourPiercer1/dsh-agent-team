@@ -1,0 +1,38 @@
+[2026-11-25T16:15:36.219Z] model probe: level=REAL-ROUTE-AVAILABLE available=true missing=null
+[2026-11-25T16:15:36.220Z] archived previous runs -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/real-model/archive/2026-11-25T16-15-36-219Z
+[2026-11-25T16:15:36.287Z] host tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next HEAD=9c2670d3bce5275e0d1610272958121af87787bb pin=9c2670d3bce5275e0d1610272958121af87787bb porcelain=[]
+[2026-11-25T16:15:36.287Z] started 2026-11-25T16:15:36.179Z boots=2
+[2026-11-25T16:15:36.335Z] [boot1] candidate: {"host":"next","pin":"9c2670d3bce5275e0d1610272958121af87787bb","source":"tests/paths.mjs#NEXT_HOST","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next","asserted":true,"head":"9c2670d3bce5275e0d1610272958121af87787bb"}
+[2026-11-25T16:15:36.336Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=b2f4b1a08bd9728b907bbc122f338c12c40be783
+[2026-11-25T16:15:36.365Z] blueprint main.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-25T16:15:36.369Z] [boot1] alpha6 config gate (positive): null
+[2026-11-25T16:15:36.370Z] [boot1] model route: REAL (baseUrl=<provider default>)
+[2026-11-25T16:15:41.313Z] [boot1] host ready on http://127.0.0.1:13000
+[2026-11-25T16:15:41.336Z] [boot1] prompt(d4disc) status=200
+[2026-11-25T16:15:43.848Z] [boot1] prompt(d4disc) turn settled=true
+[2026-11-25T16:15:43.848Z] [boot1] discovery answered (mock requests=0)
+[2026-11-25T16:15:43.848Z] [boot1] PROBE FAILED: Error: the Leader surface lost 'team_delegate'
+    at probeOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs:2160:52)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs:3363:18)
+[2026-11-25T16:15:45.945Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-25T16:15:45.951Z] [boot1] RUN-RECORD SELF-CHECK pass (dev/agent-workflow/evidence/d-boot-feasibility/real-model/runs/boot01/run-record.json: schema=u5-run-record/1 cases=20 subset=false overall=FAIL)
+[2026-11-25T16:15:45.999Z] [boot2] candidate: {"host":"next","pin":"9c2670d3bce5275e0d1610272958121af87787bb","source":"tests/paths.mjs#NEXT_HOST","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next","asserted":true,"head":"9c2670d3bce5275e0d1610272958121af87787bb"}
+[2026-11-25T16:15:45.999Z] [boot2] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=b2f4b1a08bd9728b907bbc122f338c12c40be783
+[2026-11-25T16:15:46.008Z] blueprint main.yaml accepted: schemaVersion=5 id=team.realmodel.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-25T16:15:46.012Z] [boot2] alpha6 config gate (positive): null
+[2026-11-25T16:15:46.013Z] [boot2] model route: REAL (baseUrl=<provider default>)
+[2026-11-25T16:15:49.219Z] [boot2] host ready on http://127.0.0.1:13000
+[2026-11-25T16:15:49.238Z] [boot2] prompt(d4disc) status=200
+[2026-11-25T16:15:52.250Z] [boot2] prompt(d4disc) turn settled=true
+[2026-11-25T16:15:52.250Z] [boot2] discovery answered (mock requests=0)
+[2026-11-25T16:15:52.250Z] [boot2] PROBE FAILED: Error: the Leader surface lost 'team_delegate'
+    at probeOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs:2160:52)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-real-model.mjs:3363:18)
+[2026-11-25T16:15:54.285Z] [boot2] dev-live slot released (released=true held=false)
+[2026-11-25T16:15:54.290Z] [boot2] RUN-RECORD SELF-CHECK pass (dev/agent-workflow/evidence/d-boot-feasibility/real-model/runs/boot02/run-record.json: schema=u5-run-record/1 cases=20 subset=false overall=FAIL)
+[2026-11-25T16:15:54.331Z] host porcelain after: []
+[2026-11-25T16:15:54.332Z] TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)
+fact                              
+
+agreeing=true differing=[]
+[2026-11-25T16:15:54.332Z] RESULT evidence-complete=false allBooted=false blocked=false runRecordsValid=true (2/2 boots; agreeing pair=true)

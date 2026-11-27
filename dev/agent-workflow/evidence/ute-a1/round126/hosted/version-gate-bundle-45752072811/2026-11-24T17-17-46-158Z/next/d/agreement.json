@@ -1,0 +1,44 @@
+{
+  "schema": "a5sf-live-member/agreement/1",
+  "at": "2026-11-24T18:13:41.125Z",
+  "boots": 2,
+  "agreeing": true,
+  "differing": [],
+  "rows": [
+    {
+      "boot": 1,
+      "overall": "PASS",
+      "admittedVerdict": "PROVEN",
+      "deniedVerdict": "PROVEN",
+      "surfaceVerdict": "PROVEN",
+      "factsVerdict": "PROVEN",
+      "centreVerdict": "PROVEN",
+      "allowFacts": 2,
+      "denyFacts": 0,
+      "centreAdmissions": 2,
+      "centreExecutions": 2,
+      "governedSurface": true,
+      "admittedBytes": true,
+      "deniedSecretAbsent": true,
+      "transcriptSourceCount": 2
+    },
+    {
+      "boot": 2,
+      "overall": "PASS",
+      "admittedVerdict": "PROVEN",
+      "deniedVerdict": "PROVEN",
+      "surfaceVerdict": "PROVEN",
+      "factsVerdict": "PROVEN",
+      "centreVerdict": "PROVEN",
+      "allowFacts": 2,
+      "denyFacts": 0,
+      "centreAdmissions": 2,
+      "centreExecutions": 2,
+      "governedSurface": true,
+      "admittedBytes": true,
+      "deniedSecretAbsent": true,
+      "transcriptSourceCount": 2
+    }
+  ],
+  "table": "TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)\nfact                          boot1                         boot2\noverall                       PASS                          PASS\nadmittedVerdict               PROVEN                        PROVEN\ndeniedVerdict                 PROVEN                        PROVEN\nsurfaceVerdict                PROVEN                        PROVEN\nfactsVerdict                  PROVEN                        PROVEN\ncentreVerdict                 PROVEN                        PROVEN\nallowFacts                    2                             2\ndenyFacts                     0                             0\ncentreAdmissions              2                             2\ncentreExecutions              2                             2\ngovernedSurface               true                          true\nadmittedBytes                 true                          true\ndeniedSecretAbsent            true                          true\ntranscriptSourceCount         2                             2\n\nagreeing=true differing=[]"
+}

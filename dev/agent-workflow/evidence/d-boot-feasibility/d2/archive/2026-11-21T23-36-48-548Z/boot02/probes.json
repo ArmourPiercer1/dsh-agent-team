@@ -1,0 +1,208 @@
+{
+  "a": {
+    "own": {
+      "call": {
+        "callId": "call-d2-a-own",
+        "name": "read",
+        "arguments": {
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-33-49Z/workspace/team-a/in-lane-a.txt"
+        },
+        "result": {
+          "callId": "call-d2-a-own",
+          "isError": false,
+          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-33-49Z/workspace/team-a/in-lane-a.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_A_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+          "at": 1795304110261
+        }
+      },
+      "result": {
+        "callId": "call-d2-a-own",
+        "isError": false,
+        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-33-49Z/workspace/team-a/in-lane-a.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_A_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+        "at": 1795304110261
+      }
+    },
+    "cross": {
+      "call": {
+        "callId": "call-d2-a-cross",
+        "name": "read",
+        "arguments": {
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-33-49Z/workspace/team-b/in-lane-b.txt"
+        },
+        "result": {
+          "callId": "call-d2-a-cross",
+          "isError": true,
+          "text": "Error: LANE_DENY: fs.read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-33-49Z/workspace/team-b/in-lane-b.txt\" is outside the binding's fs.read lane (policy generation a5sf1:d1e8a4128b2ef143d7fb7822c491e792)",
+          "at": 1795304110818
+        }
+      },
+      "result": {
+        "callId": "call-d2-a-cross",
+        "isError": true,
+        "text": "Error: LANE_DENY: fs.read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-33-49Z/workspace/team-b/in-lane-b.txt\" is outside the binding's fs.read lane (policy generation a5sf1:d1e8a4128b2ef143d7fb7822c491e792)",
+        "at": 1795304110818
+      }
+    }
+  },
+  "b": {
+    "own": {
+      "call": {
+        "callId": "call-d2-b-own",
+        "name": "read",
+        "arguments": {
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-33-49Z/workspace/team-b/in-lane-b.txt"
+        },
+        "result": {
+          "callId": "call-d2-b-own",
+          "isError": false,
+          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-33-49Z/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+          "at": 1795304110558
+        }
+      },
+      "result": {
+        "callId": "call-d2-b-own",
+        "isError": false,
+        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-33-49Z/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+        "at": 1795304110558
+      }
+    },
+    "after": {
+      "call": {
+        "callId": "call-d2-b-after",
+        "name": "read",
+        "arguments": {
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-33-49Z/workspace/team-b/in-lane-b.txt"
+        },
+        "result": {
+          "callId": "call-d2-b-after",
+          "isError": false,
+          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-33-49Z/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+          "at": 1795304111459
+        }
+      },
+      "result": {
+        "callId": "call-d2-b-after",
+        "isError": false,
+        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-33-49Z/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+        "at": 1795304111459
+      }
+    }
+  },
+  "mutation": {
+    "lifecycleBefore": "SETTLED",
+    "pre": {
+      "call": {
+        "callId": "call-d2-b-pre",
+        "name": "read",
+        "arguments": {
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-33-49Z/workspace/team-b/revocable.txt"
+        },
+        "result": {
+          "callId": "call-d2-b-pre",
+          "isError": false,
+          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-33-49Z/workspace/team-b/revocable.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_REVOCABLE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+          "at": 1795304112070
+        }
+      },
+      "result": {
+        "callId": "call-d2-b-pre",
+        "isError": false,
+        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-33-49Z/workspace/team-b/revocable.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_REVOCABLE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+        "at": 1795304112070
+      }
+    },
+    "mid": {
+      "call": {
+        "callId": "call-d2-b-mid",
+        "name": "read",
+        "arguments": {
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-33-49Z/workspace/team-b/revocable.txt"
+        },
+        "result": {
+          "callId": "call-d2-b-mid",
+          "isError": true,
+          "text": "Error: ADMISSION_OVERLAY_DENY: a durable permission-plane restriction denies this call; the compiled binding allowed it, so the overlay wins (it can remove authority, never grant it)",
+          "at": 1795304112822
+        }
+      },
+      "result": {
+        "callId": "call-d2-b-mid",
+        "isError": true,
+        "text": "Error: ADMISSION_OVERLAY_DENY: a durable permission-plane restriction denies this call; the compiled binding allowed it, so the overlay wins (it can remove authority, never grant it)",
+        "at": 1795304112822
+      }
+    },
+    "post": {
+      "call": {
+        "callId": "call-d2-b-post",
+        "name": "read",
+        "arguments": {
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-33-49Z/workspace/team-b/revocable.txt"
+        },
+        "result": {
+          "callId": "call-d2-b-post",
+          "isError": false,
+          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-33-49Z/workspace/team-b/revocable.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_REVOCABLE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+          "at": 1795304113614
+        }
+      },
+      "result": {
+        "callId": "call-d2-b-post",
+        "isError": false,
+        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-33-49Z/workspace/team-b/revocable.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_REVOCABLE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+        "at": 1795304113614
+      }
+    },
+    "grant": {
+      "call": {
+        "id": "call-d2-grant",
+        "name": "team_grant_permission",
+        "arguments": {
+          "rootSessionId": "session-dboot-d2-root",
+          "requestToken": "dboot-d2-grant",
+          "targetInstanceId": "inst-12x4j4t1rn1g",
+          "rules": [
+            {
+              "operationClass": "read",
+              "matcher": {
+                "kind": "exact",
+                "value": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-33-49Z/workspace/team-b/revocable.txt"
+              },
+              "effect": "deny"
+            }
+          ]
+        }
+      },
+      "result": {
+        "source": "model",
+        "isError": false,
+        "text": "{\"status\":\"permission-mutated\",\"rootSessionId\":\"session-dboot-d2-root\",\"targetInstanceId\":\"inst-12x4j4t1rn1g\",\"verb\":\"grant\",\"changed\":true}"
+      }
+    },
+    "revoke": {
+      "call": {
+        "id": "call-d2-revoke",
+        "name": "team_revoke_permission",
+        "arguments": {
+          "rootSessionId": "session-dboot-d2-root",
+          "requestToken": "dboot-d2-revoke",
+          "targetInstanceId": "inst-12x4j4t1rn1g",
+          "rules": [
+            {
+              "operationClass": "read",
+              "matcher": {
+                "kind": "exact",
+                "value": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-33-49Z/workspace/team-b/revocable.txt"
+              },
+              "effect": "deny"
+            }
+          ]
+        }
+      },
+      "result": {
+        "source": "model",
+        "isError": false,
+        "text": "{\"status\":\"permission-mutated\",\"rootSessionId\":\"session-dboot-d2-root\",\"targetInstanceId\":\"inst-12x4j4t1rn1g\",\"verb\":\"revoke\",\"changed\":true}"
+      }
+    }
+  }
+}

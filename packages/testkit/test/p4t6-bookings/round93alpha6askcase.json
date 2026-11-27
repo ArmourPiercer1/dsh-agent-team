@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "ROUND93ALPHA6ASKCASE",
+  "paths": [
+    "packages/runtime/src/plugin/vnext/alpha6-ask-case.mjs"
+  ],
+  "expectedDelta": {
+    "from": 1318,
+    "to": 1319
+  },
+  "reason": "Round 93 (UTE vNext A1, owner ruling docs/reviews/20261124-0151.txt §1 = R1) adds ONE scannable production module under packages/runtime/src/plugin/vnext: alpha6-ask-case.mjs, the CLOSED qualification rule ALPHA6-ORDINARY-CASE-Q and the case builder that turns a qualifying ordinary ask into a durable Alpha.6 case through the EXISTING ControlService.requestApprovalLeg. It is NEW work in this tree, not a migrated straggler, and it carries no denylist vocabulary (no legacy SessionEvent string, payload symbol or declaration-merging pattern); the denylist hit set is measured unchanged. Recorded rather than hidden, exactly as round 92's module was.",
+  "tieNote": "MEASURED on this tree with the file on disk and no booking: the scan leg's arithmetic is 1318 + 1 = 1319 (base 0 + Σ booked lanes). Same law, no tolerance; the round-92 lane (1317 -> 1318) is untouched and still counted."
+}

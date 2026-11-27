@@ -49,6 +49,44 @@ const PRE_U7W0_ENTRIES = [
 ]
 
 /**
+ * RETIRED WITH THEIR SUBJECT (UTE A0/A1 cut, 2026-11-22).
+ *
+ * The frozen list above is history, so it cannot grow an exception by being
+ * edited. But history also cannot demand node globals for a FILE THAT NO LONGER
+ * EXISTS: the A0 cut deleted the two family trees and the A1 cut replaced
+ * `plugin/live/agent-bindings.mjs` with the centre's `plugin/vnext/agent-bindings.mjs`.
+ * Leaving their declarations in place made this suite red for the opposite of the
+ * reason it exists — a dead pattern is still a lie about coverage, whether the
+ * file was renamed or deleted.
+ *
+ * So each retired entry is recorded HERE, with the cut that retired it, and the
+ * law becomes three-way: a live entry must be declared AND match a tracked file;
+ * a retired entry must be declared NOWHERE and match nothing; and a retired entry
+ * that comes BACK is red (the `reappeared` channel below), so this list can never
+ * quietly re-authorise a subject nobody reinstated.
+ */
+export const RETIRED_WITH_SUBJECT = Object.freeze([
+  {
+    pattern: 'packages/runtime/src/plugin/live/agent-bindings.mjs',
+    cut: 'ute-a1',
+    reason: 'The A1 cut replaced the old assembly glue with the centre (plugin/vnext/agent-bindings.mjs, plugin/vnext/root.ts). The node-side module that needed node globals is the NEW one; its globals live in 040-vnext-centre-node-modules.json.',
+  },
+  {
+    pattern: 'packages/tools/inspect-family/src/*.mjs',
+    cut: 'ute-a0',
+    reason: 'The inspect family is retired by the A0 cut; the whole tree is gone, so the family document 030-inspect-family.json retires with it.',
+  },
+  {
+    pattern: 'packages/tools/web-family/src/*.mjs',
+    cut: 'ute-a0',
+    reason: 'The web family is retired by the A0 cut (the confined web face replaces it); the tree is gone, so 030-web-family-node-modules.json retires with it.',
+  },
+])
+
+/** Is this pattern recorded as retired-with-its-subject? */
+const retiredPatterns = (retired = RETIRED_WITH_SUBJECT) => new Set(retired.map((r) => r.pattern))
+
+/**
  * The CONFIG's own collector (exported by eslint.config.mjs since review R1),
  * so every control below exercises the code ESLint actually runs, not a copy.
  */
@@ -115,14 +153,20 @@ function matchesTracked(pattern, tracked) {
  * Returns the drift, never throws — so a control below can feed it a
  * deliberately-wrong `collected` and prove the law still bites.
  */
-function parityFindings(inline, collectedList, laneSet, dir = DIR) {
+function parityFindings(inline, collectedList, laneSet, dir = DIR, retired = RETIRED_WITH_SUBJECT) {
   const all = [...inline, ...collectedList]
+  const gone = retiredPatterns(retired)
   const dupes = all.filter((p, i) => all.indexOf(p) !== i)
-  const expected = new Set([...PRE_U7W0_ENTRIES, ...laneSet])
+  const expected = new Set([...PRE_U7W0_ENTRIES.filter((p) => !gone.has(p)), ...laneSet])
   return {
     duplicates: [...new Set(dupes)].sort(),
-    // A frozen pre-u7-w0 entry that no longer appears anywhere: history lost.
-    missingFrozen: PRE_U7W0_ENTRIES.filter((p) => !all.includes(p)).sort(),
+    // A frozen pre-u7-w0 entry that no longer appears anywhere: history lost —
+    // UNLESS the entry is recorded as retired with its subject, in which case its
+    // absence is the required state (and `reappeared` grades the other direction).
+    missingFrozen: PRE_U7W0_ENTRIES.filter((p) => !gone.has(p) && !all.includes(p)).sort(),
+    // A retired-with-its-subject declaration that is BACK: the subject nobody
+    // reinstated has been re-authorised, and node globals would silently apply.
+    reappeared: retired.filter((r) => all.includes(r.pattern)).map((r) => r.pattern).sort(),
     // A collected entry the tree does not carry: the collector invented one.
     notOnDisk: collectedList.filter((p) => !entriesOnDisk(dir).includes(p)).sort(),
     // A document entry the collector did not surface: the document is invisible
@@ -135,7 +179,10 @@ test('parity: the frozen nine are all still declared, and inline adds no lane of
 
   const inline = inlinePatterns()
   // THE FROZEN HISTORY (a literal on purpose — it is a fact about 88107ad71).
-  const missingFrozen = PRE_U7W0_ENTRIES.filter((p) => ![...inline, ...collected()].includes(p))
+  // A frozen entry whose SUBJECT the cut retired is exempt from "still declared":
+  // its absence is the required state, and `reappeared` grades the other way.
+  const gone = retiredPatterns()
+  const missingFrozen = PRE_U7W0_ENTRIES.filter((p) => !gone.has(p) && ![...inline, ...collected()].includes(p))
   assert.deepEqual(missingFrozen, [], `pre-u7-w0 entr(ies) no longer declared anywhere: ${missingFrozen.join(', ')}`)
   // INLINE ADDS NOTHING BEYOND THE NINE. A new node-side lane ships ONE
   // collected JSON and edits nothing — that is the u7-w0 collection law, and
@@ -153,6 +200,9 @@ test('parity: collected == the collected documents on disk (derived — no lane 
   // config. A new lane that ships a JSON is picked up automatically; a document
   // the collector fails to surface is RED here, by DRIFT, not by a lane name.
   assert.deepEqual(got.notCollected, [], `collected document entr(ies) that never reached eslint.config.mjs (node globals silently off): ${got.notCollected.join(', ')}`)
+  // A retired-with-its-subject declaration that came back would silently apply node
+  // globals to a subject nobody reinstated — red, by name.
+  assert.deepEqual(got.reappeared, [], `retired-with-subject entr(ies) declared again: ${got.reappeared.join(', ')}`)
   // And the two independent readings agree as sets.
   assert.deepEqual([...new Set(entriesOnDisk())].sort(), [...new Set(collected())].sort())
 })
@@ -163,7 +213,7 @@ test('a NEW node-side lane is reflected with NO edit to this test (the u7-w0 col
     for (const name of readdirSync(DIR).filter((n) => n.endsWith('.json'))) writeFileSync(join(dir, name), readFileSync(join(DIR, name), 'utf8'))
     const before = { disk: entriesOnDisk(dir), collected: collected(dir), lane: laneAdded(dir) }
     // A lane ships ONE file and edits nothing else — exactly the web-family shape.
-    writeFileSync(join(dir, '040-brand-new-family.json'), JSON.stringify({
+    writeFileSync(join(dir, '050-brand-new-family.json'), JSON.stringify({
       schema: 'eslint-node-globals/1',
       family: 'brand-new-family',
       summary: 'a new node-side lane',
@@ -175,7 +225,7 @@ test('a NEW node-side lane is reflected with NO edit to this test (the u7-w0 col
     // … the collector surfaces it …
     assert.deepEqual(collected(dir), [...before.collected, 'packages/tools/brand-new-family/src/*.mjs'])
     // … and the parity law is satisfied with the DERIVED set, no lane named.
-    assert.deepEqual(parityFindings(inlinePatterns(), collected(dir), laneAdded(dir), dir), { duplicates: [], missingFrozen: [], notOnDisk: [], notCollected: [] })
+    assert.deepEqual(parityFindings(inlinePatterns(), collected(dir), laneAdded(dir), dir), { duplicates: [], missingFrozen: [], reappeared: [], notOnDisk: [], notCollected: [] })
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
@@ -189,7 +239,7 @@ test('RED-first: a lane JSON the collector fails to surface is caught as DRIFT (
   try {
     for (const name of readdirSync(DIR).filter((n) => n.endsWith('.json'))) writeFileSync(join(dir, name), readFileSync(join(DIR, name), 'utf8'))
     const stale = collected(dir) // taken BEFORE the lane ships its file
-    writeFileSync(join(dir, '040-late-family.json'), JSON.stringify({
+    writeFileSync(join(dir, '050-late-family.json'), JSON.stringify({
       schema: 'eslint-node-globals/1',
       family: 'late-family',
       summary: 'ships a document the collector run above never saw',
@@ -207,6 +257,42 @@ test('every declared pattern matches at least one TRACKED file (a stale pattern 
     .split('\n').filter((f) => f !== '')
   const stale = [...inlinePatterns(), ...collected()].filter((pattern) => !matchesTracked(pattern, tracked))
   assert.deepEqual(stale, [], `pattern(s) matching no tracked file: ${stale.join(', ')} — a dead pattern reads as coverage that does not exist`)
+})
+
+test('RETIRED WITH SUBJECT: each retired entry is undeclared, and its subject really is gone', () => {
+  const tracked = execFileSync('git', ['ls-files'], { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
+    .split('\n').filter((f) => f !== '')
+  const declared = new Set([...inlinePatterns(), ...collected()])
+  for (const { pattern, cut, reason } of RETIRED_WITH_SUBJECT) {
+    // A retirement is a FACT ABOUT THE TREE, not a way to silence a live pattern:
+    // if the subject still exists, this entry is a lie and the suite refuses it.
+    assert.equal(matchesTracked(pattern, tracked), false, `${pattern} is recorded retired by ${cut} but still matches a tracked file (${reason})`)
+    assert.equal(declared.has(pattern), false, `${pattern} is recorded retired by ${cut} but is still declared in the node-globals list`)
+  }
+})
+
+test('RED-first: a retired entry that comes BACK is caught by the reappeared channel', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'eslint-globals-revived-'))
+  try {
+    for (const name of readdirSync(DIR).filter((n) => n.endsWith('.json'))) writeFileSync(join(dir, name), readFileSync(join(DIR, name), 'utf8'))
+    // The "file came back without its ctor" shape: the pattern is declared again in
+    // a collected document while the retirement record still says it is gone.
+    const revived = RETIRED_WITH_SUBJECT[0].pattern
+    writeFileSync(join(dir, '090-revived-family.json'), JSON.stringify({
+      schema: 'eslint-node-globals/1',
+      family: 'revived-family',
+      summary: 're-declares a retired subject',
+      globals: [revived],
+    }, null, 2) + '\n')
+    const got = parityFindings(inlinePatterns(), collected(dir), laneAdded(dir), dir)
+    assert.deepEqual(got.reappeared, [revived], 'the retired entry declared again is named by the law')
+    // And the RED-first control in the OTHER direction: dropping the retirement
+    // record (handing the law an empty retired set) makes the absence a frozen loss.
+    const withoutRecord = parityFindings(inlinePatterns(), collected(), laneAdded(), DIR, [])
+    assert.deepEqual(withoutRecord.missingFrozen, [revived], 'without the retirement record, its absence is history lost')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
 })
 
 test('the config is deterministic: two reads of the collected list agree, and the order is the file prefix', () => {

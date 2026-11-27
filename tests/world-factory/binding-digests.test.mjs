@@ -67,23 +67,58 @@ const relocate = (sources, targetRoot) => {
 
 // ── F1 ─────────────────────────────────────────────────────────────────────
 test('C1-F1a the oracle closure follows dynamic imports out of tests/world-factory', () => {
+  // RETIRED-BY-A0 (round 80) — RE-POINTED, not retired. The POSITIVE witness of
+  // this cell used to be suite 120's `await import(pathToFileURL(join(REPO_ROOT,
+  // 'packages','tools','agent-state-family','src','fs-state-store.mjs')))` at
+  // suites/120-u7-astore.mjs:79 and :247: the closure followed it and bound the
+  // production store's bytes. That file is in the A0 frozen delete set
+  // (`dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json`;
+  // `ute-cut-closure.allow.json#retiredSubjects` books the per-file loss), so the
+  // edge can no longer produce bytes. The LAW this cell exists to protect is
+  // re-pointed, not weakened: a dynamic import that crosses out of
+  // tests/world-factory must be FOLLOWED, and when its target is gone the walk
+  // must FAIL CLOSED and NAME it — never silently omit the dependency.
   const dir = scratch('closure-')
   const binding = captureSuite('u7-astore', '120-u7-astore.mjs', dir)
   const sources = binding.worldOracle.sources
-  // The proven miss: suite 120 dynamic-imports the PRODUCTION store at
-  // suites/120-u7-astore.mjs:79 and :247 through pathToFileURL(join(REPO_ROOT,…)).
-  assert.ok(sources.includes(ASTORE_STORE_REL), `suite 120 closure must bind ${ASTORE_STORE_REL}, got ${JSON.stringify(sources)}`)
-  assert.equal(binding.worldOracle.complete, true, `closure must be complete, disclosures: ${JSON.stringify(binding.worldOracle.unresolvedDynamicImports)}`)
-  // …and the closure still contains the suite + its expected-answer assemblies.
+  // (1) the closure still binds the suite and its own answer assemblies.
   assert.ok(sources.includes('tests/world-factory/suites/120-u7-astore.mjs'))
   assert.ok(sources.includes('tests/world-factory/lib/u7astore-assembly.mjs'))
-  // Bare specifiers are disclosed, never followed into node/host bytes.
-  assert.ok(binding.worldOracle.externalSpecifiers.every((s) => !s.startsWith('.')))
-  assert.ok(binding.worldOracle.externalSpecifiers.includes('node:fs'))
-  // The launcher helper is EXCLUDED and that exclusion is DISCLOSED.
+  // (2) the literal dynamic specifier WAS followed (it is not "unresolved"), and
+  // the retired target is reported at its exact path with the reason.
+  assert.deepEqual(binding.worldOracle.unresolvedDynamicImports, [], 'the dynamic specifier is literal, so the walk MUST have followed it')
+  assert.equal(binding.worldOracle.complete, false, 'a dynamically imported file the A0 cut deleted must fail the cell closed')
+  assert.ok(
+    binding.worldOracle.missingSources.some((entry) => entry.startsWith(ASTORE_STORE_REL)),
+    `the retired dynamic target must be NAMED, got ${JSON.stringify(binding.worldOracle.missingSources)}`,
+  )
+  // (3) the POSITIVE half moves to a SURVIVOR: a collected suite in the same
+  // CI leg reaches production bytes under packages/ through two literal dynamic
+  // imports (tests/world-factory/tinf-observer-closeout.test.mjs:70-71).
+  const observer = captureOracleBinding({
+    artifactPath: join(ROOT, 'tests/world-factory/tinf-observer-closeout.test.mjs'),
+    evidencePath: join(dir, 'observer.oracle.json'),
+    sourceRoot: join(ROOT, 'tests/world-factory'),
+    repoRoot: ROOT,
+    suite: 'tinf-observer-closeout',
+  })
+  for (const rel of ['packages/testkit/src/effect-witness.ts', 'packages/testkit/src/contract-oracle.ts']) {
+    assert.ok(observer.worldOracle.sources.includes(rel), `a dynamic import out of tests/world-factory must bind ${rel}, got ${JSON.stringify(observer.worldOracle.sources)}`)
+  }
+  // …and those bytes can ONLY have entered through the dynamic edges: the file
+  // names no packages/ module in a static import/export specifier.
+  const observerText = readFileSync(join(ROOT, 'tests/world-factory/tinf-observer-closeout.test.mjs'), 'utf8')
+  assert.ok(
+    !/(?:^|[\n;])\s*(?:import|export)\b[\s\S]{0,600}?\bfrom\s*['"][^'"\n]*packages\//u.test(observerText),
+    'the testkit bytes must enter the closure through import(...), never a static specifier',
+  )
+  // (4) the exclusion of the launcher helper is DISCLOSED, still.
   assert.ok(!sources.includes('tests/world-factory/lib/world-factory.mjs'))
   assert.deepEqual(binding.worldOracle.excludedHelpers, ['tests/world-factory/lib/world-factory.mjs'])
-  console.log(`C1-F1a GREEN: u7-astore binds ${sources.length} sources incl. ${ASTORE_STORE_REL}`)
+  // (5) bare specifiers are disclosed, never followed into node/host bytes.
+  assert.ok(binding.worldOracle.externalSpecifiers.every((spec) => !spec.startsWith('.')))
+  assert.ok(binding.worldOracle.externalSpecifiers.includes('node:fs'))
+  console.log(`C1-F1a GREEN: suite 120 follows its literal dynamic edge and names the retired target; the survivor binds ${observer.worldOracle.sources.filter((rel) => rel.startsWith('packages/')).length} production source(s)`)
 })
 
 test('C1-F1b a non-literal dynamic import fails the closure closed (complete:false)', () => {

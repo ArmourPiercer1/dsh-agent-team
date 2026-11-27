@@ -1,0 +1,2 @@
+## node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=11 findings=0

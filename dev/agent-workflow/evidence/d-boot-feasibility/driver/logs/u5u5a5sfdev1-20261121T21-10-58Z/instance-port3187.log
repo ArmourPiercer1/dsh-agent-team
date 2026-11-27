@@ -1,0 +1,4 @@
+dsh: warning: 2 entries did not activate
+dsh-agent-team (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/dist/packages/runtime/src/plugin/host.js): failed to import
+p6t6-team-tools (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/tools/harness/plugin.mjs): pending (waiting for service: teamRoot)
+dsh web: http://127.0.0.1:3187/?token=hm8G4YGGCV2g9rk_KENUDa7WVx42p4ybkMCpTEYz_Mg

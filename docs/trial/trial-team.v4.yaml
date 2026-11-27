@@ -1,0 +1,121 @@
+---
+# dsh-agent-team TRIAL blueprint — Leader + Worker + Officer, governed Member I/O.
+#
+# SCHEMA v4, not v3: the governed trial realm (profile row keys
+# `memberPresetId: a5sf-governed-member` + `a5sfGovernedRealm: true`) compiles
+# each Member's confinement from THIS document's `memberIoCeilings` family, and
+# a v3 document is refused (`REALM_DECLARATION_INVALID`) rather than granted a
+# default ceiling.
+#
+# BEFORE USE: replace @WORKSPACE@ below with the ABSOLUTE path of the trial
+# workspace (the directory the Members may read and write). `docs/TRIAL-GUIDE.md`
+# does that for you with one `sed`; the placeholder is deliberately not a
+# working path so an unreplaced copy fails ugly instead of confining to the
+# wrong root.
+schemaVersion: 4
+blueprintId: trial-team
+revision: "1"
+displayName: "Trial Team (Leader + Worker + Officer)"
+description: "Owner trial team: one Leader, one Worker, one Officer; Member I/O confined to one workspace."
+leader:
+  templateId: leader
+  persona: |
+    You lead this team, and you are the only member that may create, delegate to,
+    archive and restore other members.
+
+    Available teammates in this blueprint:
+      - worker : does the hands-on work (files inside the trial workspace, bash).
+      - officer: independent reviewer/approver for control requests.
+
+    Operating rules:
+      1. Delegate concrete work with team_delegate instead of doing it yourself.
+      2. Read results with team_collect; reply to a member with team_send_message.
+      3. When a member asks for something outside its lane, the request surfaces
+         through the control plane: inspect it with team_list_pending_control and
+         decide with team_resolve_control (allow or deny, with a reason).
+      4. If the operator asks you to prove the denial path, delegate the exact
+         out-of-lane operation and let the runtime refuse it; do not rephrase it
+         into an in-lane operation to make it succeed.
+members:
+  - templateId: worker
+    displayName: "Worker"
+    persona: |
+      You are the Worker on this team. Read and write only inside your workspace;
+      anything outside it is refused by the runtime and you must report the
+      refusal rather than retry it another way. Do the task you were delegated,
+      report progress, and finish with a short result summary.
+  - templateId: officer
+    displayName: "Officer"
+    persona: |
+      You are the Officer on this team. You do not do the Worker's task. When a
+      control request is routed to you, read the exact request, judge it against
+      the team's rules, and resolve it (allow or deny) with a one-line reason.
+requirements: []
+teamEnvelope:
+  allow:
+    - assign-task
+    - create-member
+    - send-message
+    - report-progress
+    - request-control
+    - resolve-control
+    - archive-member
+    - restore-member
+  deny: [delete-team]
+memberEnvelopes:
+  - templateId: worker
+    envelope:
+      allow: [send-message, report-progress, request-control]
+      deny: []
+  - templateId: officer
+    envelope:
+      allow: [send-message, report-progress, request-control, resolve-control]
+      deny: []
+policyStates:
+  - id: default
+    description: "Default state."
+quotas:
+  team:
+    maxInstances: 12
+    maxConcurrent: 12
+  members:
+    maxInstances: 4
+    maxConcurrent: 4
+# The two v3+ authority documents, at the honest zero position.
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+memberIoCeilings:
+  - templateId: worker
+    io:
+      read:
+        mode: restricted
+        allow: ["@WORKSPACE@"]
+        ask: []
+        deny: []
+      write:
+        mode: restricted
+        allow: ["@WORKSPACE@"]
+        ask: []
+        deny: []
+      network:
+        mode: deny
+        default: deny
+  - templateId: officer
+    io:
+      read:
+        mode: restricted
+        allow: ["@WORKSPACE@"]
+        ask: []
+        deny: []
+      write:
+        mode: restricted
+        allow: ["@WORKSPACE@"]
+        ask: []
+        deny: []
+      network:
+        mode: deny
+        default: deny
+metadata: {}
+---

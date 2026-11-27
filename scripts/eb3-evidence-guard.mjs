@@ -40,12 +40,30 @@
  * WHAT IT DOES NOT DO. It does not grade modifications, renames or files outside the evidence
  * root, and it does not judge whether a small file is worth committing.
  *
+ * THE VERBATIM-RUN-ARTIFACT RULE AND ITS GRANDFATHER (round 127, owner instruction). Committed
+ * evidence keeps conclusions, indexes, digests and text gate logs; bulk MACHINE OUTPUT is
+ * re-derivable and belongs in the gitignored `.artifacts/` (or is referenced by digest). A file
+ * ADDED after this rule took effect whose basename is a raw provider/event transcript
+ * (`*.jsonl`, `*.ndjson`), a provider call snapshot (`model-calls*.json`), a raw suite report
+ * (`*.vitest.json`, `vitest-*.json`) or a census capture/resample is refused with
+ * `EVIDENCE_VERBATIM_ARTIFACT`. It is not a size exemption: the allowlist cannot launder it.
+ *
+ * THE RULE IS NOT RETROACTIVE. Everything committed at or before the newest commit before
+ * `GRANDFATHER_BEFORE` (2026-11-27T00:00:00Z) is GRANDFATHERED — including the A1 cut's 10,253
+ * evidence additions and the six reviewed >1 MiB entries. Measured at this round: the cutoff
+ * commit is 8c5fcb505 (2026-11-26T04:20Z session clock), so the A1 cut's bulk additions keep
+ * their committed history untouched (nothing is deleted or rewritten); only artefacts added by
+ * later commits are graded by the new name rule. The cutoff commit is DISCOVERED
+ * (`git rev-list -1 --before=… HEAD`), never hardcoded, so a fresh/foreign tree with no such
+ * commit grades every addition (fail-closed, not "nothing to check").
+ *
  *   node scripts/eb3-evidence-guard.mjs [--new-since <ref>] [--json]
  *     --new-since  base to diff against (`git diff --diff-filter=A <ref>...HEAD`), the same
  *                  base rule as `eb3-run-manifest.mjs --new-since`. Default: origin/master.
  *
- * Exported for scripts/eb3-ci-negative-controls.mjs (C15–C19):
- *   guardAddedEvidence({ root, since }), isRawCaptureName(basename), BOUND_BYTES
+ * Exported for scripts/eb3-ci-negative-controls.mjs (C15–C19, C26–C27):
+ *   guardAddedEvidence({ root, since }), isRawCaptureName(basename), isVerbatimArtifactName(basename),
+ *   BOUND_BYTES, GRANDFATHER_BEFORE
  *
  * Exit: 0 no findings | 1 findings | 2 could not grade.
  *
@@ -63,12 +81,41 @@ export const ALLOWLIST_REL = 'dev/ci/evidence-large-allowlist.json'
 export const ALLOWLIST_SCHEMA = 'evidence-large-allowlist/1'
 export const BOUND_BYTES = 1024 * 1024
 
+/** Everything committed at or before the newest commit before this instant is grandfathered. */
+export const GRANDFATHER_BEFORE = '2026-11-27T00:00:00Z'
+
 const RAW_CAPTURE = /^census-\d{8}T\d{6}Z-\d+-\d+\.json$/
 const RESAMPLE = /^resample-.*\.json$/
+/** Bulk machine output: provider/event streams, provider snapshots, raw suite reports. */
+const VERBATIM_ARTIFACT = [
+  /\.jsonl$/u,
+  /\.ndjson$/u,
+  /^model-calls.*\.json$/u,
+  /\.vitest\.json$/u,
+  /^vitest-.*\.json$/u,
+]
 
 /** True for a raw census capture or resample basename; false for a comparison sidecar. */
 export function isRawCaptureName(basename) {
   return RAW_CAPTURE.test(basename) || RESAMPLE.test(basename)
+}
+
+/** True for a basename that is verbatim bulk run output (including the raw-capture names). */
+export function isVerbatimArtifactName(basename) {
+  return isRawCaptureName(basename) || VERBATIM_ARTIFACT.some((re) => re.test(basename))
+}
+
+/**
+ * The newest commit at or before {@link GRANDFATHER_BEFORE} reachable from HEAD, or `null`
+ * when the history has none (then every addition is graded — fail-closed).
+ */
+export function grandfatherCutoff(root = ROOT) {
+  try {
+    const out = execFileSync('git', ['-C', root, 'rev-list', '-1', `--before=${GRANDFATHER_BEFORE}`, 'HEAD'], { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 }).trim()
+    return out === '' ? null : out
+  } catch {
+    return null
+  }
 }
 
 function loadAllowlist(root) {
@@ -111,18 +158,41 @@ export function guardAddedEvidence({ root = ROOT, since }) {
     added.forEach((p, i) => sizes.set(p, Number(out[i])))
   }
   const allow = loadAllowlist(root)
+  // GRANDFATHER: additions from commits at or before the cutoff are not graded by the NEW
+  // name rule (their history is not rewritten and no file is deleted). Everything else —
+  // including every addition on a tree with no pre-cutoff commit — is.
+  const cutoff = grandfatherCutoff(root)
+  const postRule = cutoff === null
+    ? null
+    : new Set(git('diff', '--no-renames', '--diff-filter=A', '--name-only', '-z', `${cutoff}...HEAD`, '--', EVIDENCE_ROOT)
+      .split('\0').filter((p) => p.length > 0))
+  const isPostRule = (p) => postRule === null || postRule.has(p)
   const findings = [...allow.findings]
   for (const p of added) {
     const size = sizes.get(p)
-    if (isRawCaptureName(p.split('/').pop())) {
+    const base = p.split('/').pop()
+    if (isRawCaptureName(base)) {
       findings.push({ code: 'EVIDENCE_RAW_CAPTURE', path: p, size, detail: `${p} (${String(size)} B) is a raw census capture/resample — machine output whose derived facts belong in the comparison sidecar; the census leg writes these to .artifacts/census/ (gitignored)` })
+      continue
+    }
+    if (isPostRule(p) && isVerbatimArtifactName(base)) {
+      findings.push({ code: 'EVIDENCE_VERBATIM_ARTIFACT', path: p, size, detail: `${p} (${String(size)} B) is verbatim bulk run output (${base}); commit the conclusion/index/digest instead, keep the bulk under the gitignored .artifacts/, or cite it by digest — the size allowlist does not exempt this name` })
       continue
     }
     if (Number.isFinite(size) && size > BOUND_BYTES && !allow.paths.has(p)) {
       findings.push({ code: 'EVIDENCE_OVERSIZED', path: p, size, detail: `${p} is ${String(size)} B > ${String(BOUND_BYTES)} B — commit the derived numbers instead, or list it with a reason in ${ALLOWLIST_REL}` })
     }
   }
-  return { added, boundBytes: BOUND_BYTES, exempted: added.filter((p) => allow.paths.has(p) && (sizes.get(p) ?? 0) > BOUND_BYTES), findings }
+  return {
+    added,
+    boundBytes: BOUND_BYTES,
+    grandfatheredBefore: GRANDFATHER_BEFORE,
+    grandfatherCommit: cutoff,
+    postRule: postRule === null ? null : [...postRule].length,
+    verbatimRefused: findings.filter((f) => f.code === 'EVIDENCE_VERBATIM_ARTIFACT').map((f) => f.path),
+    exempted: added.filter((p) => allow.paths.has(p) && (sizes.get(p) ?? 0) > BOUND_BYTES),
+    findings,
+  }
 }
 
 const invokedDirectly = process.argv[1] !== undefined && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))
@@ -142,8 +212,9 @@ if (invokedDirectly) {
   else {
     for (const f of out.findings) console.log(`  ${f.code} ${f.detail}`)
     if (out.exempted.length > 0) console.log(`  EXEMPTED (size only, by ${ALLOWLIST_REL}): ${out.exempted.join(', ')}`)
-    console.log(`EB3-EVIDENCE-GUARD ${out.findings.length === 0 ? 'pass' : 'fail'} added=${String(out.added.length)} bound=${String(BOUND_BYTES)} exempted=${String(out.exempted.length)} findings=${String(out.findings.length)} base=${since}`)
-    console.log('LIMIT grades files ADDED under the evidence root only; a green here says no raw capture and no unexempted file over the bound was added, not that every added file is worth keeping')
+    console.log(`  GRANDFATHER verbatim-artifact rule applies after ${out.grandfatheredBefore} (cutoff ${out.grandfatherCommit ?? 'none: every addition graded'}); post-rule additions=${out.postRule === null ? 'all' : String(out.postRule)}`)
+    console.log(`EB3-EVIDENCE-GUARD ${out.findings.length === 0 ? 'pass' : 'fail'} added=${String(out.added.length)} bound=${String(BOUND_BYTES)} exempted=${String(out.exempted.length)} verbatim=${String(out.verbatimRefused.length)} findings=${String(out.findings.length)} base=${since}`)
+    console.log('LIMIT grades files ADDED under the evidence root only; a green here says no raw capture, no post-rule verbatim artifact and no unexempted file over the bound was added, not that every added file is worth keeping')
   }
   process.exit(out.findings.length === 0 ? 0 : 1)
 }

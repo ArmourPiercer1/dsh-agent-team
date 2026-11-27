@@ -1,0 +1,14 @@
+{
+  "schema": "eslint-node-globals/1",
+  "family": "vnext-centre-node-modules",
+  "summary": "The UTE A1 centre: the plugin-side modules that replace the retired execution route, and the host-free suites that drive them. They run under node by construction (the admission port owns an AbortController/AbortSignal pair over the host's cancel signal, the realm lane schedules a settle timer, and the suites reach URL/process/fetch/AbortController), while the TypeScript package tree stays global-free so the client half remains browser-safe. Listed per file rather than per directory: the u7-w0 collection law wants 'exactly these .mjs files', and a directory pattern here would hand node globals to any later vnext module that might be browser-side. Adding a node-side vnext module appends one line to THIS file and edits nothing in eslint.config.mjs.",
+  "globals": [
+    "packages/runtime/src/plugin/vnext/admission-port.mjs",
+    "packages/runtime/src/plugin/vnext/realm-lane.mjs",
+    "packages/runtime/test/vnext-admission.test.mjs",
+    "packages/runtime/test/vnext-b-probe-ladder.test.mjs",
+    "packages/runtime/test/vnext-fs-slice.test.mjs",
+    "packages/runtime/test/vnext-os-probe.test.mjs",
+    "packages/runtime/test/vnext-realm-lane.test.mjs"
+  ]
+}

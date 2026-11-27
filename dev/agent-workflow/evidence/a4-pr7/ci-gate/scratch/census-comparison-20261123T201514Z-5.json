@@ -1,0 +1,61 @@
+{
+  "head": "4f399df5e81141663f02139fe847716a6a7f8bba",
+  "baseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md",
+  "baselineIds": [],
+  "reports": [
+    {
+      "jsonPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/census/census-20261123T201514Z-5-1.json",
+      "files": 599,
+      "legs": 7416,
+      "ids": [
+        "TEST packages/runtime/test/a4p2-dual-envelope-mutation.test.ts::the production reader: the v3 switch, its THREE answers, one file (ADR A5-12) the production root and host actually inject it (a wiring pin, not a comment)",
+        "TEST packages/runtime/test/a6-pr1-lane-hygiene.test.ts::a6-pr1 lane hygiene has no production importer yet",
+        "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the static legs lint closes as an identity diff against the named baseline, not against a count",
+        "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the static legs the committed install surface is fresh against the tree, and a missing surface is refused"
+      ]
+    },
+    {
+      "jsonPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.artifacts/census/census-20261123T201514Z-5-2.json",
+      "files": 599,
+      "legs": 7416,
+      "ids": [
+        "TEST packages/runtime/test/a4p2-dual-envelope-mutation.test.ts::the production reader: the v3 switch, its THREE answers, one file (ADR A5-12) the production root and host actually inject it (a wiring pin, not a comment)",
+        "TEST packages/runtime/test/a6-pr1-lane-hygiene.test.ts::a6-pr1 lane hygiene has no production importer yet",
+        "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the static legs lint closes as an identity diff against the named baseline, not against a count",
+        "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the static legs the committed install surface is fresh against the tree, and a missing surface is refused"
+      ]
+    }
+  ],
+  "comparison": {
+    "verdict": "fail",
+    "setIdentical": false,
+    "countsMoved": true,
+    "added": [
+      "TEST packages/runtime/test/a4p2-dual-envelope-mutation.test.ts::the production reader: the v3 switch, its THREE answers, one file (ADR A5-12) the production root and host actually inject it (a wiring pin, not a comment)",
+      "TEST packages/runtime/test/a6-pr1-lane-hygiene.test.ts::a6-pr1 lane hygiene has no production importer yet",
+      "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the static legs lint closes as an identity diff against the named baseline, not against a count",
+      "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the static legs the committed install surface is fresh against the tree, and a missing surface is refused"
+    ],
+    "newReds": [
+      "TEST packages/runtime/test/a4p2-dual-envelope-mutation.test.ts::the production reader: the v3 switch, its THREE answers, one file (ADR A5-12) the production root and host actually inject it (a wiring pin, not a comment)",
+      "TEST packages/runtime/test/a6-pr1-lane-hygiene.test.ts::a6-pr1 lane hygiene has no production importer yet",
+      "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the static legs lint closes as an identity diff against the named baseline, not against a count",
+      "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the static legs the committed install surface is fresh against the tree, and a missing surface is refused"
+    ],
+    "newCollections": [],
+    "escalations": [],
+    "resolved": [],
+    "totals": {
+      "files": 599,
+      "legs": 7416,
+      "declared": {
+        "files": 626,
+        "legs": 7936
+      },
+      "moved": true,
+      "capturesAgree": "2 captures, identical identity sets",
+      "captured": "599f/7416l, 599f/7416l",
+      "totalsNote": "captured 599f/7416l, 599f/7416l vs baseline-declared 626 / 7936"
+    }
+  }
+}

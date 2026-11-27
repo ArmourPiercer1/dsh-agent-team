@@ -1,0 +1,265 @@
+/**
+ * host-surface-refusal.mjs — the centre's EXPLICIT UNAVAILABILITY for a capability that has no member
+ * I/O axis to be admitted on.
+ *
+ * WHY THIS MODULE EXISTS (round 55, C stage). The A1 cut's law is "an unwired controlled call is
+ * refused with a code that names why, never forwarded to a second authority". Three capabilities
+ * were not on either side of that law: the S6 remote surface, Alpha.6 review routing and PTC
+ * escalation. They are real host capabilities with real machinery, but no axis in the compiled
+ * member contract can judge them:
+ *
+ *  - a remote command is issued by an EXTERNAL caller authorized by the server-derived principal,
+ *    not by a member binding, so there is no lane (and no binding) for the centre to judge;
+ *  - Alpha.6 review routing decides WHO may review WHOM from the trusted review facts; it is a
+ *    governance decision that precedes any tool call and has no I/O locator;
+ *  - a PTC escalation asks the HOST sandbox to widen the process execution domain; `run_code` also
+ *    spawns a WORKER whose OS profile is not the member's compiled one (round 85 four-part finding).
+ *    ROUND 92 / OWNER RULING `docs/reviews/20261124-0151.txt` §PTC (2026-11-24): PTC is NOT SUPPORTED
+ *    in this generation BY PRODUCT RULING. The refusal is no longer "pending an upstream seam"; it is
+ *    the supported behaviour, it is a TYPED refusal with zero worker start and zero effect, and its
+ *    fact/report carry the distinct status `unsupported-by-product-ruling`. The `ptc` entry below
+ *    states that decision; `ADR-ptc-unsupported.md` is the amendment that cites the frozen A0 contract
+ *    instead of editing it, and `ptc-product-ruling.mjs` is the machine declaration the tests read.
+ *
+ * ROUND 74 UPDATE (owner ruling `docs/reviews/20261122-1536.txt` §3). For S6 the unit of refusal
+ * moved from the SURFACE to the COMMAND: the plane is the product's only runtime team-creation
+ * entrance, so a centre row now builds it as a governed control plane and refuses only the commands
+ * whose actual effect is agent execution (`s6-command-classification.ts`). The `remote` entry below
+ * therefore describes the refused SUBSET. ROUND 85 re-measured PTC in the order the round named:
+ * nested calls DO re-enter the host tool pipeline on the member agent's scope, the escalation DOES go
+ * through ControlService (durable ask + one-shot grant), and Stop DOES abort the run controller, its
+ * nested dispatches and the Node child. The one part that fails is the WORKER's OS profile: PTC
+ * resolves its `SandboxExecutionPolicy` from the HOST session, not from the member's compiled
+ * read/write lanes, and skips confinement under `danger-full-access`. Round 92 keeps that measured
+ * basis and closes it as a RULED scope reduction; see
+ * `dev/agent-workflow/evidence/ute-a1/PTC-FOUR-PART-FINDING.md` and `ADR-ptc-unsupported.md`.
+ *
+ * ROUND 84 UPDATE. The Alpha.6 entry is no longer "the capability cannot be judged at all". What round
+ * 55 measured — that the routing decision had no centre join and no durable record — is closed by
+ * recording the routed review as a DELIVERY over the P6-T3 session-input mechanism (durable intent +
+ * confirmation facts, correlation token, requirement gate, machine attribution) and by admitting the
+ * Officer's own calls (including `team_resolve_control`) under the OFFICER's binding. The routing
+ * decision itself still EXECUTES nothing, so it is still not admitted on an I/O axis — and none is
+ * invented. The `alpha6` entry below therefore describes the RESIDUAL refusal: a row that opts in
+ * without a coherent configuration (the three pieces are named in `centre-config.ts`). The recorded
+ * refusal, its axis and its settlement shape are unchanged.
+ *
+ * Each therefore ends EXPLICITLY UNAVAILABLE rather than silently absorbed by whichever surface
+ * happened to answer first. The refusal is one closed table (so the three codes cannot collapse into
+ * one generic "unavailable"), it records the SAME two durable shapes every other centre decision
+ * records (an invocation-authority fact with the enforced decision, and a settlement record closed
+ * REFUSED with `dispatch`/`bodyOutcome` `not-started`), and it is taken BEFORE the surface body.
+ *
+ * WHAT THIS MODULE IS NOT. It is not a new axis, not a second authority and not a compatibility
+ * layer: the axis it records is the subject's existing one (`team.control` for a command the team
+ * control plane owns, `host.service` for a host-service decision, `process.exec` for the shell
+ * family), and the settlement writer is the product's own. It decides nothing a surface could
+ * overrule: the caller refuses, and the record says so.
+ *
+ * WHERE IT IS BUILT (round 68). Two product points construct it through the ONE shared constructor
+ * (`row-refusal-entry.ts#createCentreHostSurfacePoint`): the host ENTRY, when the row-config gate
+ * refuses an Alpha.6 opt-in at validation (before any root exists — `host.ts` ->
+ * `validateTeamPluginConfig`), and the ROOT composition, for a caller that built a centre-configured
+ * root directly. Before round 68 only the root path existed, so the row's typed refusal left no
+ * durable fact; the entry now records the same refusal through this point before the unchanged throw.
+ * The refusal is not weakened and no new capability is created: a row without `centreStatePath` has no
+ * durable directory to write to and is still refused, just unwritten.
+ *
+ * @module packages/runtime/src/plugin/vnext/host-surface-refusal
+ */
+
+import { randomUUID } from 'node:crypto'
+import { createSettlementWriter } from './settlement-port.mjs'
+import { openFactLedger } from './fact-ledger.mjs'
+
+/**
+ * The closed capability table. `missing` is the reason, not a TODO: it names the axis the contract
+ * does not have and the shape that would be needed to change this row (never invented here).
+ *
+ * ROUND 74 — THE REMOTE ENTRY IS NOW PER-COMMAND, NOT PER-SURFACE. The owner ruling
+ * (`docs/reviews/20261122-1536.txt` §3) restored the S6 plane on a centre-configured row as a governed
+ * MANAGEMENT control plane. The unit of judgement is the COMMAND (`s6-command-classification.ts`): the
+ * control-plane commands are served through the existing principal + TeamDomain + creation/start gates,
+ * and only a command whose actual effect is agent execution is refused — because it has no member
+ * Binding and no member I/O axis for the centre to admit it on, and serving it would be a second
+ * execution authority. The code/axis/subject are unchanged; `missing` now names the refused SUBSET
+ * truthfully instead of claiming the whole surface is unavailable.
+ */
+export const HOST_SURFACE_REFUSALS = Object.freeze({
+  remote: Object.freeze({
+    code: 'ADMISSION_REMOTE_UNAVAILABLE',
+    axis: 'team.control',
+    subject: 'S6 remote command',
+    missing: 'a command that executes a tool/shell, starts an executor with no delivery to acknowledge, or awaits another agent\'s turn (round 83: only `team.admitInitialWork`/`team.ensureRootLive`) has no member Binding for UTE to admit, so serving it would be a second execution authority; DELIVERY is served as a handover into the Member\'s own governed path',
+  }),
+  alpha6: Object.freeze({
+    code: 'ADMISSION_ALPHA6_UNAVAILABLE',
+    axis: 'host.service',
+    subject: 'Alpha.6 review-routing decision',
+    // ROUND 84 — the RESIDUAL refusal. The three coordinated pieces are now named (and each missing
+    // piece has its own typed code, so a coherent row boots); what is still unavailable is the
+    // INCOHERENT row. The old text claimed "no review-routing axis exists", which was true when the
+    // positive path had not been assembled and is now a measured fact of a different shape: there is
+    // still no member I/O AXIS for the routing decision — and there must not be one, because the
+    // decision executes nothing. The durable record of a routed review is a DELIVERY over the P6-T3
+    // session-input port (the same mechanism `member.send` uses), and the Officer's own calls —
+    // `team_resolve_control` and every other tool — are admitted by the centre under the OFFICER's
+    // binding. `missing` stays under the settlement reason bound (512 chars) so the refusal is always
+    // RECORDED, not merely thrown.
+    missing: 'a coherent configuration (ADMISSION_ALPHA6_ROUTING_REQUIRED / _CENTRE_REQUIRED / _WAKE_INTENT_PATH_REQUIRED). A routing decision executes nothing, so no axis is invented: the wake is a governed DELIVERY with durable intent + confirmation facts, and the Officer\'s calls are admitted under the OFFICER\'s binding',
+  }),
+  ptc: Object.freeze({
+    code: 'ADMISSION_PTC_UNAVAILABLE',
+    axis: 'process.exec',
+    subject: 'PTC escalation',
+    // ROUND 92 — OWNER RULING `docs/reviews/20261124-0151.txt` §PTC (2026-11-24). PTC is NOT
+    // SUPPORTED in this generation, by product ruling: not "missing a provider", not "misconfigured".
+    // The measured basis did not change (round 85: nested calls, Control escalation and Stop HOLD; the
+    // WORKER's OS profile does not — PTC resolves its policy from the HOST session
+    // `sandboxPolicy.resolve({session})`, which carries only `{mode, workspaceRoot}`, and rc.5's
+    // `additionalWritableRoots` only adds WRITABLE roots, so the Member's independent read/write/deny
+    // subtrees cannot be expressed; `danger-full-access` skips confinement). What changed is the
+    // DECISION: the refusal no longer waits for an upstream seam, it IS the supported behaviour, and
+    // the distinct status travels on the fact and the report. The amendment that CITES the frozen A0
+    // contract (instead of editing it) is `ADR-ptc-unsupported.md`; the machine declaration is
+    // `ptc-product-ruling.mjs`. `missing` stays under the settlement reason bound (512 chars) so the
+    // refusal is always RECORDED, not merely thrown.
+    status: 'unsupported-by-product-ruling',
+    missing: 'status=unsupported-by-product-ruling (20261124-0151; ADR-ptc-unsupported.md): the WORKER process is NOT SUPPORTED this generation. A governed Member is never offered run_code; this entry is refused typed, zero worker, zero effect. Revisit only with an upstream per-execution policy seam: rc.5 resolves policy from sandboxPolicy.resolve({session}) and additionalWritableRoots cannot express the Member\'s read/write/deny subtrees.',
+  }),
+})
+
+/** The capability names, CLOSED. A fourth capability must be added here or it cannot be refused. */
+export const HOST_SURFACE_CAPABILITIES = Object.freeze(Object.keys(HOST_SURFACE_REFUSALS))
+
+/**
+ * The ONE product-side decision helper: refuse through the point (recording both durable shapes) and
+ * tell the caller the surface must NOT run. `undefined` point (a row that never configured the
+ * centre) is the no-op path, and it is the SAME branch the product takes — the arm drives this
+ * function, not a copy of the rule.
+ *
+ * @param {{refuse: (input: object) => object}|undefined} point
+ * @param {object} input - the refusal detail (see {@link createHostSurfaceRefusalPoint}).
+ * @returns {boolean} true when the caller must not build/run the surface.
+ */
+export function refuseHostSurfaceBefore (point, input) {
+  if (point === undefined || point === null) return false
+  point.refuse(input)
+  return true
+}
+
+/** The refusal for one capability, as the centre's own `Admission` vocabulary. */
+export function hostSurfaceRefusal (capability, detail) {
+  const entry = HOST_SURFACE_REFUSALS[capability]
+  if (entry === undefined) {
+    throw new TypeError(`host-surface-refusal: ${JSON.stringify(String(capability))} is not a capability of the closed table (${HOST_SURFACE_CAPABILITIES.join(', ')})`)
+  }
+  const extra = typeof detail === 'string' && detail !== '' ? ` (${detail})` : ''
+  return {
+    kind: 'deny',
+    code: entry.code,
+    reason: `${entry.subject} is explicitly unavailable in the A1 cut: ${entry.missing}${extra}`,
+  }
+}
+
+/**
+ * The ONE recorder for a host-surface refusal.
+ *
+ * `refuse()` is synchronous and writes BOTH durable shapes in the same order the centre uses:
+ * the invocation-authority fact first (a settlement that references a fact nobody can read is
+ * worse than none), then the settlement record, which the product store closes REFUSED at birth
+ * with `dispatch`/`bodyOutcome` `not-started`. The caller must not run the surface body after
+ * calling it.
+ *
+ * @param {object} input
+ * @param {'remote'|'alpha6'|'ptc'} input.capability - one entry of the closed table.
+ * @param {object} [input.ledger] - an already-open product fact ledger (`openFactLedger`); absent =
+ *   no fact sink. Typed callers (root.ts) use `ledgerPath` instead: the ledger is a plain `.mjs`
+ *   with no declaration file, and this module is the ONE place that opens it.
+ * @param {string} [input.ledgerPath] - open the ledger at this path (ignored when `ledger` is given).
+ * @param {object} [input.store] - the product `ExecutionSettlementStore`; absent = no settlement.
+ * @param {(exec: object) => {executionId: string, actorId: string, worldId: string}} [input.identityOf]
+ *   - the settlement identity. Required when `store` is given; the centre never invents a second id
+ *   scheme, and this module does not either.
+ * @param {(error: unknown, context: object) => void} [input.onFault] - every fault is reported.
+ * @returns {{capability: object, refuse: (input: object) => {callId: string, admission: object}}}
+ */
+export function createHostSurfaceRefusalPoint ({ capability, ledger, ledgerPath, store, identityOf, onFault, now } = {}) {
+  const entry = HOST_SURFACE_REFUSALS[capability]
+  if (entry === undefined) {
+    throw new TypeError(`host-surface-refusal: ${JSON.stringify(String(capability))} is not a capability of the closed table (${HOST_SURFACE_CAPABILITIES.join(', ')})`)
+  }
+  if (store !== undefined && store !== null && typeof identityOf !== 'function') {
+    throw new TypeError('host-surface-refusal: a settlement record needs identityOf; this module does not invent a second id scheme')
+  }
+  const factSink = ledger !== undefined && ledger !== null
+    ? ledger
+    : typeof ledgerPath === 'string' && ledgerPath !== '' ? openFactLedger({ path: ledgerPath }) : undefined
+  const writer = store === undefined || store === null
+    ? undefined
+    : createSettlementWriter({ store, identityOf, ...(onFault === undefined ? {} : { onFault }) })
+  // A refusal that happens before a call exists (a surface that is not installed at all) has no host
+  // callId, so the point derives one from a per-install nonce. It is an IDENTITY for the refusal
+  // event, never a reuse of an execution's identity: the point never writes a second authority
+  // record for a callId a centre already decided.
+  const nonce = randomUUID()
+  let sequence = 0
+  const clock = typeof now === 'function' ? now : () => new Date().toISOString()
+
+  return Object.freeze({
+    capability: entry,
+    /**
+     * Record the refusal and return it. The caller MUST NOT run the surface body afterwards.
+     *
+     * @param {object} input
+     * @param {string} [input.callId] - the surface's own request identity when it has one.
+     * @param {string} [input.subject] - what was refused (the endpoint, the route, the tool).
+     * @param {string} [input.locator] - what the refusal is about (a root, a server, a mode).
+     * @param {string} [input.owner] - the team root the surface would have acted for.
+     * @param {string} [input.detail] - a measured detail appended to the fixed reason.
+     */
+    refuse ({ callId, subject, locator = '', owner = '', detail } = {}) {
+      const id = typeof callId === 'string' && callId !== '' ? callId : `${capability}:${nonce}:${sequence++}`
+      const admission = hostSurfaceRefusal(capability, detail)
+      const toolName = typeof subject === 'string' && subject !== '' ? subject : entry.subject
+      const fact = Object.freeze({
+        callId: id,
+        agentId: owner,
+        sessionId: owner,
+        instanceGeneration: 0,
+        toolName,
+        axis: entry.axis,
+        locator,
+        definitionSource: 'host-surface',
+        policyGeneration: '',
+        blueprintRevision: '',
+        owner,
+        decision: 'deny',
+        refusalCode: admission.code,
+        reason: admission.reason,
+        // The row's POLICY status (only PTC has one today): a durable reader must be able to tell a
+        // ruled scope decision from a fault, so it rides the fact as a field as well as in the reason.
+        ...(entry.status === undefined ? {} : { status: entry.status }),
+      })
+      if (factSink !== undefined) {
+        try {
+          factSink.recordAdmission(fact)
+        } catch (error) {
+          // A refusal nobody can find is not one this module will pretend to have recorded: report
+          // the fault and still refuse (the call is unavailable either way).
+          if (typeof onFault === 'function') onFault(error, { phase: 'record', capability, callId: id, toolName })
+        }
+      }
+      if (writer !== undefined) {
+        try {
+          writer.admitted({ exec: { name: toolName, callId: id }, callId: id, admission })
+        } catch (error) {
+          if (typeof onFault === 'function') onFault(error, { phase: 'settlement-open', capability, callId: id, toolName })
+        }
+      }
+      return Object.freeze({ callId: id, admission })
+    },
+    /** The clock this point stamps facts with. Exported for arms; the store stamps its own. */
+    clock,
+  })
+}

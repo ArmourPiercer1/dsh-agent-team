@@ -65,6 +65,9 @@ import { dirname, join } from 'node:path'
 import test, { after } from 'node:test'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
+import { resolveSelectedHostModule, testHostMode } from '../next-host/host-select.mjs'
+import { executeToolDispatch } from './lib/a5sf-fs-contract-world.mjs'
+
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = join(HERE, '..', '..')
 
@@ -75,11 +78,38 @@ register(pathToFileURL(join(REPO_ROOT, 'scripts', 'run-tests-hooks.mjs')).href)
 const row = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'a5sf-realm-row.mjs')).href)
 /** `@deepseek-ai/cordis` + the REAL tool runtime are devDependencies of `packages/runtime` (pnpm strict). */
 const runtimeRequire = createRequire(join(REPO_ROOT, 'packages', 'runtime', 'package.json'))
-const { Context, Service } = await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/cordis')).href)
-const ToolRuntime = (await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/dsh-tools')).href)).default
-const SystemPrompt = (await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/dsh-system-prompt')).href)).default
-const SCOPE_ENTRY = runtimeRequire.resolve('@deepseek-ai/dsh-scope')
-const { createScope, scopeOf, bindScopeParent } = await import(pathToFileURL(SCOPE_ENTRY).href)
+/**
+ * WHICH HOST's modules this unit world is built from. The product code under
+ * test resolves its bare `@deepseek-ai/*` imports through the ONE selector
+ * (`scripts/run-tests-hooks.mjs` → `tests/next-host/host-select.mjs`), so the
+ * world must resolve the SAME way or the process carries two copies of
+ * `@deepseek-ai/dsh-scope`: its scope tag is a module-private Symbol, and
+ * `scopeOf(root)` then reads `undefined` for a ctx the product just created
+ * (the duplicate-instance hazard `a5sfAgentToolSurface` names). Before this,
+ * the suite pinned the repo's rc.2 install with `createRequire` and could only
+ * ever grade rc.2.
+ */
+const HOST_MODE = testHostMode()
+const hostEntry = (spec) => pathToFileURL(HOST_MODE === 'next'
+  ? resolveSelectedHostModule(spec, REPO_ROOT)
+  : runtimeRequire.resolve(spec)).href
+const { Context, Service } = await import(hostEntry('@deepseek-ai/cordis'))
+const ToolRuntime = (await import(hostEntry('@deepseek-ai/dsh-tools'))).default
+const SystemPrompt = (await import(hostEntry('@deepseek-ai/dsh-system-prompt'))).default
+const { createScope, scopeOf, bindScopeParent } = await import(hostEntry('@deepseek-ai/dsh-scope'))
+/** The selected host's `dsh-scope` FILE, for the deliberate second-copy arm (N8). */
+const SCOPE_ENTRY = HOST_MODE === 'next'
+  ? resolveSelectedHostModule('@deepseek-ai/dsh-scope', REPO_ROOT)
+  : runtimeRequire.resolve('@deepseek-ai/dsh-scope')
+/** rc.5 splits dispatch behind an executor service; the legacy host has none. */
+const nativeExecutorPlugin = HOST_MODE === 'next'
+  ? await (async () => {
+      const mod = await import(hostEntry('@deepseek-ai/dsh-tool-executor-native'))
+      // rc.5 exports the plugin as `{ name, inject, apply }` (named, no default);
+      // mounting the class alone skips `inject` and the pipeline cannot see `tools`.
+      return { name: mod.name, inject: mod.inject, apply: mod.apply }
+    })()
+  : undefined
 /** The REAL capability mask adapter the product applies (packages/tools). */
 const { applyBuiltInToolDeny } = await import('../../packages/tools/src/index.js')
 
@@ -182,6 +212,8 @@ async function makeRoot() {
   const root = new Context()
   await root.plugin(SystemPrompt)
   await root.plugin(ToolRuntime)
+  // rc.5 selects a ToolExecutor before it can dispatch; the legacy host dispatches itself.
+  if (HOST_MODE === 'next') await root.plugin(nativeExecutorPlugin)
   await root.plugin(TestFileSystem, {})
   return root
 }
@@ -316,7 +348,12 @@ const sectionNames = async (root, scope) =>
   (await root.systemPrompt.assemble({ scope })).sections.map((section) => section.name)
 
 async function dispatch(root, agent, name, args) {
-  const settled = await root.tools.execute({
+  // The ONE dispatch-shape helper: the shape is probed from the LIVE tools
+  // service's public capability (`setExecutor` ⇒ the rc.5 batch; `modeFor`/
+  // `defaultMode` ⇒ the rc.2 single call; neither ⇒ typed refusal). Round 123
+  // removed the version-keyed input, so this world never tells it which shape
+  // to emit.
+  const settled = await executeToolDispatch(root.tools, {
     signal: new AbortController().signal,
     callId: `a5sf-route-c-${name}`,
     name,
@@ -522,9 +559,15 @@ test('N4 teardown: disposing the realm removes the shadow (the preset definition
 // ===========================================================================
 test('N5 glue order: the production glue attaches the native shadow AFTER applyBuiltInToolDeny; the reverse order re-enables the denied tool', async () => {
   // --- structural half: the order in the ONE production glue -----------------
-  const glue = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs'), 'utf8')
+  // ROUND 80: the A1 cut replaced the legacy `live/agent-bindings.mjs` with the vnext assembly. This
+  // arm reads the SUCCESSOR — and it is not a formality: on the first re-point the successor mounted
+  // the row's native modules inside `installMemberExecution`, which runs BEFORE `agentPresets.mount`
+  // and BEFORE the deny lane, while the pin still believed the attach was post-deny. Reading a deleted
+  // file had made this arm vacuous and the inversion invisible. The attach now lives after the deny
+  // again (this test is why), next to the restored review disclosure.
+  const glue = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'vnext', 'agent-bindings.mjs'), 'utf8')
   const denyAt = glue.indexOf('applyBuiltInToolDeny(agentCtx, capabilities.builtinToolDeny)')
-  const attachAt = glue.indexOf('await attachA5sfNativeToolModules(a5sfRealm, agentCtx, a5sfRowConfig, runtimeAgent)')
+  const attachAt = glue.indexOf('await attachA5sfNativeToolModules(a5sfMountedRealm, agentCtx, a5sfRowConfig, runtimeAgent)')
   assert.notEqual(denyAt, -1, 'the glue applies the capability deny lane')
   assert.notEqual(attachAt, -1, 'the glue attaches the native shadow through the row helper')
   assert.ok(
@@ -533,9 +576,9 @@ test('N5 glue order: the production glue attaches the native shadow AFTER applyB
     + '(an own-scope registration is outside the inherited tools.restrict filter)',
   )
   assert.equal(
-    glue.includes('nativeToolModules:'),
+    glue.includes('nativeSpecs:'),
     false,
-    'the realm mount must not create the shadow (no native modules on the mount input)',
+    'the composition must not mount the row natives before the deny (no native modules on the mount input)',
   )
 
   // --- behavioral half: DENY then ATTACH (the fixed order) -------------------

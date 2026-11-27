@@ -1,0 +1,13 @@
+﹣ PD25-PIN: the BASE commit carries the goal row and the ask-user row (PRE-FIX, pinned) (0.477123ms) # SKIP
+✔ PD25-SURFACE-CLOSED (ask-user only; goal REOPENED by PD-29): the governed preset declares NO ask-user row and the goal row again (37.057784ms)
+✔ PD25-SURFACE-POSITIVE-CONTROL: the retained rows are untouched (2.4462ms)
+✔ PD25-SURFACE-SURGICAL: the pinned standard preset still ships both capabilities (2.052794ms)
+✔ PD25-TYPED-REFUSAL: ask_user_question is UNKNOWN_TOOL and executes nothing (the goal trio is dispatchable again, PD-29) (21.226037ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 112.619288

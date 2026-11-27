@@ -72,6 +72,8 @@ import type {
   ArtifactLedgerPort,
 } from '../../artifact-read/index.js'
 import type { ControlService } from '../../control/index.js'
+import { centreConfigViolation } from './vnext/centre-config.js'
+import { createAlpha6RowRefusalHook, type CentreConfigRefusalHook } from './vnext/row-refusal-entry.js'
 import {
   MCP_FACET_WILDCARD,
   resolveDurableMcpFacet,
@@ -182,7 +184,7 @@ import {
 import { TEAM_ARTIFACT_AUTHORITY_SERVICE } from './artifact-grant-bridge.js'
 import type { TeamArtifactAuthorityBridge } from './artifact-grant-bridge.js'
 
-import { createTeamProductionRoot } from './root.js'
+import { createTeamProductionRoot } from './vnext/root.js'
 import { ALPHA6_WAKE_MARKER } from '../../alpha6/wake-dispatch.js'
 import { createTeamSessionActivationFence } from './team-session-activation.js'
 import type {
@@ -332,6 +334,17 @@ interface GlueModule {
     readonly domain: TeamDomain & { readonly consumption: DomainConsumption }
     readonly config: TeamPluginConfig
     readonly teamToolsRef: { current: unknown }
+    /**
+     * ROUND 78 (rc.5 acceptance): the host's default model selection. rc.5
+     * reads an Agent's provider/model from AgentOptions (or a recorded
+     * selection) BEFORE the step waterfall; the rc.2 per-request default no
+     * longer rescues an agent created without one. A plugin that creates
+     * Agents through the public `agents.create` must therefore supply the
+     * deployment default at creation — exactly what the host's own
+     * session-controller does. Optional: a profile without the service keeps
+     * the previous behaviour (and fails the same way rc.5 would).
+     */
+    readonly agentDefaultModel?: { currentSelection(): { provider: string, model: string, reasoningEffort?: string } }
     /** alpha5 PTC fs half-arm (10:04Z work order): the plain
      *  `{ current }` reference carrying the escalation router created by
      *  the install line below (undefined = the glue ships no row = every
@@ -341,9 +354,10 @@ interface GlueModule {
     /**
      * T12-M3 (optional additive): the DSH `subagents` public service,
      * structurally a superset of the glue's SubagentsDrainPort
-     * (drainContinuableDescendants + listDescendants). Absent → the glue's
-     * recursive drain fails closed with the typed
-     * `recursive-drain-unavailable` (documented in the glue).
+     * (drainDescendants on 0.2.2-rc.5 / drainContinuableDescendants on
+     * 0.2.0-rc.2 — the same public operation, renamed — plus
+     * listDescendants). Absent → the glue's recursive drain fails closed
+     * with the typed `recursive-drain-unavailable` (documented in the glue).
      */
     readonly subagents?: unknown
     /**
@@ -379,6 +393,24 @@ interface GlueModule {
     readonly agentPresets?: {
       mount(agentCtx: unknown, presetId?: string): Promise<unknown>
       composedPreset?(agentCtx: unknown): string | undefined
+      /**
+       * SHAPE A (round 61): the ACTIVE preset's own composition rows, read through the public
+       * `agentPresets` seam (the same call the persona observer already uses). The governed
+       * member's default native-tool module set is DERIVED from these rows; a composition whose
+       * seam cannot answer is a typed refusal, never a guessed host-package list.
+       */
+      compositionInventory?(): Promise<readonly {
+        id?: string
+        rows?: readonly { entryId?: string | null; moduleName?: string; enabled?: unknown }[]
+        broken?: string
+      }[]>
+      /**
+       * SHAPE A: the ACTIVE preset's DECLARED composition document (the public `readDocument`
+       * seam the persona observer already uses). The governed default mount forwards each row's
+       * OWN `config` verbatim — the same module AND the same configuration the preset row would
+       * have mounted, never a second set of defaults invented here.
+       */
+      readDocument?(presetId: string): Promise<string>
     }
     /**
      * alpha.2 (A6 live fix V1-1, optional additive): the per-agent `fs` seam
@@ -458,9 +490,17 @@ interface GlueModule {
      *  call-level facts adapter (additive optional, untyped mjs glue). */
     readonly permissionOverlay?: unknown
     readonly permissionAuthorityFacts?: unknown
-    /** 9e-3: the shared PA call-level facts adapter ref (late-filled; the
-     *  plane's consumption edge awaits this ONE reader). */
-    readonly paReadCallFactsRef?: { current: ((input: Record<string, unknown>) => Promise<unknown> | undefined) | undefined }
+    /**
+     * R1 (owner ruling, review `20261124-0151` §1, additive optional): the v3
+     * authority-ceiling CONTEXT reader (`createAuthorityCeilingReader` over the
+     * same facts object). The Alpha.6 case producer reads its `leader` rung
+     * through the ONE operation-approval facts adapter over THIS port, so a case
+     * is only ever opened from the Team's own documents. Absent → the producer
+     * stays UNWIRED (the plain Leader/Human path): guessing the frozen legacy
+     * rung here would widen Officer authority on a v3 Team, which the ruling
+     * forbids.
+     */
+    readonly permissionAuthorityCeiling?: unknown
     /**
      * BP-F (issue #2 blueprint-loading, plan §11.1, optional additive):
      * the narrow per-Team bound-blueprint resolver —
@@ -670,14 +710,27 @@ function registerUpstreamResolverOnce(): void {
 }
 
 /**
+ * Hooks the host ENTRY attaches to the row validator. They observe a refusal; they cannot grant one.
+ *
+ * `onCentreRefusal` runs at the exact point the centre rule refuses, BEFORE the unchanged typed throw.
+ * The entry uses it to write the refusal through the product's own host-surface point (round 68): the
+ * decision stays in `centreConfigViolation`, and a caller that passes no hooks behaves byte-identically
+ * to the pre-round validator.
+ */
+export interface TeamPluginConfigValidationHooks {
+  readonly onCentreRefusal?: CentreConfigRefusalHook
+}
+
+/**
  * Validate the row `config` channel loudly (plan §19.2: the row config is
  * the entry's ONLY input channel — a malformed composition must reject
  * apply, not degrade).
  * @param raw - the unvalidated `config:` of the row.
+ * @param hooks - entry-side observers of a refusal (see {@link TeamPluginConfigValidationHooks}).
  * @returns the validated config.
  * @throws {TeamPluginError} TEAM_PLUGIN_CONFIG_INVALID with the failing field.
  */
-export function validateTeamPluginConfig(raw: unknown): TeamPluginConfig {
+export function validateTeamPluginConfig(raw: unknown, hooks?: TeamPluginConfigValidationHooks): TeamPluginConfig {
   // NB: function declaration, not a const arrow — TypeScript 6.0.3 control
   // flow only treats a never-returning call as an abrupt completion when the
   // callee is a function declaration (or ambient declaration); never-typed
@@ -701,6 +754,35 @@ export function validateTeamPluginConfig(raw: unknown): TeamPluginConfig {
   if (c.blueprintDir !== undefined && (typeof c.blueprintDir !== 'string' || c.blueprintDir.length === 0)) fail('blueprintDir must be a non-empty string when present')
   if (typeof c.generation !== 'number' || !Number.isInteger(c.generation) || c.generation < 1) fail('generation must be a positive integer')
   if (c.defaultWorkspace !== undefined && typeof c.defaultWorkspace !== 'string') fail('defaultWorkspace must be a string when present')
+  // The CENTRE's own config rules live in `vnext/centre-config.ts` so they are testable without
+  // booting the host (host.ts reaches the remote handler tree through `.js` specifiers that only
+  // exist after a build). This call is the only place they are enforced.
+  //
+  // ROUND 84: the Alpha.6 rule is a COHERENCE rule now, so it reads the same four pieces the wiring
+  // needs — the opt-in, the durable centre, the durable wake-intent directory and the bound Blueprint
+  // source whose authored v5 `reviewRouting` policy it must find. Passing a narrower fact set would
+  // make "no routing policy" unobservable at the only production enforcement point.
+  const centreViolation = centreConfigViolation(c as {
+    centreStatePath?: unknown
+    alpha6ReviewRouting?: unknown
+    alpha6WakeIntentPath?: unknown
+    blueprintSource?: unknown
+  })
+  if (centreViolation !== undefined) {
+    // The refusal is decided HERE. The entry gets the chance to make it durable through the product's
+    // own point before the unchanged throw below; a hook fault is reported, never allowed to soften or
+    // delay the refusal (the validator still fails on the next line).
+    try {
+      hooks?.onCentreRefusal?.(centreViolation, c as Record<string, unknown>)
+    } catch (error: unknown) {
+      console.warn(
+        `[dsh-agent-team] row refusal could not be recorded (the row is still refused): ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      )
+    }
+    fail(centreViolation)
+  }
   if (!Array.isArray(c.seedMembers)) fail('seedMembers must be an array')
   for (const seed of c.seedMembers as readonly TeamPluginSeedMember[]) {
     if (
@@ -828,7 +910,7 @@ export function validateTeamPluginConfig(raw: unknown): TeamPluginConfig {
  * @returns the derived glue file URL.
  */
 export function defaultGlueUrl(hostModuleUrl: string): string {
-  return new URL('./live/agent-bindings.mjs', hostModuleUrl).href
+  return new URL('./vnext/agent-bindings.mjs', hostModuleUrl).href
 }
 
 /**
@@ -1378,6 +1460,53 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
       }
       return svc.composedPreset(agentCtx)
     },
+    // SHAPE A (round 61): the preset's OWN composition rows, through the same lazy public seam.
+    // A composition service that cannot answer compositionInventory is a typed refusal at the
+    // governed member's bind: the module set for its native tools may not be guessed.
+    async compositionInventory(): Promise<readonly {
+      id?: string
+      rows?: readonly { entryId?: string | null; moduleName?: string; enabled?: unknown }[]
+      broken?: string
+    }[]> {
+      const svc = ctx.get('agentPresets') as
+        | {
+            compositionInventory?: () => Promise<readonly {
+              id?: string
+              rows?: readonly { entryId?: string | null; moduleName?: string; enabled?: unknown }[]
+              broken?: string
+            }[]>
+          }
+        | null
+        | undefined
+      if (svc === undefined || svc === null || typeof svc.compositionInventory !== 'function') {
+        throw new TeamPluginError(
+          TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING,
+          'the "agentPresets" public service is absent (or lacks compositionInventory) — a governed member derives its default native-tool module set from the active preset\'s own rows and refuses rather than leaving them on the base provider',
+        )
+      }
+      return svc.compositionInventory()
+    },
+    async readDocument(presetId: string): Promise<string> {
+      const svc = ctx.get('agentPresets') as
+        | { readDocument?: (presetId: string) => Promise<string | { readonly content?: string } | unknown> }
+        | null
+        | undefined
+      if (svc === undefined || svc === null || typeof svc.readDocument !== 'function') {
+        throw new TeamPluginError(
+          TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING,
+          'the "agentPresets" public service is absent (or lacks readDocument) — a governed member reads its preset rows\' declared config through this public seam; it never invents a second set of module defaults',
+        )
+      }
+      const doc = await svc.readDocument(presetId)
+      if (typeof doc === 'string') return doc
+      if (doc !== null && typeof doc === 'object' && typeof (doc as { content?: unknown }).content === 'string') {
+        return (doc as { content: string }).content
+      }
+      throw new TeamPluginError(
+        TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING,
+        `the "agentPresets" readDocument returned no YAML content for preset '${presetId}' — the governed native module configs cannot be read (fail closed)`,
+      )
+    },
   }
 
   // pre-alpha3 W2-A (review fix F14, guide §5 B): the PRODUCTION persona
@@ -1625,6 +1754,21 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // The production root installs the registration seam during its
     // construction (A31); current() throws the seam's stable
     // not-installed code if that ever regresses (propagated as-is).
+    //
+    // ROUND 74 (owner ruling `docs/reviews/20261122-1536.txt` §3): a centre-configured row BUILDS the
+    // S6 command plane again (as a governed management control plane), so this branch is no longer the
+    // centre-row path — `installed` is true there and the registration mounts below. The branch stays
+    // as the DEFENSIVE leg for any root whose seam is genuinely absent (a future composition that does
+    // not build the plane, or a test root): a disabled seam is a "skipped" mount (not "failed"), never
+    // a boot failure, and this leg has nothing to register.
+    if (!root.seams.remoteHandlerRegistration.installed) {
+      const skipped: RemoteMountState = {
+        state: 'skipped',
+        reason: 'the root did not install a remote handler registration seam (no S6 command plane in this composition); nothing to register',
+      }
+      remoteMountState = skipped
+      return skipped
+    }
     const registerRemote = root.seams.remoteHandlerRegistration.current()
     let registration: RemoteRegistration
     try {
@@ -1745,7 +1889,28 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   async function bootstrap(): Promise<TeamProductionRoot> {
     // A broken row must not arm the upstream resolution hook: validate the
     // row config first, then register the resolver exactly once per process.
-    const validatedConfig = validateTeamPluginConfig(config)
+    //
+    // ROUND 68 (shape A): the row gate decides the refusal, and THIS entry makes it durable. The hook
+    // writes the product's own invocation-authority fact + `REFUSED`/`not-started` settlement through
+    // `createHostSurfaceRefusalPoint` at the exact moment `centreConfigViolation` refuses, then the
+    // validator throws the SAME typed error it threw before (the hook cannot un-refuse anything).
+    const validatedConfig = validateTeamPluginConfig(config, {
+      onCentreRefusal: createAlpha6RowRefusalHook({
+        onFault: (error: unknown, context: object) => {
+          console.warn(
+            `[dsh-agent-team] row refusal could not be recorded (${JSON.stringify(context)}): ${
+              error instanceof Error ? error.message : String(error)
+            } — the row is still refused`,
+          )
+        },
+        onRecorded: (recorded) => {
+          console.warn(
+            `[dsh-agent-team] row refused at validation and RECORDED: code=${recorded.code} ` +
+              `callId=${recorded.callId} fact=${recorded.ledgerPath} settlement=${recorded.settlementDir}`,
+          )
+        },
+      }),
+    })
     // D9: the launch-directory default workspace (explicit config wins).
     const rowConfig = withDefaultWorkspace(validatedConfig, process.cwd())
     registerUpstreamResolverOnce()
@@ -2000,13 +2165,6 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // compositions) keeps the pre-PR-B legacy input.
   const policyReaderRef: { current: unknown } = { current: null }
 
-  // 9e-3 (PR358): the shared PA call-level facts adapter ref (the same
-  // late-fill pattern as policyReaderRef): created before the glue, filled
-  // with builtRoot.paReadCallFactsRef.current right after root
-  // construction. The plane's consumption edge awaits THIS reader — one
-  // adapter with the Control verifier, no second authority path.
-  const paReadCallFactsRef: { current: ((input: Record<string, unknown>) => Promise<unknown> | undefined) | undefined } = { current: undefined }
-
   // pre-alpha3 PR4 — the shared permission-plane reference (the exact
   // `controlServiceRef` / `artifactAuthorityRef` precedent): a construction-
   // time object the ROOT fills during its construction; the live glue reads
@@ -2237,6 +2395,10 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
       { teamSessionId: rowConfig.rootSessionId, memberInstanceId: LEADER_INSTANCE_ID },
     ],
   })
+  // R1 (review `20261124-0151` §1): the ONE v3 authority-ceiling CONTEXT reader, built once over the
+  // facts above and shared by BOTH consumers — the root's operation-recheck adapter and the Alpha.6
+  // case producer the glue receives below. One reader, one answer.
+  const permissionAuthorityCeiling = createAuthorityCeilingReader({ facts: permissionFacts })
   // A4-PR6 §6.A — the governance-warning service (Ruling PR6-H: THIN —
   // no new bound-Blueprint resolution, no new canonicalizer, no member
   // addressing). The gate's question is TEAM-level: the Leader expansion
@@ -2358,6 +2520,13 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // sync residency port leaves open (quiesce.ts release-residency does not
   // await the dispose); this listener is the state-cleanup face, never a
   // race the row depends on.
+  //
+  // ROUND 92 / OWNER RULING (`docs/reviews/20261124-0151.txt` §PTC, 2026-11-24): PTC / `run_code`
+  // is NOT SUPPORTED this generation, and this install line STAYS. The row adjudicates EVERY sandbox
+  // escalation ask on the public waterfall (the host bash/pwsh process tools raise the same
+  // `escalate sandbox to <mode>:` prefix), so it is shared escalation governance, not a PTC tool
+  // surface; the ruling closed the TOOL, and `vnext/admission.ts` refuses it before this row can be
+  // asked. See `ADR-ptc-unsupported.md` for the kept-wiring rationale.
   const ptcEscalationRef: { current: unknown } = { current: null }
   if (typeof ctx.on === 'function' && typeof glue.createPtcEscalationRouter === 'function') {
     const ptcRouter = glue.createPtcEscalationRouter()
@@ -2384,6 +2553,13 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     teamToolsRef,
     controlServiceRef,
     ptcEscalationRef,
+    // ROUND 78: resolved lazily at bindings construction (the base bundle's
+    // agent-default-model row), never an inject dependency of this row — a
+    // profile without a model default must still mount and fail exactly where
+    // rc.5 fails (at the first step), not be parked at apply time.
+    agentDefaultModel: ctx.get('agentDefaultModel') as {
+      currentSelection(): { provider: string, model: string, reasoningEffort?: string }
+    } | undefined,
     now: () => new Date().toISOString(),
     // BP-F (issue #2 blueprint-loading, plan §11.1): the per-Team bound-
     // blueprint resolver (the glue's dynamic Team authority — the three-
@@ -2442,6 +2618,12 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // lanes read) for the PA call-level facts adapter's overlay generation,
     // + the ONE facts object for its ceiling readers (untyped mjs glue).
     permissionOverlay,
+    // R1 (owner ruling, review `20261124-0151` §1): the SAME single v3
+    // authority-ceiling context reader the root receives, so a QUALIFYING
+    // ordinary ask can freeze its case identity from the Team's own authority
+    // documents. Without it the Alpha.6 case producer stays unwired and the
+    // plain Leader/Human path is untouched.
+    permissionAuthorityCeiling,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     permissionAuthorityFacts: permissionFacts as any,
     // C1 (restart-recovery, guide §4.3): the Team session-activation fence
@@ -2454,7 +2636,6 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // (filled with builtRoot.policyReader right after root construction
     // — the glue reads it lazily per boundary; see the ref's rationale).
     policyReaderRef,
-    paReadCallFactsRef,
     // pre-alpha3 PR-C §C.6/§C.7: the durable capability-runtime telemetry
     // hook — the glue emits the MCP mount transitions (mount-failed /
     // mount-restored) and the host durably records each as a
@@ -2981,7 +3162,7 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // A4-PR2 lane C: the v3 authority-ceiling context reader (ADR A5-12). The v3 decision
     // itself is NOT made here — this line injects the reader that makes it, from the
     // SAME bound-Blueprint resolution every other permission fact is read through.
-    permissionAuthorityCeiling: createAuthorityCeilingReader({ facts: permissionFacts }),
+    permissionAuthorityCeiling,
     // A4-PR6 §6.A — the ONE governance-warning port, forwarded verbatim to
     // the s6 start gate (root.ts adds zero logic; the service is assembled
     // above, next to the facts it reads through).
@@ -3030,7 +3211,6 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // boundaries: the remote surface is not servable until the boot is
   // armed, and the boot preload below runs after this point).
   policyReaderRef.current = builtRoot.policyReader
-  paReadCallFactsRef.current = builtRoot.paReadCallFactsRef?.current
 
   // Alpha.6 (opt-in only): the REAL Host turn boundary for a review latch.
   // `agent/inbox/claimed` is the message's owning turn start; `agent/status`

@@ -1,0 +1,59 @@
+{
+  "stoppedBefore": true,
+  "stoppedMarkersBefore": [
+    "stopped-be6cf2ae.json"
+  ],
+  "machineAttempted": true,
+  "machineAttempt": {
+    "holdLanded": true,
+    "holdStatus": 200,
+    "cancelStatus": 200,
+    "resumeStatus": 200,
+    "thirdRequestId": "ctrl-13s67gj0isdbdc1artw6p0w7"
+  },
+  "stoppedAfter": true,
+  "stoppedMarkersAfter": [
+    "stopped-be6cf2ae.json"
+  ],
+  "wakeInputsWhileStopped": 0,
+  "humanResumeCleared": true,
+  "humanResume": {
+    "status": 200,
+    "markersAfterResume": 0
+  },
+  "resumedWakeDelivered": false,
+  "write3": {
+    "settled": true,
+    "file": {
+      "exists": false,
+      "bytes": null,
+      "sha256": null
+    },
+    "settlement": "REFUSED",
+    "result": true
+  },
+  "discovery": {
+    "worker-write-3": {
+      "slot": "worker-write-3",
+      "predicate": "name=write && file_path=\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T18-59-39Z/workspace/lane/worker-ask-3.txt\"",
+      "matched": {
+        "id": "call_00_sgnVmAcnyua5F936x1Xp7808",
+        "name": "write",
+        "turnIndex": 22,
+        "input": "{\"content\":\"DBOOT_D4_WORKER_ASK_CALLED_3\\n\",\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261125T18-59-39Z/workspace/lane/worker-ask-3.txt\"}"
+      },
+      "at": "2026-11-25T19:03:41.735Z"
+    },
+    "officer-resolve-third": {
+      "slot": "officer-resolve-third",
+      "predicate": "name=team_resolve_control && requestId=\"ctrl-13s67gj0isdbdc1artw6p0w7\" && occurrence #1",
+      "matched": {
+        "id": "call_00_2cdfgsbl0B4LGDsIYVHP9109",
+        "name": "team_resolve_control",
+        "turnIndex": 28,
+        "input": "{\"decision\":\"deny\",\"note\":\"Out of scope: member SETTLED; admitted work unit named only worker-ask.txt and worker-ask-2.txt (both already written). No authority for a third path.\",\"requestId\":\"ctrl-13s67gj0isdbdc1artw6p0w7\",\"requestToken\":\"dboot-d4-deny-worker-write3\",\"rootSessionId\":\"session-real-model-root\"}"
+      },
+      "at": "2026-11-25T19:01:41.504Z"
+    }
+  }
+}

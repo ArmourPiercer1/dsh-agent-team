@@ -29,18 +29,19 @@
  */
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { test } from 'node:test'
 
+import { retirementPin } from '../ute-g1-shared/retirement.mjs'
 import { checkDesignClaim, compareAll, parseGolden } from './lib/compare.mjs'
 import { COVERED_MEMBERS, MEMBERS_BY_FAMILY, REQUIRED_CLASSES, VECTOR_IDS, CORPUS } from './lib/corpus.mjs'
-import { measureImplementationSites } from './lib/definition-sites.mjs'
+
 import { CATEGORY_EXCLUSIONS, categoricalCoverage, observedCodes } from './lib/effect-oracle.mjs'
 import { captureCorpus, OLD_PATH_IDENTITY } from './lib/old-path.mjs'
 import { DSH_BASELINE_VERSION, REPO_ROOT, TEST_USE_BASELINE_SHA } from './lib/paths.mjs'
 import { assertVocabularyTotal, CATEGORY_IDS, REFUSAL_CATEGORIES } from './lib/refusal-map.mjs'
-import { assertDifferencesMeasured, SEMANTIC_DIFFERENCES, semanticDifferenceLines } from './lib/semantic-differences.mjs'
+import { SEMANTIC_DIFFERENCES, SEMANTIC_MEASUREMENT_RETIRED, semanticDifferenceLines } from './lib/semantic-differences.mjs'
 import { runNegativeControls } from './negative-controls.mjs'
 
 const GOLDEN = join(REPO_ROOT, 'tests', 'ute-g1-uistate', 'golden', 'old-path.tsv')
@@ -71,14 +72,37 @@ test('the fixture is bound to the pinned host and the census books the corpus', 
   console.log(`UTE-G1-UISTATE-CORPUS members=${COVERED_MEMBERS.join(',')} vectors=${String(golden.length)} host=${OLD_PATH_IDENTITY.host}`)
 })
 
-test('the golden is stable: two consecutive captures are byte-identical to it', async () => {
-  for (const pass of ['first', 'second']) {
-    const records = await captureCorpus()
-    const comparison = compareAll(golden, records)
-    assert.deepEqual(comparison.failures, [], `pass ${pass} drifted from the golden: ${JSON.stringify(comparison.failures)}`)
-    assert.deepEqual(comparison.missingObserved, [])
-    assert.deepEqual(comparison.missingGolden, [])
-  }
+test('RETIRED-BY-A0: both governed family bodies are gone and the fixture is the frozen baseline', () => {
+  // ROUND 81 disposition (ROUND80-CI-CLOSURE.md §4): B1 captured the route-C
+  // world by importing `packages/tools/families/ui.mjs`; the A0 frozen cut
+  // deleted both governed bodies, and `attachA5sfNativeToolModules` no longer
+  // appends a shadow (`5d1349767`). The capture arm retires; the fixture stays
+  // the frozen historical baseline and is NOT re-recorded (this lane has no new
+  // path). The retired surface is asserted ABSENT below.
+  const ui = retirementPin({
+    suite: 'UISTATE',
+    subject: 'dsh.ui-family',
+    retiredPaths: [
+      'packages/tools/families/ui.mjs',
+      'packages/tools/agent-state-family/src/executors.mjs',
+    ],
+    successors: [
+      'tests/ute-g1-uistate/lane-suite.test.mjs',
+      'tests/world-factory/a5sf-ask-precedence.test.mjs',
+      'packages/runtime/test/vnext-admission.test.mjs',
+    ],
+    golden: 'tests/ute-g1-uistate/golden/old-path.tsv',
+    goldenRows: golden.length,
+  })
+  assert.match(ui.line, /^UTE-G1-UISTATE-RETIRED-BY-A0 subject=dsh\.ui-family citation=5d1349767\+93ba0a1d1 /u)
+  const state = retirementPin({
+    suite: 'UISTATE',
+    subject: 'dsh.agent-state-family',
+    retiredPaths: ['packages/tools/families/agent-state.mjs'],
+    successors: ['packages/runtime/test/vnext-admission.test.mjs', 'tests/world-factory/a5sf-ask-precedence.test.mjs'],
+    checkRouteC: false,
+  })
+  assert.match(state.line, /^UTE-G1-UISTATE-RETIRED-BY-A0 subject=dsh\.agent-state-family /u)
   // No row may embed machine state: an absolute path, a pid, or a wall clock.
   for (const record of golden) {
     const row = JSON.stringify(record)
@@ -86,7 +110,9 @@ test('the golden is stable: two consecutive captures are byte-identical to it', 
     assert.ok(!/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(row), `${record.id} embeds a wall clock`)
     assert.ok(!/"pid"/.test(row), `${record.id} embeds a pid`)
   }
-  console.log(`UTE-G1-UISTATE-STABLE vectors=${String(golden.length)} passes=2`)
+  console.log(`UTE-G1-UISTATE-STABLE vectors=${String(golden.length)} state=FROZEN re-records=0`)
+  void captureCorpus
+  void compareAll
 })
 
 test('every golden row satisfies its corpus design claim', () => {
@@ -145,26 +171,38 @@ test('effects are corroborated independently of the row', () => {
   }
 })
 
-test('the per-member negative controls hold, every census member is guarded, and the transcript is exact', async () => {
+test('the POST-CUT control battery holds and the committed transcript is exact', async () => {
   const { verdict, results, failures } = await runNegativeControls()
-  assert.deepEqual(failures, [], 'a negative control failed; the guarded behaviour is not load-bearing')
+  assert.deepEqual(failures, [], 'a negative control failed; the retirement is not load-bearing')
   assert.equal(verdict, 'GREEN')
-  assert.equal(results.length, 13, 'the battery has THIRTEEN controls; dropping one must red, not silently lower the count')
-  for (const member of COVERED_MEMBERS) {
-    assert.ok(results.some((result) => result.member === member), `no negative control reports NC-MEMBER ${member}`)
+  assert.equal(results.length, 15, 'the battery has FIFTEEN controls; dropping one must red, not silently lower the count')
+  // The per-member arms retired with the governed body. Their property is
+  // carried by the named successors, asserted here rather than asserted away.
+  for (const id of [
+    'NC-RETIRED-FAMILY-ABSENT',
+    'NC-HOST-MODULES-ONLY',
+    'NC-SUCCESSORS-EXIST',
+    'NC-GOLDEN-FROZEN',
+    'NC-CATEGORY-TOTAL',
+    'NC-GOLDEN-DESIGN-CLAIMS',
+    'NC-NO-NEW-PATH-CLAIM',
+    'NC-LEDGER-CITES-SUCCESSOR',
+  ]) {
+    assert.ok(results.some((result) => result.id === id), `${id} must be present`)
   }
   const fresh = execFileSync(process.execPath, [join(REPO_ROOT, 'tests', 'ute-g1-uistate', 'negative-controls.mjs')], {
     cwd: REPO_ROOT,
     encoding: 'utf8',
     maxBuffer: 32 * 1024 * 1024,
   }).trim().split('\n')
+  assert.match(fresh[0], /^ACCEPTED-BY round81-a1-cut reason=/u, 'the re-recorded battery must name this round and its reason')
   const committed = readFileSync(join(REPO_ROOT, 'dev', 'agent-workflow', 'evidence', 'ute3-uistate-b1-20261121', 'negative-controls.txt'), 'utf8').trim().split('\n')
   assert.deepEqual(fresh, committed, 'the committed UI/AS negative-control transcript must be exactly a fresh run')
-  assert.equal(fresh.at(-1), 'NC-VERDICT GREEN controls=13 failed=0')
+  assert.equal(fresh.at(-1), 'NC-VERDICT GREEN controls=15 failed=0')
   console.log(`UTE-G1-UISTATE-CONTROLS verdict=${verdict} controls=${String(results.length)} transcript=exact`)
 })
 
-test('the semantic differences are measured, blocking and unapproved', () => {
+test('the semantic differences stay DECLARED, blocking and unapproved; their measurement retired with the source', () => {
   const lines = semanticDifferenceLines()
   assert.equal(lines.length, SEMANTIC_DIFFERENCES.length)
   assert.ok(lines.length > 0, 'an empty difference list is a claim of equivalence; delete it deliberately, not silently')
@@ -174,9 +212,15 @@ test('the semantic differences are measured, blocking and unapproved', () => {
   }
   assert.ok(SEMANTIC_DIFFERENCES.every((difference) => difference.blocking === true), 'every difference is blocking while no replacement exists')
   assert.ok(SEMANTIC_DIFFERENCES.every((difference) => difference.approval === undefined || difference.approval === null), 'no difference may carry an approval record from this lane')
-  const sites = measureImplementationSites(COVERED_MEMBERS)
-  const problems = assertDifferencesMeasured({ sites, codes: observedCodes(golden), golden })
-  assert.deepEqual(problems, [], 'a semantic difference is no longer measured — re-measure before citing it')
+  // The MEASUREMENT retired with the governed bodies (see the module doc); the
+  // DECLARATION stays binding, and the historical measurement is the B1 probe.
+  for (const path of SEMANTIC_MEASUREMENT_RETIRED.sources) {
+    assert.equal(existsSync(join(REPO_ROOT, path)), false, `${path} is back; the retired measurement source must stay absent`)
+  }
+  const probe = readFileSync(join(REPO_ROOT, SEMANTIC_MEASUREMENT_RETIRED.historicalEvidence), 'utf8')
+  assert.match(probe, /PROBE-CONCLUSION ui=two-implementations/u)
+  assert.match(probe, /PROBE-CONCLUSION state=two-implementations/u)
+  console.log(`UTE-G1-UISTATE-SEMANTIC declared=${String(SEMANTIC_DIFFERENCES.length)} blocking=all approval=none measurement=RETIRED-BY-A0`)
 })
 
 test('the Stage-0 composition probe transcript is committed and answers every member', () => {

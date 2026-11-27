@@ -169,11 +169,23 @@ const repoRoot: string = resolvedRepoRoot
  */
 const EXPECTED_RUNTIME = DSH_BASELINE_VERSION
 const PINNED_GENERATION_LITERAL = '0.2.0-rc.2'
-/** The review ruling: the exact RC peer, nothing broader. */
-const EXPECTED_PEER_RANGE = DSH_BASELINE_VERSION
+/**
+ * The audited host set this manifest names, and nothing broader. The
+ * 2026-11-27 install-trial round widened the requirement from the single
+ * test-use RC to the two hosts this product was MEASURED on: the rc.2
+ * build/test generation below (`DSH_BASELINE_VERSION`) and the rc.5 owner
+ * host. It is still an ENUMERATION, not a range: every admitted runtime is
+ * written out, so a later prerelease or stable this product never ran on
+ * stays rejected (the negative cases below).
+ */
+const EXPECTED_HOSTS: readonly string[] = Object.freeze([DSH_BASELINE_VERSION, '0.2.2-rc.5'])
+/** One requirement string shared by `engines.dsh` and every `@deepseek-ai/*` peer. */
+const EXPECTED_PEER_RANGE = EXPECTED_HOSTS.join(' || ')
+/** An exact version, which is the only shape an alternative may take. */
+const EXACT_SEMVER = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/
 /**
  * [PR #352 packaging round] The audited host-provides peer contract: exactly
- * these ten names, each at the same exact RC. HARD-CODED on purpose — the
+ * these ten names, each at the same requirement. HARD-CODED on purpose — the
  * expectation must never be derived from the manifest under test (that would
  * be a self-proving assertion). The real evaluator iterates EVERY
  * `@deepseek-ai/dsh`/`@deepseek-ai/dsh-*` peer, so this full set is what its
@@ -338,20 +350,28 @@ describe('F1 plugin DSH peer compatibility (real ' + EXPECTED_RUNTIME + ' evalua
     expect(getDshRuntimeVersion()).toBe(EXPECTED_RUNTIME)
   })
 
-  it('the root manifest declares exactly the audited host-provided DSH peers (fifteen + the three terminal/bash peers this round added) (each exact-RC, optional, none as a regular dependency) and no other @deepseek-ai copy can reach a profile', () => {
+  it('the root manifest declares exactly the audited host-provided DSH peers (fifteen + the three terminal/bash peers this round added) (one shared host ENUMERATION, optional, none as a regular dependency) and no other @deepseek-ai copy can reach a profile', () => {
     const peers = manifest.peerDependencies ?? {}
     const dshPeers = Object.entries(peers).filter(([name]) => name === '@deepseek-ai/dsh' || name.startsWith('@deepseek-ai/dsh-'))
-    // Exact set: the fifteen audited names, each at the exact RC — nothing more,
-    // nothing less (an extra/missing dsh* peer fails here, loudly).
+    // Exact set: the audited names, each at the SAME host enumeration — nothing
+    // more, nothing less (an extra/missing dsh* peer fails here, loudly).
     expect(Object.keys(peers).sort()).toEqual([...EXPECTED_HOST_PEER_NAMES].sort())
     expect(dshPeers.length).toBe(EXPECTED_HOST_PEER_NAMES.length)
     for (const name of EXPECTED_HOST_PEER_NAMES) {
       expect(peers[name]).toBe(EXPECTED_PEER_RANGE)
     }
-    // Exact match, not a range: no comparator / wildcard / hygroscopic form.
+    // Enumeration, not a range: every alternative is an exact version the product
+    // was measured on, and no comparator / wildcard form is admitted (a `>=`,
+    // `^`, `~` or `*` would claim runtimes no lane ever ran).
     for (const [, requirement] of dshPeers) {
-      expect(requirement).not.toMatch(/[\s|^~*><=]/)
+      const alternatives = requirement.split('||').map((part) => part.trim())
+      expect(alternatives.length).toBe(EXPECTED_HOSTS.length)
+      for (const alternative of alternatives) expect(alternative).toMatch(EXACT_SEMVER)
+      expect(requirement).not.toMatch(/[\^~*><=,]/)
     }
+    // The two DSH compatibility surfaces must agree: engines is what rc.5 reads
+    // alone, peers are what rc.2 reads alone — one claim, stated twice.
+    expect((manifest as { readonly engines?: { readonly dsh?: string } }).engines?.dsh).toBe(EXPECTED_PEER_RANGE)
     // Every peer is OPTIONAL. This is the PD-37 shape: a peer is satisfied by the
     // host install, so `dsh plugin add` must never install one into the profile
     // (a profile-local `@deepseek-ai/dsh-tools` re-mints the scheduler symbol and
@@ -377,7 +397,10 @@ describe('F1 plugin DSH peer compatibility (real ' + EXPECTED_RUNTIME + ' evalua
     ].filter((name) => name.startsWith('@deepseek-ai/'))
     expect(everyCoreDependency.sort()).toEqual([HOST_ABSENT_DEPENDENCY])
     expect(peers).not.toHaveProperty(HOST_ABSENT_DEPENDENCY)
-    expect(deps[HOST_ABSENT_DEPENDENCY]).toBe(EXPECTED_PEER_RANGE)
+    // The host-absent package is installed INTO the profile, so it stays an exact
+    // single pin of the build/test generation — a dependency is content, not a
+    // compatibility claim.
+    expect(deps[HOST_ABSENT_DEPENDENCY]).toBe(DSH_BASELINE_VERSION)
     // `@deepseek-ai/dsh-tools` in particular can never come back: it is the
     // module whose Symbol identity the agent-loop depends on.
     expect(deps).not.toHaveProperty('@deepseek-ai/dsh-tools')
@@ -390,7 +413,17 @@ describe('F1 plugin DSH peer compatibility (real ' + EXPECTED_RUNTIME + ' evalua
     // …and against the evaluator's OWN runtime (the preflight call shape the
     // host actually makes: no explicit runtimeVersion argument).
     expect(evaluatePluginCompatibility(manifest, {})).toBeUndefined()
-    expect(getDshRuntimeVersion()).toBe(EXPECTED_PEER_RANGE)
+    expect(getDshRuntimeVersion()).toBe(EXPECTED_RUNTIME)
+  })
+
+  it('positive: the rc.5 owner host is admitted by the same requirement — the peer surface names it, and the engines surface names the identical set', async () => {
+    const { evaluatePluginCompatibility } = await loadEvaluator()
+    // The pinned rc.2 evaluator reads PEERS alone (it has no engines branch). The
+    // rc.5 evaluator reads ENGINES alone; that path is measured against the real
+    // rc.5 build in `dev/agent-workflow/evidence/r128-trial/` (truth table), and
+    // the equality above keeps the two surfaces byte-identical.
+    expect(evaluatePluginCompatibility(manifest, {}, '0.2.2-rc.5')).toBeUndefined()
+    expect(EXPECTED_HOSTS).toContain('0.2.2-rc.5')
   })
 
   it('negative: runtime ' + PREVIOUS_GENERATION + ' (the generation this plugin left) → the evaluator reports the unmet peer with NO active exemption (the gate now rejects)', async () => {
@@ -406,7 +439,7 @@ describe('F1 plugin DSH peer compatibility (real ' + EXPECTED_RUNTIME + ' evalua
     expect(warning).toContain('not active')
   })
 
-  it('negative: a later prerelease (' + LATER_PRERELEASE + ') and the later stable (' + LATER_STABLE + ') are also unmet — the exact-RC range does not widen', async () => {
+  it('negative: a later prerelease (' + LATER_PRERELEASE + ') and the later stable (' + LATER_STABLE + ') are also unmet — the host ENUMERATION does not widen', async () => {
     const { evaluatePluginCompatibility, pluginCompatibilityWarning } = await loadEvaluator()
     for (const runtimeVersion of [LATER_PRERELEASE, LATER_STABLE]) {
       const issue = evaluatePluginCompatibility(manifest, {}, runtimeVersion)

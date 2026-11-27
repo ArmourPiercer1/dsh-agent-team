@@ -21,8 +21,8 @@
  */
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { spawnSync } from 'node:child_process'
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { execFileSync, spawnSync } from 'node:child_process'
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -42,10 +42,34 @@ const CENSUS = JSON.parse(readFileSync(join(ROOT, CENSUS_REL), 'utf8'))
 const RETIREMENT = JSON.parse(readFileSync(join(ROOT, RETIREMENT_LEDGER_REL), 'utf8'))
 const TRACKED = defaultTrackedPaths(ROOT)
 
+/**
+ * THE FIXTURE BASE IS THE A0 FROZEN TREE (round 80, ROUND72-DELETION-AUDIT §6 option (a)).
+ *
+ * The committed inventory records a tree that existed when the ledger was written. A0 then
+ * deleted ALL of it. Grading the ledger against today's index therefore reports 400+ absences
+ * that are the CUT working correctly — and the mutation battery below would be mutating a
+ * surface nobody can see. So the fixture base is the commit that froze the boundary
+ * (`retiredSurfaces.frozenTree`), read by git object id: the same blobs the ledger was
+ * reviewed against, with no copy in the tree. The LIVE grade (CLI, and the required leg) is
+ * the one that sees the retirement and reports dispositions.
+ */
+const A0_TREE = (() => {
+  const allow = JSON.parse(readFileSync(join(ROOT, 'dev/agent-workflow/ledgers/ute-cut-closure.allow.json'), 'utf8'))
+  const rev = allow.retiredSurfaces?.frozenTree
+  assert.match(String(rev), /^[0-9a-f]{40}$/, 'the A0 retirement record must name a 40-hex frozenTree')
+  return rev
+})()
+const A0_TRACKED = new Set(execFileSync('git', ['-C', ROOT, 'ls-tree', '-r', '--name-only', A0_TREE], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 }).split('\n').filter(Boolean))
+const a0Read = (abs) => {
+  const rel = abs.startsWith(ROOT) ? abs.slice(ROOT.length + 1) : abs
+  return execFileSync('git', ['-C', ROOT, 'show', `${A0_TREE}:${rel}`], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
+}
+const a0Exists = (abs) => A0_TRACKED.has(abs.startsWith(ROOT) ? abs.slice(ROOT.length + 1) : abs)
+
 const fsFamily = (ledger = LEDGER) => ledger.families.find((f) => f.familyId === 'dsh.fs-family')
 
-/** Grade an in-memory ledger clone. `mutate(ledger)` edits the clone. */
-function run(mutate, { trackedPaths = TRACKED, fileExists = (abs) => existsSync(abs) } = {}) {
+/** Grade an in-memory ledger clone against the A0 frozen fixture base. */
+function run(mutate, { trackedPaths = A0_TRACKED, fileExists = a0Exists } = {}) {
   const copy = structuredClone(LEDGER)
   if (mutate !== undefined) mutate(copy)
   return checkInventory({
@@ -54,6 +78,7 @@ function run(mutate, { trackedPaths = TRACKED, fileExists = (abs) => existsSync(
     retirement: RETIREMENT,
     root: ROOT,
     trackedPaths,
+    readFile: a0Read,
     fileExists,
   })
 }
@@ -213,7 +238,7 @@ test('pointing at a deleted file is INVENTORY_PATH_MISSING', () => {
 
 test('a declared file outside the git index is INVENTORY_PATH_UNTRACKED', () => {
   const declared = 'packages/tools/fs-family/src/edit-row.mjs'
-  const withoutIt = new Set(TRACKED)
+  const withoutIt = new Set(A0_TRACKED)
   withoutIt.delete(declared)
   mutant('drop a file from the tracked set', 'INVENTORY_PATH_UNTRACKED', undefined, { trackedPaths: withoutIt })
 })
@@ -229,18 +254,18 @@ test('one file claimed by two families is INVENTORY_DUPLICATE_CLAIM', () => {
 // ── 6. the file universe (no silent orphan of the old path) ────────────────
 test('an implementation file no family claims is INVENTORY_FILE_UNOWNED', () => {
   const orphan = 'packages/tools/fs-family/src/orphan-helper.mjs'
-  const withOrphan = new Set(TRACKED)
+  const withOrphan = new Set(A0_TRACKED)
   withOrphan.add(orphan)
   mutant('add an unclaimed lane file', 'INVENTORY_FILE_UNOWNED', undefined, { trackedPaths: withOrphan })
 })
 
 test('the SAME orphan is accepted when the ledger explicitly declares it shared (with a reason)', () => {
   const orphan = 'packages/tools/fs-family/src/orphan-helper.mjs'
-  const withOrphan = new Set(TRACKED)
+  const withOrphan = new Set(A0_TRACKED)
   withOrphan.add(orphan)
   const result = run((ledger) => {
     ledger.shared.push({ path: orphan, shared: true, reason: 'a genuinely shared helper, declared explicitly rather than silently ignored' })
-  }, { trackedPaths: withOrphan, fileExists: (abs) => existsSync(abs) || abs.endsWith('orphan-helper.mjs') })
+  }, { trackedPaths: withOrphan, fileExists: (abs) => a0Exists(abs) || abs.endsWith('orphan-helper.mjs') })
   assert.deepEqual(result.findings, [], `an explicit shared declaration must satisfy the universe rule: ${JSON.stringify(codesOf(result))}`)
   mutants += 1 // this is the negative of the previous mutant: the exemption is explicit, not silent
   red += 1
@@ -391,8 +416,10 @@ test('imports are tokenized: comments, strings and templates cannot fake one', (
 })
 
 test('the C2 probe lane\'s URL-based public seams are read as imports', () => {
-  const contribution = scanImports(readFileSync(join(ROOT, 'tests/u6-arc-a-probe-family/src/probe-contribution.mjs'), 'utf8'))
-  const assembly = scanImports(readFileSync(join(ROOT, 'tests/u6-arc-a-probe-family/src/probe-assembly.mjs'), 'utf8'))
+  // The probe lane was deleted by the cut (booked in retiredSubjects); its blob still exists in
+  // the A0 frozen tree, which is where the ledger's imports were read from.
+  const contribution = scanImports(a0Read(join(ROOT, 'tests/u6-arc-a-probe-family/src/probe-contribution.mjs')))
+  const assembly = scanImports(a0Read(join(ROOT, 'tests/u6-arc-a-probe-family/src/probe-assembly.mjs')))
   assert.ok(contribution.includes('../../../packages/contracts/src/index.js'), JSON.stringify(contribution))
   assert.ok(assembly.includes('../../../packages/runtime/governance-center/index.js'), JSON.stringify(assembly))
 })
@@ -402,7 +429,10 @@ test('CLI: exit 0 on the committed ledger and a parseable --json verdict', () =>
   const script = join(ROOT, 'scripts/ute-family-inventory.mjs')
   const plain = spawnSync(process.execPath, [script], { cwd: ROOT, encoding: 'utf8' })
   assert.equal(plain.status, 0, plain.stderr)
-  assert.match(plain.stdout, /UTE-FAMILY-INVENTORY-SUMMARY families=9 files=92 findings=0/)
+  // LIVE grade: every family is retired by A0, so the universe of live family files is ZERO and
+  // the summary must SAY that (files=0 is the cut, not an empty ledger).
+  assert.match(plain.stdout, /UTE-FAMILY-INVENTORY-SUMMARY families=9 files=0 retiredFamilies=9 findings=0/)
+  assert.match(plain.stdout, /UTE-FAMILY-INVENTORY-RETIRED-BY-A0 family=dsh.fs-family/)
   const json = spawnSync(process.execPath, [script, '--json'], { cwd: ROOT, encoding: 'utf8' })
   assert.equal(json.status, 0, json.stderr)
   const payload = JSON.parse(json.stdout)

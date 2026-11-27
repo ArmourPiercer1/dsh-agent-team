@@ -1,0 +1,140 @@
+{
+  "writeSettled": true,
+  "requestId": "ctrl-0pfukk21mhg8650rf3tmg0av",
+  "resolveOutcome": {
+    "call": {
+      "rootSessionId": "session-dboot-d4-root",
+      "requestToken": "dboot-d4-resolve-ctrl-0pfukk21mhg8650rf3tmg0av",
+      "requestId": "ctrl-0pfukk21mhg8650rf3tmg0av",
+      "decision": "allow"
+    },
+    "result": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-0pfukk21mhg8650rf3tmg0av\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-1crltnl0089j\",\"role\":\"member\"},\"scope\":{\"rootSessionId\":\"session-dboot-d4-root\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0ty67u70r99a\"},\"targetInstanceId\":\"inst-0ty67u70r99a\",\"actionName\":\"admission-ask\",\"correlation\":\"admission:call-d4-worker-write-2\",\"toolName\":\"write\",\"operationFingerprint\":\"sha256:bd2ab02a27789f1527859a9747ecc8740ad8484242890abefff2bf51f36aa72f\",\"authorityScope\":{\"operationClass\":\"write\",\"matcher\":{\"kind\":\"exact\",\"resource\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T03-42-46Z/workspace/lane/worker-ask-2.txt\"}}},\"requestSequence\":13,\"decisionSequence\":16,",
+    "isError": false
+  },
+  "workerWriteCall": {
+    "callId": "call-d4-worker-write-2",
+    "name": "write",
+    "arguments": {
+      "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T03-42-46Z/workspace/lane/worker-ask-2.txt",
+      "content": "DBOOT_D4_WORKER_ASK_CALLED_2\n"
+    },
+    "result": {
+      "callId": "call-d4-worker-write-2",
+      "isError": true,
+      "text": "Error: RECEIPT_NOT_IN_SCOPE: no approved-ask execution scope is active for this Provider call; an ask is refused rather than approved by ambient state"
+    }
+  },
+  "file": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T03-42-46Z/workspace/lane/worker-ask-2.txt",
+    "exists": false,
+    "content": null,
+    "bytes": null,
+    "sha256": null
+  },
+  "firstFile": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T03-42-46Z/workspace/lane/worker-ask.txt",
+    "exists": false,
+    "content": null,
+    "bytes": null,
+    "sha256": null
+  },
+  "settlement": {
+    "executionId": "exec-84a42cc32990663f31c59823063f04b760490551",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T03-42-46Z/centre/settlement/inst-0ty67u70r99a/exec-84a42cc32990663f31c59823063f04b760490551.settlement.json",
+    "present": true,
+    "state": "FAILED",
+    "bodyOutcome": "failed",
+    "dispatch": "quiesced",
+    "transitions": [
+      "ADMITTED",
+      "RUNNING",
+      "FAILED"
+    ],
+    "terminalAt": "2026-11-24T03:45:14.355Z"
+  },
+  "facts": [
+    {
+      "callId": "call-d4-worker-write-2",
+      "agentId": "inst-0ty67u70r99a",
+      "instanceId": "inst-0ty67u70r99a",
+      "sessionId": "session-team-child-ecd32f24e3090ec60b7270eebdb92a6c",
+      "instanceGeneration": 0,
+      "toolName": "write",
+      "axis": "fs.write",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261124T03-42-46Z/workspace/lane/worker-ask-2.txt",
+      "definitionSource": "",
+      "policyGeneration": "a5sf1:6592267db730fb23cc4fb2a9242c3356",
+      "blueprintRevision": "",
+      "owner": "session-dboot-d4-root",
+      "decision": "allow",
+      "laneDecision": "ask",
+      "kind": "invocation-authority",
+      "at": "2026-11-24T03:45:14.342Z"
+    },
+    {
+      "callId": "call-d4-worker-write-2",
+      "executionId": "exec-84a42cc32990663f31c59823063f04b760490551",
+      "toolName": "write",
+      "agentId": "session-team-child-ecd32f24e3090ec60b7270eebdb92a6c",
+      "outcome": "failed",
+      "isError": true,
+      "errorMessage": "RECEIPT_NOT_IN_SCOPE: no approved-ask execution scope is active for this Provider call; an ask is refused rather than approved by ambient state",
+      "policyGeneration": "a5sf1:6592267db730fb23cc4fb2a9242c3356",
+      "kind": "execution",
+      "at": "2026-11-24T03:45:14.354Z"
+    }
+  ],
+  "verdict": {
+    "proposition": "a SECOND Member `write` (different path, different bytes) raises its OWN Control request, is approved, and executes: the receipt is bound to THAT operation, both files hold the bytes of their own approval, settled COMPLETED",
+    "verdict": "REFUTED",
+    "clauses": [
+      {
+        "id": "second-control-request-raised",
+        "ok": true,
+        "detail": "requestRaised=true requestIsNew=true"
+      },
+      {
+        "id": "second-approved-through-real-control-path",
+        "ok": true,
+        "detail": "leader team_resolve_control result=\"{\\\"status\\\":\\\"control-resolved\\\",\\\"decision\\\":{\\\"requestId\\\":\\\"ctrl-0pfukk21mhg8650rf3tmg0av\\\",\\\"decision\\\":\\\"allow\\\",\\\"decider\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-1crltnl0089j\\\",\\\"role\\\":\\\"member\\\"},\\\"scope\\\":{\\\"rootSessionId\\\":\\\"session-dboot-d4-root\\\",\\\"subject\\\":{\\\"kind\\\":\\\"instance\\\",\\\"instanceId\\\":\\\"inst-0ty67u70r99a\\\"},\\\"targetInstanceId\\\":\\\"inst-0ty67u70r99a\\\",\\\"actionName\\\":\\\"admission-ask\\\",\\\"correlation\\\":\\\"admission:call-d4-worker-write-2\\\",\\\"toolName\\\":\\\"write\\\",\\\"operationFingerprint\\\":\\\"sha256:bd2ab02a27789f1527859a9747ecc8740ad848\""
+      },
+      {
+        "id": "second-admission-fact-allow-lane-ask",
+        "ok": true,
+        "detail": "allow facts=[{\"callId\":\"call-d4-worker-write-2\",\"decision\":\"allow\",\"laneDecision\":\"ask\",\"axis\":\"fs.write\"}]"
+      },
+      {
+        "id": "second-write-tool-result-not-an-error",
+        "ok": false,
+        "detail": "write result isError=true text=\"Error: RECEIPT_NOT_IN_SCOPE: no approved-ask execution scope is active for this Provider call; an ask is refused rather than approved by ambient state\""
+      },
+      {
+        "id": "second-real-bytes-on-disk",
+        "ok": false,
+        "detail": "file exists=false bytes=null sha256=null expectedSha256=2d71ffdd499955a34ec86af1c25c00f83c068fbe40f5fa3481f6a3752046442f"
+      },
+      {
+        "id": "first-file-unchanged-by-second-approval",
+        "ok": false,
+        "detail": "first sha256=null expectedSha256=ced10112e5b82a2b1b6bca1b85b1dff242db7e9820aa4a1b6332f3096bdf28c3"
+      },
+      {
+        "id": "content-binding-distinguishes-the-two-approvals",
+        "ok": false,
+        "detail": "second=null first=null"
+      },
+      {
+        "id": "second-settlement-completed",
+        "ok": false,
+        "detail": "state=FAILED bodyOutcome=failed transitions=[\"ADMITTED\",\"RUNNING\",\"FAILED\"]"
+      }
+    ],
+    "failing": [
+      "second-write-tool-result-not-an-error",
+      "second-real-bytes-on-disk",
+      "first-file-unchanged-by-second-approval",
+      "content-binding-distinguishes-the-two-approvals",
+      "second-settlement-completed"
+    ]
+  }
+}

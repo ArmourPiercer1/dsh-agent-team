@@ -1,0 +1,42 @@
+{
+  "proposition": "the Alpha.6 ROUTED review wake reaches a real Host end to end: a qualifying worker ask opens a durable case, the product router selects the unique Officer, the governed wake reaches the Officer's own session, the Officer settles it under its own binding, and the worker's granted call executes — with the duplicate and Sticky-Stop laws intact",
+  "verdict": "PROVEN",
+  "clauses": [
+    {
+      "id": "d4:case-created-proven",
+      "ok": true,
+      "detail": "PROVEN"
+    },
+    {
+      "id": "d4:router-officer-proven",
+      "ok": true,
+      "detail": "PROVEN"
+    },
+    {
+      "id": "d4:wake-delivered-proven",
+      "ok": true,
+      "detail": "PROVEN"
+    },
+    {
+      "id": "d4:officer-decides-proven",
+      "ok": true,
+      "detail": "PROVEN"
+    },
+    {
+      "id": "d4:ask-executes-after-review-proven",
+      "ok": true,
+      "detail": "PROVEN"
+    },
+    {
+      "id": "d4:duplicate-route-proven",
+      "ok": true,
+      "detail": "PROVEN"
+    },
+    {
+      "id": "d4:sticky-stop-proven",
+      "ok": true,
+      "detail": "PROVEN"
+    }
+  ],
+  "failing": []
+}

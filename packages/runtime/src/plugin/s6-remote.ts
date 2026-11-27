@@ -139,6 +139,10 @@ import { corruptControlLegsValue } from '../../../remote/src/handlers/team.js'
 // `permission-plane.ts` precedent): a pure type import, the control
 // package stays unmodified and this lane reads/judges NOTHING itself.
 import type { ControlCorruptLegRecord } from '../../control/types.js'
+// ROUND 74 — the ONE closed S6 command-effect classification (see the module docs). The dispatcher
+// consults it for every endpoint; an unclassified command is NOT control-plane and is refused.
+import { isS6ControlPlaneCommand } from './s6-command-classification.js'
+import type { HostSurfaceDenial } from './vnext/host-surface-refusal.mjs'
 import type { RemoteDispatcher } from '../../../remote/src/handlers/dispatch.js'
 import type { RemoteHandlerOutcome } from '../../../remote/src/handlers/ports.js'
 import { REMOTE_RPC_CHANNEL } from '../../../remote/src/handlers/register.js'
@@ -264,6 +268,16 @@ import type {
 } from '../../intervention/index.js'
 
 // --- the stable S6 remote error codes (the typed domain errors) ----------------------
+
+/**
+ * ROUND 83 — the EXISTING host-surface wire code, reused (NO new wire code) for the work-delivery
+ * seam's fail-closed absence. A row that does not wire the delivery port (`messaging` for
+ * `member.send`, `admission` for `member.create` / `member.followup`) cannot deliver work, and it
+ * must say so TYPED before the handler body — never crash out of a handler into `internal-error`.
+ * The wire semantics stay "this S6 command is not available through this row's management plane";
+ * the `details.reason` names the missing seam.
+ */
+export const S6_WORK_DELIVERY_SEAM_CODE = 'ADMISSION_REMOTE_UNAVAILABLE'
 
 /** The stable error codes the S6 remote surfaces throw (CR-4/CR-12 boundary). */
 export const S6_REMOTE_ERROR_CODES = {
@@ -1330,6 +1344,23 @@ export interface S6RemoteOptions {
   /** The installed A32 principal derivation (the seam's `current()`). */
   readonly principal: ServerPrincipalDerivation
   /**
+   * ROUND 74 (owner ruling `docs/reviews/20261122-1536.txt` §3) — the governed
+   * row's per-command refusal hook. Present ONLY on a centre-configured row
+   * (`root.ts` builds it from the SAME host-surface refusal point the other
+   * host-surface refusals use); absent on a row that never configured the
+   * centre, where the S6 plane keeps its pre-round behaviour byte-for-byte.
+   *
+   * The DISPATCHER — not the root, not a handler — classifies every endpoint
+   * against the ONE closed table (`s6-command-classification.ts`) and calls
+   * this hook for every command whose effect is agent execution BEFORE the
+   * contract envelope, the params or a handler are touched. The hook records
+   * the durable fact + settlement and returns the centre's admission denial;
+   * the dispatcher then answers the caller with that typed code. It is never
+   * consulted for a control-plane command, and it cannot widen: the surface
+   * rejects, it never forwards.
+   */
+  readonly refuseExecutionCommand?: (method: string) => HostSurfaceDenial
+  /**
    * The P6-T3 messaging coordinator (the live send path: facade admission
    * + the durable intent fact, LIVE delivery of the attributed input, the
    * confirmation fact). The `member.send` remote method routes through it
@@ -1649,6 +1680,29 @@ function blueprintToRecord(blueprint: TeamBlueprint): RemoteSafeRecord {
     }
   }
   return record as RemoteSafeRecord
+}
+
+/**
+ * ROUND 83 — the work-delivery seam preflight. A work-delivery command is SERVED on a governed row,
+ * so its absence is not the round-74 refusal: it is a row that did not wire the delivery port. It
+ * fails closed with the existing host-surface wire code and a `reason` that names the missing seam,
+ * BEFORE any claim read, parameter use or durable write.
+ *
+ * @param command - the S6 command being served (for the message and the durable-facing detail).
+ * @param seam - the port the command's handover requires.
+ */
+function requireWorkDeliverySeam (command: string, seam: unknown): void {
+  const present =
+    seam !== undefined &&
+    seam !== null &&
+    (typeof seam === 'object' || typeof seam === 'function') &&
+    Object.keys(seam as object).length > 0
+  if (present) return
+  throw new TeamPluginError(
+    S6_WORK_DELIVERY_SEAM_CODE,
+    `${command} is a work-delivery command and this row wires no delivery seam for it — the command is not available through this management plane (it would have to execute, and the plane never executes)`,
+    { reason: 'work-delivery-seam-unwired', command },
+  )
 }
 
 /** The durable effect sequence of an admission outcome (the frozen rule, verbatim). */
@@ -3201,6 +3255,12 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
             ...base,
             action: 'follow-up',
             targetInstanceId: request.targetInstanceId as InstanceId,
+            // ROUND 83 — THE DELIVERY LAW at the facade. `async` is closed to the WORK actions
+            // (`delegate` / `follow-up`) by the facade's own validation: Phase A commits the durable
+            // admission and that receipt is returned; Phase B/C detach into the Team runtime WITHOUT
+            // the caller's signal. The management request therefore never waits on — and never
+            // observes — the Member's turn; the answer is the delivery acknowledgement.
+            execution: 'async',
             ...(request.payload !== undefined ? { payload: { ...request.payload } } : {}),
           }
         }
@@ -4263,6 +4323,11 @@ function buildS6CategoryHandlers(ports: S6RemotePorts, principal: ServerPrincipa
       ((method: string, params: RemoteMethodParams, envelope: RemoteRequest): Promise<RemoteHandlerOutcome> => {
         switch (method) {
           case 'member.create': {
+            // ROUND 83 — WORK DELIVERY (creation handover), not execution. The port is the ONE
+            // governed creation facade; the effect is `member-activated` ONLY (the ActivationProvider
+            // is the sole activation authority; no work chain, no turn, no tool). A row without the
+            // facade cannot create through this plane and answers typed.
+            requireWorkDeliverySeam('member.create', ports.admission)
             const createParams = params as RemoteMemberCreateParams
             const request: S6RemoteAdmissionRequest = {
               rootSessionId: createParams.teamSessionId,
@@ -4285,6 +4350,13 @@ function buildS6CategoryHandlers(ports: S6RemotePorts, principal: ServerPrincipa
             }))
           }
           case 'member.send': {
+            // ROUND 83 — WORK DELIVERY, not execution: the messaging coordinator commits the
+            // durable intent fact, places the attributed input in the recipient's OWN session
+            // inbox (the delivery success boundary = inbox acceptance), commits the confirmation
+            // fact and returns `SendTeamMessageOutcome`. It never awaits the recipient's turn:
+            // the Member's agent loop runs on its own, and every tool call in it is admitted by
+            // the centre under THAT Member's Binding.
+            requireWorkDeliverySeam('member.send', ports.messaging)
             const sendParams = params as RemoteMemberSendParams
             // T12-V16: the FULL coordinator path — facade admission (the
             // durable `team-coordination-recorded` intent fact) + LIVE
@@ -4312,6 +4384,11 @@ function buildS6CategoryHandlers(ports: S6RemotePorts, principal: ServerPrincipa
             }))
           }
           case 'member.followup': {
+            // ROUND 83 — WORK DELIVERY, not execution: the work-action facade runs Phase A (the
+            // durable `team-work-admitted` receipt) and the dispatcher answers with that receipt;
+            // Phase B (delivery into the Member's own child session) and Phase C (settlement) run
+            // DETACHED inside the Team runtime (see the facade port's `execution: 'async'`).
+            requireWorkDeliverySeam('member.followup', ports.admission)
             const followupParams = params as RemoteMemberFollowupParams
             const request: S6RemoteAdmissionRequest = {
               rootSessionId: followupParams.teamSessionId,
@@ -4714,12 +4791,18 @@ function toS6RemoteErrorResult(error: unknown, ctx: RemoteProvenanceContext): Re
  * @param principal - the installed A32 principal derivation.
  * @param principalContext - the trusted PrincipalContext of the mounting
  *   transport (defaults to the connection-gate basis).
+ * @param refuseExecutionCommand - ROUND 74: the governed row's per-command
+ *   refusal hook (absent = no governed row; every command keeps the pre-round
+ *   path). Called for EVERY endpoint whose effect class is `agent-execution`,
+ *   before the envelope/params/handler, and its denial becomes the typed wire
+ *   answer. Control-plane commands are never passed to it.
  * @returns the seam entry point: `(endpoint, payload) => Promise<RemoteResponse>`.
  */
 export function createS6RemoteDispatcher(
   ports: S6RemotePorts,
   principal: ServerPrincipalDerivation,
   principalContext?: ServerPrincipalContext,
+  refuseExecutionCommand?: (method: string) => HostSurfaceDenial,
 ): RemoteDispatcher {
   const handlers = buildS6CategoryHandlers(ports, principal)
   const context: ServerPrincipalContext =
@@ -4752,6 +4835,21 @@ export function createS6RemoteDispatcher(
           `endpoint '${endpoint}' is not a method of the closed Remote contract v1 catalog`,
           { reason: 'unknown-endpoint' },
         )
+      }
+      // ROUND 74 — THE EFFECT BOUNDARY, before the envelope, the params and
+      // every handler. A governed row serves CONTROL-PLANE commands only: the
+      // classification is the ONE closed table, and an unknown command has no
+      // entry, so `isS6ControlPlaneCommand` answers false and it is refused
+      // exactly like a known agent-execution command (a new command cannot
+      // default to allowed). The hook records the durable fact + settlement
+      // and returns the centre's own admission denial; this surface rejects —
+      // it never forwards, so no S6 request can reach a model tool without UTE.
+      if (refuseExecutionCommand !== undefined && !isS6ControlPlaneCommand(endpoint)) {
+        const denial = refuseExecutionCommand(endpoint)
+        throw new TeamPluginError(denial.code, denial.reason, {
+          reason: 'not-a-control-plane-command',
+          method: endpoint,
+        })
       }
       // Invariant 2: the request envelope (closed: version + params).
       const request = parseRemoteRequest(payload)
@@ -4786,6 +4884,9 @@ export function createS6RemoteDispatcher(
  * @param principal - the installed A32 principal derivation.
  * @param principalContext - the trusted PrincipalContext of the mounting
  *   transport (T12-B4; defaults to the connection-gate basis).
+ * @param readiness - the BP-G boot-readiness gate (absent = legacy).
+ * @param refuseExecutionCommand - ROUND 74: the governed row's per-command
+ *   refusal hook, threaded to the dispatcher this registration mounts.
  * @returns the `RemoteHandlerRegistration` the A31 seam installs.
  */
 export function createS6RemoteRegistration(
@@ -4793,8 +4894,9 @@ export function createS6RemoteRegistration(
   principal: ServerPrincipalDerivation,
   principalContext?: ServerPrincipalContext,
   readiness?: () => RemoteReadiness,
+  refuseExecutionCommand?: (method: string) => HostSurfaceDenial,
 ): RemoteHandlerRegistration {
-  const dispatcher = createS6RemoteDispatcher(ports, principal, principalContext)
+  const dispatcher = createS6RemoteDispatcher(ports, principal, principalContext, refuseExecutionCommand)
   // BP-G (issue #2 blueprint-loading, plan §12.2): the readiness gate —
   // ABSENT (the pre-BP-G worlds) = the legacy unguarded dispatcher,
   // byte-for-byte. A non-`ready` state refuses EVERY closed method except
@@ -5034,10 +5136,16 @@ export function createS6RemoteSurfaces(options: S6RemoteOptions): S6RemoteSurfac
   const principalContext = createServerPrincipalContext({
     transport: SERVER_PRINCIPAL_TRANSPORTS.CONNECTION_GATE,
   })
-  const dispatcher = createS6RemoteDispatcher(ports, options.principal, principalContext)
+  const dispatcher = createS6RemoteDispatcher(ports, options.principal, principalContext, options.refuseExecutionCommand)
   const completion = createS6RemoteQueryCommandCompletion(ports, options, dispatcher)
   return {
-    registration: createS6RemoteRegistration(ports, options.principal, principalContext, options.readiness),
+    registration: createS6RemoteRegistration(
+      ports,
+      options.principal,
+      principalContext,
+      options.readiness,
+      options.refuseExecutionCommand,
+    ),
     completion,
     dispatcher,
   }

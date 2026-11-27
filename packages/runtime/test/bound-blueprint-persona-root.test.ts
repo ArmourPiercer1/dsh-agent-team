@@ -71,7 +71,7 @@ import {
 } from '../../testkit/fault-injection/file-seam.mjs'
 import * as hostEntry from '../src/plugin/host.js'
 import type { TeamPluginHostContext } from '../src/plugin/host.js'
-import { createTeamProductionRoot } from '../src/plugin/root.js'
+import { createTeamProductionRoot } from '../src/plugin/vnext/root.js'
 import type { TeamPluginConfig } from '../src/plugin/types.js'
 import { createTeamDomain } from '../../storage/repositories/index.js'
 import { ADMISSION_OPEN_CODE, isTeamAgentBinderError, TEAM_AGENT_BINDER_ERROR_CODES } from '../agent-setup/binder/index.js'

@@ -164,7 +164,11 @@ function readSafe(p) {
 }
 
 function git(args) {
-  const r = spawnSync('git', args, { cwd: ROOT, encoding: 'utf8' })
+  // `git diff --name-only` over the full tree is 1,225,506 bytes / 11,284 files at the
+  // A1 cut (measured 2026-11-27) — above Node's 1 MiB default, which is ENOBUFS. The
+  // explicit bound keeps the whole path set; this helper still returns null (and every
+  // caller treats null as "cannot read") rather than a truncated list.
+  const r = spawnSync('git', args, { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
   if (r.status !== 0) return null
   return r.stdout.trimEnd()
 }

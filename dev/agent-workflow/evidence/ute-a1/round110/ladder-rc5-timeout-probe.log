@@ -1,0 +1,334 @@
+✖ ADM-63 — the ladder's definitions are the HOST's own: every rung resolves a host module body (125.79487ms)
+✖ ADM-64 — READ positive: in-lane read is admitted, executes on the member provider, and settles COMPLETED (0.040086ms)
+✖ ADM-65 — WRITE positive: in-lane write is admitted, lands on disk, and settles COMPLETED (0.023304ms)
+✖ ADM-66 — GREP positive: in-lane search is admitted, runs on the confined face, and settles COMPLETED (0.049343ms)
+✖ ADM-67 — WEB_FETCH positive: in-lane fetch is admitted, the transport serves the loopback fixture, and settles COMPLETED (0.038032ms)
+✖ ADM-68 — BASH positive: NOT RUN in this world (no compiled execution authorization) — disclosed, never a pass (0.051468ms)
+✖ ADM-69 — RUN_CODE positive: NOT APPLICABLE — PRODUCT UNSUPPORTED (owner ruling 20261124-0151 §PTC; a ruled scope, not a pending fix) (0.022633ms)
+✖ ADM-70 — ORDER (positive): the durable facts read back in LADDER order (0.074861ms)
+✖ ADM-71 — READ negative: out-of-lane read is refused before the body, with zero filesystem side effects (0.071024ms)
+✖ ADM-72 — WRITE negative: out-of-lane write is refused before the body, and the file is never created (0.045245ms)
+✖ ADM-73 — GREP negative: out-of-lane search is refused before the body, and no subprocess is spawned (0.020709ms)
+✖ ADM-74 — WEB_FETCH negative: denied network axis is refused before the body, and the transport is never called (0.016121ms)
+✖ ADM-75 — BASH negative: with no compiled execution authorization, a shell is refused before the body with zero side effects (0.025328ms)
+✖ ADM-76 — RUN_CODE negative: PTC stays refused before the body with zero side effects, for the worker's OS-profile seam (0.023214ms)
+✖ ADM-77 — ORDER (negative): the durable refusals read back in LADDER order, each before its body (0.014658ms)
+✖ ADM-79 — PTC is ABSENT from the governed Member's OFFERED set, and the host-retained entry is a TYPED refusal with zero worker start (the real composition, shipped and PTC presentations) (0.052259ms)
+✖ ADM-80 — the PTC not-applicable marker was REPORTED with its status (not a silent skip), and the ruled arm list is CLOSED (0.025348ms)
+✖ ADM-78 — the binding is the COMPILED answer, and its absent axes stay absent (no second policy) (0.013595ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 0
+ℹ fail 18
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 504.678218
+
+✖ failing tests:
+
+test at packages/runtime/test/vnext-b-probe-ladder.test.mjs:1050:29
+✖ ADM-63 — the ladder's definitions are the HOST's own: every rung resolves a host module body (125.79487ms)
+  TypeError [ValidationError]: invalid config:
+    - $.mode expected nullable but got both (at mode)
+      at resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:248:27)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:826:27
+      at Object.apply (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:1508:20)
+      at dispatch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:915:19)
+      at Proxy.waterfall (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:917:10)
+      at Fiber.resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:666:24)
+      at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:359:26)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:436:34
+      at buildLadderWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:273:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:1032:14)
+      at async TestHook.run (node:internal/test_runner/test:1409:7)
+
+test at packages/runtime/test/vnext-b-probe-ladder.test.mjs:1050:29
+✖ ADM-64 — READ positive: in-lane read is admitted, executes on the member provider, and settles COMPLETED (0.040086ms)
+  TypeError [ValidationError]: invalid config:
+    - $.mode expected nullable but got both (at mode)
+      at resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:248:27)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:826:27
+      at Object.apply (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:1508:20)
+      at dispatch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:915:19)
+      at Proxy.waterfall (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:917:10)
+      at Fiber.resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:666:24)
+      at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:359:26)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:436:34
+      at buildLadderWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:273:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:1032:14)
+      at async TestHook.run (node:internal/test_runner/test:1409:7)
+
+test at packages/runtime/test/vnext-b-probe-ladder.test.mjs:1050:29
+✖ ADM-65 — WRITE positive: in-lane write is admitted, lands on disk, and settles COMPLETED (0.023304ms)
+  TypeError [ValidationError]: invalid config:
+    - $.mode expected nullable but got both (at mode)
+      at resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:248:27)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:826:27
+      at Object.apply (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:1508:20)
+      at dispatch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:915:19)
+      at Proxy.waterfall (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:917:10)
+      at Fiber.resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:666:24)
+      at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:359:26)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:436:34
+      at buildLadderWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:273:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:1032:14)
+      at async TestHook.run (node:internal/test_runner/test:1409:7)
+
+test at packages/runtime/test/vnext-b-probe-ladder.test.mjs:1050:29
+✖ ADM-66 — GREP positive: in-lane search is admitted, runs on the confined face, and settles COMPLETED (0.049343ms)
+  TypeError [ValidationError]: invalid config:
+    - $.mode expected nullable but got both (at mode)
+      at resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:248:27)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:826:27
+      at Object.apply (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:1508:20)
+      at dispatch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:915:19)
+      at Proxy.waterfall (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:917:10)
+      at Fiber.resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:666:24)
+      at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:359:26)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:436:34
+      at buildLadderWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:273:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:1032:14)
+      at async TestHook.run (node:internal/test_runner/test:1409:7)
+
+test at packages/runtime/test/vnext-b-probe-ladder.test.mjs:1050:29
+✖ ADM-67 — WEB_FETCH positive: in-lane fetch is admitted, the transport serves the loopback fixture, and settles COMPLETED (0.038032ms)
+  TypeError [ValidationError]: invalid config:
+    - $.mode expected nullable but got both (at mode)
+      at resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:248:27)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:826:27
+      at Object.apply (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:1508:20)
+      at dispatch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:915:19)
+      at Proxy.waterfall (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:917:10)
+      at Fiber.resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:666:24)
+      at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:359:26)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:436:34
+      at buildLadderWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:273:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:1032:14)
+      at async TestHook.run (node:internal/test_runner/test:1409:7)
+
+test at packages/runtime/test/vnext-b-probe-ladder.test.mjs:1050:29
+✖ ADM-68 — BASH positive: NOT RUN in this world (no compiled execution authorization) — disclosed, never a pass (0.051468ms)
+  TypeError [ValidationError]: invalid config:
+    - $.mode expected nullable but got both (at mode)
+      at resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:248:27)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:826:27
+      at Object.apply (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:1508:20)
+      at dispatch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:915:19)
+      at Proxy.waterfall (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:917:10)
+      at Fiber.resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:666:24)
+      at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:359:26)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:436:34
+      at buildLadderWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:273:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:1032:14)
+      at async TestHook.run (node:internal/test_runner/test:1409:7)
+
+test at packages/runtime/test/vnext-b-probe-ladder.test.mjs:1050:29
+✖ ADM-69 — RUN_CODE positive: NOT APPLICABLE — PRODUCT UNSUPPORTED (owner ruling 20261124-0151 §PTC; a ruled scope, not a pending fix) (0.022633ms)
+  TypeError [ValidationError]: invalid config:
+    - $.mode expected nullable but got both (at mode)
+      at resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:248:27)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:826:27
+      at Object.apply (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:1508:20)
+      at dispatch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:915:19)
+      at Proxy.waterfall (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:917:10)
+      at Fiber.resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:666:24)
+      at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:359:26)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:436:34
+      at buildLadderWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:273:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:1032:14)
+      at async TestHook.run (node:internal/test_runner/test:1409:7)
+
+test at packages/runtime/test/vnext-b-probe-ladder.test.mjs:1050:29
+✖ ADM-70 — ORDER (positive): the durable facts read back in LADDER order (0.074861ms)
+  TypeError [ValidationError]: invalid config:
+    - $.mode expected nullable but got both (at mode)
+      at resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:248:27)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:826:27
+      at Object.apply (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:1508:20)
+      at dispatch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:915:19)
+      at Proxy.waterfall (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:917:10)
+      at Fiber.resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:666:24)
+      at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:359:26)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:436:34
+      at buildLadderWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:273:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:1032:14)
+      at async TestHook.run (node:internal/test_runner/test:1409:7)
+
+test at packages/runtime/test/vnext-b-probe-ladder.test.mjs:1050:29
+✖ ADM-71 — READ negative: out-of-lane read is refused before the body, with zero filesystem side effects (0.071024ms)
+  TypeError [ValidationError]: invalid config:
+    - $.mode expected nullable but got both (at mode)
+      at resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:248:27)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:826:27
+      at Object.apply (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:1508:20)
+      at dispatch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:915:19)
+      at Proxy.waterfall (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:917:10)
+      at Fiber.resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:666:24)
+      at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:359:26)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:436:34
+      at buildLadderWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:273:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:1032:14)
+      at async TestHook.run (node:internal/test_runner/test:1409:7)
+
+test at packages/runtime/test/vnext-b-probe-ladder.test.mjs:1050:29
+✖ ADM-72 — WRITE negative: out-of-lane write is refused before the body, and the file is never created (0.045245ms)
+  TypeError [ValidationError]: invalid config:
+    - $.mode expected nullable but got both (at mode)
+      at resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:248:27)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:826:27
+      at Object.apply (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:1508:20)
+      at dispatch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:915:19)
+      at Proxy.waterfall (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:917:10)
+      at Fiber.resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:666:24)
+      at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:359:26)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:436:34
+      at buildLadderWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:273:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:1032:14)
+      at async TestHook.run (node:internal/test_runner/test:1409:7)
+
+test at packages/runtime/test/vnext-b-probe-ladder.test.mjs:1050:29
+✖ ADM-73 — GREP negative: out-of-lane search is refused before the body, and no subprocess is spawned (0.020709ms)
+  TypeError [ValidationError]: invalid config:
+    - $.mode expected nullable but got both (at mode)
+      at resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:248:27)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:826:27
+      at Object.apply (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:1508:20)
+      at dispatch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:915:19)
+      at Proxy.waterfall (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:917:10)
+      at Fiber.resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:666:24)
+      at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:359:26)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:436:34
+      at buildLadderWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:273:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:1032:14)
+      at async TestHook.run (node:internal/test_runner/test:1409:7)
+
+test at packages/runtime/test/vnext-b-probe-ladder.test.mjs:1050:29
+✖ ADM-74 — WEB_FETCH negative: denied network axis is refused before the body, and the transport is never called (0.016121ms)
+  TypeError [ValidationError]: invalid config:
+    - $.mode expected nullable but got both (at mode)
+      at resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:248:27)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:826:27
+      at Object.apply (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:1508:20)
+      at dispatch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:915:19)
+      at Proxy.waterfall (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:917:10)
+      at Fiber.resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:666:24)
+      at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:359:26)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:436:34
+      at buildLadderWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:273:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:1032:14)
+      at async TestHook.run (node:internal/test_runner/test:1409:7)
+
+test at packages/runtime/test/vnext-b-probe-ladder.test.mjs:1050:29
+✖ ADM-75 — BASH negative: with no compiled execution authorization, a shell is refused before the body with zero side effects (0.025328ms)
+  TypeError [ValidationError]: invalid config:
+    - $.mode expected nullable but got both (at mode)
+      at resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:248:27)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:826:27
+      at Object.apply (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:1508:20)
+      at dispatch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:915:19)
+      at Proxy.waterfall (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:917:10)
+      at Fiber.resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:666:24)
+      at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:359:26)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:436:34
+      at buildLadderWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:273:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:1032:14)
+      at async TestHook.run (node:internal/test_runner/test:1409:7)
+
+test at packages/runtime/test/vnext-b-probe-ladder.test.mjs:1050:29
+✖ ADM-76 — RUN_CODE negative: PTC stays refused before the body with zero side effects, for the worker's OS-profile seam (0.023214ms)
+  TypeError [ValidationError]: invalid config:
+    - $.mode expected nullable but got both (at mode)
+      at resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:248:27)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:826:27
+      at Object.apply (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:1508:20)
+      at dispatch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:915:19)
+      at Proxy.waterfall (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:917:10)
+      at Fiber.resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:666:24)
+      at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:359:26)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:436:34
+      at buildLadderWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:273:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:1032:14)
+      at async TestHook.run (node:internal/test_runner/test:1409:7)
+
+test at packages/runtime/test/vnext-b-probe-ladder.test.mjs:1050:29
+✖ ADM-77 — ORDER (negative): the durable refusals read back in LADDER order, each before its body (0.014658ms)
+  TypeError [ValidationError]: invalid config:
+    - $.mode expected nullable but got both (at mode)
+      at resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:248:27)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:826:27
+      at Object.apply (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:1508:20)
+      at dispatch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:915:19)
+      at Proxy.waterfall (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:917:10)
+      at Fiber.resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:666:24)
+      at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:359:26)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:436:34
+      at buildLadderWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:273:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:1032:14)
+      at async TestHook.run (node:internal/test_runner/test:1409:7)
+
+test at packages/runtime/test/vnext-b-probe-ladder.test.mjs:1050:29
+✖ ADM-79 — PTC is ABSENT from the governed Member's OFFERED set, and the host-retained entry is a TYPED refusal with zero worker start (the real composition, shipped and PTC presentations) (0.052259ms)
+  TypeError [ValidationError]: invalid config:
+    - $.mode expected nullable but got both (at mode)
+      at resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:248:27)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:826:27
+      at Object.apply (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:1508:20)
+      at dispatch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:915:19)
+      at Proxy.waterfall (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:917:10)
+      at Fiber.resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:666:24)
+      at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:359:26)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:436:34
+      at buildLadderWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:273:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:1032:14)
+      at async TestHook.run (node:internal/test_runner/test:1409:7)
+
+test at packages/runtime/test/vnext-b-probe-ladder.test.mjs:1050:29
+✖ ADM-80 — the PTC not-applicable marker was REPORTED with its status (not a silent skip), and the ruled arm list is CLOSED (0.025348ms)
+  TypeError [ValidationError]: invalid config:
+    - $.mode expected nullable but got both (at mode)
+      at resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:248:27)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:826:27
+      at Object.apply (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:1508:20)
+      at dispatch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:915:19)
+      at Proxy.waterfall (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:917:10)
+      at Fiber.resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:666:24)
+      at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:359:26)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:436:34
+      at buildLadderWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:273:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:1032:14)
+      at async TestHook.run (node:internal/test_runner/test:1409:7)
+
+test at packages/runtime/test/vnext-b-probe-ladder.test.mjs:1050:29
+✖ ADM-78 — the binding is the COMPILED answer, and its absent axes stay absent (no second policy) (0.013595ms)
+  TypeError [ValidationError]: invalid config:
+    - $.mode expected nullable but got both (at mode)
+      at resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:248:27)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:826:27
+      at Object.apply (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:1508:20)
+      at dispatch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:915:19)
+      at Proxy.waterfall (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:917:10)
+      at Fiber.resolveConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:666:24)
+      at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:359:26)
+      at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-next/vendor/cordis/lib/index.js:436:34
+      at buildLadderWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:273:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-b-probe-ladder.test.mjs:1032:14)
+      at async TestHook.run (node:internal/test_runner/test:1409:7)

@@ -281,6 +281,9 @@ export interface AgentsDoubleOptions {
    *  the fiber's activation (the Permission Coverage Gate's proven-mount
    *  delta basis); unregistered on the fiber's dispose. */
   readonly mcpToolNames?: Record<string, string[]>
+  /** E3 (round 49): give each agent ctx a real Cordis Context for service isolation (see
+   *  `LiveWorldOptions.realmMount`). Off by default; no other double surface changes. */
+  readonly realmMount?: boolean
   /** fix/alpha2-explicit-agent-setup-compat (default false): the DSH
    *  0.1.5+ AgentSetup contract — the setup callback is invoked as
    *  `setup(agentCtx, agent)` (the explicit composed Agent as the second
@@ -341,6 +344,18 @@ export interface DomainDouble {
       get(rootSessionId: string): object | undefined
       list(): Array<Record<string, unknown> & { readonly rootSessionId: string }>
     }
+    /**
+     * ROUND 84: the durable fact ledger, shaped like the REAL `LedgerRepository` contract (list / get /
+     * put / atomic allocateSequence). A governed delivery (`member.send`, and now the Alpha.6 review
+     * wake) writes a delivery intent + confirmation fact through it; an arm reads them back through the
+     * same port the product writes them through.
+     */
+    readonly ledger: {
+      list(): Array<{ readonly sequence: number; readonly factType?: string; readonly payload?: Record<string, unknown> }>
+      get(sequence: number): { readonly sequence: number; readonly factType?: string; readonly payload?: Record<string, unknown> } | undefined
+      put(entry: object): Promise<object>
+      allocateSequence(): Promise<number>
+    }
   }
   readonly consumption: {
     readonly model: {
@@ -376,18 +391,30 @@ export interface DomainDoubleParams {
 
 /** The subagents service double options (see the `.mjs` createSubagentsDouble). */
 export interface SubagentsDoubleOptions {
-  /** `'reject'` makes drainContinuableDescendants reject (aggregate failure). */
+  /**
+   * Which PUBLIC drain name this double exposes: `'drainDescendants'`
+   * (0.2.2-rc.5) or `'drainContinuableDescendants'` (0.2.0-rc.2, the
+   * default). Each host generation exposes exactly one of the two.
+   */
+  readonly drainMethodName?: 'drainDescendants' | 'drainContinuableDescendants'
+  /** `'reject'` makes the drain reject (aggregate failure). */
   readonly drainBehavior?: 'reject'
   readonly drainErrorMessage?: string
   /** The listDescendants result entries (the descendant tree). */
   readonly descendants?: object[]
 }
 
-/** The subagents service double (the SubagentRuntime drain surface). */
+/**
+ * The subagents service double (the SubagentRuntime drain surface). Only the
+ * selected generation's drain name is present.
+ */
 export interface SubagentsDouble {
   readonly drainCalls: unknown[][]
   readonly listCalls: string[]
-  drainContinuableDescendants(parents: readonly unknown[]): Promise<void>
+  /** 0.2.2-rc.5 public name (present when `drainMethodName` selects it). */
+  drainDescendants?(parents: readonly unknown[]): Promise<void>
+  /** 0.2.0-rc.2 public name (the default). */
+  drainContinuableDescendants?(parents: readonly unknown[]): Promise<void>
   listDescendants(rootSessionId: string): Promise<readonly object[]>
 }
 
@@ -628,6 +655,16 @@ export interface LiveWorldOptions {
    *  (no seam, static-only decisions — the leg that proves a world without a
    *  plane is unaffected). */
   readonly permissionPlaneRef?: { current: unknown }
+  /** E3 (round 49): the durable permission-overlay port handed to the glue verbatim — the SAME object
+   *  a production host constructs (`latest`/`append`/`history`). Absent = no overlay is wired, which is
+   *  the pre-E3 posture for every other world. */
+  readonly permissionOverlay?: object
+  /** E3 (round 49): the row's lazy compiled-realm accessor. The production host always passes one; a
+   *  world whose declaration supplies the plan answers `undefined` (no `teamA5sfRealm` service). */
+  readonly a5sfRealmProvider?: () => object | undefined
+  /** E3 (round 49): mount each agent ctx over a real Cordis service scope (the a5sf realm install's
+   *  `isolate`/`plugin(Service)`/`get('fs')` seam). Default false: the pre-E3 double only. */
+  readonly realmMount?: boolean
   /** alpha.2 (A6, V1-1): override the per-agent fs seam accessor
    *  ((agentCtx) => { resolve(path, { cwd? }) }). Default: routes to each
    *  agent ctx double's own fake fs (makeFakeFs on the double), so

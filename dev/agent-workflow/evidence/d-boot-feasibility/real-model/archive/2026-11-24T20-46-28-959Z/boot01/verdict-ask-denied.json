@@ -1,0 +1,14 @@
+{
+  "proposition": "deny arm must run",
+  "verdict": "REFUTED",
+  "clauses": [
+    {
+      "id": "arm-ran",
+      "ok": false,
+      "detail": "workerDelegateResult is not defined"
+    }
+  ],
+  "failing": [
+    "arm-ran"
+  ]
+}

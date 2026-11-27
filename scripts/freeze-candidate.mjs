@@ -126,7 +126,10 @@ export function recordRootFor(candidateId) {
 // ---------- process helpers ----------
 
 export function git(root, args) {
-  const r = spawnSync('git', args, { cwd: root, encoding: 'utf8' })
+  // `ls-tree -r` / `diff --name-only` / `show` on a candidate's product paths are
+  // scale-dependent; the 1 MiB default is ENOBUFS on a large tree, so the bound is
+  // explicit and the whole output is read (never a truncated list).
+  const r = spawnSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
   if (r.error) return { status: 127, stdout: '', stderr: String(r.error.message) }
   return { status: r.status ?? 1, stdout: (r.stdout ?? '').trim(), stderr: (r.stderr ?? '').trim() }
 }

@@ -1,0 +1,8 @@
+{
+  "at": "2026-11-26T02:36:05.909Z",
+  "callId": "call-d3-b-inflight",
+  "mode": "fast",
+  "blocked": false,
+  "state": "COMPLETED",
+  "note": "negative control: the fast provider completed; no kill may be issued"
+}
