@@ -45,6 +45,8 @@ Required and green + `version-gate-receipt.json`) is untouched.
 | `11-tag-install.log` | **phase C** — profile wiped, then `pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team#v0.3.0-trial.1`: exit 0 (22.6 s), dependency written, bundle registered |
 | `12-tag-install-verification.txt` | profile `package.json`, installed package identity (`0.3.0-trial.1`, `engines.dsh`, one distinct peer requirement, `dsh.bundle`/`dsh.client`), lock resolution, `--dump-config` rows |
 | `boot-tag/` | boot smoke of the TAG install (ungoverned): boot line on 3180, `/` 401, skill registered, `/team-remote` MOUNTED, SIGTERM → exit 0, process gone |
+| `14-rc5-cli-install.log` | **the owner's command with the rc.5 CLI** (`apps/cli/lib/bin.js plugin --profile web add …#v0.3.0-trial.1`) into a freshly wiped home: exit 0, no compatibility refusal; profile state + lock resolution to the tag peel recorded at the end |
+| `boot-tag-rc5cli/` | boot smoke of that rc.5-CLI install: 3180, `/` 401, skill registered, `/team-remote` MOUNTED, SIGTERM → exit 0, process gone |
 | `13-rollback.txt` | `plugin remove dsh-agent-team`: dependency gone, `dsh.profile.bundles` back to the two host bundles, `node_modules/dsh-agent-team` GONE, 0 bundle rows in `--dump-config`, **and the host still boots** (401 on `/`, `/team-remote` 405, no skill registration, SIGTERM → exit 0) |
 
 ## Tag phase (phase C) — the owner's exact command, from the pushed tag
@@ -54,6 +56,10 @@ Required and green + `version-gate-receipt.json`) is untouched.
 - The lock resolves the dependency to
   `https://codeload.github.com/ArmourPiercer1/dsh-agent-team/tar.gz/c11ac09a3c74a8e9452ca6a9adf817511c5d07e9`
   — **lock-resolved commit == tag peeled commit** (`12-…` prints `match=yes`).
+- The same command run through the **rc.5 CLI** (which is what an rc.5 host ships, and which owns the
+  compatibility check) also exits 0 with no refusal, and that install boots (`14-…`, `boot-tag-rc5cli/`).
+  The phase-C install above used the repo's own `pnpm dsh` (rc.2 CLI) only because this checkout pins it;
+  both CLIs write the same profile shape and the installed bundle is the same bytes.
 - Everything below `profiles/web` was wiped before the install, so the profile was created by the tag install
   itself; the rollback then returned it to `["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app"]` and the host
   booted with **no** team surface at all.
